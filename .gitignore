@@ -1,0 +1,8 @@
+*pyc
+instance/*
+__pycache__/*
+*.log*
+.idea/*
+*.swp
+#~
+~#
