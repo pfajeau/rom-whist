@@ -5,6 +5,7 @@ App init module
 """
 
 from flask import Flask, redirect, url_for, render_template
+from flask_login import LoginManager
 import logging
 import logging.handlers
 from .extensions import *
@@ -16,6 +17,8 @@ app = Flask(__name__, instance_relative_config=True, template_folder="ui/templat
 from .routes import *
 
 def create_app():
+    login_manager = LoginManager()
+
     Bootstrap(app)
 
     app.config.from_pyfile("config.py")
@@ -29,6 +32,11 @@ def create_app():
     # init extensions
     csrf.init_app(app)
     db.init_app(app)
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(user_id)
 
     with app.app_context():
         # TODO - register blueprints here. e.g.

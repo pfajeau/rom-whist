@@ -1,7 +1,8 @@
 from .extensions import db
-
+from flask_login import UserMixin
 
 ################
+# Hefrom flask_login import UserMixin
 # Helper models
 ################
 
@@ -30,5 +31,9 @@ class BaseModel(db.Model):
 
 
 # TODO - Add your models here  e.g.
-# class User(BaseModel):
-#     pass
+class User(BaseModel, UserMixin):
+    __tablename__ = 'user'
+
+    username = db.Column(db.String)
+#    password = db.Column(db.String)
+    authenticated = db.Column(db.Boolean, default=True)

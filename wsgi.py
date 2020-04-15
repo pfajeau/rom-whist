@@ -9,5 +9,5 @@ app_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, app_path)
 
 
-from rom-whist import create_app
+from romwhist import create_app
 application = create_app()
