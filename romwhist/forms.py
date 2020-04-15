@@ -16,4 +16,13 @@ class LoginForm(FlaskForm):
 #    password = PasswordField("Password", validators=[InputRequired(), Length(min=1, max=32)])
     submit = SubmitField('Sign In')
     remember_me = BooleanField('Remember Me')
+
+class StartGameForm(FlaskForm):
+    game_id = StringField("Game id: ", validators=[InputRequired(), Length(max=32)])
+    start_game = SubmitField('Start a game')
+
+class JoinGameForm(FlaskForm):
+    game_id = StringField("Game id: ", validators=[InputRequired(), Length(max=32)])
+    join_game = SubmitField('Join game')
+
 from .models import *
