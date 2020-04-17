@@ -9,9 +9,9 @@ class Card(object):
     SUIT_NAMES = ['Clubs', 'Diamonds', 'Hearts', 'Spades']
 
     RANKS = list(range(1,14))
-    RANK_NAMES = ['Ace', 'Two', 'Three', 'Four', 'Five', 'Six',
+    RANK_NAMES = ['Two', 'Three', 'Four', 'Five', 'Six',
                   'Seven', 'Eight', 'Nine', 'Ten',
-                  'Jack', 'Queen', 'King']
+                  'Jack', 'Queen', 'King', 'Ace']
 
     def __init__(self, rank, suit):
         '''Constructor

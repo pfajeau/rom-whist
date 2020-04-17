@@ -1,6 +1,20 @@
 {% extends "base.html" %}
 
+<head>
+<!--  -->
+
+</head>
+
 {% block content %}
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/game.js') }}"></script>
+
     <h1>Game Area</h1>
     <h2> Game ID: {{ session['game_id'] }}
+    <p>My Hand</p>
+    <p>{{ url_for('static', filename='js/game.js') }}</p>
+    <div id="cards"></div>
+    <button id="gcbutton">Get Card</button>
+
+
 {% endblock %}

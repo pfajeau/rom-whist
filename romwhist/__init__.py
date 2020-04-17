@@ -3,6 +3,11 @@ App init module
 
 @author: Philippe Fajeau
 """
+"""
+App init module
+
+@author: Philippe Fajeau
+"""
 
 from flask import Flask, redirect, url_for, render_template
 from flask_login import LoginManager
@@ -10,17 +15,19 @@ import logging
 import logging.handlers
 from .extensions import *
 from flask_bootstrap import Bootstrap
-
+from flask_socketio import SocketIO
 
 app = Flask(__name__, instance_relative_config=True, template_folder="ui/templates", static_folder="ui/static")
+socketio = SocketIO(app, logger=True)
 
+#app = Flask(__name__, instance_relative_config=True, template_folder="ui/templates", static_folder="ui/static")
+#socketio = SocketIO(app)
 from .routes import *
+
 
 def create_app():
     login_manager = LoginManager()
-
     Bootstrap(app)
-
     app.config.from_pyfile("config.py")
 
     # logging
@@ -51,6 +58,4 @@ def create_app():
 
         # finally create tables as per models
         db.create_all()
-
-
     return app

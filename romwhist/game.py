@@ -4,6 +4,9 @@ from random import choice
 from random import randrange
 from Hand import Hand
 
+deck = None
+hands = dict()
+
 class RomWhistGame():
 
     def __init__(self, game_creator = ""):
@@ -12,21 +15,33 @@ class RomWhistGame():
         current_round = 0
 
     def add_player(player):
-        player.append(player)
+        players.append(player)
 
     def get_players():
         return get_players
 
     def start_game():
         # create deck
+        deck.shuffle()
+
         # give a card to each player
+        create_hands(1)
         # show trump
         # signal to player when it is their return
 
         pass
 
-    def new_hand(nb_cards):
+    def create_hands(nb_cards):
+        deck = Deck()
         # Create a hand with nb_cards for each player
+        for p in range(players.size):
+            hand = Hand(players[p])
+            hands[players[p]] = hand
+            for c in range(nb_cards):
+                card = deck.deal()
+                hand.add(card)
+    return hands
+
 
     def end_game():
         pass
