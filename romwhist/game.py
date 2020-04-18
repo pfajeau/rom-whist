@@ -1,8 +1,8 @@
-from Card import Card
-from Deck import *
+from .card import Card
+from .deck import Deck
 from random import choice
 from random import randrange
-from Hand import Hand
+from .hand import Hand
 
 deck = None
 hands = dict()
@@ -10,17 +10,17 @@ hands = dict()
 class RomWhistGame():
 
     def __init__(self, game_creator = ""):
-        players = []
+        self.players = []
         scores = dict()
         current_round = 0
 
-    def add_player(player):
-        players.append(player)
+    def add_player(self, player):
+        self.players.append(player)
 
-    def get_players():
-        return get_players
+    def get_players(self):
+        return self.players
 
-    def start_game():
+    def start_game(self):
         # create deck
         deck.shuffle()
 
@@ -29,21 +29,22 @@ class RomWhistGame():
         # show trump
         # signal to player when it is their return
 
-        pass
 
-    def create_hands(nb_cards):
+    def create_hands(self,nb_cards):
         deck = Deck()
         # Create a hand with nb_cards for each player
-        for p in range(players.size):
-            hand = Hand(players[p])
-            hands[players[p]] = hand
+        for p in range(len(self.players)):
+            print (self.players[p])
+            hand = Hand(self.players[p])
+            hands[self.players[p]] = hand
             for c in range(nb_cards):
                 card = deck.deal()
                 hand.add(card)
-    return hands
+            hand.dump()
+        return hands
 
 
-    def end_game():
+    def end_game(self):
         pass
 
 

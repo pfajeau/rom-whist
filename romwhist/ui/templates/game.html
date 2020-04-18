@@ -7,14 +7,49 @@
 
 {% block content %}
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
-<script src="{{ url_for('static', filename='js/game.js') }}"></script>
+<!-- <script src="{{ url_for('static', filename='js/game.js') }}"></script> -->
 
+<script type="text/javascript">
+  document.addEventListener('DOMContentLoaded', () => {
+
+      // Connect to websocket
+      var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+
+      // When connected, configure buttons
+      socket.on('connect', function() {
+          // Each button should emit a "submit vote" event
+          document.querySelector("#deal").onclick = function() {
+            socket.emit('get cards', {data:'2'});
+          }
+      });
+
+      socket.on('new card', function() {
+          document.querySelector('#cards').innerHTML = "Ace of Spade";
+      });
+
+      socket.on('new hand', function(data) {
+          $('#cards').append('<ul>');
+          for (var card in data) {
+              $('#cards').append('<br>' + data[card])
+//              $('#cards').innerHTML += '<li>' + card + '</li>';
+          }
+          $('#cards').append('</ul>');
+      });
+
+
+      socket.on('new player', function(player_name) {
+          alert('new player joined')
+          $('#players').append('<br>' + player_name);
+      });
+  });
+
+
+</script>
     <h1>Game Area</h1>
-    <h2> Game ID: {{ session['game_id'] }}
-    <p>My Hand</p>
-    <p>{{ url_for('static', filename='js/game.js') }}</p>
-    <div id="cards"></div>
-    <button id="gcbutton">Get Card</button>
-
+    <h2> Game ID: {{ session['game_id'] }} </h2>
+    <input type="number" id="nb_card">Number of card</label>
+    <button id="deal">Deal</button>
+    <div id="Players">Players</div>
+    <div id="cards">My Cards</div>
 
 {% endblock %}

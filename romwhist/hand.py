@@ -31,6 +31,15 @@ class Hand(object):
 
     #------------------------------------------------------------
 
+    def cards(self):
+        return self.cards
+
+    def serialize(self):
+        my_cards=[]
+        for card in self.cards:
+            my_cards.append(str(card))
+        return my_cards
+
     def dump(self):
 
         """ Print out contents of the Hand."""

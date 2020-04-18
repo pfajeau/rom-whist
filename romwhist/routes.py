@@ -5,7 +5,9 @@ author: Philippe Fajeau
 
 """
 from flask import Blueprint
-from . import controllers
+from . import controllers,deck,card,hand
+from .utils import Serializer
+from .game import RomWhistGame
 from romwhist import socketio,app
 from flask import render_template, request, flash, session, url_for, redirect
 from .forms import LoginForm, StartGameForm, JoinGameForm
@@ -21,10 +23,8 @@ games = dict()
 # Map keyed by game ids and containing list of players for each game id
 players = dict()
 
-print (socketio)
-
-
-
+# List of user sessions for each game. Use to send event to one client at a time
+clients = dict()
 
 @app.route("/")
 @app.route("/index")
@@ -40,7 +40,7 @@ def base():
     return render_template("base.html")
 
 @app.route("/startgame",methods=['GET', 'POST'])
-def start_game():
+def get_game_id():
     print("Current User: ", current_user.username)
     if current_user.is_authenticated:
         form = StartGameForm()
@@ -49,7 +49,10 @@ def start_game():
             print("creating new game with id: ", game_id)
             # Add game id in session
             session['game_id'] = game_id
-            players[game_id] = [current_user.username]
+            players[game_id] = current_user.username
+            clients[game_id] = session.id
+            games[game_id] = RomWhistGame()
+            games[game_id].add_player(current_user.username)
             return render_template('game.html', title='Bla', form=form)
         else:
             return render_template('start_game.html', title='Bla', form=form)
@@ -66,9 +69,12 @@ def join_game():
             game_id = form.game_id.data
             print("game id: ", game_id)
             # Add player to session. TODO: should check whehter user is already in list
-            if game_id in players:
+            if game_id in games:
                 players[game_id].append(current_user.username)
+                clients[game_id].append(request.sid)
                 join_room(game_id)
+                emit("new player", current_user.username, broadcast=True)
+                games[game_id].add_player(current_user.username)
                 send(current_user.username + ' has joined game', room=game_id)
                 return render_template('game.html', title='Bla', form=form)
             else:
@@ -105,20 +111,43 @@ def login():
 def message(data):
     print ("message received");
 
-@socketio.on('get card')
-def get_card(data):
+@socketio.on('start game')
+def start_game(data):
+    print ("start game event received")
     #selection = data["selection"]
     #votes[selection] += 1
-    print ("get card event received")
-    card = "Ace of Spades"
-    emit("new card", card, broadcast=True)
+    game = RomWhistGame();
+    games[game_id] = game
+    hands = game.create_hands(1)
+    for hand in hands:
+        emit("new hand", hand, broadcast=True)
+
+
+@socketio.on('get cards')
+def get_cards(data):
+    #selection = data["selection"]
+    #votes[selection] += 1
+    print ("get cards event received")
+    game_id = session.get('game_id')
+    if not game_id in games:
+        a_game = RomWhistGame();
+        games[game_id] = a_game
+
+    a_game = games[game_id]
+    print (data)
+    hands = a_game.create_hands(2)
+    cards = hands[current_user.username].serialize()
+    print (cards)
+    emit("new hand", cards, broadcast=True)
 
 @socketio.on('join')
 def on_join(data):
+    print ("on_join")
     username = data['username']
     room = data['room']
+    clients[game_id] = request.sid
     join_room(room)
-    send(username + ' has entered the room.', room=room)
+    emit("new player", username, broadcast=True)
 
 @socketio.on('leave')
 def on_leave(data):

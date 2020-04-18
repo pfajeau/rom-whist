@@ -19,7 +19,7 @@ class LoginForm(FlaskForm):
 
 class StartGameForm(FlaskForm):
     game_id = StringField("Game id: ", validators=[InputRequired(), Length(max=32)])
-    start_game = SubmitField('Start a game')
+    start_game = SubmitField('Submit')
 
 class JoinGameForm(FlaskForm):
     game_id = StringField("Game id: ", validators=[InputRequired(), Length(max=32)])
