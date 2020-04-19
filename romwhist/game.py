@@ -17,6 +17,9 @@ class RomWhistGame():
     def add_player(self, player):
         self.players.append(player)
 
+    def remove_player(self, player):
+        self.players.remove(player)
+
     def get_players(self):
         return self.players
 
@@ -32,6 +35,7 @@ class RomWhistGame():
 
     def create_hands(self,nb_cards):
         deck = Deck()
+        deck.shuffle()
         # Create a hand with nb_cards for each player
         for p in range(len(self.players)):
             print (self.players[p])

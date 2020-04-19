@@ -17,17 +17,16 @@
 
       // When connected, configure buttons
       socket.on('connect', function() {
-          // Each button should emit a "submit vote" event
-          document.querySelector("#deal").onclick = function() {
-            socket.emit('get cards', {data:'2'});
+          // Register user
+          socket.emit('join game', {data:''});
+
+          document.getElementById("deal").onclick = function() {
+            socket.emit('start round', {data:document.getElementById("nb_cards").value});
           }
       });
 
-      socket.on('new card', function() {
-          document.querySelector('#cards').innerHTML = "Ace of Spade";
-      });
-
       socket.on('new hand', function(data) {
+          $('#cards').html('');
           $('#cards').append('<ul>');
           for (var card in data) {
               $('#cards').append('<br>' + data[card])
@@ -39,6 +38,7 @@
 
       socket.on('new player', function(player_name) {
           alert('new player joined')
+          console.log(player_name)
           $('#players').append('<br>' + player_name);
       });
   });
@@ -46,10 +46,29 @@
 
 </script>
     <h1>Game Area</h1>
-    <h2> Game ID: {{ session['game_id'] }} </h2>
-    <input type="number" id="nb_card">Number of card</label>
-    <button id="deal">Deal</button>
-    <div id="Players">Players</div>
+    <p> Game ID: {{ session['game_id'] }} </p>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="col-md-4">
+          <div class="form-group">
+            {{ form.nb_cards.label }}
+            {{ form.nb_cards(size=2) }}
+            <button id="deal" name="deal" type="button">Deal</button>
+          </div>
+          <br>
+    </form>
+    <div id="players">Players</div>
     <div id="cards">My Cards</div>
 
+
+<!--
+    <div class="col-md-4">
+      <div class="form-group">
+        <input type="number" id="nb_card">Number of card</input>
+        <button id="deal">Deal</button>
+      </div>
+    </div>
+    <div id="Players">Players</div>
+    <div id="cards">My Cards</div>
+-->
 {% endblock %}

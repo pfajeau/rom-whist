@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // When connected, configure buttons
     socket.on('connect', function() {
+        socket.emit('join game', {data:document.querySelector("#game_id").value});
+
         // Each button should emit a "submit vote" event
         document.querySelector("#deal").onclick = function() {
           socket.emit('get cards', {data:'2'});

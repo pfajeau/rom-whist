@@ -2,6 +2,10 @@
 
 {% block content %}
     <h1>Sign In</h1>
+    {% if error %}
+      <p class=error><strong>Error:</strong> {{ error }}
+    {% endif %}
+
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
         <p>

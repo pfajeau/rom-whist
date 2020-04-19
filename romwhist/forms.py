@@ -8,7 +8,7 @@ author: Philippe Fajeau
 
 # Optionally import flask-wtf and wtforms
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField
 from wtforms.validators import Length, InputRequired, ValidationError
 
 class LoginForm(FlaskForm):
@@ -24,5 +24,8 @@ class StartGameForm(FlaskForm):
 class JoinGameForm(FlaskForm):
     game_id = StringField("Game id: ", validators=[InputRequired(), Length(max=32)])
     join_game = SubmitField('Join game')
+
+class GameForm(FlaskForm):
+    nb_cards = IntegerField("Number of cards: ", validators=[InputRequired(), Length(max=2)])
 
 from .models import *
