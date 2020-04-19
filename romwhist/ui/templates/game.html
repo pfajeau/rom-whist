@@ -29,7 +29,9 @@
           $('#cards').html('');
           $('#cards').append('<ul>');
           for (var card in data) {
-              $('#cards').append('<br>' + data[card])
+              // $('#cards').append('<br>' + data[card])
+              image = 'img/' + data[card]+".svg"
+              $('#cards').append("<img src={{ url_for('static', filename='') }}" + image + ' alt=' + data[card] +'>' + '</a>')
 //              $('#cards').innerHTML += '<li>' + card + '</li>';
           }
           $('#cards').append('</ul>');
@@ -37,14 +39,13 @@
 
 
       socket.on('new player', function(player_name) {
-          alert('new player joined')
-          console.log(player_name)
-          $('#players').append('<br>' + player_name);
+          // alert('new player joined')
+          console.log("New Player joined: " + player_name)
+          $('#players').append('<td>' + player_name + "</td>");
       });
   });
-
-
 </script>
+
     <h1>Game Area</h1>
     <p> Game ID: {{ session['game_id'] }} </p>
     <form action="" method="post" novalidate>
@@ -57,7 +58,12 @@
           </div>
           <br>
     </form>
-    <div id="players">Players</div>
+    <div>Players</div>
+        <div class="table-responsive">
+        <table class="table">
+          <tr id="players"></tr>
+        </table>
+    </div>
     <div id="cards">My Cards</div>
 
 

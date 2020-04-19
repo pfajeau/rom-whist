@@ -53,4 +53,5 @@ class Card(object):
         '''String representation
         post: Returns string representing self, e.g. 'Ace of Spades' '''
 
-        return self.rankName() + ' of ' + self.suitName()
+        return str(self.suit_char) + str(self.rank_num)
+        #return self.rankName() + ' of ' + self.suitName()

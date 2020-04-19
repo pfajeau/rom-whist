@@ -44,7 +44,7 @@ class RomWhistGame():
             for c in range(nb_cards):
                 card = deck.deal()
                 hand.add(card)
-            hand.dump()
+            # hand.dump()
         return hands
 
 

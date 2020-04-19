@@ -11,7 +11,7 @@ from .game import RomWhistGame
 from romwhist import socketio,app
 from flask import render_template, request, flash, session, url_for, redirect
 from .forms import LoginForm, StartGameForm, JoinGameForm, GameForm
-from flask_login import current_user, login_user
+from flask_login import current_user, login_user, logout_user
 from romwhist.models import User
 from romwhist.extensions import db
 from flask_socketio import join_room, leave_room
@@ -59,7 +59,7 @@ def get_game_id():
             else:
                 error = "This game already exists"
                 print(error)
-                return redirect(request.url, error = error)
+                return render_template('start_game.html', error = error, form=form)
         else:
             return render_template('start_game.html', title='Bla', form=form)
     else:
@@ -80,11 +80,11 @@ def join_game():
             if not game_id in games:
                 error = "This game has not been created yet"
                 print(error)
-                return redirect(request.url, error = error)
+                return render_template('join_game.html', error = error, form=form)
             if current_user.username in players[game_id]:
                 error = "The game already has a user with the same name"
                 print(error)
-                return redirect(request.url, error = error)
+                return render_template('join_game.html', error = error, form=form)
 
             add_player(game_id)
             return redirect(url_for('game'))
@@ -173,13 +173,15 @@ def on_join(data):
         clients[game_id][current_user.username] = request.sid
         join_room(game_id)
 
-
-@socketio.on('leave')
+@socketio.on('leave game')
 def on_leave(data):
-    username = data['username']
-    room = data['room']
-    leave_room(room)
-    send(username + ' has left the room.', room=room)
+    game_id = session.get('game_id')
+    if game_id is None:
+        print("NO GAME_ID IN SESSION!!!!")
+        # TODO: may have a case where the session has been cleared already
+        # (user logged out). In this case how to remove user from room?
+    else:
+        leave_room(game_id)
 
 # Added a player to a game
 def add_player(game_id):
