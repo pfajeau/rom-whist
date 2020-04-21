@@ -27,6 +27,9 @@ players = dict()
 # Keys are game ids and then player ids. Used for socketios.
 clients = dict()
 
+# Dictionary of hands for game for each player
+hands = dict()
+
 @app.route("/")
 @app.route("/index")
 def index():
@@ -100,7 +103,13 @@ def join_game():
 @app.route("/game", methods=['GET', 'POST'])
 def game():
     form = GameForm()
-    return render_template("game.html", form=form)
+    game_id = session.get('game_id')
+    if game_id is None:
+        error = "Could not find game_id in session"
+        print(error)
+        return render_template('join_game.html', error = error, form=JoinGameForm())
+    else:
+        return render_template("game.html", form=form,  players=players[game_id])
 
 @app.route("/login",methods=['GET', 'POST'])
 def login():
@@ -119,6 +128,14 @@ def login():
         return redirect(url_for('index'))
     return render_template('login.html', title='Sign In', form=form)
 
+@app.route("/example", methods=['GET', 'POST'])
+def example():
+    return render_template("example.html")
+
+@app.route("/example2", methods=['GET', 'POST'])
+def example2():
+    return render_template("example2.html")
+
 @app.route("/logout",methods=['GET', 'POST'])
 def logout():
     remove_player()
@@ -130,17 +147,22 @@ def logout():
 def message(data):
     print ("message received");
 
-@socketio.on('start game')
-def start_game(data):
-    print ("start game event received")
-    #selection = data["selection"]
-    #votes[selection] += 1
-    game = RomWhistGame();
-    games[game_id] = game
-    hands = game.create_hands(1)
-    for hand in hands:
-        emit("new hand", hand, broadcast=True)
+@socketio.on('player played')
+def player_played(data):
+    print ("card played event received")
+    game_id = session.get('game_id')
+    # Emit event to players so they can see the card that was played
+    if game_id is None:
+        print("ERROR: Game not found!!!")
+    else:
+        card = data['data']
+        new_data = {'player': current_user.username, 'card': card}
+        emit("card played", new_data, room=game_id)
 
+        # Remove card from hand of player
+        # if last card of round,
+            # determine who won the start_round
+            # clear Deck
 
 @socketio.on('start round')
 def start_round(data):
@@ -155,11 +177,15 @@ def start_round(data):
     a_game = games[game_id]
     print (data)
     nbcard = int(data['data'])
-    hands = a_game.create_hands(nbcard)
+
+    round = a_game.create_round(nbcard)
+    hands[game_id] = round.hands()
+
+    # hands[game_id] = a_game.create_hands(nbcard)
 
     # Distribute cards to each players
     for player in players[game_id]:
-        cards = hands[player].serialize()
+        cards = hands[game_id][player].serialize()
         print ("Cards for player ", player, " ", cards)
         emit("new hand", cards, room=clients[game_id][player])
 

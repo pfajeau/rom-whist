@@ -3,6 +3,7 @@ from .deck import Deck
 from random import choice
 from random import randrange
 from .hand import Hand
+from .round import Round
 
 deck = None
 hands = dict()
@@ -12,7 +13,7 @@ class RomWhistGame():
     def __init__(self, game_creator = ""):
         self.players = []
         scores = dict()
-        current_round = 0
+        current_round = None
 
     def add_player(self, player):
         self.players.append(player)
@@ -25,13 +26,17 @@ class RomWhistGame():
 
     def start_game(self):
         # create deck
+        pass
+
+
+    def create_round(self,nb_cards, trump = None):
+        deck = Deck()
         deck.shuffle()
+        self.current_round = Round(self.players, nb_cards, deck, trump)
+        return self.current_round
 
-        # give a card to each player
-        create_hands(1)
-        # show trump
-        # signal to player when it is their return
-
+    def current_round():
+        return self.current_round
 
     def create_hands(self,nb_cards):
         deck = Deck()
@@ -46,7 +51,6 @@ class RomWhistGame():
                 hand.add(card)
             # hand.dump()
         return hands
-
 
     def end_game(self):
         pass

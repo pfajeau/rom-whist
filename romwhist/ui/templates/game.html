@@ -7,6 +7,8 @@
 
 {% block content %}
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
+
 <!-- <script src="{{ url_for('static', filename='js/game.js') }}"></script> -->
 
 <script type="text/javascript">
@@ -31,7 +33,9 @@
           for (var card in data) {
               // $('#cards').append('<br>' + data[card])
               image = 'img/' + data[card]+".svg"
-              $('#cards').append("<img src={{ url_for('static', filename='') }}" + image + ' alt=' + data[card] +'>' + '</a>')
+              $('#cards').append('<td>'+
+                "<img src={{ url_for('static', filename='') }}" +
+                image + ' alt=' + data[card] +'>' + '</a>' + '</td>')
 //              $('#cards').innerHTML += '<li>' + card + '</li>';
           }
           $('#cards').append('</ul>');
@@ -46,26 +50,41 @@
   });
 </script>
 
-    <h1>Game Area</h1>
-    <p> Game ID: {{ session['game_id'] }} </p>
-    <form action="" method="post" novalidate>
-        {{ form.hidden_tag() }}
-        <div class="col-md-4">
-          <div class="form-group">
-            {{ form.nb_cards.label }}
-            {{ form.nb_cards(size=2) }}
-            <button id="deal" name="deal" type="button">Deal</button>
-          </div>
-          <br>
-    </form>
-    <div>Players</div>
+    <h2>Game Area - Game ID: {{ session['game_id'] }} </h2>
+    <div>
+        <h3>Players</h3>
         <div class="table-responsive">
         <table class="table">
           <tr id="players"></tr>
+          {% for player in players -%}
+            <td><h3>{{ player }}</h3> </td>
+          {% endfor %}
         </table>
     </div>
-    <div id="cards">My Cards</div>
-
+    <div id="card-table">
+    </div>
+    <div>
+      <form action="" method="post" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="col-md-4">
+            <div class="form-group">
+              {{ form.nb_cards.label }}
+              {{ form.nb_cards(size=2) }}
+              <button id="deal" class="btn btn-primary" name="deal" type="button">Deal</button>
+            </div>
+            <br>
+          </div>
+      </form>
+    </div>
+    <p/>
+    <div>
+      <br/>
+      <div class="table-responsive">
+      <table class="table">
+        <tr id="cards"></tr>
+      </table>
+    </div>
+    </div>
 
 <!--
     <div class="col-md-4">

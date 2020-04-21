@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Each button should emit a "submit vote" event
         document.querySelector("#deal").onclick = function() {
-          socket.emit('get cards', {data:'2'});
+          socket.emit('start round', {data:'2'});
         }
     });
 

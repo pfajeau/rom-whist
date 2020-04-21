@@ -1,5 +1,8 @@
+<!-- <script src="{{ url_for('static', filename='js/jquery-3.5.0.min.js') }}">
+</script> -->
 {% extends "bootstrap/base.html" %}
-{% block title %}This is an example page{% endblock %}
+
+{% block title %}Romanian Whist {% endblock %}
 
 {% block navbar %}
 <div class="topnav">
@@ -23,5 +26,6 @@
 {% endwith %}
 
   {% block content %}
-    <h1>Welcome !!!!</h1>
+    <script src="{{ url_for('static', filename='js/jquery-3.5.0.min.js') }}">
+    </script>
   {% endblock %}
