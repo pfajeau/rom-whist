@@ -12,6 +12,33 @@
 <!-- <script src="{{ url_for('static', filename='js/game.js') }}"></script> -->
 
 <script type="text/javascript">
+
+  function allowDrop(ev) {
+    ev.preventDefault();
+  }
+
+  function drag(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
+  }
+
+  function drop(ev) {
+    ev.preventDefault();
+    let type = event.dataTransfer.types[0];
+    alert(type);
+    var data = ev.dataTransfer.getData(type);
+    alert(data)
+    ev.target.appendChild(document.getElementById(data));
+  }
+
+  function RecursiveUnbind($jElement) {
+      // remove this element's and all of its children's click events
+      $jElement.unbind();
+      $jElement.removeAttr('onclick');
+      $jElement.children().each(function () {
+          RecursiveUnbind($(this));
+      });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
 
       // Connect to websocket
@@ -29,23 +56,49 @@
 
       socket.on('new hand', function(data) {
           $('#cards').html('');
-          $('#cards').append('<ul>');
-          for (var card in data) {
+          // $('#cards').append('<ul>');
+          for (var card_index in data) {
               // $('#cards').append('<br>' + data[card])
-              image = 'img/' + data[card]+".svg"
+              let card =data[card_index]
+              let image = 'img/' + card + ".svg"
+              // let card = data[card]
               $('#cards').append('<td>'+
-                "<img src={{ url_for('static', filename='') }}" +
-                image + ' alt=' + data[card] +'>' + '</a>' + '</td>')
-//              $('#cards').innerHTML += '<li>' + card + '</li>';
+                "<img id=" + card + " src={{ url_for('static', filename='') }}" +
+                image + ' alt=' + card + '>' + '</td>')
+
+              // Link click event to moving the card to the table
+              document.getElementById(card).onclick = function() {
+                 // $('#card-table').append("<img src={{ url_for('static', filename='') }}" +
+                 // image + ' alt=' + card +'>')
+
+                 // Remove card from hand being displayed
+                 document.getElementById(card).remove()
+
+                 // Emit an event indicating a card has been card_played
+                 socket.emit('player played', {data:card});
+
+                 // TODO: prevent player from playing again until round is finished
+                 RecursiveUnbind($('#cards'));
+
+
+                 // Iterate over each elements under #cards
+              }
           }
-          $('#cards').append('</ul>');
       });
 
+      socket.on('card played', function(data) {
+          let player = data['player']
+          let card = data['card']
+          // Display card on table
+          let image = 'img/' + card + ".svg"
+          $('#card-table').append("<img src={{ url_for('static', filename='') }}" +
+          image + ' alt=' + card +'>')
+      });
 
       socket.on('new player', function(player_name) {
           // alert('new player joined')
-          console.log("New Player joined: " + player_name)
-          $('#players').append('<td>' + player_name + "</td>");
+          // console.log("New Player joined: " + player_name)
+          $('#players').append('<td><h3>' + player_name + "</h3></td>");
       });
   });
 </script>
@@ -61,8 +114,8 @@
           {% endfor %}
         </table>
     </div>
-    <div id="card-table">
-    </div>
+    <div id="card-table" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+
     <div>
       <form action="" method="post" novalidate>
           {{ form.hidden_tag() }}
