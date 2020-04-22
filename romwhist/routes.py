@@ -140,8 +140,7 @@ def example2():
 def logout():
     remove_player()
     logout_user()
-    form = LoginForm()
-    return render_template('login.html', title='Sign In', form=form)
+    return redirect(url_for('login'))
 
 @socketio.on('message')
 def message(data):
@@ -160,25 +159,39 @@ def player_played(data):
         emit("card played", new_data, room=game_id)
 
         # Remove card from hand of player
+        print(games[game_id])
+        cround = games[game_id].get_current_round()
+        cround.card_played(current_user.username, card)
+        if cround.last_card_played():
+            winner = cround.compute_winner()
+            emit("round ended", winner, room=game_id)
+
+
         # if last card of round,
-            # determine who won the start_round
+            # determine who won the round
             # clear Deck
 
 @socketio.on('start round')
-def start_round(data):
+def start_round(nbcards, trump):
     #selection = data["selection"]
     #votes[selection] += 1
     print ("start round event received")
+    print (nbcards)
+    print(trump)
+
     game_id = session.get('game_id')
     if not game_id in games:
         a_game = RomWhistGame();
         games[game_id] = a_game
 
     a_game = games[game_id]
-    print (data)
-    nbcard = int(data['data'])
 
-    round = a_game.create_round(nbcard)
+    if (trump == "y"):
+        trump_flag = True
+    else:
+        trump_flag = False
+
+    round = a_game.create_round(int(nbcards), trump_flag)
     hands[game_id] = round.hands()
 
     # hands[game_id] = a_game.create_hands(nbcard)

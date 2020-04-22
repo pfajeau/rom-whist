@@ -17,9 +17,14 @@ class Card(object):
         '''Constructor
         pre: rank in range(1,14) and suit in 'cdhs'
         post: self has the given rank and suit'''
-        print(self.RANKS)
         self.rank_num = rank
         self.suit_char = suit
+
+    @classmethod
+    def card_from_value (cls, card_value):
+        print ("card_from_value:", card_value)
+        print (card_value[1:len(card_value)])
+        return cls(int(card_value[1:len(card_value)]), card_value[0])
 
     def suit(self):
         '''Card suit
@@ -48,6 +53,9 @@ class Card(object):
 
         index = self.RANKS.index(self.rank_num)
         return self.RANK_NAMES[index]
+
+    def __eq__(self, other):
+        return str(self) == str(other)
 
     def __str__(self):
         '''String representation

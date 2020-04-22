@@ -13,23 +13,7 @@
 
 <script type="text/javascript">
 
-  function allowDrop(ev) {
-    ev.preventDefault();
-  }
-
-  function drag(ev) {
-    ev.dataTransfer.setData("text", ev.target.id);
-  }
-
-  function drop(ev) {
-    ev.preventDefault();
-    let type = event.dataTransfer.types[0];
-    alert(type);
-    var data = ev.dataTransfer.getData(type);
-    alert(data)
-    ev.target.appendChild(document.getElementById(data));
-  }
-
+  var socket
   function RecursiveUnbind($jElement) {
       // remove this element's and all of its children's click events
       $jElement.unbind();
@@ -39,10 +23,22 @@
       });
   }
 
+  function card_played (card) {
+
+    // Remove card from hand being displayed
+    document.getElementById(card).remove()
+
+    // Emit an event indicating a card has been card_played
+    socket.emit('player played', {data:card});
+
+    // Prevent player from playing again until round is finished
+    RecursiveUnbind($('#cards'));
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
 
       // Connect to websocket
-      var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+      socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
 
       // When connected, configure buttons
       socket.on('connect', function() {
@@ -50,7 +46,8 @@
           socket.emit('join game', {data:''});
 
           document.getElementById("deal").onclick = function() {
-            socket.emit('start round', {data:document.getElementById("nb_cards").value});
+            socket.emit('start round', document.getElementById("nb_cards").value,
+                                      document.getElementById("trump").value);
           }
       });
 
@@ -68,20 +65,7 @@
 
               // Link click event to moving the card to the table
               document.getElementById(card).onclick = function() {
-                 // $('#card-table').append("<img src={{ url_for('static', filename='') }}" +
-                 // image + ' alt=' + card +'>')
-
-                 // Remove card from hand being displayed
-                 document.getElementById(card).remove()
-
-                 // Emit an event indicating a card has been card_played
-                 socket.emit('player played', {data:card});
-
-                 // TODO: prevent player from playing again until round is finished
-                 RecursiveUnbind($('#cards'));
-
-
-                 // Iterate over each elements under #cards
+                  card_played(card)
               }
           }
       });
@@ -100,6 +84,20 @@
           // console.log("New Player joined: " + player_name)
           $('#players').append('<td><h3>' + player_name + "</h3></td>");
       });
+
+      socket.on('round ended', function(player_name) {
+          alert('round ended. Winner is: ' + player_name)
+
+          # TODO: Clear table
+          
+          // Enable click on cards left in hand
+          $('#cards').children().each(function(index) {
+            $(this).onclick = function() {
+                card_played(card)
+          }
+        })
+      });
+
   });
 </script>
 
@@ -114,7 +112,7 @@
           {% endfor %}
         </table>
     </div>
-    <div id="card-table" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    <div id="card-table"></div>
 
     <div>
       <form action="" method="post" novalidate>
@@ -123,6 +121,8 @@
             <div class="form-group">
               {{ form.nb_cards.label }}
               {{ form.nb_cards(size=2) }}
+              {{ form.trump.label }}
+              {{ form.trump }}
               <button id="deal" class="btn btn-primary" name="deal" type="button">Deal</button>
             </div>
             <br>

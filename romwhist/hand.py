@@ -3,8 +3,6 @@ class Hand(object):
 
     """A labeled collection of cards that can be sorted"""
 
-    #------------------------------------------------------------
-
     def __init__(self, label=""):
 
         """Create an empty collection with the given label."""
@@ -12,24 +10,16 @@ class Hand(object):
         self.label = label
         self.cards = []
 
-    #------------------------------------------------------------
-
     def add(self, card):
-
-        """ Add card to the hand """
-
         self.cards.append(card)
 
-    #------------------------------------------------------------
+    def remove(self, card):
+        self.cards.remove(card)
 
     def sort(self):
-
         """ Arrange the cards in descending bridge order."""
-
         self.cards.sort()
         self.cards.reverse()
-
-    #------------------------------------------------------------
 
     def cards(self):
         return self.cards

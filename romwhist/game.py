@@ -13,7 +13,7 @@ class RomWhistGame():
     def __init__(self, game_creator = ""):
         self.players = []
         scores = dict()
-        current_round = None
+        self.current_round = None
 
     def add_player(self, player):
         self.players.append(player)
@@ -29,13 +29,13 @@ class RomWhistGame():
         pass
 
 
-    def create_round(self,nb_cards, trump = None):
+    def create_round(self,nb_cards, trump = False):
         deck = Deck()
         deck.shuffle()
         self.current_round = Round(self.players, nb_cards, deck, trump)
         return self.current_round
 
-    def current_round():
+    def get_current_round(self):
         return self.current_round
 
     def create_hands(self,nb_cards):
