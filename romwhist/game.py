@@ -14,6 +14,9 @@ class RomWhistGame():
         self.players = []
         scores = dict()
         self.current_round = None
+        self.trump_card = None
+        self.deck = Deck()
+        self.hands=dict()
 
     def add_player(self, player):
         self.players.append(player)
@@ -28,29 +31,41 @@ class RomWhistGame():
         # create deck
         pass
 
+    def get_hands(self):
+        return self.hands
 
-    def create_round(self,nb_cards, trump = False):
-        deck = Deck()
-        deck.shuffle()
-        self.current_round = Round(self.players, nb_cards, deck, trump)
+    def create_round(self):
+        if self.trump_card is None:
+            suit = None
+        else:
+            suit = self.trump_card.suit()
+        self.current_round = Round(self.players, suit)
         return self.current_round
+
+    def card_played(self, player, trump_card_value):
+        # Remove card from player hands
+        card = Card.card_from_value(trump_card_value)
+        self.hands[player].remove(card)
+        self.current_round.card_played(player, card)
 
     def get_current_round(self):
         return self.current_round
 
-    def create_hands(self,nb_cards):
-        deck = Deck()
-        deck.shuffle()
+    def create_hands(self, nb_cards, with_trump=False):
+        self.deck.shuffle()
         # Create a hand with nb_cards for each player
         for p in range(len(self.players)):
             print (self.players[p])
-            hand = Hand(self.players[p])
-            hands[self.players[p]] = hand
-            for c in range(nb_cards):
-                card = deck.deal()
-                hand.add(card)
+            print ("Nb cards:", nb_cards)
+            hand = Hand(self.deck, nb_cards, self.players[p])
+            self.hands[self.players[p]] = hand
             # hand.dump()
-        return hands
+
+        # Pick up trum cards
+        if with_trump:
+            self.trump_card = self.deck.deal()
+
+        return self.hands
 
     def end_game(self):
         pass

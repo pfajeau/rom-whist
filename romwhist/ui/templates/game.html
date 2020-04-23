@@ -32,7 +32,13 @@
     socket.emit('player played', {data:card});
 
     // Prevent player from playing again until round is finished
-    RecursiveUnbind($('#cards'));
+    // Enable click on cards left in hand
+
+    $('#cards').children().each(function(index) {
+      $(this).onclick = function() {
+    }});
+
+    //RecursiveUnbind($('#cards'));
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -46,7 +52,7 @@
           socket.emit('join game', {data:''});
 
           document.getElementById("deal").onclick = function() {
-            socket.emit('start round', document.getElementById("nb_cards").value,
+            socket.emit('start hand', document.getElementById("nb_cards").value,
                                       document.getElementById("trump").value);
           }
       });
@@ -88,8 +94,9 @@
       socket.on('round ended', function(player_name) {
           alert('round ended. Winner is: ' + player_name)
 
-          # TODO: Clear table
-          
+          // Clear table
+          $('#card-table').empty()
+
           // Enable click on cards left in hand
           $('#cards').children().each(function(index) {
             $(this).onclick = function() {

@@ -158,24 +158,19 @@ def player_played(data):
         new_data = {'player': current_user.username, 'card': card}
         emit("card played", new_data, room=game_id)
 
-        # Remove card from hand of player
-        print(games[game_id])
+        game = games[game_id]
+        game.card_played(current_user.username, card)
         cround = games[game_id].get_current_round()
-        cround.card_played(current_user.username, card)
         if cround.last_card_played():
             winner = cround.compute_winner()
             emit("round ended", winner, room=game_id)
+            game.create_round()
 
-
-        # if last card of round,
-            # determine who won the round
-            # clear Deck
-
-@socketio.on('start round')
+@socketio.on('start hand')
 def start_round(nbcards, trump):
     #selection = data["selection"]
     #votes[selection] += 1
-    print ("start round event received")
+    print ("start hand event received")
     print (nbcards)
     print(trump)
 
@@ -191,10 +186,10 @@ def start_round(nbcards, trump):
     else:
         trump_flag = False
 
-    round = a_game.create_round(int(nbcards), trump_flag)
-    hands[game_id] = round.hands()
+    hands[game_id] = a_game.create_hands(int(nbcards))
+    round = a_game.create_round()
+    hands[game_id] = a_game.get_hands()
 
-    # hands[game_id] = a_game.create_hands(nbcard)
 
     # Distribute cards to each players
     for player in players[game_id]:

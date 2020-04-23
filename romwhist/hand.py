@@ -3,12 +3,14 @@ class Hand(object):
 
     """A labeled collection of cards that can be sorted"""
 
-    def __init__(self, label=""):
-
-        """Create an empty collection with the given label."""
-
-        self.label = label
+    def __init__(self, deck, nb_cards=0, label=""):
         self.cards = []
+        self.label = label
+        for c in range(nb_cards):
+            card = deck.deal()
+            self.cards.append(card)
+            #self._hands[players[p]].sort()
+
 
     def add(self, card):
         self.cards.append(card)
