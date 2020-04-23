@@ -32,13 +32,13 @@
     socket.emit('player played', {data:card});
 
     // Prevent player from playing again until round is finished
-    // Enable click on cards left in hand
+    // TODO: this does not work
+    // $('#cards img').each(function(index) {
+    //   $(this).onclick = function() {
+    //     console.log("Do nothing")
+    // }});
 
-    $('#hand').children().each(function(index) {
-      $(this).onclick = function() {
-    }});
-
-    //RecursiveUnbind($('#cards'));
+    RecursiveUnbind($('#cards'));
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -90,11 +90,26 @@
           // alert('new player joined')
           // console.log("New Player joined: " + player_name)
           $('#players').append('<td><h3>' + player_name + "</h3></td>");
-          let id_bet = "bets" + player_name
-          $("#" + id_bet).append(
-            '<td>' +
-            "<label for=''bets' + {{ player }}'>Bets</label>" +
-            "<input type='number' id=''bets'+ {{ player }}' name='bets' min=0 max=18>" +
+          let id_bet = "bets_" + player_name
+
+          $("#bets").append(
+            "<td>" +
+            "<label for=" + "'" + id_bet + "'" + ">Bets</label>" +
+            "<input type=number id=" + "'" + id_bet + "'" + " name='bets' min=0 max=18>" +
+            "</td>")
+
+          let id_rounds = "rounds_" + player_name
+          $("#rounds").append(
+            "<td>" +
+            "<label for=" + "'" + id_rounds + "'" + ">Rounds</label>" +
+            "<input type=number id=" + "'" + id_rounds + "'" + " name='rounds' min=0 max=18>" +
+            "</td>")
+
+          let id_score = "score_" + player_name
+          $("#scores").append(
+            "<td>" +
+            "<label for=" + "'" + id_score + "'" + ">Scores</label>" +
+            "<input type=number id=" + "'" + id_score + "'" + " name='score' min=0 max=999>" +
             "</td>")
         });
 
@@ -107,17 +122,22 @@
       });
 
       socket.on('round ended', function(player_name) {
-          alert('round ended. Winner is: ' + player_name)
+          alert('Round ended. Winner is: ' + player_name)
 
           // Clear cards played
           $('#cards_played').empty()
 
+          let id_rounds = "rounds_" + player_name
+          console.log("id rounds: " + id_rounds)
+          var value = parseInt(document.getElementById(id_rounds).value, 10);
+          value++;
+          document.getElementById(id_rounds).value = value;
+
+
           // Enable click on cards left in hand
-          $('#cards').children().each(function(index) {
-            $(this).onclick = function() {
-                card_played(card)
-          }
-        })
+          $('#cards img').bind("click", (function () {
+                card_played($( this ).attr('id'))
+          }))
       });
 
   });
@@ -133,11 +153,27 @@
               <td><h3>{{ player }}</h3> </td>
             {% endfor %}
           </tr>
-          <tr>
+          <tr id="bets">
             {% for player in players -%}
               <td>
-                <label for="'bets' + {{ player }}">Bets</label>
-                <input type="number" id="'bets'+ {{ player }}" name="bets" min=0 max=18>
+                <label for="'bets_' + {{ player }}">Bets</label>
+                <input type="number" id="bets_{{ player }}" name="bets" min=0 max=18>
+              </td>
+            {% endfor %}
+          </tr>
+          <tr id="rounds">
+            {% for player in players -%}
+              <td>
+                <label for="'rounds_' + {{ player }}">Rounds</label>
+                <input type="number" id="rounds_{{ player }}" name="rounds" min=0 max=18 value=0>
+              </td>
+            {% endfor %}
+          </tr>
+          <tr id=scores>
+            {% for player in players -%}
+              <td>
+                <label for="'score_' + {{ player }}">Score</label>
+                <input type="number" id="score_{{ player }}" name="score" min=0 max=999 readonly>
               </td>
             {% endfor %}
           </tr>
