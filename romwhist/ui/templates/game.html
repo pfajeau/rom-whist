@@ -34,7 +34,7 @@
     // Prevent player from playing again until round is finished
     // Enable click on cards left in hand
 
-    $('#cards').children().each(function(index) {
+    $('#hand').children().each(function(index) {
       $(this).onclick = function() {
     }});
 
@@ -52,8 +52,9 @@
           socket.emit('join game', {data:''});
 
           document.getElementById("deal").onclick = function() {
+            let trump_flag = $("#trump").is(":checked");
             socket.emit('start hand', document.getElementById("nb_cards").value,
-                                      document.getElementById("trump").value);
+                                      trump_flag);
           }
       });
 
@@ -81,7 +82,7 @@
           let card = data['card']
           // Display card on table
           let image = 'img/' + card + ".svg"
-          $('#card-table').append("<img src={{ url_for('static', filename='') }}" +
+          $('#cards_played').append("<img src={{ url_for('static', filename='') }}" +
           image + ' alt=' + card +'>')
       });
 
@@ -89,13 +90,27 @@
           // alert('new player joined')
           // console.log("New Player joined: " + player_name)
           $('#players').append('<td><h3>' + player_name + "</h3></td>");
+          let id_bet = "bets" + player_name
+          $("#" + id_bet).append(
+            '<td>' +
+            "<label for=''bets' + {{ player }}'>Bets</label>" +
+            "<input type='number' id=''bets'+ {{ player }}' name='bets' min=0 max=18>" +
+            "</td>")
+        });
+
+      socket.on('trump card', function(trump_card) {
+          let image = 'img/' + trump_card + ".svg"
+          $('#trump_card').html('')
+          $('#trump_card').append("<img src={{ url_for('static', filename='') }}" +
+          image + ' alt=' + trump_card +'>')
+          $('#trump_card').append("Trump")
       });
 
       socket.on('round ended', function(player_name) {
           alert('round ended. Winner is: ' + player_name)
 
-          // Clear table
-          $('#card-table').empty()
+          // Clear cards played
+          $('#cards_played').empty()
 
           // Enable click on cards left in hand
           $('#cards').children().each(function(index) {
@@ -113,13 +128,27 @@
         <h3>Players</h3>
         <div class="table-responsive">
         <table class="table">
-          <tr id="players"></tr>
-          {% for player in players -%}
-            <td><h3>{{ player }}</h3> </td>
-          {% endfor %}
+          <tr id="players">
+            {% for player in players -%}
+              <td><h3>{{ player }}</h3> </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            {% for player in players -%}
+              <td>
+                <label for="'bets' + {{ player }}">Bets</label>
+                <input type="number" id="'bets'+ {{ player }}" name="bets" min=0 max=18>
+              </td>
+            {% endfor %}
+          </tr>
         </table>
     </div>
-    <div id="card-table"></div>
+    <div id="card-table" class="container">
+      <div class="bottomright" id="trump_card">
+      </div>
+      <div id="cards_played">
+      </div>
+    </div>
 
     <div>
       <form action="" method="post" novalidate>
@@ -136,14 +165,12 @@
           </div>
       </form>
     </div>
-    <p/>
     <div>
-      <br/>
-      <div class="table-responsive">
-      <table class="table">
-        <tr id="cards"></tr>
-      </table>
-    </div>
+<!--      <div class="table-responsive"> -->
+        <table class="table">
+          <tr id="cards"></tr>
+        </table>
+<!--      </div> -->
     </div>
 
 <!--

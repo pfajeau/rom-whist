@@ -52,6 +52,7 @@ class RomWhistGame():
         return self.current_round
 
     def create_hands(self, nb_cards, with_trump=False):
+        self.deck = Deck()
         self.deck.shuffle()
         # Create a hand with nb_cards for each player
         for p in range(len(self.players)):
@@ -64,6 +65,8 @@ class RomWhistGame():
         # Pick up trum cards
         if with_trump:
             self.trump_card = self.deck.deal()
+        else:
+            self.trump_card = None
 
         return self.hands
 

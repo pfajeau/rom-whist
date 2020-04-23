@@ -167,12 +167,12 @@ def player_played(data):
             game.create_round()
 
 @socketio.on('start hand')
-def start_round(nbcards, trump):
+def start_hand(nbcards, trump):
     #selection = data["selection"]
     #votes[selection] += 1
     print ("start hand event received")
     print (nbcards)
-    print(trump)
+    print("Trump:", trump)
 
     game_id = session.get('game_id')
     if not game_id in games:
@@ -181,21 +181,19 @@ def start_round(nbcards, trump):
 
     a_game = games[game_id]
 
-    if (trump == "y"):
-        trump_flag = True
-    else:
-        trump_flag = False
-
-    hands[game_id] = a_game.create_hands(int(nbcards))
+    hands[game_id] = a_game.create_hands(int(nbcards), trump)
+    # hands[game_id] = a_game.create_hands(int(nbcards), trump_flag)
     round = a_game.create_round()
     hands[game_id] = a_game.get_hands()
-
 
     # Distribute cards to each players
     for player in players[game_id]:
         cards = hands[game_id][player].serialize()
         print ("Cards for player ", player, " ", cards)
         emit("new hand", cards, room=clients[game_id][player])
+
+    if trump:
+        emit("trump card", str(a_game.trump_card), room=game_id)
 
 # Data should contain the game_id
 @socketio.on('join game')

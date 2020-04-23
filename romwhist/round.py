@@ -35,11 +35,19 @@ class Round():
             self.winning_player = self.winning_player_for_suit(self.trump_suit)
         return self.winning_player
 
-    def winning_player_for_suit (self, a_suit):
+    def winning_player_for_suit (self, trump_suit):
         self.winning_player = self.first_player
+        winning_suit = self.cards_played[self.first_player].suit()
+        trump_played = False
         for player in self.cards_played:
             print ("player - suit - rank: ", player, self.cards_played[player].suit(), self.cards_played[player].rank())
-            if self.cards_played[player].suit() == a_suit() and \
-            self.cards_played[player].rank() > self.cards_played[self.winning_player].rank():
+            if self.cards_played[player].suit() == trump_suit and not trump_played:
+                trump_played = True
+                winning_suit = trump_suit
                 self.winning_player = player
+            else:
+                if self.cards_played[player].suit() == winning_suit and \
+                self.cards_played[player].rank() > self.cards_played[self.winning_player].rank():
+                    self.winning_player = player
+
         return self.winning_player
