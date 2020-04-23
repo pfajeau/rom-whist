@@ -10,8 +10,8 @@ from .utils import Serializer
 from .game import RomWhistGame
 from romwhist import socketio,app
 from flask import render_template, request, flash, session, url_for, redirect
-from .forms import LoginForm, StartGameForm, JoinGameForm, GameForm
-from flask_login import current_user, login_user, logout_user
+from .forms import LoginForm, StartGameForm, JoinGameForm, GameForm, IndexForm
+from flask_login import current_user, login_user, logout_user, AnonymousUserMixin
 from romwhist.models import User
 from romwhist.extensions import db
 from flask_socketio import join_room, leave_room
@@ -28,14 +28,46 @@ players = dict()
 clients = dict()
 
 # Dictionary of hands for game for each player
-hands = dict()
+# hands = dict()
 
-@app.route("/")
-@app.route("/index")
+@app.route("/",methods=['GET', 'POST'])
+@app.route("/index",methods=['GET', 'POST'])
 def index():
     # TODO - add here endpoint of resource where you want to land on page load. e.g.
     # return redirect(url_for("auth_blueprint.home"))
-    return render_template("index.html")
+    form = IndexForm()
+    if form.validate_on_submit():
+        print("Index Validate on Submit")
+        user_name = form.user_name.data
+        print (current_user)
+        if isinstance(current_user, User):
+            logout_user()
+            user = User(username=user_name)
+            db.session.delete(user)
+            db.session.commit()
+
+        user_name = form.user_name.data
+        user = User.query.filter_by(username=user_name).first()
+        print ("User retrieved:", user)
+        if user is None:
+            user = User(username=user_name)
+            db.session.add(user)
+            db.session.commit()
+            login_user(user)
+            print ("current user: ", current_user.username)
+
+            if form.start_game.data:
+                print("REdirecting to start game")
+                return redirect(url_for('start_game'))
+            elif form.join_game.data:
+                print("REdirecting to join game")
+                return redirect(url_for('join_game'))
+        else:
+            error = "User already exists"
+            print(error)
+            return render_template('index.html', error = error, form=form)
+    else:
+        return render_template("index.html", form=form)
 
 @app.route("/base")
 def base():
@@ -44,7 +76,7 @@ def base():
     return render_template("base.html")
 
 @app.route("/startgame",methods=['GET', 'POST'])
-def get_game_id():
+def start_game():
     print("Current User: ", current_user.username)
     if current_user.is_authenticated:
         form = StartGameForm()
@@ -67,7 +99,7 @@ def get_game_id():
             return render_template('start_game.html', title='Bla', form=form)
     else:
         #form = LoginForm()
-        return redirect(url_for('login'))
+        return redirect(url_for('index'))
         #return render_template('login.html', title='Sign In', form=form)
 
 @app.route("/joingame",methods=['GET', 'POST'])
@@ -181,19 +213,22 @@ def start_hand(nbcards, trump):
 
     a_game = games[game_id]
 
-    hands[game_id] = a_game.create_hands(int(nbcards), trump)
-    # hands[game_id] = a_game.create_hands(int(nbcards), trump_flag)
+    hands = a_game.create_hands(int(nbcards), trump)
     round = a_game.create_round()
-    hands[game_id] = a_game.get_hands()
+
+    # FInd out who the first player to bet is
+    nplayer = next_player(current_user.username, players[game_id])
 
     # Distribute cards to each players
     for player in players[game_id]:
-        cards = hands[game_id][player].serialize()
+        cards = hands[player].serialize()
         print ("Cards for player ", player, " ", cards)
         emit("new hand", cards, room=clients[game_id][player])
 
     if trump:
         emit("trump card", str(a_game.trump_card), room=game_id)
+
+    emit("player to bet", nplayer, room=game_id)
 
 # Data should contain the game_id
 @socketio.on('join game')
@@ -215,6 +250,20 @@ def on_leave(data):
     else:
         leave_room(game_id)
 
+@socketio.on('stop game')
+def on_stop(data):
+    game_id = session.get('game_id')
+    if game_id is None:
+        print("NO GAME_ID IN SESSION!!!!")
+        # TODO: may have a case where the session has been cleared already
+        # (user logged out). In this case how to remove user from room?
+    else:
+        leave_room(game_id)
+        emit("game stopped", current_user.username, room=game_id)
+        del games[game_id]
+
+
+
 # Added a player to a game
 def add_player(game_id):
     session['game_id'] = game_id
@@ -233,6 +282,12 @@ def remove_player():
         del clients[game_id][current_user.username]
         socketio.emit("player left", current_user.username, room=game_id)
 
+def next_player(player, players):
+    pos = players.index(player)
+    if pos == len(players)-1:
+        return players[0]
+    else:
+        return players[pos+1]
 # e.g blueprint and routes
 # auth_blueprint = Blueprint("auth", "auth", url_prefix="/auth")
 # auth_blueprint.add_url_rule("register", "register", controllers.register)

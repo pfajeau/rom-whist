@@ -29,4 +29,9 @@ class GameForm(FlaskForm):
     nb_cards = IntegerField("Number of cards: ", validators=[InputRequired(), Length(max=2)])
     trump = BooleanField("With Trump: ", validators=[InputRequired()])
 
+class IndexForm(FlaskForm):
+    user_name = StringField("User Name: ", validators=[InputRequired(), Length(max=10)])
+    start_game = SubmitField('Start a new game')
+    join_game = SubmitField('Join an existing game')
+
 from .models import *
