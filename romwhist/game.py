@@ -5,18 +5,20 @@ from random import randrange
 from .hand import Hand
 from .round import Round
 
-deck = None
-hands = dict()
-
 class RomWhistGame():
 
-    def __init__(self, game_creator = ""):
+    def __init__(self, game_creator = "", bonus_win = 1):
         self.players = []
         scores = dict()
         self.current_round = None
         self.trump_card = None
         self.deck = Deck()
         self.hands=dict()
+        self.scores=dict()
+        self.bets=dict()
+        self.wins=dict()
+        self.bonus_win = bonus_win
+        self.dealer = None
 
     def add_player(self, player):
         self.players.append(player)
@@ -34,6 +36,12 @@ class RomWhistGame():
     def get_hands(self):
         return self.hands
 
+    def is_hand_completed(self):
+        for player in self.players:
+            if len(self.hands[player].get_cards()) > 0:
+                return False
+        return True
+
     def create_round(self):
         if self.trump_card is None:
             suit = None
@@ -48,7 +56,7 @@ class RomWhistGame():
     def sum_bets_placed(self):
         bets_placed = 0
         for player in self.bets:
-            bets_placed = bets_placed + int(self.bets[player])
+            bets_placed = bets_placed + self.bets[player]
         return bets_placed
 
     def forbidden_bet(self, player):
@@ -65,26 +73,54 @@ class RomWhistGame():
         else:
             return nplayer
 
+    def next_player_to_deal(self):
+        nplayer = self.next_player(self.dealer)
+        return nplayer
+
+    # Return round winner if last card played None otherwise
     def card_played(self, player, trump_card_value):
         # Remove card from player hands
         card = Card.card_from_value(trump_card_value)
         self.hands[player].remove(card)
         self.current_round.card_played(player, card)
+        if self.current_round.last_card_played():
+            winner = self.current_round.compute_winner()
+            self.wins[player] = self.wins[player] + 1
+            return winner
+        return None
 
     def get_current_round(self):
         return self.current_round
 
-    def create_hands(self, nb_cards, with_trump=False):
-        self.bets = dict()
+    def update_scores(self):
+        for player in self.players:
+            if self.bets[player] == self.wins[player]:
+                self.scores[player] = self.scores[player] + self.bonus_win + self.wins[player]
+            else:
+                self.scores[player] = self.scores[player] - \
+                abs(self.wins[player] - self.bets[player])
+        return self.scores
+
+    def get_scores(self):
+        return self.scores
+
+    def all_rounds_played(self):
+        return self.current_round.last_card_played()
+
+    def deal(self, nb_cards, with_trump=False, dealer=""):
         self.deck = Deck()
         self.deck.shuffle()
+        self.init_dict(self.bets)
+        self.init_dict(self.wins)
+        self.dealer=dealer
         # Create a hand with nb_cards for each player
         for p in range(len(self.players)):
-            print (self.players[p])
+            player = self.players[p]
+            print (player)
             print ("Nb cards:", nb_cards)
-            hand = Hand(self.deck, nb_cards, self.players[p])
-            self.hands[self.players[p]] = hand
-            # hand.dump()
+            hand = Hand(self.deck, nb_cards, player)
+            self.hands[player] = hand
+            self.scores[player] = 0
 
         # Pick up trum cards
         if with_trump:
@@ -103,6 +139,10 @@ class RomWhistGame():
             return self.players[0]
         else:
             return self.players[pos+1]
+
+    def init_dict(self, a_dict):
+        for player in self.players:
+            a_dict[player] = 0
 
 def main():
     D = Deck(); #create a deck of 52 cards

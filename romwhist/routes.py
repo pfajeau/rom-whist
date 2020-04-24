@@ -191,7 +191,7 @@ def player_bet(bet):
     else:
         # If all players have bet, enable next player to play
         game = games[game_id]
-        game.place_bet(current_user.username, bet)
+        game.place_bet(current_user.username, int(bet))
         emit("player bet", {'player':current_user.username, 'bet':bet}, room = game_id)
         nplayer = game.next_player_to_bet(current_user.username)
         if nplayer is None:
@@ -216,20 +216,21 @@ def player_played(data):
         emit("card played", new_data, room=game_id)
 
         game = games[game_id]
-        game.card_played(current_user.username, card)
-        cround = games[game_id].get_current_round()
-        if cround.last_card_played():
-            winner = cround.compute_winner()
+        winner = game.card_played(current_user.username, card)
+        if not winner is None:
             emit("round ended", winner, room=game_id)
             game.create_round()
             nplayer = winner
 
+
             # TODO: if last round for hand, update scores
+            if game.is_hand_completed():
+                scores = game.update_scores()
+                emit("hand completed", {'scores':scores, 'player_to_deal': game.next_player_to_deal()})
         else:
             nplayer = next_player(current_user.username, players[game_id])
 
         emit("player to play", nplayer, room=game_id)
-
 
 @socketio.on('start hand')
 def start_hand(nbcards, trump):
@@ -246,7 +247,7 @@ def start_hand(nbcards, trump):
 
     a_game = games[game_id]
 
-    hands = a_game.create_hands(int(nbcards), trump)
+    hands = a_game.deal(int(nbcards), trump, current_user.username)
     round = a_game.create_round()
 
     # FInd out who the first player to bet is

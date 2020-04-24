@@ -158,6 +158,14 @@ Deployment
         }
       });
 
+      socket.on('hand completed', function(data) {
+        player_name=data['player_to_deal']
+        scorest=data['scores']
+        alert("Hand Completed. Next dealer: " + player_name + " scores:" + scores)
+        // TODO: Enable Deal button on player to deal
+        // TODO: update scores
+      });
+
       socket.on('card played', function(data) {
           let player_name = data['player']
           let card = data['card']
