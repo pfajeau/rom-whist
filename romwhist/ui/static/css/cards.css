@@ -19,6 +19,10 @@ html {
 	font-weight: bold;
 	color: red;
 }
+.normal_player {
+	font-weight: bold;
+	color: black;
+}
 
 #buttons {
 	text-align:center;

@@ -28,6 +28,7 @@ class JoinGameForm(FlaskForm):
 class GameForm(FlaskForm):
     nb_cards = IntegerField("Number of cards: ", validators=[InputRequired(), Length(max=2)])
     trump = BooleanField("With Trump: ", validators=[InputRequired()])
+    #user_name = HiddenField("user_name")
 
 class IndexForm(FlaskForm):
     user_name = StringField("User Name: ", validators=[InputRequired(), Length(max=10)])

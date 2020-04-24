@@ -6,11 +6,11 @@
 </head>
 
 <!-- TODO:
-Add betting
-prevent cards being played before bets are all in
+Add player name in <header>
+Display final card for a while before ending the round. Maybe add button to clear deck?
+Dealer should be rotating...
 Count scores
 Block deal button during round play
-Enforce who can play/bet and When
 Add end game capability
 Persistence
 UI enhancements
@@ -26,6 +26,8 @@ Deployment
 <script type="text/javascript">
 
   var socket
+  var username = "{{ session['username'] }}"
+
   function RecursiveUnbind($jElement) {
       // remove this element's and all of its children's click events
       $jElement.unbind();
@@ -50,6 +52,9 @@ Deployment
     //     console.log("Do nothing")
     // }});
     RecursiveUnbind($('#cards'));
+
+    $("#"+username).removeClass("active_player");
+    $("#"+username).addClass("normal_player");
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -75,6 +80,15 @@ Deployment
           document.getElementById("stop_game").onclick = function() {
             socket.emit('stop game');
           }
+
+          // Register action for bet input field
+          let id_bet = "#bets_" + username
+          $(id_bet).change(function() {
+            $(id_bet).attr('readonly', true);
+            $("#"+username).removeClass("active_player");
+            $("#"+username).addClass("normal_player");
+            socket.emit("player bet", $(id_bet).val())
+          });
       });
 
       socket.on('new hand', function(data) {
@@ -90,60 +104,83 @@ Deployment
                 image + ' alt=' + card + '>' + '</td>')
 
               // Link click event to moving the card to the table
-              document.getElementById(card).onclick = function() {
-                  card_played(card)
-              }
+              // TODO: move this to after bets have been done,
+              // when player to play even reeived
+              //document.getElementById(card).onclick = function() {
+              //    card_played(card)
+              //}
           }
       });
 
       socket.on('player to bet', function(player_name) {
         // Enable the bet field
-        let id_bet = "bets_" + player_name
+        let id_bet = "#bets_" + player_name
         $(id_bet).attr('readonly', false);
         // Highlight Username
+        $("#"+player_name).removeClass("normal_player");
         $("#"+player_name).addClass("active_player");
+      });
+
+      socket.on('player bet', function(data) {
+        // Enable the bet field
+        player_name=data['player']
+        bet=data['bet']
+        let id_bet = "#bets_" + player_name
+        $(id_bet).val(bet);
+        $("#"+player_name).removeClass("active_player");
+        $("#"+player_name).addClass("normal_player");
       });
 
       socket.on('player to play', function(player_name) {
         // Enable the cards in hand to be played
         $("#"+player_name).addClass("active_player");
+        $("#"+player_name).removeClass("normal_player");
+        if (player_name === username) {
+           $('#cards img').bind("click", (function () {
+                card_played($( this ).attr('id'))
+          }))
+        }
       });
 
       socket.on('card played', function(data) {
-          let player = data['player']
+          let player_name = data['player']
           let card = data['card']
           // Display card on table
           let image = 'img/' + card + ".svg"
           $('#cards_played').append("<img src={{ url_for('static', filename='') }}" +
           image + ' alt=' + card +'>')
+          $("#"+player_name).removeClass("active_player");
+          $("#"+player_name).addClass("normal_player");
       });
 
       socket.on('new player', function(player_name) {
+        window.location.reload(false);
+
           // alert('new player joined')
           // console.log("New Player joined: " + player_name)
-          $('#players').append('<td><h3>' + player_name + "</h3></td>");
-
-          let id_bet = "bets_" + player_name
-          $("#bets").append(
-            "<td>" +
-            "<label for=" + "'" + id_bet + "'" + ">Bets</label>" +
-            "<input type=number id=" + "'" + id_bet + "'" + " name='bets' min=0 max=18 readonly>" +
-            "</td>")
-
-          let id_rounds = "rounds_" + player_name
-          $("#rounds").append(
-            "<td>" +
-            "<label for=" + "'" + id_rounds + "'" + ">Rounds</label>" +
-            "<input type=number id=" + "'" + id_rounds + "'" + " name='rounds' min=0 max=18>" +
-            "</td>")
-
-          let id_score = "score_" + player_name
-          $("#scores").append(
-            "<td>" +
-            "<label for=" + "'" + id_score + "'" + ">Scores</label>" +
-            "<input type=number id=" + "'" + id_score + "'" + " name='score' min=0 max=999>" +
-            "</td>")
-        });
+        //   $('#players').append('<td><h3>' + player_name + "</h3></td>");
+        //
+        //   let id_bet = "bets_" + player_name
+        //   $("#bets").append(
+        //     "<td>" +
+        //     "<label for=" + "'" + id_bet + "'" + ">Bets</label>" +
+        //     "<input type=number id=" + "'" + id_bet + "'" + " name='bets' min=0 max=18 readonly>" +
+        //     "</td>")
+        //
+        //   let id_rounds = "rounds_" + player_name
+        //   $("#rounds").append(
+        //     "<td>" +
+        //     "<label for=" + "'" + id_rounds + "'" + ">Rounds</label>" +
+        //     "<input type=number id=" + "'" + id_rounds + "'" + " name='rounds' min=0 max=18>" +
+        //     "</td>")
+        //
+        //   let id_score = "score_" + player_name
+        //   $("#scores").append(
+        //     "<td>" +
+        //     "<label for=" + "'" + id_score + "'" + ">Scores</label>" +
+        //     "<input type=number id=" + "'" + id_score + "'" + " name='score' min=0 max=999>" +
+        //     "</td>")
+      });
 
       socket.on('trump card', function(trump_card) {
           let image = 'img/' + trump_card + ".svg"
@@ -167,15 +204,15 @@ Deployment
 
 
           // Enable click on cards left in hand
-          $('#cards img').bind("click", (function () {
-                card_played($( this ).attr('id'))
-          }))
+          // $('#cards img').bind("click", (function () {
+          //       card_played($( this ).attr('id'))
+          // }))
       });
 
   });
 </script>
 
-    <h2>Game Area - Game ID: {{ session['game_id'] }} </h2>
+    <h3>Game Area - Game ID: {{ session['game_id'] }} - You are: {{ session['username'] }}</h3>
     <div>
         <h3>Players</h3>
         <div class="table-responsive">
@@ -189,7 +226,7 @@ Deployment
             {% for player in players -%}
               <td>
                 <label for="'bets_' + {{ player }}">Bets</label>
-                <input type="number" id="bets_{{ player }}" name="bets" min=0 max=18>
+                <input type="number" id="bets_{{ player }}" name="bets" min=0 max=18 readonly>
               </td>
             {% endfor %}
           </tr>

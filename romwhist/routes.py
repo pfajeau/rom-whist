@@ -36,17 +36,19 @@ def index():
     # TODO - add here endpoint of resource where you want to land on page load. e.g.
     # return redirect(url_for("auth_blueprint.home"))
     form = IndexForm()
+    if isinstance(current_user, User):
+        form.user_name.data=current_user.username
+
     if form.validate_on_submit():
         print("Index Validate on Submit")
         user_name = form.user_name.data
         print (current_user)
         if isinstance(current_user, User):
             logout_user()
-            user = User(username=user_name)
-            db.session.delete(user)
+            #user = User(username=user_name)
+            db.session.delete(current_user)
             db.session.commit()
 
-        user_name = form.user_name.data
         user = User.query.filter_by(username=user_name).first()
         print ("User retrieved:", user)
         if user is None:
@@ -55,7 +57,8 @@ def index():
             db.session.commit()
             login_user(user)
             print ("current user: ", current_user.username)
-
+            # Used by client
+            session['username'] = current_user.username
             if form.start_game.data:
                 print("REdirecting to start game")
                 return redirect(url_for('start_game'))
@@ -178,6 +181,26 @@ def logout():
 def message(data):
     print ("message received");
 
+@socketio.on("player bet")
+def player_bet(bet):
+    print ("player bet event received")
+    print ("Player bet: " + bet)
+    game_id = session.get('game_id')
+    if game_id is None:
+        print("ERROR: Game not found!!!")
+    else:
+        nplayer = next_player(current_user.username, players[game_id])
+        # If all players have bet, enable next player to play
+        game = games[game_id]
+        game.place_bet(current_user.username, bet)
+        nplayer = game.next_player_to_bet(current_user.username)
+        emit("player bet", {'player':current_user.username, 'bet':bet}, room = game_id)
+        if nplayer is None:
+            emit("player to play", next_player(current_user.username, players[game_id]), room=game_id)
+        else:
+            emit("player to bet", nplayer, room=game_id)
+
+
 @socketio.on('player played')
 def player_played(data):
     print ("card played event received")
@@ -197,6 +220,12 @@ def player_played(data):
             winner = cround.compute_winner()
             emit("round ended", winner, room=game_id)
             game.create_round()
+            nplayer = winner
+        else:
+            nplayer = next_player(current_user.username, players[game_id])
+
+        emit("player to play", nplayer, room=game_id)
+
 
 @socketio.on('start hand')
 def start_hand(nbcards, trump):
@@ -282,12 +311,12 @@ def remove_player():
         del clients[game_id][current_user.username]
         socketio.emit("player left", current_user.username, room=game_id)
 
-def next_player(player, players):
-    pos = players.index(player)
-    if pos == len(players)-1:
-        return players[0]
+def next_player(player, list_players):
+    pos = list_players.index(player)
+    if pos == len(list_players)-1:
+        return list_players[0]
     else:
-        return players[pos+1]
+        return list_players[pos+1]
 # e.g blueprint and routes
 # auth_blueprint = Blueprint("auth", "auth", url_prefix="/auth")
 # auth_blueprint.add_url_rule("register", "register", controllers.register)

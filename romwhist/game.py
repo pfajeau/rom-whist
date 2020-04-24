@@ -42,6 +42,18 @@ class RomWhistGame():
         self.current_round = Round(self.players, suit)
         return self.current_round
 
+    def place_bet(self, player, bet):
+        self.bets[player] = bet
+
+    # Return None if all players have bet
+    def next_player_to_bet(self, player):
+        nplayer = self.next_player(player)
+        if nplayer in self.bets:
+            return None
+        else:
+            return nplayer
+
+
     def card_played(self, player, trump_card_value):
         # Remove card from player hands
         card = Card.card_from_value(trump_card_value)
@@ -52,6 +64,7 @@ class RomWhistGame():
         return self.current_round
 
     def create_hands(self, nb_cards, with_trump=False):
+        self.bets = dict()
         self.deck = Deck()
         self.deck.shuffle()
         # Create a hand with nb_cards for each player
@@ -73,6 +86,12 @@ class RomWhistGame():
     def end_game(self):
         pass
 
+    def next_player(self, player):
+        pos = self.players.index(player)
+        if pos == len(self.players)-1:
+            return self.players[0]
+        else:
+            return self.players[pos+1]
 
 def main():
     D = Deck(); #create a deck of 52 cards
