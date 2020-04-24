@@ -23,7 +23,7 @@ class Hand(object):
         self.cards.sort()
         self.cards.reverse()
 
-    def cards(self):
+    def get_cards(self):
         return self.cards
 
     def serialize(self):

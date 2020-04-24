@@ -13,8 +13,8 @@
       socket.on('connect', function() {
           // Each button should emit a "submit vote" event
           document.querySelector("#join_game2").onclick = function() {
-            alert("Emiting event join game");
-            socket.emit('join game', {data:document.querySelector("#game_id").value});
+            // alert("Emiting event join game");
+            // socket.emit('join game', {data:document.querySelector("#game_id").value});
             document.querySelector("#join_game_form").submit();
           }
       });

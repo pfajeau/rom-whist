@@ -189,16 +189,18 @@ def player_bet(bet):
     if game_id is None:
         print("ERROR: Game not found!!!")
     else:
-        nplayer = next_player(current_user.username, players[game_id])
         # If all players have bet, enable next player to play
         game = games[game_id]
         game.place_bet(current_user.username, bet)
-        nplayer = game.next_player_to_bet(current_user.username)
         emit("player bet", {'player':current_user.username, 'bet':bet}, room = game_id)
+        nplayer = game.next_player_to_bet(current_user.username)
         if nplayer is None:
             emit("player to play", next_player(current_user.username, players[game_id]), room=game_id)
+
+        # Last player to bet
         else:
-            emit("player to bet", nplayer, room=game_id)
+            forbidden_bet = game.forbidden_bet(nplayer)
+            emit("player to bet", {'player': nplayer, 'forbidden_bet':forbidden_bet}, room=game_id)
 
 
 @socketio.on('player played')
@@ -221,6 +223,8 @@ def player_played(data):
             emit("round ended", winner, room=game_id)
             game.create_round()
             nplayer = winner
+
+            # TODO: if last round for hand, update scores
         else:
             nplayer = next_player(current_user.username, players[game_id])
 
@@ -257,7 +261,7 @@ def start_hand(nbcards, trump):
     if trump:
         emit("trump card", str(a_game.trump_card), room=game_id)
 
-    emit("player to bet", nplayer, room=game_id)
+    emit("player to bet", {'player': nplayer, 'forbidden_bet':-1}, room=game_id)
 
 # Data should contain the game_id
 @socketio.on('join game')

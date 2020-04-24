@@ -27,6 +27,7 @@ Deployment
 
   var socket
   var username = "{{ session['username'] }}"
+  var forbidden_bet
 
   function RecursiveUnbind($jElement) {
       // remove this element's and all of its children's click events
@@ -84,10 +85,16 @@ Deployment
           // Register action for bet input field
           let id_bet = "#bets_" + username
           $(id_bet).change(function() {
-            $(id_bet).attr('readonly', true);
-            $("#"+username).removeClass("active_player");
-            $("#"+username).addClass("normal_player");
-            socket.emit("player bet", $(id_bet).val())
+            bet = $(id_bet).val();
+            if (bet == forbidden_bet) {
+               alert ("This bet is not allowed")
+            }
+            else {
+              $(id_bet).attr('readonly', true);
+              $("#"+username).removeClass("active_player");
+              $("#"+username).addClass("normal_player");
+              socket.emit("player bet", $(id_bet).val())
+            }
           });
       });
 
@@ -103,6 +110,10 @@ Deployment
                 "<img id=" + card + " src={{ url_for('static', filename='') }}" +
                 image + ' alt=' + card + '>' + '</td>')
 
+              // Reset bets and wins to 0
+              $('#rounds input').val(0)
+              $('#bets input').val(0)
+
               // Link click event to moving the card to the table
               // TODO: move this to after bets have been done,
               // when player to play even reeived
@@ -112,10 +123,15 @@ Deployment
           }
       });
 
-      socket.on('player to bet', function(player_name) {
-        // Enable the bet field
+      socket.on('player to bet', function(data) {
+        player_name = data['player']
+        forbidden_bet = data['forbidden_bet']
+
+        // Enable the bet field if user is supposed to bet
         let id_bet = "#bets_" + player_name
-        $(id_bet).attr('readonly', false);
+        if (player_name == username) {
+          $(id_bet).attr('readonly', false);
+        }
         // Highlight Username
         $("#"+player_name).removeClass("normal_player");
         $("#"+player_name).addClass("active_player");
@@ -214,7 +230,6 @@ Deployment
 
     <h3>Game Area - Game ID: {{ session['game_id'] }} - You are: {{ session['username'] }}</h3>
     <div>
-        <h3>Players</h3>
         <div class="table-responsive">
         <table class="table">
           <tr id="players">
@@ -233,7 +248,7 @@ Deployment
           <tr id="rounds">
             {% for player in players -%}
               <td>
-                <label for="'rounds_' + {{ player }}">Rounds</label>
+                <label for="'rounds_' + {{ player }}">Wins</label>
                 <input type="number" id="rounds_{{ player }}" name="rounds" min=0 max=18 value=0>
               </td>
             {% endfor %}

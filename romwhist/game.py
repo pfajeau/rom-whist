@@ -45,6 +45,18 @@ class RomWhistGame():
     def place_bet(self, player, bet):
         self.bets[player] = bet
 
+    def sum_bets_placed(self):
+        bets_placed = 0
+        for player in self.bets:
+            bets_placed = bets_placed + int(self.bets[player])
+        return bets_placed
+
+    def forbidden_bet(self, player):
+        if self.next_player_to_bet(player) is None:
+            return len(self.hands[player].get_cards()) - self.sum_bets_placed()
+        else:
+            return -1
+
     # Return None if all players have bet
     def next_player_to_bet(self, player):
         nplayer = self.next_player(player)
@@ -52,7 +64,6 @@ class RomWhistGame():
             return None
         else:
             return nplayer
-
 
     def card_played(self, player, trump_card_value):
         # Remove card from player hands
