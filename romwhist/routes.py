@@ -16,6 +16,8 @@ from romwhist.models import User
 from romwhist.extensions import db
 from flask_socketio import join_room, leave_room
 from flask_socketio import SocketIO, emit
+from random import randint
+
 
 # Map of games, key is game id
 games = dict()
@@ -60,11 +62,39 @@ def index():
             # Used by client
             session['username'] = current_user.username
             if form.start_game.data:
-                print("REdirecting to start game")
-                return redirect(url_for('start_game'))
+                print("start game")
+                if len(games) == 999:
+                    error = "No more games available!!! Please try again later"
+                    print(error)
+                    return render_template('index.html', error = error, form=form)
+
+                game_id = str(randint(1,999))
+                while game_id in games:
+                    game_id = str(randint(1,999))
+                print ("game_id:", game_id)
+
+                print("creating new game with id: ", game_id)
+                # Add game id in session
+                games[game_id] = RomWhistGame()
+                players[game_id] = []
+                clients[game_id] = dict()
+                add_player(game_id)
+                return redirect(url_for('game'))
+
             elif form.join_game.data:
-                print("REdirecting to join game")
-                return redirect(url_for('join_game'))
+                game_id = request.form['game_id']
+                print("game id: ", game_id)
+                if not game_id in games:
+                    error = "This game has not been created yet"
+                    print(error)
+                    return render_template('index.html', error = error, form=form)
+                if current_user.username in players[game_id]:
+                    error = "The game already has a user with the same name"
+                    print(error)
+                    return render_template('index.html', error = error, form=form)
+
+                add_player(game_id)
+                return redirect(url_for('game'))
         else:
             error = "User already exists"
             print(error)
@@ -78,62 +108,6 @@ def base():
     # return redirect(url_for("auth_blueprint.home"))
     return render_template("base.html")
 
-@app.route("/startgame",methods=['GET', 'POST'])
-def start_game():
-    print("Current User: ", current_user.username)
-    if current_user.is_authenticated:
-        form = StartGameForm()
-        if form.validate_on_submit():
-            game_id = form.game_id.data
-            if not game_id in games:
-                print("creating new game with id: ", game_id)
-                # Add game id in session
-                games[game_id] = RomWhistGame()
-                players[game_id] = []
-                clients[game_id] = dict()
-                add_player(game_id)
-                return redirect(url_for('game'))
-                #return render_template('game.html', title='Bla', form=GmeForm())
-            else:
-                error = "This game already exists"
-                print(error)
-                return render_template('start_game.html', error = error, form=form)
-        else:
-            return render_template('start_game.html', title='Bla', form=form)
-    else:
-        #form = LoginForm()
-        return redirect(url_for('index'))
-        #return render_template('login.html', title='Sign In', form=form)
-
-@app.route("/joingame",methods=['GET', 'POST'])
-def join_game():
-    if current_user.is_authenticated:
-        form = JoinGameForm()
-        if form.validate_on_submit():
-
-            print("Current User: ", current_user.username)
-            game_id = request.form['game_id']
-            print("game id: ", game_id)
-            # Add player to session. TODO: should check whehter user is already in list
-            if not game_id in games:
-                error = "This game has not been created yet"
-                print(error)
-                return render_template('join_game.html', error = error, form=form)
-            if current_user.username in players[game_id]:
-                error = "The game already has a user with the same name"
-                print(error)
-                return render_template('join_game.html', error = error, form=form)
-
-            add_player(game_id)
-            return redirect(url_for('game'))
-            #return render_template('game.html', title='Bla')
-#            return render_template('join_game.html', title='Bla', form=form)
-        else:
-            return render_template('join_game.html', title='Bla', form=form)
-    else:
-        return redirect(url_for('login'))
-#        form = LoginForm()
-#        return render_template('login.html', title='Sign In', form=form)
 
 @app.route("/game", methods=['GET', 'POST'])
 def game():
@@ -162,14 +136,6 @@ def login():
         print ("current user: ", current_user.username)
         return redirect(url_for('index'))
     return render_template('login.html', title='Sign In', form=form)
-
-@app.route("/example", methods=['GET', 'POST'])
-def example():
-    return render_template("example.html")
-
-@app.route("/example2", methods=['GET', 'POST'])
-def example2():
-    return render_template("example2.html")
 
 @app.route("/logout",methods=['GET', 'POST'])
 def logout():

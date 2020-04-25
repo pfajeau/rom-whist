@@ -6,13 +6,17 @@
 </head>
 
 <!-- TODO:
-Add player name in <header>
-Display final card for a while before ending the round. Maybe add button to clear deck?
+Display final card for a while before ending the round. Maybe add button to clear deck? May need a clear table button
 Dealer should be rotating...
-Count scores
 Block deal button during round play
 Add end game capability
-Persistence
+remove login for now, replace with user in session
+Set dealer class to normal after deal
+Display score and current game state (hands and table) after a refresh
+Revamp index page to include both start gme and join game capability
+Select number of cards in deck (sans atout)
+Configure score counting?
+Persistence?
 UI enhancements
 Deployment
 -->
@@ -28,6 +32,8 @@ Deployment
   var socket
   var username = "{{ session['username'] }}"
   var forbidden_bet
+  var last_player
+  var new_round = true
 
   function RecursiveUnbind($jElement) {
       // remove this element's and all of its children's click events
@@ -47,11 +53,6 @@ Deployment
     socket.emit('player played', {data:card});
 
     // Prevent player from playing again until round is finished
-    // TODO: this does not work
-    // $('#cards img').each(function(index) {
-    //   $(this).onclick = function() {
-    //     console.log("Do nothing")
-    // }});
     RecursiveUnbind($('#cards'));
 
     $("#"+username).removeClass("active_player");
@@ -100,6 +101,8 @@ Deployment
 
       socket.on('new hand', function(data) {
           $('#cards').html('');
+          $('#cards_played').empty()
+
           // $('#cards').append('<ul>');
           for (var card_index in data) {
               // $('#cards').append('<br>' + data[card])
@@ -167,6 +170,10 @@ Deployment
       });
 
       socket.on('card played', function(data) {
+          if (new_round) {
+            $('#cards_played').empty()
+            new_round = false
+          }
           let player_name = data['player']
           let card = data['card']
           // Display card on table
@@ -175,6 +182,7 @@ Deployment
           image + ' alt=' + card +'>')
           $("#"+player_name).removeClass("active_player");
           $("#"+player_name).addClass("normal_player");
+          last_player = player_name
       });
 
       socket.on('new player', function(player_name) {
@@ -223,14 +231,15 @@ Deployment
 
         myFunction(function() {
           // Clear cards played
-          $('#cards_played').empty()
-          $("#"+username).removeClass("active_player");
-          $("#"+username).addClass("normal_player");
+          // $('#cards_played').empty()
+          $("#"+last_player).removeClass("active_player");
+          $("#"+last_player).addClass("normal_player");
 
           let id_rounds = "rounds_" + player_name
           var value = parseInt(document.getElementById(id_rounds).value, 10);
           value++;
           document.getElementById(id_rounds).value = value;
+          new_round = true
         });
       });
   });

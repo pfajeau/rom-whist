@@ -31,7 +31,8 @@ class GameForm(FlaskForm):
     #user_name = HiddenField("user_name")
 
 class IndexForm(FlaskForm):
-    user_name = StringField("User Name: ", validators=[InputRequired(), Length(max=10)])
+    game_id = StringField("Game id: ", validators=[Length(max=6)])
+    user_name = StringField("Your Alias: ", validators=[InputRequired(), Length(max=10)])
     start_game = SubmitField('Start a new game')
     join_game = SubmitField('Join an existing game')
 
