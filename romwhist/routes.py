@@ -200,6 +200,7 @@ def player_bet(bet):
         # Last player to bet
         else:
             forbidden_bet = game.forbidden_bet(nplayer)
+            print ("Forbidden bet for player " + nplayer + " is:" + str(forbidden_bet))
             emit("player to bet", {'player': nplayer, 'forbidden_bet':forbidden_bet}, room=game_id)
 
 
@@ -226,7 +227,7 @@ def player_played(data):
             # TODO: if last round for hand, update scores
             if game.is_hand_completed():
                 scores = game.update_scores()
-                emit("hand completed", {'scores':scores, 'player_to_deal': game.next_player_to_deal()})
+                emit("hand completed", {'scores':scores, 'player_to_deal': game.next_player_to_deal()}, room=game_id)
         else:
             nplayer = next_player(current_user.username, players[game_id])
 

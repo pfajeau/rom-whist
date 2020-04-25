@@ -85,7 +85,7 @@ Deployment
           // Register action for bet input field
           let id_bet = "#bets_" + username
           $(id_bet).change(function() {
-            bet = $(id_bet).val();
+            bet = parseInt($(id_bet).val(),10);
             if (bet == forbidden_bet) {
                alert ("This bet is not allowed")
             }
@@ -111,15 +111,8 @@ Deployment
                 image + ' alt=' + card + '>' + '</td>')
 
               // Reset bets and wins to 0
-              $('#rounds input').val(0)
-              $('#bets input').val(0)
-
-              // Link click event to moving the card to the table
-              // TODO: move this to after bets have been done,
-              // when player to play even reeived
-              //document.getElementById(card).onclick = function() {
-              //    card_played(card)
-              //}
+              $('#rounds input').val(0);
+              $('#bets input').val("");
           }
       });
 
@@ -160,10 +153,17 @@ Deployment
 
       socket.on('hand completed', function(data) {
         player_name=data['player_to_deal']
-        scorest=data['scores']
+        scores=data['scores']
         alert("Hand Completed. Next dealer: " + player_name + " scores:" + scores)
         // TODO: Enable Deal button on player to deal
-        // TODO: update scores
+        // Update scores
+        Object.keys(scores).forEach(function(player) {
+          score = scores[player];
+          let id_score = "#score_" + player
+          $(id_score).val(score);
+        });
+        let image = 'img/' + trump_card + ".svg"
+        $('#trump_card').html('')
       });
 
       socket.on('card played', function(data) {
@@ -215,25 +215,26 @@ Deployment
       });
 
       socket.on('round ended', function(player_name) {
-          alert('Round ended. Winner is: ' + player_name)
 
+        function myFunction(callback) {
+          alert('Round ended. Winner is: ' + player_name);
+          callback();
+        }
+
+        myFunction(function() {
           // Clear cards played
           $('#cards_played').empty()
+          $("#"+username).removeClass("active_player");
+          $("#"+username).addClass("normal_player");
 
           let id_rounds = "rounds_" + player_name
-          console.log("id rounds: " + id_rounds)
           var value = parseInt(document.getElementById(id_rounds).value, 10);
           value++;
           document.getElementById(id_rounds).value = value;
-
-
-          // Enable click on cards left in hand
-          // $('#cards img').bind("click", (function () {
-          //       card_played($( this ).attr('id'))
-          // }))
+        });
       });
-
   });
+
 </script>
 
     <h3>Game Area - Game ID: {{ session['game_id'] }} - You are: {{ session['username'] }}</h3>
