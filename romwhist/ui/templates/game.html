@@ -259,7 +259,12 @@ Deployment
             {% for player in players -%}
               <td>
                 <label for="'bets_' + {{ player }}">Bets</label>
-                <input type="number" id="bets_{{ player }}" name="bets" min=0 max=18 readonly>
+                <!-- TODO: should set bet to '' if it is -1 -->
+                {% if bets[player] == -1 %}
+                  <input type="number" id="bets_{{ player }}" name="bets" min=0 max=18 value=''>
+                {% else %}
+                  <input type="number" id="bets_{{ player }}" name="bets" min=0 max=18 value={{ bets[player] }}>
+                {% endif %}
               </td>
             {% endfor %}
           </tr>
@@ -267,7 +272,7 @@ Deployment
             {% for player in players -%}
               <td>
                 <label for="'rounds_' + {{ player }}">Wins</label>
-                <input type="number" id="rounds_{{ player }}" name="rounds" min=0 max=18 value=0>
+                <input type="number" id="rounds_{{ player }}" name="rounds" min=0 max=18 readonly value={{ wins[player] }}>
               </td>
             {% endfor %}
           </tr>
@@ -275,7 +280,7 @@ Deployment
             {% for player in players -%}
               <td>
                 <label for="'score_' + {{ player }}">Score</label>
-                <input type="number" id="score_{{ player }}" name="score" min=0 max=999 readonly>
+                <input type="number" id="score_{{ player }}" name="score" min=0 max=999 readonly value={{ scores[player] }}>
               </td>
             {% endfor %}
           </tr>
@@ -285,6 +290,7 @@ Deployment
       <div class="bottomright" id="trump_card">
       </div>
       <div id="cards_played">
+        <!-- TODO populate on refresh -->
       </div>
     </div>
 
@@ -304,11 +310,15 @@ Deployment
       </form>
     </div>
     <div>
-<!--      <div class="table-responsive"> -->
         <table class="table">
           <tr id="cards"></tr>
+          {% for card in hand -%}
+            <td>
+               <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg">
+               <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
+            </td>
+          {% endfor %}
         </table>
-<!--      </div> -->
     </div>
     <button id="leave_game" class="btn btn-warning" name="leave_game" type="button">Leave Game</button>
     <button id="stop_game" class="btn btn-danger" name="stop_game" type="button">Stop Game</button>

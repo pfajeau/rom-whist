@@ -38,63 +38,63 @@ def index():
     # TODO - add here endpoint of resource where you want to land on page load. e.g.
     # return redirect(url_for("auth_blueprint.home"))
     form = IndexForm()
-    if isinstance(current_user, User):
-        form.user_name.data=current_user.username
+    if not session.get('username') is None:
+        form.user_name.data=session['username']
 
     if form.validate_on_submit():
         print("Index Validate on Submit")
-        user_name = form.user_name.data
-        print (current_user)
-        if isinstance(current_user, User):
-            logout_user()
-            #user = User(username=user_name)
-            db.session.delete(current_user)
-            db.session.commit()
+        username = form.user_name.data
+        # print (current_user)
+        # if isinstance(current_user, User):
+        #     logout_user()
+        #     #user = User(username=user_name)
+        #     db.session.delete(current_user)
+        #     db.session.commit()
+        #
+        # user = User.query.filter_by(username=user_name).first()
+        # print ("User retrieved:", user)
+        # if user is None:
+            # user = User(username=user_name)
+            # db.session.add(user)
+            # db.session.commit()
+            # login_user(user)
+        print ("User: ", username)
+        # Used by client
+        session['username'] = username
+        if form.start_game.data:
+            print("start game")
+            if len(games) == 999:
+                error = "No more games available!!! Please try again later"
+                print(error)
+                return render_template('index.html', error = error, form=form)
 
-        user = User.query.filter_by(username=user_name).first()
-        print ("User retrieved:", user)
-        if user is None:
-            user = User(username=user_name)
-            db.session.add(user)
-            db.session.commit()
-            login_user(user)
-            print ("current user: ", current_user.username)
-            # Used by client
-            session['username'] = current_user.username
-            if form.start_game.data:
-                print("start game")
-                if len(games) == 999:
-                    error = "No more games available!!! Please try again later"
-                    print(error)
-                    return render_template('index.html', error = error, form=form)
-
+            game_id = str(randint(1,999))
+            while game_id in games:
                 game_id = str(randint(1,999))
-                while game_id in games:
-                    game_id = str(randint(1,999))
-                print ("game_id:", game_id)
+            print ("game_id:", game_id)
 
-                print("creating new game with id: ", game_id)
-                # Add game id in session
-                games[game_id] = RomWhistGame()
-                players[game_id] = []
-                clients[game_id] = dict()
-                add_player(game_id)
-                return redirect(url_for('game'))
+            print("creating new game with id: ", game_id)
+            # Add game id in session
+            games[game_id] = RomWhistGame()
+            players[game_id] = []
+            clients[game_id] = dict()
+            add_player(game_id)
+            return redirect(url_for('game'))
 
-            elif form.join_game.data:
-                game_id = request.form['game_id']
-                print("game id: ", game_id)
-                if not game_id in games:
-                    error = "This game has not been created yet"
-                    print(error)
-                    return render_template('index.html', error = error, form=form)
-                if current_user.username in players[game_id]:
-                    error = "The game already has a user with the same name"
-                    print(error)
-                    return render_template('index.html', error = error, form=form)
+        elif form.join_game.data:
+            game_id = request.form['game_id']
+            print("game id: ", game_id)
+            if not game_id in games:
+                error = "This game has not been created yet"
+                print(error)
+                return render_template('index.html', error = error, form=form)
+            if session['username'] in players[game_id]:
+                error = "The game already has a user with the same name"
+                print(error)
+                return render_template('index.html', error = error, form=form)
 
-                add_player(game_id)
-                return redirect(url_for('game'))
+            add_player(game_id)
+            return redirect(url_for('game'))
         else:
             error = "User already exists"
             print(error)
@@ -118,9 +118,16 @@ def game():
         print(error)
         return render_template('join_game.html', error = error, form=JoinGameForm())
     else:
-        return render_template("game.html", form=form,  players=players[game_id])
+        game = games[game_id]
+        hand = game.get_hands().get(session['username'])
+        if hand is None:
+            hand=[]
+        else:
+            hand = hand.serialize()
+        return render_template("game.html", form=form,  players=players[game_id], scores=game.get_scores(), \
+        hand=hand, bets=game.get_bets(), wins=game.get_wins())
 
-@app.route("/login",methods=['GET', 'POST'])
+# @app.route("/login",methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -133,11 +140,11 @@ def login():
             db.session.add(user)
             db.session.commit()
         login_user(user, remember=form.remember_me.data)
-        print ("current user: ", current_user.username)
+        print ("current user: ", session['username'])
         return redirect(url_for('index'))
     return render_template('login.html', title='Sign In', form=form)
 
-@app.route("/logout",methods=['GET', 'POST'])
+# @app.route("/logout",methods=['GET', 'POST'])
 def logout():
     remove_player()
     logout_user()
@@ -157,11 +164,11 @@ def player_bet(bet):
     else:
         # If all players have bet, enable next player to play
         game = games[game_id]
-        game.place_bet(current_user.username, int(bet))
-        emit("player bet", {'player':current_user.username, 'bet':bet}, room = game_id)
-        nplayer = game.next_player_to_bet(current_user.username)
+        game.place_bet(session['username'], int(bet))
+        emit("player bet", {'player':session['username'], 'bet':bet}, room = game_id)
+        nplayer = game.next_player_to_bet(session['username'])
         if nplayer is None:
-            emit("player to play", next_player(current_user.username, players[game_id]), room=game_id)
+            emit("player to play", next_player(session['username'], players[game_id]), room=game_id)
 
         # Last player to bet
         else:
@@ -179,11 +186,11 @@ def player_played(data):
         print("ERROR: Game not found!!!")
     else:
         card = data['data']
-        new_data = {'player': current_user.username, 'card': card}
+        new_data = {'player': session['username'], 'card': card}
         emit("card played", new_data, room=game_id)
 
         game = games[game_id]
-        winner = game.card_played(current_user.username, card)
+        winner = game.card_played(session['username'], card)
         if not winner is None:
             emit("round ended", winner, room=game_id)
             game.create_round()
@@ -195,7 +202,7 @@ def player_played(data):
                 scores = game.update_scores()
                 emit("hand completed", {'scores':scores, 'player_to_deal': game.next_player_to_deal()}, room=game_id)
         else:
-            nplayer = next_player(current_user.username, players[game_id])
+            nplayer = next_player(session['username'], players[game_id])
 
         emit("player to play", nplayer, room=game_id)
 
@@ -214,11 +221,11 @@ def start_hand(nbcards, trump):
 
     a_game = games[game_id]
 
-    hands = a_game.deal(int(nbcards), trump, current_user.username)
+    hands = a_game.deal(int(nbcards), trump, session['username'])
     round = a_game.create_round()
 
     # FInd out who the first player to bet is
-    nplayer = next_player(current_user.username, players[game_id])
+    nplayer = next_player(session['username'], players[game_id])
 
     # Distribute cards to each players
     for player in players[game_id]:
@@ -238,7 +245,7 @@ def on_join(data):
     game_id = session['game_id']
     if session['game_id'] in games:
         print("Adding client session to list of clients")
-        clients[game_id][current_user.username] = request.sid
+        clients[game_id][session['username']] = request.sid
         join_room(game_id)
 
 @socketio.on('leave game')
@@ -260,28 +267,28 @@ def on_stop(data):
         # (user logged out). In this case how to remove user from room?
     else:
         leave_room(game_id)
-        emit("game stopped", current_user.username, room=game_id)
+        emit("game stopped", session['username'], room=game_id)
         del games[game_id]
-
-
+        del clients[game_id]
+        del players[game_id]
 
 # Added a player to a game
 def add_player(game_id):
     session['game_id'] = game_id
-    players[game_id].append(current_user.username)
-    games[game_id].add_player(current_user.username)
-    # send(current_user.username + ' has joined game', room=game_id)
-    socketio.emit("new player", current_user.username, room=game_id)
+    players[game_id].append(session['username'])
+    games[game_id].add_player(session['username'])
+    # send(session['username'] + ' has joined game', room=game_id)
+    socketio.emit("new player", session['username'], room=game_id)
 
 def remove_player():
     game_id = session.get('game_id')
     if not game_id is None:
-        players[game_id].remove(current_user.username)
-        games[game_id].remove_player(current_user.username)
-        # send(current_user.username + ' has joined game', room=game_id)
+        players[game_id].remove(session['username'])
+        games[game_id].remove_player(session['username'])
+        # send(session['username'] + ' has joined game', room=game_id)
         # leave_room(game_id)
-        del clients[game_id][current_user.username]
-        socketio.emit("player left", current_user.username, room=game_id)
+        del clients[game_id][session['username']]
+        socketio.emit("player left", session['username'], room=game_id)
 
 def next_player(player, list_players):
     pos = list_players.index(player)

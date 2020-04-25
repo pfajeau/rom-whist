@@ -37,6 +37,13 @@ class RomWhistGame():
     def get_hands(self):
         return self.hands
 
+    def get_bets(self):
+        return self.bets
+
+    def get_wins(self):
+        return self.wins
+
+
     def is_hand_completed(self):
         for player in self.players:
             if len(self.hands[player].get_cards()) > 0:
