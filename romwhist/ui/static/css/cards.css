@@ -2,6 +2,22 @@ html {
 	background-color:#092E20;
 }
 
+.card_hand {
+	width: 80px
+}
+
+.card_table {
+	width:80px
+}
+
+figure {
+  display: table;
+}
+figcaption {
+  display: table-caption;
+  caption-side: bottom;
+}
+
 .active_player {
 	font-weight: bold;
 	color: red;
@@ -35,17 +51,11 @@ a img {
 img.preload {
 	display:none;
 }
-h1 {
-	font-size:60px;
-	text-align:center;
-	padding:0px;
-	margin:10px auto;
-}
 
 #card-table {
 	background-color:green;
 	height:300px;
-	width:90%;
+	width:100%;
 	border:solid 6px brown;
 	border-radius:8px;
 	-webkit-border-radius:8px;

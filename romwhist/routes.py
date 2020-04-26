@@ -288,14 +288,15 @@ def stop_game():
     game_id = session.get('game_id')
     if game_id is None:
         print("NO GAME_ID IN SESSION!!!!")
+        return
         # TODO: may have a case where the session has been cleared already
         # (user logged out). In this case how to remove user from room?
-    else:
+    if not games.get(game_id) is None:
         del games[game_id]
         del clients[game_id]
         del players[game_id]
         socketio.emit("game stopped", session['username'], room=game_id)
-
+        return
 # Added a player to a game
 def add_player(game_id):
     session['game_id'] = game_id

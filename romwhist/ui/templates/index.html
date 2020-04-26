@@ -12,26 +12,31 @@
         {{ form.hidden_tag() }}
 
       <div class="container">
+        <h3>Enter your alias for the game</h3>
         <div class="row">
-          <h3>Enter your alias for the game</h3>
           <div class="col-12">
             {{ form.user_name.label }}
             {{ form.user_name(size=10) }}
           </div>
         </div>
+        <br><br>
+        <h3>Then choose one of the following options:</h3>
         <div class="row">
-          <br><br>
-          <h3>Then choose one of the following options:</h3>
           <br/>
-          <div class="span-6">
+          <div class="col-5">
             <!-- <h2>Join a game</h2> -->
-            {{ form.join_game(class="btn btn-primary") }}
             {{ form.game_id.label }}
             {{ form.game_id(size=5) }}
+            <br><br>
+            {{ form.join_game(class="btn btn-primary") }}
           </div>
-          <h3>or</h3>
-          <div class="span-6">
-            <br/>
+          <div class="col-1">
+            <!-- <h2>Join a game</h2> -->
+            <br><h3>or</h3>
+          </div>
+          <!-- <h3>or</h3> -->
+          <div class="col-4">
+            <br><br>
             <div class="input submit">
                 {{ form.start_game(class="btn btn-primary") }}
             </div>

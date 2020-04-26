@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 
-<head>
-<!--  -->
-
-</head>
 
 <!-- TODO:
 Block deal button during round play
-Add end game capability
 Select number of cards in deck (sans atout)
 Configure score counting?
 Persistence?
 UI enhancements
 Deployment
 -->
+{% block navbar %}
+{{ super() }}
+<div class="topnav">
+<h4><center>Game ID: {{ session['game_id'] }} - You are: {{ session['username'] }}<center></h4>
+</div>
+{% endblock %}
 
 {% block content %}
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
@@ -28,6 +29,7 @@ Deployment
   var forbidden_bet
   var last_player
   var new_round = true
+
 
   function RecursiveUnbind($jElement) {
       // remove this element's and all of its children's click events
@@ -54,6 +56,13 @@ Deployment
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+
+    $('#nb_cards').keydown(function (e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            return false;
+        }
+    });
 
       // Connect to websocket
       socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
@@ -108,7 +117,7 @@ Deployment
               // let card = data[card]
               $('#cards').append('<td>'+
                 "<img id=" + card + " src={{ url_for('static', filename='') }}" +
-                image + ' alt=' + card + '>' + '</td>')
+                image + ' alt=' + card + ' class="card_hand"' + '>' + '</td>')
 
               // Reset bets and wins to 0
               $('#rounds input').val(0);
@@ -157,7 +166,7 @@ Deployment
       socket.on('hand completed', function(data) {
         player_name=data['player_to_deal']
         scores=data['scores']
-        alert("Hand Completed. Next dealer: " + player_name + " scores:" + scores)
+        //alert("Hand Completed. Next dealer: " + player_name + " scores:" + scores)
         // TODO: Enable Deal button on player to deal
         // Update scores
         Object.keys(scores).forEach(function(player) {
@@ -177,9 +186,14 @@ Deployment
           let player_name = data['player']
           let card = data['card']
           // Display card on table
+
           let image = 'img/' + card + ".svg"
+          let card_id='#' + card
+          $(card_id).append("<figure>");
           $('#cards_played').append("<img src={{ url_for('static', filename='') }}" +
-          image + ' alt=' + card +'>')
+          image + ' alt=' + card + ' class="card_table"' + '>')
+          $(card_id).append("<figcaption><h3 class='trump_caption'>" + player_name +"</h3></figcaption>");
+          $(card_id).append("</figure>");
           $("#"+player_name).removeClass("active_player");
           $("#"+player_name).addClass("normal_player");
           last_player = player_name
@@ -235,7 +249,7 @@ Deployment
         // myFunction(function() {
           // Clear cards played
           // $('#cards_played').empty()
-          alert('Round ended. Winner is: ' + player_name);
+          //alert('Round ended. Winner is: ' + player_name);
           $("#"+last_player).removeClass("active_player");
           $("#"+last_player).addClass("normal_player");
 
@@ -250,19 +264,17 @@ Deployment
 
 </script>
 
-    <h3>Game Area - Game ID: {{ session['game_id'] }} - You are: {{ session['username'] }}</h3>
-    <div>
         <div class="table-responsive">
         <table class="table">
           <tr id="players">
             {% for player in players -%}
-              <td id="{{ player }}"><h3>{{ player }}</h3> </td>
+              <td id="{{ player }}" class="normal_player">{{ player }} </td>
             {% endfor %}
           </tr>
           <tr id="bets">
             {% for player in players -%}
               <td>
-                <label for="'bets_' + {{ player }}">Bets</label>
+                <label for="'bets_' + {{ player }}"><h4>Bets</h4></label>
                 <!-- TODO: should set bet to '' if it is -1 -->
                 {% if bets[player] == -1 %}
                   <input type="number" id="bets_{{ player }}" name="bets" min=0 max=18 value='' readonly>
@@ -275,7 +287,7 @@ Deployment
           <tr id="rounds">
             {% for player in players -%}
               <td>
-                <label for="'rounds_' + {{ player }}">Wins</label>
+                <label for="'rounds_' + {{ player }}"><h4>Wins</h4></label>
                 <input type="number" id="rounds_{{ player }}" name="rounds" min=0 max=18 readonly value={{ wins[player] }}>
               </td>
             {% endfor %}
@@ -283,13 +295,14 @@ Deployment
           <tr id=scores>
             {% for player in players -%}
               <td>
-                <label for="'score_' + {{ player }}">Score</label>
+                <label for="'score_' + {{ player }}"><h4>Score</h4></label>
                 <input type="number" id="score_{{ player }}" name="score" min=0 max=999 readonly value={{ scores[player] }}>
               </td>
             {% endfor %}
           </tr>
         </table>
-    </div>
+      </div>
+
     <div id="card-table" class="container">
       <div class="bottomright" id="trump_card">
       </div>
@@ -301,7 +314,8 @@ Deployment
     <div>
       <form action="" method="post" novalidate>
           {{ form.hidden_tag() }}
-          <div class="col-md-4">
+          <div class="container">
+          <div class="col-md-6">
             <div class="form-group">
               {{ form.nb_cards.label }}
               {{ form.nb_cards(size=2) }}
@@ -311,18 +325,25 @@ Deployment
             </div>
             <br>
           </div>
+          </div>
           <div>
-            <table class="table">
-              <tr id="cards"></tr>
+            <div class="col-md-12" id="cards">
+              <!-- <tr id="cards"></tr> -->
               {% for card in hand -%}
                 <td>
-                   <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg">
+                   <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" class="card_hand">
                    <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
                 </td>
               {% endfor %}
-            </table>
+            </div>
+            <br><br>
           </div>
-          {{ form.stop_game(class="btn btn-danger") }}
+          <div class="container">
+            <div class="col-md-3">
+              <br><br>
+              {{ form.stop_game(class="btn btn-danger") }}
+            </div>
+          </div>
         </form>
       </div>
     <!-- <button id="leave_game" class="btn btn-warning" name="leave_game" type="button">Leave Game</button>
