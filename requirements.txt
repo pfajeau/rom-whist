@@ -1,3 +1,8 @@
-flask
-flask-wtf
-pytest-flask
+Flask==1.0.2
+Flask-Bootstrap==3.3.7.1
+Flask-Login==0.4.1
+Flask-Session==0.3.1
+Flask-SocketIO==4.2.1
+Flask-SQLAlchemy==2.4.1
+Flask-WTF==0.14.3
+gevent==1.4.0
