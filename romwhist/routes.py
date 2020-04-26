@@ -42,8 +42,6 @@ def index():
         form.user_name.data=session['username']
 
     if form.validate_on_submit():
-        print("Index Validate on Submit")
-        username = form.user_name.data
         # print (current_user)
         # if isinstance(current_user, User):
         #     logout_user()
@@ -58,49 +56,54 @@ def index():
             # db.session.add(user)
             # db.session.commit()
             # login_user(user)
-        print ("User: ", username)
-        # Used by client
-        session['username'] = username
-        if form.start_game.data:
-            print("start game")
-            if len(games) == 999:
-                error = "No more games available!!! Please try again later"
-                print(error)
-                return render_template('index.html', error = error, form=form)
+        print("Index Validate on Submit")
+        if form.validate_on_submit():
+            username = form.user_name.data
+            print ("User: ", username)
+            # Used by client
+            session['username'] = username
+            if form.start_game.data:
+                print("start game")
+                if len(games) == 999:
+                    error = "No more games available!!! Please try again later"
+                    print(error)
+                    return render_template('index.html', error = error, form=form)
 
-            game_id = str(randint(1,999))
-            while game_id in games:
                 game_id = str(randint(1,999))
-            print ("game_id:", game_id)
+                while game_id in games:
+                    game_id = str(randint(1,999))
+                print ("game_id:", game_id)
 
-            print("creating new game with id: ", game_id)
-            # Add game id in session
-            games[game_id] = RomWhistGame()
-            players[game_id] = []
-            clients[game_id] = dict()
-            add_player(game_id)
-            return redirect(url_for('game'))
+                print("creating new game with id: ", game_id)
+                # Add game id in session
+                games[game_id] = RomWhistGame()
+                players[game_id] = []
+                clients[game_id] = dict()
+                add_player(game_id)
+                return redirect(url_for('game'))
 
-        elif form.join_game.data:
-            game_id = request.form['game_id']
-            print("game id: ", game_id)
-            if not game_id in games:
-                error = "This game has not been created yet"
+            elif form.join_game.data:
+                game_id = request.form['game_id']
+                print("game id: ", game_id)
+                if not game_id in games:
+                    error = "This game has not been created yet"
+                    print(error)
+                    return render_template('index.html', error = error, form=form)
+                if session['username'] in players[game_id]:
+                    error = "The game already has a user with the same name"
+                    print(error)
+                    return render_template('index.html', error = error, form=form)
+
+                add_player(game_id)
+                return redirect(url_for('game'))
+            else:
+                error = "User already exists"
                 print(error)
                 return render_template('index.html', error = error, form=form)
-            if session['username'] in players[game_id]:
-                error = "The game already has a user with the same name"
-                print(error)
-                return render_template('index.html', error = error, form=form)
-
-            add_player(game_id)
-            return redirect(url_for('game'))
         else:
-            error = "User already exists"
-            print(error)
-            return render_template('index.html', error = error, form=form)
+            return render_template("index.html", form=form)
     else:
-        return render_template("index.html", form=form)
+        return render_template("index.html", form=form, error=form.errors)
 
 @app.route("/base")
 def base():
@@ -111,12 +114,24 @@ def base():
 
 @app.route("/game", methods=['GET', 'POST'])
 def game():
-    form = GameForm()
+    form=GameForm()
     game_id = session.get('game_id')
-    if game_id is None:
-        error = "Could not find game_id in session"
-        print(error)
-        return render_template('join_game.html', error = error, form=JoinGameForm())
+    print("In game route")
+    if request.method == 'POST':
+        print("In game route")
+        if game_id is None:
+            error = "Could not find game_id in session"
+            print(error)
+            return render_template('join_game.html', error = error, form=JoinGameForm())
+
+        if form.stop_game.data:
+            stop_game()
+            return redirect(url_for('index'))
+
+        if form.leave_game.data:
+            # leave_game(username)
+            return redirect(url_for('index'))
+            # TODO:
     else:
         game = games[game_id]
         hand = game.get_hands().get(session['username'])
@@ -268,9 +283,18 @@ def on_stop(data):
     else:
         leave_room(game_id)
         emit("game stopped", session['username'], room=game_id)
+
+def stop_game():
+    game_id = session.get('game_id')
+    if game_id is None:
+        print("NO GAME_ID IN SESSION!!!!")
+        # TODO: may have a case where the session has been cleared already
+        # (user logged out). In this case how to remove user from room?
+    else:
         del games[game_id]
         del clients[game_id]
         del players[game_id]
+        socketio.emit("game stopped", session['username'], room=game_id)
 
 # Added a player to a game
 def add_player(game_id):

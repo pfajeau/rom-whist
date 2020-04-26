@@ -2,19 +2,6 @@ html {
 	background-color:#092E20;
 }
 
-/*body {
-	position:relative;
-	border-radius:8px;
-	box-shadow:black 0px 0px 2px;
-	width: 100%;
-	height:100%;
-	background:#FFF;
-	margin:20px auto;
-	border:solid 1px black;
-	font-family: arial, sans-serif;
-	padding:50px;
-}*/
-
 .active_player {
 	font-weight: bold;
 	color: red;
@@ -24,6 +11,11 @@ html {
 	color: black;
 }
 
+.trump_caption {
+	font-weight: bold;
+	color:white;
+	text-align: center;
+}
 #buttons {
 	text-align:center;
 }

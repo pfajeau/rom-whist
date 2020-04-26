@@ -8,7 +8,7 @@ class Card(object):
     SUITS = 'cdhs'
     SUIT_NAMES = ['Clubs', 'Diamonds', 'Hearts', 'Spades']
 
-    RANKS = list(range(2,14))
+    RANKS = list(range(2,15))
     RANK_NAMES = ['Two', 'Three', 'Four', 'Five', 'Six',
                   'Seven', 'Eight', 'Nine', 'Ten',
                   'Jack', 'Queen', 'King', 'Ace']
