@@ -6,7 +6,6 @@ author: Philippe Fajeau
 """
 from flask import Blueprint
 from . import controllers,deck,card,hand
-from .utils import Serializer
 from .game import RomWhistGame
 from romwhist import socketio,app
 from flask import render_template, request, flash, session, url_for, redirect
