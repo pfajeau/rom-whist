@@ -3,4 +3,4 @@ from romwhist import app, socketio
 
 if __name__ == '__main__':
     app = romwhist.create_app()
-    socketio.run(app, debug=True)
+    # socketio.run(app, debug=True)

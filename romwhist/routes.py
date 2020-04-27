@@ -255,16 +255,17 @@ def start_hand(nbcards, trump):
 @socketio.on('join game')
 def on_join(data):
     print ("on_join")
-    game_id = session['game_id']
-    if session['game_id'] in games:
-        # Add user to room if user is not there already
-        player = session.get('username')
-        client_room = clients[game_id].get(player)
-        # Adding client room id to list of clients
-        # if client_room is None:
-        print("Adding player to game room")
-        clients[game_id][player] = request.sid
-        join_room(game_id)
+    game_id = session.get('game_id')
+    if not game_id is None:
+        if session['game_id'] in games:
+            # Add user to room if user is not there already
+            player = session.get('username')
+            client_room = clients[game_id].get(player)
+            # Adding client room id to list of clients
+            # if client_room is None:
+            print("Adding player to game room")
+            clients[game_id][player] = request.sid
+            join_room(game_id)
 
 @socketio.on('leave game')
 def on_leave(data):
