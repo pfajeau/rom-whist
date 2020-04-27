@@ -69,7 +69,9 @@ Deployment
 
       // When connected, configure buttons
       socket.on('connect', function() {
-          // Register user
+
+          // Register user - only used here to cover the case of
+          // first player joining. DO NOT REMOVE
           socket.emit('join game', {data:''});
 
           document.getElementById("deal").onclick = function() {
@@ -200,6 +202,7 @@ Deployment
       });
 
       socket.on('new player', function(player_name) {
+        socket.emit('join game', player_name);
         window.location.reload(false);
 
           // alert('new player joined')

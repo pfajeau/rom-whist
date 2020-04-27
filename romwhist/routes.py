@@ -61,7 +61,22 @@ def index():
             print ("User: ", username)
             # Used by client
             session['username'] = username
-            if form.start_game.data:
+            if form.join_game.data:
+                game_id = request.form['game_id']
+                print("game id: ", game_id)
+                if not game_id in games:
+                    error = "This game has not been created yet"
+                    print(error)
+                    return render_template('index.html', error = error, form=form)
+                if session['username'] in players[game_id]:
+                    error = "The game already has a user with the same name"
+                    print(error)
+                    return render_template('index.html', error = error, form=form)
+
+                add_player(game_id)
+                return redirect(url_for('game'))
+
+            else:
                 print("start game")
                 if len(games) == 999:
                     error = "No more games available!!! Please try again later"
@@ -80,25 +95,10 @@ def index():
                 clients[game_id] = dict()
                 add_player(game_id)
                 return redirect(url_for('game'))
-
-            elif form.join_game.data:
-                game_id = request.form['game_id']
-                print("game id: ", game_id)
-                if not game_id in games:
-                    error = "This game has not been created yet"
-                    print(error)
-                    return render_template('index.html', error = error, form=form)
-                if session['username'] in players[game_id]:
-                    error = "The game already has a user with the same name"
-                    print(error)
-                    return render_template('index.html', error = error, form=form)
-
-                add_player(game_id)
-                return redirect(url_for('game'))
-            else:
-                error = "User already exists"
-                print(error)
-                return render_template('index.html', error = error, form=form)
+            # else:
+            #     error = "User already exists"
+            #     print(error)
+            #     return render_template('index.html', error = error, form=form)
         else:
             return render_template("index.html", form=form)
     else:
@@ -121,7 +121,7 @@ def game():
         if game_id is None:
             error = "Could not find game_id in session"
             print(error)
-            return render_template('join_game.html', error = error, form=JoinGameForm())
+            return render_template('index.html', error = error, form=IndexForm())
 
         if form.stop_game.data:
             stop_game()
@@ -252,14 +252,18 @@ def start_hand(nbcards, trump):
 
     emit("player to bet", {'player': nplayer, 'forbidden_bet':-1}, room=game_id)
 
-# Data should contain the game_id
 @socketio.on('join game')
 def on_join(data):
     print ("on_join")
     game_id = session['game_id']
     if session['game_id'] in games:
-        print("Adding client session to list of clients")
-        clients[game_id][session['username']] = request.sid
+        # Add user to room if user is not there already
+        player = session.get('username')
+        client_room = clients[game_id].get(player)
+        # Adding client room id to list of clients
+        # if client_room is None:
+        print("Adding player to game room")
+        clients[game_id][player] = request.sid
         join_room(game_id)
 
 @socketio.on('leave game')
@@ -296,6 +300,7 @@ def stop_game():
         del players[game_id]
         socketio.emit("game stopped", session['username'], room=game_id)
         return
+
 # Added a player to a game
 def add_player(game_id):
     session['game_id'] = game_id
@@ -303,6 +308,7 @@ def add_player(game_id):
     games[game_id].add_player(session['username'])
     # send(session['username'] + ' has joined game', room=game_id)
     socketio.emit("new player", session['username'], room=game_id)
+
 
 def remove_player():
     game_id = session.get('game_id')

@@ -34,7 +34,7 @@ def create_app():
     handler = logging.handlers.RotatingFileHandler(app.config["LOG_FILE"], maxBytes=app.config["LOG_SIZE"])
     handler.setLevel(app.config["LOG_LEVEL"])
     handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s [%(pathname)s at %(lineno)s]: %(message)s", "%Y-%m-%d %H:%M:%S"))
-    app.logger.addHandler(handler)
+    # app.logger.addHandler(handler)
 
     # init extensions
     csrf.init_app(app)
