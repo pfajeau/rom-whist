@@ -2,6 +2,9 @@
 
 
 {% block content %}
+  {% if error %}
+  <p class=error><strong>Error:</strong> {{ error }}
+  {% endif %}
 
     <h2>Welcome to a place to play Romanian Whist with your friends!!! </h2>
     <p>Romanian Whist, also called Ascenseur or Oh Hell! is a fun card game that can be played by 3 to 7 players</p>
@@ -23,7 +26,7 @@
         <br>
         <div class="row">
           <br/>
-          <div class="col-5">
+          <div class="col-4">
             <!-- <h2>Join a game</h2> -->
             {{ form.game_id.label }}
             {{ form.game_id(size=5) }}
@@ -32,7 +35,7 @@
           </div>
           <div class="col-1">
             <!-- <h2>Join a game</h2> -->
-            <br><h3>or</h3>
+            <br><h3>   or   </h3>
           </div>
           <!-- <h3>or</h3> -->
           <div class="col-4">

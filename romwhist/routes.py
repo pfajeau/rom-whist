@@ -37,10 +37,7 @@ def index():
     # TODO - add here endpoint of resource where you want to land on page load. e.g.
     # return redirect(url_for("auth_blueprint.home"))
     form = IndexForm()
-    if not session.get('username') is None:
-        form.user_name.data=session['username']
 
-    if form.validate_on_submit():
         # print (current_user)
         # if isinstance(current_user, User):
         #     logout_user()
@@ -55,52 +52,50 @@ def index():
             # db.session.add(user)
             # db.session.commit()
             # login_user(user)
-        print("Index Validate on Submit")
-        if form.validate_on_submit():
-            username = form.user_name.data
-            print ("User: ", username)
-            # Used by client
-            session['username'] = username
-            if form.join_game.data:
-                game_id = request.form['game_id']
-                print("game id: ", game_id)
-                if not game_id in games:
-                    error = "This game has not been created yet"
-                    print(error)
-                    return render_template('index.html', error = error, form=form)
-                if session['username'] in players[game_id]:
-                    error = "The game already has a user with the same name"
-                    print(error)
-                    return render_template('index.html', error = error, form=form)
+    print("Index Validate on Submit")
+    if form.validate_on_submit():
+        username = form.user_name.data
+        print ("User: ", username)
+        # Used by client
+        session['username'] = username
+        if form.join_game.data:
+            game_id = request.form['game_id']
+            print("game id: ", game_id)
+            if not game_id in games:
+                error = "This game has not been created yet"
+                print(error)
+                return render_template('index.html', error = error, form=form)
+            if session['username'] in players[game_id]:
+                error = "The game already has a user with the same name"
+                print(error)
+                return render_template('index.html', error = error, form=form)
 
-                add_player(game_id)
-                return redirect(url_for('game'))
+            add_player(game_id)
+            return redirect(url_for('game'))
 
-            else:
-                print("start game")
-                if len(games) == 999:
-                    error = "No more games available!!! Please try again later"
-                    print(error)
-                    return render_template('index.html', error = error, form=form)
+        elif form.start_game.data:
+            print("start game")
+            if len(games) == 999:
+                error = "No more games available!!! Please try again later"
+                print(error)
+                return render_template('index.html', error = error, form=form)
 
+            game_id = str(randint(1,999))
+            while game_id in games:
                 game_id = str(randint(1,999))
-                while game_id in games:
-                    game_id = str(randint(1,999))
-                print ("game_id:", game_id)
+            print ("game_id:", game_id)
 
-                print("creating new game with id: ", game_id)
-                # Add game id in session
-                games[game_id] = RomWhistGame()
-                players[game_id] = []
-                clients[game_id] = dict()
-                add_player(game_id)
-                return redirect(url_for('game'))
-            # else:
-            #     error = "User already exists"
-            #     print(error)
-            #     return render_template('index.html', error = error, form=form)
-        else:
-            return render_template("index.html", form=form)
+            print("creating new game with id: ", game_id)
+            # Add game id in session
+            games[game_id] = RomWhistGame()
+            players[game_id] = []
+            clients[game_id] = dict()
+            add_player(game_id)
+            return redirect(url_for('game'))
+        # else:
+        #     error = "User already exists"
+        #     print(error)
+        #     return render_template('index.html', error = error, form=form)
     else:
         return render_template("index.html", form=form, error=form.errors)
 
@@ -128,7 +123,7 @@ def game():
             return redirect(url_for('index'))
 
         if form.leave_game.data:
-            # leave_game(username)
+            remove_player()
             return redirect(url_for('index'))
             # TODO:
     else:
@@ -288,6 +283,7 @@ def on_stop(data):
         leave_room(game_id)
         emit("game stopped", session['username'], room=game_id)
 
+
 def stop_game():
     game_id = session.get('game_id')
     if game_id is None:
@@ -314,12 +310,14 @@ def add_player(game_id):
 def remove_player():
     game_id = session.get('game_id')
     if not game_id is None:
-        players[game_id].remove(session['username'])
-        games[game_id].remove_player(session['username'])
-        # send(session['username'] + ' has joined game', room=game_id)
-        # leave_room(game_id)
-        del clients[game_id][session['username']]
-        socketio.emit("player left", session['username'], room=game_id)
+        if game_id in players:
+            username = session['username']
+            players[game_id].remove(username)
+            games[game_id].remove_player(username)
+        if username in clients[game_id]:
+            del clients[game_id][username]
+
+        socketio.emit("player left", username, room=game_id)
 
 def next_player(player, list_players):
     pos = list_players.index(player)

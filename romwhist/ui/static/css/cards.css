@@ -10,9 +10,29 @@ html {
 	width:80px
 }
 
+.player_info {
+	font-size: small;
+	font-weight: normal;
+}
+
+.game_page_title{
+		font-size: medium;
+		text-align: center;
+		font-weight: bold;
+		color: darkred;
+}
+
+/* Remove up and down arrow in integer input field */
+input[type=number]::-webkit-inner-spin-button,
+ input[type=number]::-webkit-outer-spin-button
+ {
+  -webkit-appearance: none;
+}
+
 figure {
   display: table;
 }
+
 figcaption {
   display: table-caption;
   caption-side: bottom;
@@ -21,6 +41,10 @@ figcaption {
 .active_player {
 	font-weight: bold;
 	color: red;
+}
+
+.deal {
+	font-size: medium;
 }
 .normal_player {
 	font-weight: bold;

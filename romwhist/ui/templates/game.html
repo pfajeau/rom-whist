@@ -2,7 +2,9 @@
 
 
 <!-- TODO:
+COntrol which cards can be played
 Block deal button during round play
+Implement Leave Game
 Select number of cards in deck (sans atout)
 Configure score counting?
 Persistence?
@@ -12,7 +14,7 @@ Deployment
 {% block navbar %}
 {{ super() }}
 <div class="topnav">
-<h4><center>Game ID: {{ session['game_id'] }} - You are: {{ session['username'] }}<center></h4>
+<div class="game_page_title">Game ID: {{ session['game_id'] }} - You are: {{ session['username'] }}
 </div>
 {% endblock %}
 
@@ -108,6 +110,7 @@ Deployment
       });
 
       socket.on('new hand', function(data) {
+          $('#trump_card').html('')
           $('#cards').html('');
           $('#cards_played').empty()
 
@@ -190,12 +193,12 @@ Deployment
           // Display card on table
 
           let image = 'img/' + card + ".svg"
-          let card_id='#' + card
-          $(card_id).append("<figure>");
-          $('#cards_played').append("<img src={{ url_for('static', filename='') }}" +
+          let card_table_id='#' + card + "_table"
+          // $(cards_played).append("<figure>");
+          $('#cards_played').append("<img id=" + card + "_table"+ " src={{ url_for('static', filename='') }}" +
           image + ' alt=' + card + ' class="card_table"' + '>')
-          $(card_id).append("<figcaption><h3 class='trump_caption'>" + player_name +"</h3></figcaption>");
-          $(card_id).append("</figure>");
+          // $(cards_played).append("<figcaption><h3 class='trump_caption'>" + player_name +"</h3></figcaption>");
+          // $(cards_played).append("</figure>");
           $("#"+player_name).removeClass("active_player");
           $("#"+player_name).addClass("normal_player");
           last_player = player_name
@@ -229,6 +232,13 @@ Deployment
         //     "<label for=" + "'" + id_score + "'" + ">Scores</label>" +
         //     "<input type=number id=" + "'" + id_score + "'" + " name='score' min=0 max=999>" +
         //     "</td>")
+      });
+
+      socket.on('player left', function(player_name) {
+        socket.emit('leave game', player_name);
+        if (player_name.localeCompare(username) != 0) {
+          window.location.reload(false);
+        }
       });
 
       socket.on('trump card', function(trump_card) {
@@ -277,12 +287,12 @@ Deployment
           <tr id="bets">
             {% for player in players -%}
               <td>
-                <label for="'bets_' + {{ player }}"><h4>Bets</h4></label>
+                <label for="'bets_' + {{ player }}" class="player_info">Bets</label>
                 <!-- TODO: should set bet to '' if it is -1 -->
                 {% if bets[player] == -1 %}
-                  <input type="number" id="bets_{{ player }}" name="bets" min=0 max=18 value='' readonly>
+                  <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value='' readonly>
                 {% else %}
-                  <input type="number" id="bets_{{ player }}" name="bets" min=0 max=18 value={{ bets[player] }} readonly>
+                  <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value={{ bets[player] }} readonly>
                 {% endif %}
               </td>
             {% endfor %}
@@ -290,16 +300,16 @@ Deployment
           <tr id="rounds">
             {% for player in players -%}
               <td>
-                <label for="'rounds_' + {{ player }}"><h4>Wins</h4></label>
-                <input type="number" id="rounds_{{ player }}" name="rounds" min=0 max=18 readonly value={{ wins[player] }}>
+                <label for="'rounds_' + {{ player }}" class="player_info">Wins</label>
+                <input type="number" id="rounds_{{ player }}" name="rounds" class="player_info" min=0 max=18 readonly value={{ wins[player] }}>
               </td>
             {% endfor %}
           </tr>
           <tr id=scores>
             {% for player in players -%}
               <td>
-                <label for="'score_' + {{ player }}"><h4>Score</h4></label>
-                <input type="number" id="score_{{ player }}" name="score" min=0 max=999 readonly value={{ scores[player] }}>
+                <label for="'score_' + {{ player }}" class="player_info">Score</label>
+                <input type="number" id="score_{{ player }}" name="score" class="player_info" min=0 max=999 readonly value={{ scores[player] }}>
               </td>
             {% endfor %}
           </tr>
@@ -318,11 +328,12 @@ Deployment
       <form action="" method="post" novalidate>
           {{ form.hidden_tag() }}
           <div class="container">
-          <div class="col-md-6">
+          <div class="col-md-8">
             <div class="form-group">
-              {{ form.nb_cards.label }}
+              <br>
+              {{ form.nb_cards.label(class="deal") }}
               {{ form.nb_cards(size=2) }}
-              {{ form.trump.label }}
+              {{ form.trump.label(class="deal") }}
               {{ form.trump }}
               <button id="deal" class="btn btn-primary" name="deal" type="button">Deal</button>
             </div>
@@ -342,9 +353,12 @@ Deployment
             <br><br>
           </div>
           <div class="container">
-            <div class="col-md-3">
-              <br><br>
-              {{ form.stop_game(class="btn btn-danger") }}
+            <div class="col-md-6">
+              <!-- <div class="btn-group"> -->
+                <br><br>
+                {{ form.leave_game(class="btn btn-warning") }}
+                {{ form.stop_game(class="btn btn-danger") }}
+              <!-- </div> -->
             </div>
           </div>
         </form>
