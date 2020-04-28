@@ -1,5 +1,11 @@
 html {
-	background-color:#092E20;
+}
+
+body
+{
+  margin-top: 20px;
+  margin-left: 20px;
+  margin-right: 20px;
 }
 
 .card_hand {
