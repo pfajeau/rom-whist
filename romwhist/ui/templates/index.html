@@ -2,6 +2,8 @@
 
 
 {% block content %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
+
   {% if error %}
   <p class=error><strong>Error:</strong> {{ error }}
   {% endif %}
@@ -35,7 +37,7 @@
           </div>
           <div class="col-1">
             <!-- <h2>Join a game</h2> -->
-            <br><h3>   or   </h3>
+            <br><h3>or</h3>
           </div>
           <!-- <h3>or</h3> -->
           <div class="col-4">
@@ -48,19 +50,64 @@
     <br><br>
     <div id=rules>
       <h2>Rules of game</h2>
-      <br>
-      <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum volutpat ante vitae nisi dapibus, quis porttitor turpis finibus. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean suscipit felis non ex laoreet bibendum. Vivamus id lacinia orci. Quisque iaculis dignissim ultrices. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Nulla nec finibus ligula. Praesent faucibus in lacus vitae efficitur. Duis ut velit et urna luctus porttitor. Etiam a tortor eget velit lacinia commodo ut eu lacus. Fusce consectetur ullamcorper euismod.
+        <p>
+          Romanian whist is a game for 3 to 7 players (best for 4 to 5). Each player plays alone.<br>
+          The cards rank as follows: A, K, Q, J, 10, 9, and so on. They have no value, because it is a game for tricks only.
+          </p>
+          <h3>Deal</h3>
+          The first dealer is chosen at random.<br>
+          The number of cards dealt to each player varies during the game.<br>
+          It start with only one card. After this the number of cards dealt to each player increases<br>
+          with every deal until eventually all the cards are dealt.<br>
+          Then as many deals are played with all cards used (using no trump) than there are players.<br><br>
 
-Cras nec sollicitudin ligula, ut viverra massa. Nulla massa odio, malesuada in malesuada eget, aliquet elementum magna. Aliquam erat volutpat. Maecenas porta neque tellus, sed imperdiet risus pulvinar eu. Duis sodales eleifend felis vitae vulputate. Nullam ligula arcu, dictum nec erat nec, pulvinar euismod elit. Nunc at ante dui. Phasellus vel tempus lacus. Nam nisl arcu, varius in libero sed, finibus eleifend sem. Proin sodales nibh enim, sed aliquam libero egestas id. Vivamus ut lorem vel justo pulvinar vulputate vitae vel risus. Curabitur lacinia, nibh condimentum tincidunt ultricies, ligula augue lacinia nunc, in vehicula magna tellus vel orci. Donec non leo facilisis, porta arcu in, venenatis metus. Aliquam vitae commodo urna. Nunc cursus eu mauris sed iaculis.
+          Then the number of cards dealt decreases again until every player gets only one card.<br>
 
-Aliquam in justo ante. Phasellus posuere orci mi, id ullamcorper tellus tincidunt et. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Quisque vehicula, lorem ac consequat sagittis, nisi ex tristique est, vel mattis nisl metus in justo. Vestibulum orci tellus, pharetra laoreet arcu non, dictum scelerisque enim. Maecenas commodo condimentum consectetur. Fusce quis turpis sollicitudin, elementum ipsum at, laoreet nunc. Aenean eu purus ligula. Etiam dictum libero in ligula sagittis, ac scelerisque ligula luctus.
+          Example: With 4 players the whole game could consist of deals with the following number of cards:<br>
+          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 13, 13, 13, 12, 11, 10, 9, 8, 8, 7, 6, 5, 4, 3, 2, 1<br><br>
 
-Sed gravida tortor eget posuere pharetra. Aliquam vehicula ultrices semper. Quisque ut posuere nibh, vitae faucibus quam. Curabitur pulvinar, tortor vel molestie placerat, tellus lorem posuere ipsum, non interdum nibh tortor eu diam. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Maecenas a erat tellus. Nunc sed faucibus augue, sed porta magna. In volutpat nisl nibh, sit amet fermentum ex malesuada ut. In in efficitur sapien.
+          To speed things us, the increment could be set to 2, which would result in the following deal pattern:<br>
+          1, 3, 5, 7, 9, 11, 13, 13, 13, 13, 11, 9, 7, 5, 3, 1<br><br>
 
-Duis vestibulum mi eu lectus imperdiet, sed suscipit orci maximus. Proin sagittis quam et lorem ullamcorper, in congue nisl semper. Duis semper cursus tortor, ut facilisis ligula luctus at. Vivamus tristique, libero sit amet aliquam egestas, mauris turpis efficitur elit, sit amet viverra ipsum felis eu quam. Nunc rhoncus leo lorem, sed pellentesque nunc rutrum in. Nullam egestas lorem eu mollis lobortis. Mauris porttitor facilisis tellus sit amet tempus. Pellentesque consequat, arcu id tempus placerat, turpis erat condimentum elit, at fringilla sem lorem vitae neque. Duis quis laoreet purus. Maecenas maximus finibus ultricies. Fusce in risus ac nunc bibendum varius. Donec in risus non justo pharetra tristique. Vestibulum sit amet volutpat metus.
-    </p>
+          <i>This application lets you decide how many cards to deal for each hand so you can choose the pattern you want.</i><br><br>
+
+          After the cards are dealt, the next card is put face up (if trump is used); the suit of this card is the trump suit.<br>
+         <br>
+         <h3>Bidding</h3>
+         Each player in order, beginning with the player to dealer's left, bids how many tricks they think they will take.<br>
+         All bids are final and cannot be changed afterwards.<br>
+         To ensure that not everyone will succeed in their bid, the sum of all tricks bid must not be the same as the number of cards dealt to each player.<br>
+         (Example: game with six cards, three players: The first player bids "3", the next "1".<br>
+         The last player cannot bid "2", as this would make the sum of the tricks equal to 6.<br>
+         In this case, the last bidder must bid 0, 1, 3, 4, 5 or 6).<br>
+         This rule puts the last bidder (the dealer) at a disadvantage.<br><br>
+
+         The player to dealer's left plays the first card.<br>
+         <h3>Playing</h3>
+         The other players must play a card of the same suit if possible.<br>
+         Any player who has no card of the suit led must play a trump if they can.<br>
+         A player who has no cards of the suit led and no trumps can discard any card.<br>
+         The trick is won by whoever played the highest trump, or if no trump was played, by whoever played the highest card of the suit led.<br>
+         The winner of the trick leads to the next.<br><br>
+
+         The objective is to win exactly the number of tricks you said you would win.<br><br>
+
+         The hand ends when all cards are played.<br>
+
+         <h3>Scoring</h3>
+         Players who made their contract (exactly) get bonus points plus the number of tricks they made.<br><br>
+         <i>The bonus points set to 1 for now.</i><br><br>
+         Players who took fewer tricks than their bid lose one point for each under-trick.<br>
+         Players who took more tricks than their bid lose one point for each over-trick.<br><br>
+
+         Examples: Suppose you bid 3 tricks. If you take exactly 3 you will win 8 points (5+3).<br>
+         If you take only two tricks you lose 1 point; the same if you take 4 tricks.<br>
+         If you take 1 or 5 tricks (two off from your bid) you will lose 2 points;<br>
+         if you take no tricks or 6 tricks you will lose 3.<br>
     </div>
+    <div>
+      <h3> References</h3>
+      <a href="https://en.wikipedia.org/wiki/Romanian_whist"> Wikipedia page on Romanian Whist</a><br><br>
 
 
     <!-- <form action="" method="post" novalidate>
