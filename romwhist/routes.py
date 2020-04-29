@@ -52,7 +52,6 @@ def index():
             # db.session.add(user)
             # db.session.commit()
             # login_user(user)
-    print("Index Validate on Submit")
     if form.validate_on_submit():
         username = form.user_name.data
         print ("User: ", username)
@@ -249,17 +248,19 @@ def start_hand(nbcards, trump):
 
 @socketio.on('join game')
 def on_join(data):
+    # Note that a refresh on the client side causes the socketio sid to changed
+    # so need to remove the previous sid from the room
     print ("on_join")
     game_id = session.get('game_id')
     if not game_id is None:
         if session['game_id'] in games:
             # Add user to room if user is not there already
             player = session.get('username')
-            client_room = clients[game_id].get(player)
-            # Adding client room id to list of clients
-            # if client_room is None:
-            print("Adding player to game room")
+            current_client_room = clients[game_id].get(player)
+
+            # Adding new client room id (sid) to list of clients
             clients[game_id][player] = request.sid
+            session['sid'] = request.sid
             join_room(game_id)
 
 @socketio.on('leave game')
@@ -283,6 +284,9 @@ def on_stop(data):
         leave_room(game_id)
         emit("game stopped", session['username'], room=game_id)
 
+@socketio.on('disconnect')
+def test_disconnect():
+    print('Client disconnected')
 
 def stop_game():
     game_id = session.get('game_id')

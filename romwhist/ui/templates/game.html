@@ -171,9 +171,7 @@ Deployment
       socket.on('hand completed', function(data) {
         player_name=data['player_to_deal']
         scores=data['scores']
-        //alert("Hand Completed. Next dealer: " + player_name + " scores:" + scores)
-        // TODO: Enable Deal button on player to deal
-        // Update scores
+        show_alert("Hand completed. Next dealer is: " + player_name,"alert alert-info")
         Object.keys(scores).forEach(function(player) {
           score = scores[player];
           let id_score = "#score_" + player
@@ -207,31 +205,6 @@ Deployment
       socket.on('new player', function(player_name) {
         socket.emit('join game', player_name);
         window.location.reload(false);
-
-          // alert('new player joined')
-          // console.log("New Player joined: " + player_name)
-        //   $('#players').append('<td><h3>' + player_name + "</h3></td>");
-        //
-        //   let id_bet = "bets_" + player_name
-        //   $("#bets").append(
-        //     "<td>" +
-        //     "<label for=" + "'" + id_bet + "'" + ">Bets</label>" +
-        //     "<input type=number id=" + "'" + id_bet + "'" + " name='bets' min=0 max=18 readonly>" +
-        //     "</td>")
-        //
-        //   let id_rounds = "rounds_" + player_name
-        //   $("#rounds").append(
-        //     "<td>" +
-        //     "<label for=" + "'" + id_rounds + "'" + ">Rounds</label>" +
-        //     "<input type=number id=" + "'" + id_rounds + "'" + " name='rounds' min=0 max=18>" +
-        //     "</td>")
-        //
-        //   let id_score = "score_" + player_name
-        //   $("#scores").append(
-        //     "<td>" +
-        //     "<label for=" + "'" + id_score + "'" + ">Scores</label>" +
-        //     "<input type=number id=" + "'" + id_score + "'" + " name='score' min=0 max=999>" +
-        //     "</td>")
       });
 
       socket.on('player left', function(player_name) {
@@ -254,15 +227,8 @@ Deployment
 
       socket.on('round ended', function(player_name) {
 
-        // function myFunction(callback) {
-        //   alert('Round ended. Winner is: ' + player_name);
-        //   callback();
-        // }
+          show_alert("Rounded ended. Winner is " + player_name,"alert alert-info")
 
-        // myFunction(function() {
-          // Clear cards played
-          // $('#cards_played').empty()
-          //alert('Round ended. Winner is: ' + player_name);
           $("#"+last_player).removeClass("active_player");
           $("#"+last_player).addClass("normal_player");
 
@@ -274,106 +240,111 @@ Deployment
         // });
       });
   });
-
+  function show_alert(message,alerttype) {
+    $('#alert_placeholder').append('<div id="alertdiv" class="alert ' +  alerttype + '"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
+    setTimeout(function() {
+      $("#alertdiv").remove();
+    }, 5000);
+  }
 </script>
-
-        <div class="table-responsive">
-        <table class="table">
-          <tr id="players">
-            {% for player in players -%}
-              <td id="{{ player }}" class="normal_player">{{ player }} </td>
-            {% endfor %}
-          </tr>
-          <tr id="bets">
-            {% for player in players -%}
-              <td>
-                <label for="'bets_' + {{ player }}" class="player_info">Bets</label>
-                <!-- TODO: should set bet to '' if it is -1 -->
-                {% if bets[player] == -1 %}
-                  <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value='' readonly>
-                {% else %}
-                  <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value={{ bets[player] }} readonly>
-                {% endif %}
-              </td>
-            {% endfor %}
-          </tr>
-          <tr id="rounds">
-            {% for player in players -%}
-              <td>
-                <label for="'rounds_' + {{ player }}" class="player_info">Wins</label>
-                <input type="number" id="rounds_{{ player }}" name="rounds" class="player_info" min=0 max=18 readonly value={{ wins[player] }}>
-              </td>
-            {% endfor %}
-          </tr>
-          <tr id=scores>
-            {% for player in players -%}
-              <td>
-                <label for="'score_' + {{ player }}" class="player_info">Score</label>
-                <input type="number" id="score_{{ player }}" name="score" class="player_info" min=0 max=999 readonly value={{ scores[player] }}>
-              </td>
-            {% endfor %}
-          </tr>
-        </table>
-      </div>
-
-    <div id="card-table" class="container">
-      <div class="bottomright" id="trump_card">
-      </div>
-      <div id="cards_played">
-        <!-- TODO populate on refresh -->
-      </div>
-    </div>
-
-    <div>
-      <form action="" method="post" novalidate>
-          {{ form.hidden_tag() }}
-          <div class="container">
-          <div class="col-md-8">
-            <div class="form-group">
-              <br>
-              {{ form.nb_cards.label(class="deal") }}
-              {{ form.nb_cards(size=2) }}
-              {{ form.trump.label(class="deal") }}
-              {{ form.trump }}
-              <button id="deal" class="btn btn-primary" name="deal" type="button">Deal</button>
-            </div>
-            <br>
-          </div>
-          </div>
-          <div>
-            <div class="col-md-12" id="cards">
-              <!-- <tr id="cards"></tr> -->
-              {% for card in hand -%}
-                <td>
-                   <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" class="card_hand">
-                   <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
-                </td>
-              {% endfor %}
-            </div>
-            <br><br>
-          </div>
-          <div class="container">
-            <div class="col-md-6">
-              <!-- <div class="btn-group"> -->
-                <br><br>
-                {{ form.leave_game(class="btn btn-warning") }}
-                {{ form.stop_game(class="btn btn-danger") }}
-              <!-- </div> -->
-            </div>
-          </div>
-        </form>
-      </div>
-    <!-- <button id="leave_game" class="btn btn-warning" name="leave_game" type="button">Leave Game</button>
-    <button id="stop_game" class="btn btn-danger" name="stop_game" type="button">Stop Game</button> -->
-
 <!--
-    <div class="col-md-4">
-      <div class="form-group">
-        <input type="number" id="nb_card">Number of card</input>
-        <button id="deal">Deal</button>
-      </div>
+COuld embedd the following html in a script as shown under so it can be re-used on player joined event
+rather than refreshing page
+  <script id="blockOfStuff" type="text/html">
+      Here's some random text.
+      <h1>Including HTML markup</h1>
+      And quotes too, or as one man said, "These are quotes, but
+      'these' are quotes too."
+  </script>
+ -->
+
+    <div class="table-responsive">
+    <table class="table">
+      <tr id="players">
+        {% for player in players -%}
+          <td id="{{ player }}" class="normal_player">{{ player }} </td>
+        {% endfor %}
+      </tr>
+      <tr id="bets">
+        {% for player in players -%}
+          <td>
+            <label for="'bets_' + {{ player }}" class="player_info">Bets</label>
+            <!-- TODO: should set bet to '' if it is -1 -->
+            {% if bets[player] == -1 %}
+              <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value='' readonly>
+            {% else %}
+              <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value={{ bets[player] }} readonly>
+            {% endif %}
+          </td>
+        {% endfor %}
+      </tr>
+      <tr id="rounds">
+        {% for player in players -%}
+          <td>
+            <label for="'rounds_' + {{ player }}" class="player_info">Wins</label>
+            <input type="number" id="rounds_{{ player }}" name="rounds" class="player_info" min=0 max=18 readonly value={{ wins[player] }}>
+          </td>
+        {% endfor %}
+      </tr>
+      <tr id=scores>
+        {% for player in players -%}
+          <td>
+            <label for="'score_' + {{ player }}" class="player_info">Score</label>
+            <input type="number" id="score_{{ player }}" name="score" class="player_info" min=0 max=99 readonly value={{ scores[player] }}>
+          </td>
+        {% endfor %}
+      </tr>
+    </table>
+  </div>
+
+  <div id="alert_placeholder"></div>
+
+  <div id="card-table" class="container">
+    <div class="bottomright" id="trump_card">
     </div>
-    <div id="Players">Players</div>
-    <div id="cards">My Cards</div>
--->
+    <div id="cards_played">
+      <!-- TODO populate on refresh -->
+    </div>
+  </div>
+
+  <div>
+    <form action="" method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="container">
+        <div class="col-md-8">
+          <div class="form-group">
+            <br>
+            {{ form.nb_cards.label(class="deal") }}
+            {{ form.nb_cards(size=2) }}
+            {{ form.trump.label(class="deal") }}
+            {{ form.trump }}
+            <button id="deal" class="btn btn-primary" name="deal" type="button">Deal</button>
+          </div>
+          <br>
+        </div>
+      </div>
+      <div>
+        <div class="col-md-12" id="cards">
+          <!-- <tr id="cards"></tr> -->
+          {% for card in hand -%}
+          <td>
+            <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" class="card_hand">
+            <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
+          </td>
+          {% endfor %}
+        </div>
+        <br><br>
+      </div>
+      <div class="container">
+        <div class="col-md-6">
+          <!-- <div class="btn-group"> -->
+          <br><br>
+          {{ form.leave_game(class="btn btn-warning") }}
+          {{ form.stop_game(class="btn btn-danger") }}
+          <!-- </div> -->
+        </div>
+      </div>
+    </form>
+  </div>
+
 {% endblock %}

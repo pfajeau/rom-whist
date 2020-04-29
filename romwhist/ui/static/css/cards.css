@@ -16,16 +16,33 @@ body
 	width:80px
 }
 
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
 .player_info {
 	font-size: small;
 	font-weight: normal;
 }
 
+.active_player {
+	font-weight: bold;
+	color: darkred;
+	animation: blinker 1s step-start infinite;
+}
+
+.normal_player {
+	font-weight: bold;
+	color: black;
+}
+
+
 .game_page_title{
 		font-size: medium;
 		text-align: center;
 		font-weight: bold;
-		color: darkred;
+		color: darkblue;
 }
 
 /* Remove up and down arrow in integer input field */
@@ -44,19 +61,9 @@ figcaption {
   caption-side: bottom;
 }
 
-.active_player {
-	font-weight: bold;
-	color: red;
-}
-
 .deal {
 	font-size: medium;
 }
-.normal_player {
-	font-weight: bold;
-	color: black;
-}
-
 .trump_caption {
 	font-weight: bold;
 	color:white;
