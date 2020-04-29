@@ -28,14 +28,13 @@ UI enhancements
   var new_round = true;
   var first_card;
 
-
   function RecursiveUnbind($jElement) {
-      // remove this element's and all of its children's click events
-      $jElement.unbind();
-      $jElement.removeAttr('onclick');
-      $jElement.children().each(function () {
-          RecursiveUnbind($(this));
-      });
+    // remove this element's and all of its children's click events
+    $jElement.unbind();
+    $jElement.removeAttr('onclick');
+    $jElement.children().each(function () {
+      RecursiveUnbind($(this));
+    });
   }
 
   function make_players_inactive() {
@@ -56,6 +55,39 @@ UI enhancements
     $("#"+player_name).addClass("active_player");
   }
 
+  function deal() {
+    let trump_flag = $("#trump").is(":checked");
+    socket.emit('start hand', document.getElementById("nb_cards").value,
+                              trump_flag);
+    make_player_inactive(username);
+    disable_deal();
+  }
+
+  function enable_deal() {
+    document.getElementById("deal").onclick = deal;
+    $("#deal").prop("disabled",false);
+  }
+
+  function disable_deal() {
+    RecursiveUnbind($("#deal"));
+    $("#deal").prop("disabled",true);
+  }
+
+  function start_game() {
+    socket.emit('cs game started');
+    disable_start_game();
+  }
+
+  function enable_start_game() {
+    document.getElementById("start_game").onclick = start_game;
+    $("#start_game").prop("disabled",false);
+  }
+
+  function disable_start_game() {
+      RecursiveUnbind($("#start_game"));
+      $("#start_game").prop("disabled",true);
+}
+
   function card_played (card) {
 
     // Remove card from hand being displayed
@@ -74,79 +106,90 @@ UI enhancements
 
   document.addEventListener('DOMContentLoaded', () => {
 
+    // Prevent form to be submitted when user enter the number of cards to deal
     $('#nb_cards').keydown(function (e) {
-        if (e.keyCode == 13) {
-            e.preventDefault();
-            return false;
-        }
+      if (e.keyCode == 13) {
+        e.preventDefault();
+        return false;
+      }
     });
 
-      // Connect to websocket
-      socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+    // Connect to websocket
+    socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
 
-      // When connected, configure buttons
-      socket.on('connect', function() {
+    // When connected, configure buttons
+    socket.on('connect', function() {
 
-          // Register user - only used here to cover the case of
-          // first player joining. DO NOT REMOVE
-          socket.emit('join game', {data:''});
+      // Register user - only used here to cover the case of
+      // first player joining. DO NOT REMOVE
+      socket.emit('join game', {data:''});
 
-          document.getElementById("deal").onclick = function() {
-            let trump_flag = $("#trump").is(":checked");
-            socket.emit('start hand', document.getElementById("nb_cards").value,
-                                      trump_flag);
-            make_players_inactive();
-            // $("#"+username).removeClass("active_player");
-            // $("#"+username).addClass("normal_player");
+      enable_start_game();
+      disable_deal();
+      make_players_inactive();
 
-          };
-
-          // document.getElementById("leave_game").onclick = function() {
-          //   socket.emit('leave game');
-          // };
-
-          // document.getElementById("stop_game").onclick = function() {
-          //   socket.emit('stop game');
-          // }
-
-          // Register action for bet input field
-          let id_bet = "#bets_" + username
-          $(id_bet).change(function() {
-            bet = parseInt($(id_bet).val(),10);
-            if (bet == forbidden_bet) {
-               alert ("This bet is not allowed")
-            }
-            else {
-              $(id_bet).attr('readonly', true);
-              // $("#"+username).removeClass("active_player");
-              // $("#"+username).addClass("normal_player");
-              make_player_active(username);
-              socket.emit("player bet", $(id_bet).val())
-            }
-          });
+      // Register action for bet input field
+      let id_bet = "#bets_" + username
+      $(id_bet).change(function() {
+        bet = parseInt($(id_bet).val(),10);
+        if (bet == forbidden_bet) {
+          alert ("This bet is not allowed")
+        }
+        else {
+          $(id_bet).attr('readonly', true);
+          // $("#"+username).removeClass("active_player");
+          // $("#"+username).addClass("normal_player");
+          make_player_active(username);
+          socket.emit("player bet", $(id_bet).val())
+        }
       });
+    });
 
+    socket.on('sc game started', function(data) {
+      console.log("Game started event received")
+      console.log(data)
+      dealer = data['player_to_deal'];
+      nb_cards_to_deal = data['nb_cards']
 
-      socket.on('new hand', function(data) {
-          make_players_inactive();
-          $('#trump_card').html('')
-          $('#cards').html('');
-          $('#cards_played').empty()
+      // if cards to deal is > 0, then assume cards will be delt automtically.
+      // So disable the Deal button.
+      // Otherwise, do nothing
+      if (nb_cards_to_deal > 0) {
+        disable_deal();
+      }
+      else {
+        // Enable deal button if player is dealer
+        if (dealer == username) {
+          make_player_active(dealer);
+          enable_deal();
+        }
+        else {
+          disable_deal();
+        }
+      }
+      disable_start_game();
+    });
 
-          // $('#cards').append('<ul>');
-          for (var card_index in data) {
-              // $('#cards').append('<br>' + data[card])
-              let card =data[card_index]
-              let image = 'img/' + card + ".svg"
-              // let card = data[card]
-              $('#cards').append('<td>'+
-                "<img id=" + card + " src={{ url_for('static', filename='') }}" +
-                image + ' alt=' + card + ' class="card_hand"' + '>' + '</td>')
+    socket.on('new hand', function(data) {
+      make_players_inactive();
+      $('#trump_card').html('')
+      $('#cards').html('');
+      $('#cards_played').empty()
 
-              // Reset bets and wins to 0
-              $('#rounds input').val(0);
-              $('#bets input').val("");
-          }
+      // $('#cards').append('<ul>');
+      for (var card_index in data) {
+        // $('#cards').append('<br>' + data[card])
+        let card =data[card_index]
+        let image = 'img/' + card + ".svg"
+        // let card = data[card]
+        $('#cards').append('<td>'+
+          "<img id=" + card + " src={{ url_for('static', filename='') }}" +
+          image + ' alt=' + card + ' class="card_hand"' + '>' + '</td>')
+
+          // Reset bets and wins to 0
+          $('#rounds input').val(0);
+          $('#bets input').val("");
+        }
       });
 
       socket.on('player to bet', function(data) {
@@ -182,25 +225,19 @@ UI enhancements
         // Enable the cards in hand to be played
         // $("#"+player_name).addClass("active_player");
         // $("#"+player_name).removeClass("normal_player");
-          player_name=data['player']
-          allowed_cards = data['allowed_cards']
-          make_player_active(player_name);
-          if (player_name === username) {
-            // TODO: only enable for allowed list of cards
-            $( '#cards img').each(function( index ) {
-              card = $(this).attr('id');
-              if (allowed_cards.indexOf(card) > -1) {
-                $(this).bind("click", (function () {
-                    card_played($(this).attr('id'))
-                  }));
-              }});
-          }
-          //     })
-          //     console.log( index + ": " + $( this ).text() );
-          //   });
-          //   $('#cards img').bind("click", (function () {
-          //       card_played($( this ).attr('id'))
-          // }))
+        player_name=data['player']
+        allowed_cards = data['allowed_cards']
+        make_player_active(player_name);
+        if (player_name === username) {
+          // TODO: only enable for allowed list of cards
+          $( '#cards img').each(function( index ) {
+            card = $(this).attr('id');
+            if (allowed_cards.indexOf(card) > -1) {
+              $(this).bind("click", (function () {
+                card_played($(this).attr('id'))
+              }));
+            }});
+        }
       });
 
       socket.on('hand completed', function(data) {
@@ -214,29 +251,34 @@ UI enhancements
         });
         let image = 'img/' + trump_card + ".svg"
         $('#trump_card').html('')
+
+        // Enable Deal button for dealer
+        if (username == player_name) {
+          enable_deal();
+        }
       });
 
       socket.on('card played', function(data) {
-          if (new_round) {
-            $('#cards_played').empty();
-            new_round = false;
-            first_card = data['card'];
-          }
-          let player_name = data['player']
-          let card = data['card']
-          // Display card on table
+        if (new_round) {
+          $('#cards_played').empty();
+          new_round = false;
+          first_card = data['card'];
+        }
+        let player_name = data['player']
+        let card = data['card']
+        // Display card on table
 
-          let image = 'img/' + card + ".svg"
-          let card_table_id='#' + card + "_table"
-          // $(cards_played).append("<figure>");
-          $('#cards_played').append("<img id=" + card + "_table"+ " src={{ url_for('static', filename='') }}" +
-          image + ' alt=' + card + ' class="card_table"' + '>')
-          // $(cards_played).append("<figcaption><h3 class='trump_caption'>" + player_name +"</h3></figcaption>");
-          // $(cards_played).append("</figure>");
-          make_player_inactive(player_name);
-          // $("#"+player_name).removeClass("active_player");
-          // $("#"+player_name).addClass("normal_player");
-          last_player = player_name
+        let image = 'img/' + card + ".svg"
+        let card_table_id='#' + card + "_table"
+        // $(cards_played).append("<figure>");
+        $('#cards_played').append("<img id=" + card + "_table"+ " src={{ url_for('static', filename='') }}" +
+        image + ' alt=' + card + ' class="card_table"' + '>')
+        // $(cards_played).append("<figcaption><h3 class='trump_caption'>" + player_name +"</h3></figcaption>");
+        // $(cards_played).append("</figure>");
+        make_player_inactive(player_name);
+        // $("#"+player_name).removeClass("active_player");
+        // $("#"+player_name).addClass("normal_player");
+        last_player = player_name
       });
 
       socket.on('new player', function(player_name) {
@@ -252,9 +294,9 @@ UI enhancements
       });
 
       socket.on('trump card', function(trump_card) {
-          let image = 'img/' + trump_card + ".svg"
-          $('#trump_card').html('')
-          $('#trump_card').append("<figure>");
+        let image = 'img/' + trump_card + ".svg"
+        $('#trump_card').html('')
+        $('#trump_card').append("<figure>");
           $('#trump_card').append("<img src={{ url_for('static', filename='') }}" +
           image + ' alt=' + trump_card + 'width=80 height=80' + '>');
           $('#trump_card').append("<figcaption><h3 class='trump_caption'>Trump</h3></figcaption>");
@@ -263,125 +305,128 @@ UI enhancements
       });
 
       socket.on('round ended', function(player_name) {
-          show_alert("Rounded ended. Winner is " + player_name,"alert alert-info")
-          make_player_inactive(last_player);
-          // $("#"+last_player).removeClass("active_player");
-          // $("#"+last_player).addClass("normal_player");
+        show_alert("Rounded ended. Winner is " + player_name,"alert alert-info")
+        make_player_inactive(last_player);
+        // $("#"+last_player).removeClass("active_player");
+        // $("#"+last_player).addClass("normal_player");
 
-          let id_rounds = "rounds_" + player_name
-          var value = parseInt(document.getElementById(id_rounds).value, 10);
-          value++;
-          document.getElementById(id_rounds).value = value;
-          new_round = true
-        // });
+        let id_rounds = "rounds_" + player_name
+        var value = parseInt(document.getElementById(id_rounds).value, 10);
+        value++;
+        document.getElementById(id_rounds).value = value;
+        new_round = true
       });
-  });
-  function show_alert(message,alerttype) {
-    $('#alert_placeholder').append('<div id="alertdiv" class="alert ' +  alerttype + '"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
-    setTimeout(function() {
-      $("#alertdiv").remove();
-    }, 5000);
-  }
+    });
+
+    function show_alert(message,alerttype) {
+      $('#alert_placeholder').append('<div id="alertdiv" class="alert ' +  alerttype + '"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
+      setTimeout(function() {
+        $("#alertdiv").remove();
+      }, 5000);
+    }
+
 </script>
-<!--
-COuld embedd the following html in a script as shown under so it can be re-used on player joined event
-rather than refreshing page
-  <script id="blockOfStuff" type="text/html">
-      Here's some random text.
-      <h1>Including HTML markup</h1>
-      And quotes too, or as one man said, "These are quotes, but
-      'these' are quotes too."
-  </script>
- -->
+        <!--
+        COuld embedd the following html in a script as shown under so it can be re-used on player joined event
+        rather than refreshing page
+        <script id="blockOfStuff" type="text/html">
+        Here's some random text.
+        <h1>Including HTML markup</h1>
+        And quotes too, or as one man said, "These are quotes, but
+        'these' are quotes too."
+      </script>
+    -->
 
     <div class="table-responsive">
-    <table class="table">
-      <tr id="players">
-        {% for player in players -%}
+      <table class="table">
+        <tr id="players">
+          {% for player in players -%}
           <td id="{{ player }}" name="player" class="normal_player">{{ player }} </td>
-        {% endfor %}
-      </tr>
-      <tr id="bets">
-        {% for player in players -%}
+          {% endfor %}
+        </tr>
+        <tr id="bets">
+          {% for player in players -%}
           <td>
             <label for="'bets_' + {{ player }}" class="player_info">Bets</label>
             <!-- TODO: should set bet to '' if it is -1 -->
             {% if bets[player] == -1 %}
-              <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value='' readonly>
+            <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value='' readonly>
             {% else %}
-              <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value={{ bets[player] }} readonly>
+            <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value={{ bets[player] }} readonly>
             {% endif %}
           </td>
-        {% endfor %}
-      </tr>
-      <tr id="rounds">
-        {% for player in players -%}
+          {% endfor %}
+        </tr>
+        <tr id="rounds">
+          {% for player in players -%}
           <td>
             <label for="'rounds_' + {{ player }}" class="player_info">Wins</label>
             <input type="number" id="rounds_{{ player }}" name="rounds" class="player_info" min=0 max=18 readonly value={{ wins[player] }}>
           </td>
-        {% endfor %}
-      </tr>
-      <tr id=scores>
-        {% for player in players -%}
+          {% endfor %}
+        </tr>
+        <tr id=scores>
+          {% for player in players -%}
           <td>
             <label for="'score_' + {{ player }}" class="player_info">Score</label>
             <input type="number" id="score_{{ player }}" name="score" class="player_info" min=0 max=99 readonly value={{ scores[player] }}>
           </td>
-        {% endfor %}
-      </tr>
-    </table>
-  </div>
-
-  <div id="alert_placeholder"></div>
-
-  <div id="card-table" class="container">
-    <div class="bottomright" id="trump_card">
-    </div>
-    <div id="cards_played">
-      <!-- TODO populate on refresh -->
-    </div>
-  </div>
-
-  <div>
-    <form action="" method="post" novalidate>
-      {{ form.hidden_tag() }}
-      <div class="container">
-        <div class="col-md-8">
-          <div class="form-group">
-            <br>
-            {{ form.nb_cards.label(class="deal") }}
-            {{ form.nb_cards(size=2) }}
-            {{ form.trump.label(class="deal") }}
-            {{ form.trump }}
-            <button id="deal" class="btn btn-primary" name="deal" type="button">Deal</button>
-          </div>
-          <br>
-        </div>
-      </div>
-      <div>
-        <div class="col-md-12" id="cards">
-          <!-- <tr id="cards"></tr> -->
-          {% for card in hand -%}
-          <td>
-            <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" class="card_hand">
-            <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
-          </td>
           {% endfor %}
-        </div>
-        <br><br>
-      </div>
-      <div class="container">
-        <div class="col-md-6">
-          <!-- <div class="btn-group"> -->
-          <br><br>
-          {{ form.restart_game(class="btn btn-warning") }}
-          {{ form.leave_game(class="btn btn-warning") }}
-          {{ form.stop_game(class="btn btn-danger") }}
-          <!-- </div> -->
-        </div>
-      </div>
-    </form>
-  </div>
+        </tr>
+      </table>
+    </div>
 
-{% endblock %}
+    <div id="alert_placeholder"></div>
+
+    <div id="card-table" class="container">
+      <div class="bottomright" id="trump_card">
+      </div>
+      <div id="cards_played">
+        <!-- TODO populate on refresh -->
+      </div>
+    </div>
+
+    <div>
+      <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="container">
+          <div class="col-md-8">
+            <div class="form-group">
+              <br>
+              {{ form.nb_cards.label(class="deal") }}
+              {{ form.nb_cards(size=2) }}
+              {{ form.trump.label(class="deal") }}
+              {{ form.trump }}
+              <button id="deal" class="btn btn-primary" name="deal" type="button">Deal</button>
+            </div>
+            <br>
+          </div>
+        </div>
+        <div>
+          <div class="col-md-12" id="cards">
+            <!-- <tr id="cards"></tr> -->
+            {% for card in hand -%}
+            <td>
+              <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" class="card_hand">
+              <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
+            </td>
+            {% endfor %}
+          </div>
+          <br><br>
+        </div>
+        <div class="container">
+          <div class="col-md-12">
+            <!-- <div class="btn-group"> -->
+            <br><br>
+            <!-- TODO: start button should only be enabled if game has not started yet -->
+            <button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>
+            {{ form.restart_game(class="btn btn-warning") }}
+            {{ form.leave_game(class="btn btn-warning") }}
+            {{ form.stop_game(class="btn btn-danger") }}
+            <!-- </div> -->
+          </div>
+        </div>
+      </form>
+    </div>
+
+    {% endblock %}

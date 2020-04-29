@@ -7,6 +7,9 @@ from .round import Round
 
 class RomWhistGame():
 
+    MANUAL_DEALING = "manual"
+    AUTOMATED_DEALING = "automated"
+
     def __init__(self, game_creator = "", bonus_win = 1):
         self.players = []
         self.current_round = None
@@ -19,6 +22,7 @@ class RomWhistGame():
         self.bonus_win = bonus_win
         self.dealer = None
         self.init_dict(self.scores,0)
+        self.dealing_method = RomWhistGame.MANUAL_DEALING
 
 
     def reset(self):
@@ -169,6 +173,14 @@ class RomWhistGame():
             self.trump_card = None
 
         return self.hands
+
+    # TODO
+    def get_nb_cards_to_deal(self):
+        return 0
+
+    # TODO
+    def get_play_with_trump(self):
+        return True
 
     def end_game(self):
         pass

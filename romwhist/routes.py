@@ -69,6 +69,8 @@ def index():
                 print(error)
                 return render_template('index.html', error = error, form=form)
 
+            # TODO maybe prevent player from joining game in progres
+
             add_player(game_id)
             return redirect(url_for('game'))
 
@@ -167,6 +169,20 @@ def logout():
 def message(data):
     print ("message received");
 
+@socketio.on("cs game started")
+def game_started():
+    game_id = session.get('game_id')
+    # TODO:
+    # If manual dealiing, just emit event game sc game started
+    # In automated dealing, call start_hands with computed nb of cards and trump
+    player = players[game_id][randint(0,len(players[game_id])-1)]
+    socketio.emit("sc game started", {'player_to_deal': player, 'nb_cards': 0}, room=game_id)
+
+    # TODO: if automated dealing, need to create hands
+    if games[game_id].dealing_method == RomWhistGame.AUTOMATED_DEALING:
+        start_hand(game.get_nb_cards_to_deal(), game.get_play_with_trump())
+    #
+
 @socketio.on("player bet")
 def player_bet(bet):
     print ("player bet event received")
@@ -230,6 +246,9 @@ def start_hand(nbcards, trump):
     #selection = data["selection"]
     #votes[selection] += 1
     print ("start hand event received")
+    generate_hands(int(nbcards), trump)
+
+def generate_hands(nbcards, trump):
     print (nbcards)
     print("Trump:", trump)
 
@@ -240,7 +259,7 @@ def start_hand(nbcards, trump):
 
     a_game = games[game_id]
 
-    hands = a_game.deal(int(nbcards), trump, session['username'])
+    hands = a_game.deal(nbcards, trump, session['username'])
     round = a_game.create_round()
 
     # FInd out who the first player to bet is
@@ -250,12 +269,12 @@ def start_hand(nbcards, trump):
     for player in players[game_id]:
         cards = hands[player].serialize()
         print ("Cards for player ", player, " ", cards)
-        emit("new hand", cards, room=clients[game_id][player])
+        socketio.emit("new hand", cards, room=clients[game_id][player])
 
     if trump:
-        emit("trump card", str(a_game.trump_card), room=game_id)
+        socketio.emit("trump card", str(a_game.trump_card), room=game_id)
 
-    emit("player to bet", {'player': nplayer, 'forbidden_bet':-1}, room=game_id)
+    socketio.emit("player to bet", {'player': nplayer, 'forbidden_bet':-1}, room=game_id)
 
 @socketio.on('join game')
 def on_join(data):
