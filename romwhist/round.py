@@ -13,15 +13,24 @@ class Round():
         # The cards played during the round
         self.cards_played = dict()
         self.winning_player = ""
+        self.first_card_played=None
+        self.round_started = False
 
     # Return the number of players left to play for the Round
     # when last player has played, return 0
     def card_played(self, player, card):
-        if not self.cards_played:
+        if not self.round_started:
             # First card played
             self.first_player = player
+            self.first_card_played = card
+            self.round_started = True
+
         self.cards_played[player] = card
         return len (self.players) - len(self.cards_played)
+
+    def get_first_card_played(self):
+        return self.first_card_played;
+
 
     def last_card_played(self):
         return len(self.cards_played) == len (self.players)

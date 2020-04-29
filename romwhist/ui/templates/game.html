@@ -2,20 +2,15 @@
 
 
 <!-- TODO:
-COntrol which cards can be played
 Block deal button during round play
-Implement Leave Game
 Select number of cards in deck (sans atout)
 Configure score counting?
 Persistence?
 UI enhancements
-Deployment
 -->
 {% block navbar %}
 {{ super() }}
-<div class="topnav">
-<div class="game_page_title">Game ID: {{ session['game_id'] }} - You are: {{ session['username'] }}
-</div>
+<p class="game_page_title">Game ID: {{ session['game_id'] }} - You are: {{ session['username'] }}</p>
 {% endblock %}
 
 {% block content %}
@@ -26,11 +21,12 @@ Deployment
 
 <script type="text/javascript">
 
-  var socket
-  var username = "{{ session['username'] }}"
-  var forbidden_bet
-  var last_player
-  var new_round = true
+  var socket;
+  var username = "{{ session['username'] }}";
+  var forbidden_bet;
+  var last_player;
+  var new_round = true;
+  var first_card;
 
 
   function RecursiveUnbind($jElement) {
@@ -40,6 +36,24 @@ Deployment
       $jElement.children().each(function () {
           RecursiveUnbind($(this));
       });
+  }
+
+  function make_players_inactive() {
+    $('player').each(function( index ) {
+      $(this).removeClass("active_player");
+      $(this).addClass("normal_player");
+    })
+  }
+
+  function make_player_inactive(player_name) {
+    $("#"+player_name).addClass("normal_player");
+    $("#"+player_name).removeClass("active_player");
+  }
+
+  function make_player_active(player_name) {
+    make_players_inactive()
+    $("#"+player_name).removeClass("normal_player");
+    $("#"+player_name).addClass("active_player");
   }
 
   function card_played (card) {
@@ -53,8 +67,9 @@ Deployment
     // Prevent player from playing again until round is finished
     RecursiveUnbind($('#cards'));
 
-    $("#"+username).removeClass("active_player");
-    $("#"+username).addClass("normal_player");
+    make_player_inactive(username);
+    // $("#"+username).removeClass("active_player");
+    // $("#"+username).addClass("normal_player");
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -80,8 +95,9 @@ Deployment
             let trump_flag = $("#trump").is(":checked");
             socket.emit('start hand', document.getElementById("nb_cards").value,
                                       trump_flag);
-            $("#"+username).removeClass("active_player");
-            $("#"+username).addClass("normal_player");
+            make_players_inactive();
+            // $("#"+username).removeClass("active_player");
+            // $("#"+username).addClass("normal_player");
 
           };
 
@@ -102,14 +118,17 @@ Deployment
             }
             else {
               $(id_bet).attr('readonly', true);
-              $("#"+username).removeClass("active_player");
-              $("#"+username).addClass("normal_player");
+              // $("#"+username).removeClass("active_player");
+              // $("#"+username).addClass("normal_player");
+              make_player_active(username);
               socket.emit("player bet", $(id_bet).val())
             }
           });
       });
 
+
       socket.on('new hand', function(data) {
+          make_players_inactive();
           $('#trump_card').html('')
           $('#cards').html('');
           $('#cards_played').empty()
@@ -143,8 +162,9 @@ Deployment
           $(id_bet).attr('readonly', true);
         }
         // Highlight Username
-        $("#"+player_name).removeClass("normal_player");
-        $("#"+player_name).addClass("active_player");
+        make_player_active(player_name);
+        // $("#"+player_name).removeClass("normal_player");
+        // $("#"+player_name).addClass("active_player");
       });
 
       socket.on('player bet', function(data) {
@@ -153,25 +173,40 @@ Deployment
         bet=data['bet']
         let id_bet = "#bets_" + player_name
         $(id_bet).val(bet);
-        $("#"+player_name).removeClass("active_player");
-        $("#"+player_name).addClass("normal_player");
+        make_player_inactive(player_name);
+        // $("#"+player_name).removeClass("active_player");
+        // $("#"+player_name).addClass("normal_player");
       });
 
-      socket.on('player to play', function(player_name) {
+      socket.on('player to play', function(data) {
         // Enable the cards in hand to be played
-        $("#"+player_name).addClass("active_player");
-        $("#"+player_name).removeClass("normal_player");
-        if (player_name === username) {
-           $('#cards img').bind("click", (function () {
-                card_played($( this ).attr('id'))
-          }))
-        }
+        // $("#"+player_name).addClass("active_player");
+        // $("#"+player_name).removeClass("normal_player");
+          player_name=data['player']
+          allowed_cards = data['allowed_cards']
+          make_player_active(player_name);
+          if (player_name === username) {
+            // TODO: only enable for allowed list of cards
+            $( '#cards img').each(function( index ) {
+              card = $(this).attr('id');
+              if (allowed_cards.indexOf(card) > -1) {
+                $(this).bind("click", (function () {
+                    card_played($(this).attr('id'))
+                  }));
+              }});
+          }
+          //     })
+          //     console.log( index + ": " + $( this ).text() );
+          //   });
+          //   $('#cards img').bind("click", (function () {
+          //       card_played($( this ).attr('id'))
+          // }))
       });
 
       socket.on('hand completed', function(data) {
         player_name=data['player_to_deal']
         scores=data['scores']
-        show_alert("Hand completed. Next dealer is: " + player_name,"alert alert-info")
+        show_alert("Hand completed. Next dealer is: " + player_name,"alert alert-warning")
         Object.keys(scores).forEach(function(player) {
           score = scores[player];
           let id_score = "#score_" + player
@@ -183,8 +218,9 @@ Deployment
 
       socket.on('card played', function(data) {
           if (new_round) {
-            $('#cards_played').empty()
-            new_round = false
+            $('#cards_played').empty();
+            new_round = false;
+            first_card = data['card'];
           }
           let player_name = data['player']
           let card = data['card']
@@ -197,8 +233,9 @@ Deployment
           image + ' alt=' + card + ' class="card_table"' + '>')
           // $(cards_played).append("<figcaption><h3 class='trump_caption'>" + player_name +"</h3></figcaption>");
           // $(cards_played).append("</figure>");
-          $("#"+player_name).removeClass("active_player");
-          $("#"+player_name).addClass("normal_player");
+          make_player_inactive(player_name);
+          // $("#"+player_name).removeClass("active_player");
+          // $("#"+player_name).addClass("normal_player");
           last_player = player_name
       });
 
@@ -226,11 +263,10 @@ Deployment
       });
 
       socket.on('round ended', function(player_name) {
-
           show_alert("Rounded ended. Winner is " + player_name,"alert alert-info")
-
-          $("#"+last_player).removeClass("active_player");
-          $("#"+last_player).addClass("normal_player");
+          make_player_inactive(last_player);
+          // $("#"+last_player).removeClass("active_player");
+          // $("#"+last_player).addClass("normal_player");
 
           let id_rounds = "rounds_" + player_name
           var value = parseInt(document.getElementById(id_rounds).value, 10);
@@ -262,7 +298,7 @@ rather than refreshing page
     <table class="table">
       <tr id="players">
         {% for player in players -%}
-          <td id="{{ player }}" class="normal_player">{{ player }} </td>
+          <td id="{{ player }}" name="player" class="normal_player">{{ player }} </td>
         {% endfor %}
       </tr>
       <tr id="bets">
@@ -339,6 +375,7 @@ rather than refreshing page
         <div class="col-md-6">
           <!-- <div class="btn-group"> -->
           <br><br>
+          {{ form.restart_game(class="btn btn-warning") }}
           {{ form.leave_game(class="btn btn-warning") }}
           {{ form.stop_game(class="btn btn-danger") }}
           <!-- </div> -->

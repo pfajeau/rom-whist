@@ -109,7 +109,9 @@ def base():
 def game():
     form=GameForm()
     game_id = session.get('game_id')
+    player = session['username']
     print("In game route")
+    game=games[game_id];
     if request.method == 'POST':
         print("In game route")
         if game_id is None:
@@ -124,10 +126,13 @@ def game():
         if form.leave_game.data:
             remove_player()
             return redirect(url_for('index'))
-            # TODO:
+
+        if form.restart_game.data:
+            game.reset()
+             # TODO: need to notify all clients so their view can refreh as well
+            return redirect(url_for('game'))
     else:
-        game = games[game_id]
-        hand = game.get_hands().get(session['username'])
+        hand = game.get_hands().get(player)
         if hand is None:
             hand=[]
         else:
@@ -176,14 +181,18 @@ def player_bet(bet):
         emit("player bet", {'player':session['username'], 'bet':bet}, room = game_id)
         nplayer = game.next_player_to_bet(session['username'])
         if nplayer is None:
-            emit("player to play", next_player(session['username'], players[game_id]), room=game_id)
+            next_player_to_play = next_player(session['username'], players[game_id])
+            # All cards allowed for first player
+            allowed_cards = game.get_hand(next_player_to_play).serialize()
+            print("Allowed cards: ", allowed_cards)
+            emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards}, room=game_id)
 
         # Last player to bet
         else:
             forbidden_bet = game.forbidden_bet(nplayer)
             print ("Forbidden bet for player " + nplayer + " is:" + str(forbidden_bet))
             emit("player to bet", {'player': nplayer, 'forbidden_bet':forbidden_bet}, room=game_id)
-
+    return
 
 @socketio.on('player played')
 def player_played(data):
@@ -203,16 +212,18 @@ def player_played(data):
             emit("round ended", winner, room=game_id)
             game.create_round()
             nplayer = winner
+            allowed_cards = game.get_hand(nplayer).serialize()
 
-
-            # TODO: if last round for hand, update scores
             if game.is_hand_completed():
                 scores = game.update_scores()
                 emit("hand completed", {'scores':scores, 'player_to_deal': game.next_player_to_deal()}, room=game_id)
         else:
             nplayer = next_player(session['username'], players[game_id])
+            allowed_cards = game.get_allowed_cards(nplayer)
 
-        emit("player to play", nplayer, room=game_id)
+        print("Allowed cards: ", allowed_cards)
+        emit("player to play", {'player':nplayer, 'allowed_cards':allowed_cards}, room=game_id)
+    return
 
 @socketio.on('start hand')
 def start_hand(nbcards, trump):

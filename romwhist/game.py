@@ -18,11 +18,23 @@ class RomWhistGame():
         self.wins=dict()
         self.bonus_win = bonus_win
         self.dealer = None
+        self.init_dict(self.scores,0)
+
+
+    def reset(self):
+        self.current_round = None
+        self.trump_card = None
+        self.deck = Deck()
+        self.hands=dict()
+        self.scores=dict()
+        self.bets=dict()
+        self.wins=dict()
+        self.dealer = None
+        self.init_dict(self.scores,0)
 
     def add_player(self, player):
         self.players.append(player)
         self.scores[player] = 0
-
 
     def remove_player(self, player):
         self.players.remove(player)
@@ -33,6 +45,9 @@ class RomWhistGame():
     def start_game(self):
         # create deck
         pass
+
+    def get_hand(self, player):
+        return self.hands[player]
 
     def get_hands(self):
         return self.hands
@@ -99,6 +114,19 @@ class RomWhistGame():
             print("in card_played, wins for player {} is {}".format(player, self.wins[player]))
             return winner
         return None
+
+    # Return list of allowed cards as a list of
+    # cards represented as string (e.g. 'c4')
+    def get_allowed_cards(self, player):
+        # Allowed cards are cars of the same suit than the first card played
+        # If no cards are of the same suit, any card is allowed_cards
+        allowed_cards = []
+        for card in self.hands[player].get_cards():
+            if card.suit() == self.current_round.get_first_card_played().suit():
+                allowed_cards.append(str(card))
+        if len(allowed_cards) == 0:
+            allowed_cards = self.hands[player].serialize()
+        return allowed_cards
 
     def get_current_round(self):
         return self.current_round
