@@ -23,6 +23,7 @@ UI enhancements
 
   var socket;
   var username = "{{ session['username'] }}";
+  var ownername = "{{ session['ownername'] }}";
   var forbidden_bet;
   var last_player;
   var new_round = true;
@@ -38,7 +39,7 @@ UI enhancements
   }
 
   function make_players_inactive() {
-    $('player').each(function( index ) {
+    $("[name='player']").each(function() {
       $(this).removeClass("active_player");
       $(this).addClass("normal_player");
     })
@@ -64,7 +65,9 @@ UI enhancements
   }
 
   function enable_deal() {
-    document.getElementById("deal").onclick = deal;
+    document.getElementById("deal").onclick =function() {
+      deal();
+    }
     $("#deal").prop("disabled",false);
   }
 
@@ -72,21 +75,6 @@ UI enhancements
     RecursiveUnbind($("#deal"));
     $("#deal").prop("disabled",true);
   }
-
-  function start_game() {
-    socket.emit('cs game started');
-    disable_start_game();
-  }
-
-  function enable_start_game() {
-    document.getElementById("start_game").onclick = start_game;
-    $("#start_game").prop("disabled",false);
-  }
-
-  function disable_start_game() {
-      RecursiveUnbind($("#start_game"));
-      $("#start_game").prop("disabled",true);
-}
 
   function card_played (card) {
 
@@ -106,6 +94,7 @@ UI enhancements
 
   document.addEventListener('DOMContentLoaded', () => {
 
+
     // Prevent form to be submitted when user enter the number of cards to deal
     $('#nb_cards').keydown(function (e) {
       if (e.keyCode == 13) {
@@ -113,6 +102,36 @@ UI enhancements
         return false;
       }
     });
+
+    if (username == ownername) {
+        $("#game_action_buttons").append('<button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>');
+    }
+    $("#game_action_buttons").append('{{ form.leave_game(class="btn btn-secondary") }}');
+    if (username == ownername) {
+      $("#game_action_buttons").append('{{ form.restart_game(class="btn btn-warning") }}');
+      $("#game_action_buttons").append('{{ form.stop_game(class="btn btn-warning") }}');
+    }
+
+    function start_game() {
+      socket.emit('cs game started');
+      disable_start_game();
+    }
+
+    function enable_start_game() {
+      if (username == ownername) {
+        document.getElementById("start_game").onclick = function() {
+          start_game();
+        }
+      }
+      $("#start_game").prop("disabled",false);
+    }
+
+    // Don't want to do that for now
+    function disable_start_game() {
+      // RecursiveUnbind($("#start_game"));
+      // $("#start_game").prop("disabled",true);
+    }
+
 
     // Connect to websocket
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
@@ -127,6 +146,8 @@ UI enhancements
       enable_start_game();
       disable_deal();
       make_players_inactive();
+      // active_player = {{ active_player }}
+      // make_player_active(active_player)
 
       // Register action for bet input field
       let id_bet = "#bets_" + username
@@ -158,9 +179,9 @@ UI enhancements
         disable_deal();
       }
       else {
+        make_player_active(dealer);
         // Enable deal button if player is dealer
         if (dealer == username) {
-          make_player_active(dealer);
           enable_deal();
         }
         else {
@@ -252,6 +273,8 @@ UI enhancements
         let image = 'img/' + trump_card + ".svg"
         $('#trump_card').html('')
 
+        make_player_active(player_name)
+        
         // Enable Deal button for dealer
         if (username == player_name) {
           enable_deal();
@@ -415,14 +438,15 @@ UI enhancements
           <br><br>
         </div>
         <div class="container">
-          <div class="col-md-12">
+          <div id="game_action_buttons" class="btn-toolbar">
             <!-- <div class="btn-group"> -->
-            <br><br>
-            <!-- TODO: start button should only be enabled if game has not started yet -->
-            <button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>
-            {{ form.restart_game(class="btn btn-warning") }}
-            {{ form.leave_game(class="btn btn-warning") }}
-            {{ form.stop_game(class="btn btn-danger") }}
+            <br>
+            <!-- <button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>
+            {{ form.leave_game(class="btn btn-warning") }} -->
+            <!-- {% if username == ownername %}
+              {{ form.restart_game(class="btn btn-warning") }}
+              {{ form.stop_game(class="btn btn-danger") }}
+            {% endif %} -->
             <!-- </div> -->
           </div>
         </div>

@@ -70,7 +70,8 @@ def index():
                 return render_template('index.html', error = error, form=form)
 
             # TODO maybe prevent player from joining game in progres
-
+            game = games[game_id]
+            session['ownername'] = game.get_owner()
             add_player(game_id)
             return redirect(url_for('game'))
 
@@ -88,9 +89,12 @@ def index():
 
             print("creating new game with id: ", game_id)
             # Add game id in session
-            games[game_id] = RomWhistGame()
+            game = RomWhistGame(game_creator=username)
+            games[game_id] = game
             players[game_id] = []
             clients[game_id] = dict()
+
+            session['ownername'] = username
             add_player(game_id)
             return redirect(url_for('game'))
         # else:
@@ -140,7 +144,7 @@ def game():
         else:
             hand = hand.serialize()
         return render_template("game.html", form=form,  players=players[game_id], scores=game.get_scores(), \
-        hand=hand, bets=game.get_bets(), wins=game.get_wins())
+        hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=game.get_active_player())
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
@@ -197,7 +201,8 @@ def player_bet(bet):
         emit("player bet", {'player':session['username'], 'bet':bet}, room = game_id)
         nplayer = game.next_player_to_bet(session['username'])
         if nplayer is None:
-            next_player_to_play = next_player(session['username'], players[game_id])
+            # next_player_to_play = next_player(session['username'], players[game_id])
+            next_player_to_play = game.get_active_player()
             # All cards allowed for first player
             allowed_cards = game.get_hand(next_player_to_play).serialize()
             print("Allowed cards: ", allowed_cards)
@@ -227,14 +232,17 @@ def player_played(data):
         if not winner is None:
             emit("round ended", winner, room=game_id)
             game.create_round()
-            nplayer = winner
+            # nplayer = winner
+            nplayer = game.get_active_player()
             allowed_cards = game.get_hand(nplayer).serialize()
 
             if game.is_hand_completed():
                 scores = game.update_scores()
+                print ("hand completed, next player to deal:", game.next_player_to_deal())
                 emit("hand completed", {'scores':scores, 'player_to_deal': game.next_player_to_deal()}, room=game_id)
         else:
-            nplayer = next_player(session['username'], players[game_id])
+            # nplayer = next_player(session['username'], players[game_id])
+            nplayer = game.get_active_player()
             allowed_cards = game.get_allowed_cards(nplayer)
 
         print("Allowed cards: ", allowed_cards)
@@ -253,17 +261,20 @@ def generate_hands(nbcards, trump):
     print("Trump:", trump)
 
     game_id = session.get('game_id')
+
     if not game_id in games:
-        a_game = RomWhistGame();
-        games[game_id] = a_game
+       # Should never happen
+        game = RomWhistGame();
+        games[game_id] = game
+    else:
+        game = games[game_id]
 
-    a_game = games[game_id]
-
-    hands = a_game.deal(nbcards, trump, session['username'])
-    round = a_game.create_round()
+    hands = game.deal(nbcards, trump, session['username'])
+    round = game.create_round()
 
     # FInd out who the first player to bet is
-    nplayer = next_player(session['username'], players[game_id])
+    nplayer = game.get_active_player()
+    # nplayer = next_player(session['username'], players[game_id])
 
     # Distribute cards to each players
     for player in players[game_id]:
@@ -272,7 +283,7 @@ def generate_hands(nbcards, trump):
         socketio.emit("new hand", cards, room=clients[game_id][player])
 
     if trump:
-        socketio.emit("trump card", str(a_game.trump_card), room=game_id)
+        socketio.emit("trump card", str(game.trump_card), room=game_id)
 
     socketio.emit("player to bet", {'player': nplayer, 'forbidden_bet':-1}, room=game_id)
 

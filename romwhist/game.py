@@ -23,7 +23,8 @@ class RomWhistGame():
         self.dealer = None
         self.init_dict(self.scores,0)
         self.dealing_method = RomWhistGame.MANUAL_DEALING
-
+        self.owner = game_creator
+        self.active_player = self.owner
 
     def reset(self):
         self.current_round = None
@@ -35,10 +36,22 @@ class RomWhistGame():
         self.wins=dict()
         self.dealer = None
         self.init_dict(self.scores,0)
+        self.active_player = self.owner
+
+    def get_active_player(self):
+        return self.active_player;
+
+    def set_owner(self, player):
+        self.owner = player
+
+    def get_owner(self):
+        return self.owner
 
     def add_player(self, player):
         self.players.append(player)
         self.scores[player] = 0
+        self.bets[player] = -1
+        self.wins[player] = 0
 
     def remove_player(self, player):
         self.players.remove(player)
@@ -80,6 +93,7 @@ class RomWhistGame():
     def place_bet(self, player, bet):
         print("place_bet for player {} is {}".format(player, bet))
         self.bets[player] = bet
+        self.active_player = self.next_player(player)
 
     def sum_bets_placed(self):
         bets_placed = 0
@@ -116,8 +130,14 @@ class RomWhistGame():
             winner = self.current_round.compute_winner()
             self.wins[winner] = self.wins[winner] + 1
             print("in card_played, wins for player {} is {}".format(player, self.wins[player]))
+            if self.is_hand_completed():
+                self.active_player = self.next_player_to_deal()
+            else:
+                self.active_player = winner
             return winner
-        return None
+        else:
+            self.active_player = self.next_player(player)
+            return None
 
     # Return list of allowed cards as a list of
     # cards represented as string (e.g. 'c4')
@@ -158,6 +178,7 @@ class RomWhistGame():
         self.init_dict(self.bets,-1)
         self.init_dict(self.wins,0)
         self.dealer=dealer
+        self.active_player = self.next_player(dealer)
         # Create a hand with nb_cards for each player
         for p in range(len(self.players)):
             player = self.players[p]
