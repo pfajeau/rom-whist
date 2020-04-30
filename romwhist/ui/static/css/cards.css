@@ -37,12 +37,20 @@ body
 	color: black;
 }
 
-
+#topnav{
+	font-size: large;
+	display:inline-block;
+}
 .game_page_title{
 		font-size: medium;
-		text-align: center;
+		text-align: right;
 		font-weight: bold;
 		color: darkblue;
+		padding-left:100px;
+}
+
+.img_with_border {
+  border: 3px solid black;
 }
 
 /* Remove up and down arrow in integer input field */

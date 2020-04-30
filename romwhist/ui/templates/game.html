@@ -8,10 +8,6 @@ Configure score counting?
 Persistence?
 UI enhancements
 -->
-{% block navbar %}
-{{ super() }}
-<p class="game_page_title">Game ID: {{ session['game_id'] }} - You are: {{ session['username'] }}</p>
-{% endblock %}
 
 {% block content %}
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
@@ -28,6 +24,10 @@ UI enhancements
   var last_player;
   var new_round = true;
   var first_card;
+
+  // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
+  $("#topnav").last().after("<span class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</span>")
+
 
   function RecursiveUnbind($jElement) {
     // remove this element's and all of its children's click events
@@ -254,10 +254,15 @@ UI enhancements
           $( '#cards img').each(function( index ) {
             card = $(this).attr('id');
             if (allowed_cards.indexOf(card) > -1) {
+              $(this).addClass("img_with_border");
               $(this).bind("click", (function () {
                 card_played($(this).attr('id'))
               }));
-            }});
+            }
+            else {
+              $(this).removeClass("img_with_border");
+            }
+          });
         }
       });
 
@@ -274,7 +279,7 @@ UI enhancements
         $('#trump_card').html('')
 
         make_player_active(player_name)
-        
+
         // Enable Deal button for dealer
         if (username == player_name) {
           enable_deal();
@@ -345,7 +350,7 @@ UI enhancements
       $('#alert_placeholder').append('<div id="alertdiv" class="alert ' +  alerttype + '"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
       setTimeout(function() {
         $("#alertdiv").remove();
-      }, 5000);
+      }, 3000);
     }
 
 </script>
@@ -440,7 +445,7 @@ UI enhancements
         <div class="container">
           <div id="game_action_buttons" class="btn-toolbar">
             <!-- <div class="btn-group"> -->
-            <br>
+            <br><br>
             <!-- <button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>
             {{ form.leave_game(class="btn btn-warning") }} -->
             <!-- {% if username == ownername %}

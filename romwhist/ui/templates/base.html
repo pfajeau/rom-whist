@@ -16,8 +16,8 @@
 {% block title %}Romanian Whist {% endblock %}
 
 {% block navbar %}
-<div class="topnav">
-    <a class="active" href="/"><h3>Romanian Whist</h3></a>
+<span id="topnav">
+    <a class="active" href="/">Romanian Whist         </a>
 <!--
     <a href="startgame" class="btn btn-default" role="button" aria-pressed="true">Start a Game</a>
     <a href="joingame" class="btn btn-default" role="button" aria-pressed="true">Join a Game</a>
@@ -25,7 +25,7 @@
     <a href="login" class="btn btn-default" role="button" aria-pressed="true">Login</a>
 -->
 
-</div>
+</span>
 {% endblock %}
 
 {% with messages = get_flashed_messages() %}
