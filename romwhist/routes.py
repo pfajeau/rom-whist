@@ -325,6 +325,18 @@ def on_stop(data):
         leave_room(game_id)
         emit("game stopped", session['username'], room=game_id)
 
+@socketio.on('client post')
+def on_post(msg):
+    # Just distribute to players in room
+    game_id = session.get('game_id')
+    if game_id is None:
+        print("NO GAME_ID IN SESSION!!!!")
+        # TODO: may have a case where the session has been cleared already
+        # (user logged out). In this case how to remove user from room?
+    else:
+        emit("msg posted", {'sender': session['username'], 'msg': msg}, room=game_id)
+
+
 @socketio.on('disconnect')
 def test_disconnect():
     print('Client disconnected')

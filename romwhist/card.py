@@ -5,7 +5,7 @@ class Card(object):
     suit: a character in 'cdhs' for clubs, diamonds, hearts, and
     spades.'''
 
-    SUITS = 'cdhs'
+    SUITS = 'dchs'
     SUIT_NAMES = ['Clubs', 'Diamonds', 'Hearts', 'Spades']
 
     RANKS = list(range(2,15))
@@ -37,12 +37,12 @@ class Card(object):
         index = self.RANKS.index(self.rank_num)
         return self.RANK_NAMES[index]
 
+    def __lt__(self, other):
+         return self.rank() < other.rank()
+
     def __eq__(self, other):
         return str(self) == str(other)
 
     def __str__(self):
-        '''String representation
-        post: Returns string representing self, e.g. 'Ace of Spades' '''
-
         return str(self.suit_char) + str(self.rank_num)
         #return self.rankName() + ' of ' + self.suitName()

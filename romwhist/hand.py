@@ -1,4 +1,4 @@
-# Hand.py
+from .card import Card
 class Hand(object):
 
     """A labeled collection of cards that can be sorted"""
@@ -19,9 +19,26 @@ class Hand(object):
         self.cards.remove(card)
 
     def sort(self):
-        """ Arrange the cards in descending bridge order."""
-        self.cards.sort()
-        self.cards.reverse()
+        """ Arrange the cardsres = [i for i in test_list if subs in i]  in descending bridge order."""
+        # Sort by color, then by rank
+        string_hand=self.serialize()
+        res=dict()
+        sorted_cards = []
+        for suit in Card.SUITS:
+            res[suit] = []
+            for card in self.cards:
+                print ("card suit, iterator suit ", suit, card.suit())
+                if card.suit() == suit:
+                    print("suit match")
+                    res[suit].append(card)
+            print ("Number of card for suit before sort", suit, len(res[suit]))
+            res[suit].sort()
+            print ("Number of card for suit ", suit, len(res[suit]))
+            if not res[suit] is None:
+                sorted_cards.extend(res[suit])
+
+        self.cards = sorted_cards
+        return self
 
     def get_cards(self):
         return self.cards

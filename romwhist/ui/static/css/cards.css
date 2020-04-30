@@ -37,6 +37,14 @@ body
 	color: black;
 }
 
+#game_action_buttons {
+	padding-top:20px;
+}
+
+#cards {
+	padding-bottom:20px;
+}
+
 #topnav{
 	font-size: large;
 	display:inline-block;
@@ -49,8 +57,19 @@ body
 		padding-left:100px;
 }
 
+.alert_text {
+	color: darkgrey;
+}
+
+input[type=number].highlighted_field {
+  background-color: #ffff99;
+}
+
+.highlighted_field {
+	background-color:#ffff99;
+}
 .img_with_border {
-  border: 3px solid black;
+  border: 2px solid green;
 }
 
 /* Remove up and down arrow in integer input field */
@@ -99,7 +118,7 @@ img.preload {
 
 #card-table {
 	background-color:green;
-	height:300px;
+	height:250px;
 	width:100%;
 	border:solid 6px brown;
 	border-radius:8px;

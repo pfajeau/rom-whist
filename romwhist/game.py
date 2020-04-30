@@ -185,7 +185,7 @@ class RomWhistGame():
             print (player)
             print ("Nb cards:", nb_cards)
             hand = Hand(self.deck, nb_cards, player)
-            self.hands[player] = hand
+            self.hands[player] = hand.sort()
 
         # Pick up trum cards
         if with_trump:
