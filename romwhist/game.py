@@ -10,7 +10,7 @@ class RomWhistGame():
     MANUAL_DEALING = "manual"
     AUTOMATED_DEALING = "automated"
 
-    def __init__(self, game_creator = "", bonus_win = 1):
+    def __init__(self, game_creator = "", bonus_win = 1, deck_size=52):
         self.players = []
         self.current_round = None
         self.trump_card = None
@@ -25,6 +25,7 @@ class RomWhistGame():
         self.dealing_method = RomWhistGame.MANUAL_DEALING
         self.owner = game_creator
         self.active_player = self.owner
+        self.deck_size = deck_size
 
     def reset(self):
         self.current_round = None
@@ -173,7 +174,7 @@ class RomWhistGame():
         return self.current_round.last_card_played()
 
     def deal(self, nb_cards, with_trump=False, dealer=""):
-        self.deck = Deck()
+        self.deck = Deck(self.deck_size)
         self.deck.shuffle()
         self.init_dict(self.bets,-1)
         self.init_dict(self.wins,0)

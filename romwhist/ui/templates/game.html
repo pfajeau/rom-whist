@@ -2,8 +2,11 @@
 
 
 <!-- TODO:
-Block deal button during round play
-Select number of cards in deck (sans atout)
+Optimize js by declaring variables for elements frequently used
+to limit the number of DOM traversals
+Separate js from html
+Add footer / contact info
+Should not refresh page on player join
 Configure score counting?
 Persistence?
 UI enhancements
@@ -483,9 +486,9 @@ UI enhancements
             </td>
             {% endfor %}
           </div>
-          <br><br>
         </div>
         <div class="chat" id="chat">
+          <h4 class="chat_title">Chat</h4>
           <textarea id="chat_text" rows=5 cols=80></textarea><br>
           <input type="text" id="chat_input" class = "chat_input" size=77></input>
           <button id="post" class="btn btn-primary" name="post" type="button">Send</button>

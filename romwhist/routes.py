@@ -89,7 +89,7 @@ def index():
 
             print("creating new game with id: ", game_id)
             # Add game id in session
-            game = RomWhistGame(game_creator=username)
+            game = RomWhistGame(game_creator=username, deck_size=int(request.form['deck_size']))
             games[game_id] = game
             players[game_id] = []
             clients[game_id] = dict()
