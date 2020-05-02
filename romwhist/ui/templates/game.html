@@ -6,7 +6,6 @@ Optimize js by declaring variables for elements frequently used
 to limit the number of DOM traversals
 Separate js from html
 Add footer / contact info
-Should not refresh page on player join
 Configure score counting?
 Persistence?
 UI enhancements
@@ -15,10 +14,10 @@ UI enhancements
 {% block content %}
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
-
-<!-- <script src="{{ url_for('static', filename='js/game.js') }}"></script> -->
-
 <script type="text/javascript">
+
+  // Note that js cannot be separated from html as JINJA2 expressions are not
+  // processed then during rendering
 
   var socket;
   var username = "{{ session['username'] }}";
@@ -27,6 +26,7 @@ UI enhancements
   var last_player;
   var new_round = true;
   var first_card;
+
 
   // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
   $("#topnav").last().after("<span class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</span>")
@@ -62,7 +62,7 @@ UI enhancements
   function deal() {
     let trump_flag = $("#trump").is(":checked");
     socket.emit('start hand', document.getElementById("nb_cards").value,
-                              trump_flag);
+    trump_flag);
     //make_player_inactive(username);
     //disable_deal();
     //$("#nb_cards").removeClass("highlighted_field");
@@ -105,16 +105,24 @@ UI enhancements
     // $("#"+username).addClass("normal_player");
   }
 
-  function show_alert(msg) {
+  function show_alert(msg, title) {
     // alert("fsfd")
-    $('#dialog').html(msg);
-    $('#dialog').dialog({title:"Warning"});
+    $( "#dialog" ).html(msg);
+    $( "#dialog" ).dialog({
+      title:title,
+      buttons: {
+        Ok: function() {
+          $( this ).dialog( "close" );
+        }
+      }
+    });
     $( "#dialog" ).dialog('open');
   }
 
-
   document.addEventListener('DOMContentLoaded', () => {
 
+    // Commonly used DOM elements to reduce DOM searches
+    var alert_elem = $("#dialog");
 
     // Prevent form to be submitted when user enter the number of cards to deal
     $('#nb_cards').keydown(function (e) {
@@ -135,7 +143,7 @@ UI enhancements
     });
 
     if (username == ownername) {
-        $("#game_action_buttons").append('<button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>');
+      $("#game_action_buttons").append('<button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>');
     }
     $("#game_action_buttons").append('{{ form.leave_game(class="btn btn-secondary") }}');
     if (username == ownername) {
@@ -204,7 +212,7 @@ UI enhancements
       $(id_bet).change(function() {
         bet = parseInt($(id_bet).val(),10);
         if (bet == forbidden_bet) {
-          show_alert ("This bet is not allowed")
+          show_alert ("This bet is not allowed. Sum of bets cannot be equal to number of cards", "Error")
         }
         else {
           $(id_bet).attr('readonly', true);
@@ -245,6 +253,7 @@ UI enhancements
         if (dealer == username) {
           enable_deal();
           $("#nb_cards").addClass("highlighted_field");
+          $("#nb_cards").focus();
         }
         else {
           disable_deal();
@@ -282,279 +291,304 @@ UI enhancements
         $("#trump").prop('checked', false);
       });
 
-      socket.on('player to bet', function(data) {
-        player_name = data['player']
-        forbidden_bet = data['forbidden_bet']
+    socket.on('player to bet', function(data) {
+      player_name = data['player']
+      forbidden_bet = data['forbidden_bet']
 
-        // Enable the bet field if user is supposed to bet
-        let id_bet = "#bets_" + player_name
-        if (player_name == username) {
-          $(id_bet).attr('readonly', false);
-          $(id_bet).addClass("highlighted_field");
-        }
-        else {
-          $(id_bet).attr('readonly', true);
-          $(id_bet).removeClass("highlighted_field");
-        }
-        // Highlight Username
-        make_player_active(player_name);
-      });
-
-      socket.on('player bet', function(data) {
-        // Enable the bet field
-        player_name=data['player']
-        bet=data['bet']
-        let id_bet = "#bets_" + player_name
-        $(id_bet).val(bet);
-        make_player_inactive(player_name);
-        $(id_bet).removeClass("highlighted_field");
-        // $("#"+player_name).removeClass("active_player");
-        // $("#"+player_name).addClass("normal_player");
-      });
-
-      socket.on('player to play', function(data) {
-        // Enable the cards in hand to be played
-        // $("#"+player_name).addClass("active_player");
-        // $("#"+player_name).removeClass("normal_player");
-        player_name=data['player']
-        allowed_cards = data['allowed_cards']
-        make_player_active(player_name);
-        if (player_name === username) {
-          // TODO: only enable for allowed list of cards
-          $( '#cards img').each(function( index ) {
-            card = $(this).attr('id');
-            if (allowed_cards.indexOf(card) > -1) {
-              $(this).addClass("img_with_border");
-              $(this).bind("click", (function () {
-                card_played($(this).attr('id'))
-              }));
-            }
-            else {
-              $(this).removeClass("img_with_border");
-            }
-          });
-        }
-      });
-
-      socket.on('hand completed', function(data) {
-        player_name=data['player_to_deal']
-        scores=data['scores']
-        show_boostrap_alert("Hand completed. Next dealer is: " + player_name,"alert alert-warning")
-        Object.keys(scores).forEach(function(player) {
-          score = scores[player];
-          let id_score = "#score_" + player
-          $(id_score).val(score);
-        });
-        let image = 'img/' + trump_card + ".svg"
-        $('#trump_card').html('')
-
-        make_player_active(player_name)
-
-        // Enable Deal button for dealer
-        if (username == player_name) {
-          enable_deal();
-          $("#nb_cards").addClass("highlighted_field");
-        }
-        else {
-          $("#nb_cards").removeClass("highlighted_field");
-        }
-      });
-
-      function play_sound(audio_file) {
-        const sound = new Audio()
-        sound.src = {{ url_for('static', filename='') }} + "audio/" + audio_file
-        sound.play()
+      // Enable the bet field if user is supposed to bet
+      let id_bet = "#bets_" + player_name
+      if (player_name == username) {
+        $(id_bet).attr('readonly', false);
+        $(id_bet).addClass("highlighted_field");
+        $(id_bet).focus();
       }
-
-      socket.on('card played', function(data) {
-        if (new_round) {
-          $('#cards_played').empty();
-          new_round = false;
-          first_card = data['card'];
-        }
-        let player_name = data['player']
-        let card = data['card']
-        // Display card on table
-
-        let image = 'img/' + card + ".svg"
-        let card_table_id='#' + card + "_table"
-        // $(cards_played).append("<figure>");
-        $('#cards_played').append("<img id=" + card + "_table"+ " src={{ url_for('static', filename='') }}" +
-        image + ' alt=' + card + ' class="card_table"' + '>');
-
-        // TOOD: this  does not work for some reason
-        // play_sound("cardSlide5.wav");
-
-        // $(cards_played).append("<figcaption><h3 class='trump_caption'>" + player_name +"</h3></figcaption>");
-        // $(cards_played).append("</figure>");
-        make_player_inactive(player_name);
-        // $("#"+player_name).removeClass("active_player");
-        // $("#"+player_name).addClass("normal_player");
-        last_player = player_name
-      });
-
-      socket.on('new player', function(player_name) {
-        socket.emit('join game', player_name);
-        window.location.reload(false);
-      });
-
-      socket.on('player left', function(player_name) {
-        socket.emit('leave game', player_name);
-        if (player_name.localeCompare(username) != 0) {
-          window.location.reload(false);
-        }
-      });
-
-      socket.on('trump card', function(trump_card) {
-        let image = 'img/' + trump_card + ".svg"
-        $('#trump_card').html('')
-        $('#trump_card').append("<figure>");
-          $('#trump_card').append("<img src={{ url_for('static', filename='') }}" +
-          image + ' alt=' + trump_card + 'width=80 height=80' + '>');
-          $('#trump_card').append("<figcaption><h3 class='trump_caption'>Trump</h3></figcaption>");
-          $('#trump_card').append("</figure>");
-          // $('#trump_card').append("Trump")
-
-          $("#trump").prop('checked', true);
-      });
-
-      socket.on('round ended', function(player_name) {
-        show_boostrap_alert("Rounded ended. Winner is " + player_name,"alert alert-info")
-        make_player_inactive(last_player);
-        // $("#"+last_player).removeClass("active_player");
-        // $("#"+last_player).addClass("normal_player");
-
-        let id_rounds = "rounds_" + player_name
-        var value = parseInt(document.getElementById(id_rounds).value, 10);
-        value++;
-        document.getElementById(id_rounds).value = value;
-        new_round = true
-      });
-
-      socket.on('msg posted', function(data) {
-        sender=data['sender'];
-        msg = data['msg'];
-        // Display messages
-        content = $('#chat_text').val();
-        $('#chat_text').val(content + sender + ":" + msg + "\n");
-        // append("<p class='chat_text'><b>" + sender + ": </b>" + msg + "</p>");
-      });
-
-      socket.on('alert', function(msg) {
-        // TODO: replace with
-        show_alert(msg);
-      });
-
-      function show_boostrap_alert(message,alerttype) {
-        $('#alert_placeholder').append('<div id="alertdiv" class="alert ' +  alerttype + '"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
-        setTimeout(function() {
-          $("#alertdiv").remove();
-        }, 3000);
-      };
+      else {
+        $(id_bet).attr('readonly', true);
+        $(id_bet).removeClass("highlighted_field");
+      }
+      // Highlight Username
+      make_player_active(player_name);
     });
 
+    socket.on('player bet', function(data) {
+      // Enable the bet field
+      player_name=data['player']
+      bet=data['bet']
+      let id_bet = "#bets_" + player_name
+      $(id_bet).val(bet);
+      make_player_inactive(player_name);
+      $(id_bet).removeClass("highlighted_field");
+      // $("#"+player_name).removeClass("active_player");
+      // $("#"+player_name).addClass("normal_player");
+    });
+
+    socket.on('player to play', function(data) {
+      // Enable the cards in hand to be played
+      // $("#"+player_name).addClass("active_player");
+      // $("#"+player_name).removeClass("normal_player");
+      player_name=data['player']
+      allowed_cards = data['allowed_cards']
+      make_player_active(player_name);
+      if (player_name === username) {
+        // TODO: only enable for allowed list of cards
+        $( '#cards img').each(function( index ) {
+          card = $(this).attr('id');
+          if (allowed_cards.indexOf(card) > -1) {
+            $(this).addClass("img_with_border");
+            $(this).bind("click", (function () {
+              card_played($(this).attr('id'))
+            }));
+          }
+          else {
+            $(this).removeClass("img_with_border");
+          }
+        });
+      }
+    });
+
+    socket.on('hand completed', function(data) {
+      player_name=data['player_to_deal']
+      scores=data['scores']
+      show_boostrap_alert("Hand completed. Next dealer is: " + player_name,"alert alert-warning")
+      Object.keys(scores).forEach(function(player) {
+        score = scores[player];
+        let id_score = "#score_" + player
+        $(id_score).val(score);
+      });
+      let image = 'img/' + trump_card + ".svg"
+      $('#trump_card').html('')
+
+      make_player_active(player_name)
+
+      // Enable Deal button for dealer
+      if (username == player_name) {
+        enable_deal();
+        $("#nb_cards").addClass("highlighted_field");
+        $("#nb_cards").focus();
+      }
+      else {
+        $("#nb_cards").removeClass("highlighted_field");
+      }
+    });
+
+      // function play_sound(audio_file) {
+      //   const sound = new Audio()
+      //   sound.src = {{ url_for('static', filename='') }} + "audio/" + audio_file
+      //   sound.play()
+      // }
+
+    socket.on('card played', function(data) {
+      if (new_round) {
+        $('#cards_played').empty();
+        new_round = false;
+        first_card = data['card'];
+      }
+      let player_name = data['player']
+      let card = data['card']
+      // Display card on table
+
+      let image = 'img/' + card + ".svg"
+      let card_table_id='#' + card + "_table"
+      // $(cards_played).append("<figure>");
+      $('#cards_played').append("<img id=" + card + "_table"+ " src={{ url_for('static', filename='') }}" +
+      image + ' alt=' + card + ' class="card_table"' + '>');
+
+      // TOOD: this  does not work for some reason
+      // play_sound("cardSlide5.wav");
+
+      // Trying to display player name under card, but causes issues
+      // $(cards_played).append("<figcaption><h3 class='trump_caption'>" + player_name +"</h3></figcaption>");
+      // $(cards_played).append("</figure>");
+      make_player_inactive(player_name);
+      // $("#"+player_name).removeClass("active_player");
+      // $("#"+player_name).addClass("normal_player");
+      last_player = player_name
+    });
+
+    socket.on('new player', function(player_name) {
+      socket.emit('join game', player_name);
+
+      // Add player info
+      $('#players').append("<td id='" + player_name + "' name='" + player_name + "' class='normal_player'>" + player_name + "</td>");
+
+      let id_bet = "bets_" + player_name;
+      $("#bets").append("<td>" + "<label for=" + "'bets_" + player_name + "' class='player_info'>" + "Bets</label>" +
+        "<input type='number' id='" + id_bet + "' name='bets' min=0 max=18 readonly>" +
+        "</td>");
+
+      let id_round = "rounds_" + player_name;
+      $("#rounds").append("<td>" + "<label for=" + "'rounds_" + player_name + "' class='player_info'>" + "Wins</label>" +
+        "<input type='number' id='" + id_round + "' name='rounds' min=0 max=18 readonly>" +
+        "</td>");
+
+      let id_score = "score_" + player_name;
+      $("#scores").append("<td>" + "<label for=" + "'score_" + player_name + "' class='player_info'>" + "Score</label>" +
+        "<input type='number' id='" + id_score + "' name='score' min=0 max=99 readonly>" +
+        "</td>");
+
+            //window.location.reload(false);
+    });
+
+    socket.on('player left', function(player_name) {
+      socket.emit('leave game', player_name);
+      if (player_name.localeCompare(username) != 0) {
+        // TODO: remove elements instead of refresh, but low priority
+        // ALso, notify user
+        show_alert("User " + player_name + " left the game!", "Warning")
+        window.location.reload(false);
+      }
+    });
+
+    socket.on('trump card', function(trump_card) {
+      let image = 'img/' + trump_card + ".svg"
+      $('#trump_card').html('')
+      $('#trump_card').append("<figure>");
+        $('#trump_card').append("<img src={{ url_for('static', filename='') }}" +
+        image + ' alt=' + trump_card + 'width=80 height=80' + '>');
+        $('#trump_card').append("<figcaption><h3 class='trump_caption'>Trump</h3></figcaption>");
+        $('#trump_card').append("</figure>");
+        // $('#trump_card').append("Trump")
+
+        $("#trump").prop('checked', true);
+      });
+
+    socket.on('round ended', function(player_name) {
+      show_boostrap_alert("Rounded ended. Winner is " + player_name,"alert alert-info")
+      make_player_inactive(last_player);
+      // $("#"+last_player).removeClass("active_player");
+      // $("#"+last_player).addClass("normal_player");
+
+      let id_rounds = "rounds_" + player_name
+      var value = parseInt(document.getElementById(id_rounds).value, 10);
+      value++;
+      document.getElementById(id_rounds).value = value;
+      new_round = true
+    });
+
+    socket.on('msg posted', function(data) {
+      sender=data['sender'];
+      msg = data['msg'];
+      // Display messages
+      content = $('#chat_text').val();
+      $('#chat_text').val(content + sender + ":" + msg + "\n");
+      // append("<p class='chat_text'><b>" + sender + ": </b>" + msg + "</p>");
+    });
+
+    socket.on('alert', function(msg) {
+      // TODO: replace with
+      show_alert(msg, "Warning");
+    });
+
+    function show_boostrap_alert(message,alerttype) {
+      $('#alert_placeholder').append('<div id="alertdiv" class="alert ' +  alerttype + '"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
+      setTimeout(function() {
+        $("#alertdiv").remove();
+      }, 3000);
+    };
+
+  });
 </script>
-        <!--
-        COuld embedd the following html in a script as shown under so it can be re-used on player joined event
-        rather than refreshing page
-        <script id="blockOfStuff" type="text/html">
-        Here's some random text.
-        <h1>Including HTML markup</h1>
-        And quotes too, or as one man said, "These are quotes, but
-        'these' are quotes too."
-      </script>
-    -->
 
-    <div class="table-responsive">
-      <table class="table">
-        <tr id="players">
-          {% for player in players -%}
-          <td id="{{ player }}" name="player" class="normal_player">{{ player }} </td>
-          {% endfor %}
-        </tr>
-        <tr id="bets">
-          {% for player in players -%}
-          <td>
-            <label for="'bets_' + {{ player }}" class="player_info">Bets</label>
-            <!-- TODO: should set bet to '' if it is -1 -->
-            {% if bets[player] == -1 %}
-            <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value='' readonly>
-            {% else %}
-            <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value={{ bets[player] }} readonly>
-            {% endif %}
-          </td>
-          {% endfor %}
-        </tr>
-        <tr id="rounds">
-          {% for player in players -%}
-          <td>
-            <label for="'rounds_' + {{ player }}" class="player_info">Wins</label>
-            <input type="number" id="rounds_{{ player }}" name="rounds" class="player_info" min=0 max=18 readonly value={{ wins[player] }}>
-          </td>
-          {% endfor %}
-        </tr>
-        <tr id=scores>
-          {% for player in players -%}
-          <td>
-            <label for="'score_' + {{ player }}" class="player_info">Score</label>
-            <input type="number" id="score_{{ player }}" name="score" class="player_info" min=0 max=99 readonly value={{ scores[player] }}>
-          </td>
-          {% endfor %}
-        </tr>
-      </table>
-    </div>
+          <!-- //   COuld embedd the following html in a script as shown under so it can be re-used on player joined event
+          //   rather than refreshing page
+          //   <script id="blockOfStuff" type="text/html">
+          //   Here's some random text.
+          //   <h1>Including HTML markup</h1>
+          //   And quotes too, or as one man said, "These are quotes, but
+          //   'these' are quotes too."
+          // </script>
+          // -->
 
-    <div id="alert_placeholder"></div>
-    <div id="dialog" title="Basic dialog">
-    </div>
+<div class="table-responsive">
+  <table class="table">
+    <tr id="players">
+      {% for player in players -%}
+      <td id="{{ player }}" name="player" class="normal_player">{{ player }} </td>
+      {% endfor %}
+    </tr>
+    <tr id="bets">
+      {% for player in players -%}
+      <td>
+        <label for="'bets_' + {{ player }}" class="player_info">Bets</label>
+        <!-- TODO: should set bet to '' if it is -1 -->
+        {% if bets[player] == -1 %}
+        <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value='' readonly>
+        {% else %}
+        <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value={{ bets[player] }} readonly>
+        {% endif %}
+      </td>
+      {% endfor %}
+    </tr>
+    <tr id="rounds">
+      {% for player in players -%}
+      <td>
+        <label for="'rounds_' + {{ player }}" class="player_info">Wins</label>
+        <input type="number" id="rounds_{{ player }}" name="rounds" class="player_info" min=0 max=18 readonly value={{ wins[player] }}>
+      </td>
+      {% endfor %}
+    </tr>
+    <tr id=scores>
+      {% for player in players -%}
+      <td>
+        <label for="'score_' + {{ player }}" class="player_info">Score</label>
+        <input type="number" id="score_{{ player }}" name="score" class="player_info" min=0 max=99 readonly value={{ scores[player] }}>
+      </td>
+      {% endfor %}
+    </tr>
+  </table>
+</div>
 
-    <div id="card-table" class="container">
-      <div class="bottomright" id="trump_card">
+<div id="alert_placeholder"></div>
+<div id="dialog" title="Basic dialog">
+</div>
+
+<div id="card-table" class="container">
+  <div class="bottomright" id="trump_card">
+  </div>
+  <div id="cards_played">
+    <!-- TODO populate on refresh -->
+  </div>
+</div>
+
+<div>
+  <form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="container">
+      <div class="col-md-8">
+        <div class="form-group">
+          <br>
+          {{ form.nb_cards.label(class="deal") }}
+          {{ form.nb_cards(size=2) }}
+          {{ form.trump.label(class="deal") }}
+          {{ form.trump }}
+          <button id="deal" class="btn btn-primary" name="deal" type="button">Deal</button>
+        </div>
+        <br>
       </div>
-      <div id="cards_played">
-        <!-- TODO populate on refresh -->
-      </div>
     </div>
-
     <div>
-      <form action="" method="post" novalidate>
-        {{ form.hidden_tag() }}
-        <div class="container">
-          <div class="col-md-8">
-            <div class="form-group">
-              <br>
-              {{ form.nb_cards.label(class="deal") }}
-              {{ form.nb_cards(size=2) }}
-              {{ form.trump.label(class="deal") }}
-              {{ form.trump }}
-              <button id="deal" class="btn btn-primary" name="deal" type="button">Deal</button>
-            </div>
-            <br>
-          </div>
-        </div>
-        <div>
-          <div class="col-md-12" id="cards">
-            <!-- <tr id="cards"></tr> -->
-            {% for card in hand -%}
-            <td>
-              <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" class="card_hand">
-              <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
-            </td>
-            {% endfor %}
-          </div>
-        </div>
-        <div class="chat" id="chat">
-          <h4 class="chat_title">Chat</h4>
-          <textarea id="chat_text" rows=5 cols=80></textarea><br>
-          <input type="text" id="chat_input" class = "chat_input" size=77></input>
-          <button id="post" class="btn btn-primary" name="post" type="button">Send</button>
-        </div>
-        <div class="container">
-          <div id="game_action_buttons" class="btn-toolbar">
-            <p><br>
-          </div>
-        </div>
-      </form>
+      <div class="col-md-12" id="cards">
+        <!-- <tr id="cards"></tr> -->
+        {% for card in hand -%}
+        <td>
+          <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" class="card_hand">
+          <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
+        </td>
+        {% endfor %}
+      </div>
     </div>
+    <div class="chat" id="chat">
+      <h4 class="chat_title">Chat</h4>
+      <textarea id="chat_text" rows=5 cols=80></textarea><br>
+      <input type="text" id="chat_input" class = "chat_input" size=77></input>
+      <button id="post" class="btn btn-primary" name="post" type="button">Send</button>
+    </div>
+    <div class="container">
+      <div id="game_action_buttons" class="btn-toolbar">
+        <p><br>
+        </div>
+      </div>
+    </form>
+  </div>
 
-    {% endblock %}
+            {% endblock %}

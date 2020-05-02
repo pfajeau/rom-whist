@@ -24,6 +24,7 @@ body
 .player_info {
 	font-size: small;
 	font-weight: normal;
+	padding-right:10px;
 }
 
 .active_player {
