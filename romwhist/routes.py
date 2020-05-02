@@ -34,9 +34,6 @@ clients = dict()
 @app.route("/",methods=['GET', 'POST'])
 @app.route("/index",methods=['GET', 'POST'])
 def index():
-    # TODO - add here endpoint of resource where you want to land on page load. e.g.
-    # return redirect(url_for("auth_blueprint.home"))
-    form = IndexForm()
 
         # print (current_user)
         # if isinstance(current_user, User):
@@ -52,6 +49,7 @@ def index():
             # db.session.add(user)
             # db.session.commit()
             # login_user(user)
+    form = IndexForm()
     if form.validate_on_submit():
         username = form.user_name.data
         print ("User: ", username)
@@ -113,13 +111,24 @@ def base():
 
 @app.route("/game", methods=['GET', 'POST'])
 def game():
-    form=GameForm()
-    game_id = session.get('game_id')
-    player = session['username']
     print("In game route")
-    game=games[game_id];
+    form=GameForm()
+    player = session.get('username')
+    if player is None:
+        flash("Session has expired")
+        return redirect(url_for('index'))
+
+    game_id = session.get('game_id')
+    if game_id is None:
+        flash("Game does not exist")
+        return redirect(url_for('index'))
+
+    game=games.get(game_id);
+    if game is None:
+        flash("Game does not exist")
+        return redirect(url_for('index'))
+
     if request.method == 'POST':
-        print("In game route")
         if game_id is None:
             error = "Could not find game_id in session"
             print(error)
@@ -133,10 +142,6 @@ def game():
             remove_player()
             return redirect(url_for('index'))
 
-        if form.restart_game.data:
-            game.reset()
-             # TODO: need to notify all clients so their view can refreh as well
-            return redirect(url_for('game'))
     else:
         hand = game.get_hands().get(player)
         if hand is None:
@@ -176,15 +181,20 @@ def message(data):
 @socketio.on("cs game started")
 def game_started():
     game_id = session.get('game_id')
-    # TODO:
-    # If manual dealiing, just emit event game sc game started
-    # In automated dealing, call start_hands with computed nb of cards and trump
-    player = players[game_id][randint(0,len(players[game_id])-1)]
-    socketio.emit("sc game started", {'player_to_deal': player, 'nb_cards': 0}, room=game_id)
+    if not game_id is None:
+        game = games.get(game_id)
+        if not game is None:
+            # TODO:
+            # If manual dealiing, just emit event game sc game started
+            # In automated dealing, call start_hands with computed nb of cards and trump
+            # In case it is a restart
+            game.reset()
+            player = players[game_id][randint(0,len(players[game_id])-1)]
+            socketio.emit("sc game started", {'player_to_deal': player, 'nb_cards': 0}, room=game_id)
 
-    # TODO: if automated dealing, need to create hands
-    if games[game_id].dealing_method == RomWhistGame.AUTOMATED_DEALING:
-        start_hand(game.get_nb_cards_to_deal(), game.get_play_with_trump())
+            # TODO: if automated dealing, need to create hands
+            if games[game_id].dealing_method == RomWhistGame.AUTOMATED_DEALING:
+                start_hand(game.get_nb_cards_to_deal(), game.get_play_with_trump())
     #
 
 @socketio.on("player bet")
@@ -270,22 +280,25 @@ def generate_hands(nbcards, trump):
         game = games[game_id]
 
     hands = game.deal(nbcards, trump, session['username'])
-    round = game.create_round()
+    if hands is None:
+        socketio.emit("alert", "Invalid number of card for size of deck", room=clients[game_id][session['username']])
+    else:
+        round = game.create_round()
 
-    # FInd out who the first player to bet is
-    nplayer = game.get_active_player()
-    # nplayer = next_player(session['username'], players[game_id])
+        # FInd out who the first player to bet is
+        nplayer = game.get_active_player()
+        # nplayer = next_player(session['username'], players[game_id])
 
-    # Distribute cards to each players
-    for player in players[game_id]:
-        cards = hands[player].serialize()
-        print ("Cards for player ", player, " ", cards)
-        socketio.emit("new hand", cards, room=clients[game_id][player])
+        # Distribute cards to each players
+        for player in players[game_id]:
+            cards = hands[player].serialize()
+            print ("Cards for player ", player, " ", cards)
+            socketio.emit("new hand", cards, room=clients[game_id][player])
 
-    if trump:
-        socketio.emit("trump card", str(game.trump_card), room=game_id)
+        if trump:
+            socketio.emit("trump card", str(game.trump_card), room=game_id)
 
-    socketio.emit("player to bet", {'player': nplayer, 'forbidden_bet':-1}, room=game_id)
+        socketio.emit("player to bet", {'player': nplayer, 'forbidden_bet':-1}, room=game_id)
 
 @socketio.on('join game')
 def on_join(data):

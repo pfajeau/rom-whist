@@ -38,6 +38,9 @@ class RomWhistGame():
         self.dealer = None
         self.init_dict(self.scores,0)
         self.active_player = self.owner
+        self.init_dict(self.bets, -1)
+        self.init_dict(self.wins, 0)
+
 
     def get_active_player(self):
         return self.active_player;
@@ -180,21 +183,25 @@ class RomWhistGame():
         self.init_dict(self.wins,0)
         self.dealer=dealer
         self.active_player = self.next_player(dealer)
-        # Create a hand with nb_cards for each player
-        for p in range(len(self.players)):
-            player = self.players[p]
-            print (player)
-            print ("Nb cards:", nb_cards)
-            hand = Hand(self.deck, nb_cards, player)
-            self.hands[player] = hand.sort()
 
-        # Pick up trum cards
-        if with_trump:
-            self.trump_card = self.deck.deal()
+        if nb_cards <= 0 or nb_cards > self.deck.size() / len(self.players):
+            return None
         else:
-            self.trump_card = None
+            # Create a hand with nb_cards for each player
+            for p in range(len(self.players)):
+                player = self.players[p]
+                print (player)
+                print ("Nb cards:", nb_cards)
+                hand = Hand(self.deck, nb_cards, player)
+                self.hands[player] = hand.sort()
 
-        return self.hands
+            # Pick up trum cards
+            if with_trump:
+                self.trump_card = self.deck.deal()
+            else:
+                self.trump_card = None
+
+            return self.hands
 
     # TODO
     def get_nb_cards_to_deal(self):

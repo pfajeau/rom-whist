@@ -63,9 +63,9 @@ UI enhancements
     let trump_flag = $("#trump").is(":checked");
     socket.emit('start hand', document.getElementById("nb_cards").value,
                               trump_flag);
-    make_player_inactive(username);
-    disable_deal();
-    $("#nb_cards").removeClass("highlighted_field");
+    //make_player_inactive(username);
+    //disable_deal();
+    //$("#nb_cards").removeClass("highlighted_field");
   }
 
   function enable_deal() {
@@ -76,8 +76,11 @@ UI enhancements
   }
 
   function disable_deal() {
-    RecursiveUnbind($("#deal"));
-    $("#deal").prop("disabled",true);
+    // Never disabled for game game_creator
+    if (username != ownername) {
+      RecursiveUnbind($("#deal"));
+      $("#deal").prop("disabled",true);
+    }
   }
 
   function card_played (card) {
@@ -101,6 +104,14 @@ UI enhancements
     // $("#"+username).removeClass("active_player");
     // $("#"+username).addClass("normal_player");
   }
+
+  function show_alert(msg) {
+    // alert("fsfd")
+    $('#dialog').html(msg);
+    $('#dialog').dialog({title:"Warning"});
+    $( "#dialog" ).dialog('open');
+  }
+
 
   document.addEventListener('DOMContentLoaded', () => {
 
@@ -128,7 +139,7 @@ UI enhancements
     }
     $("#game_action_buttons").append('{{ form.leave_game(class="btn btn-secondary") }}');
     if (username == ownername) {
-      $("#game_action_buttons").append('{{ form.restart_game(class="btn btn-warning") }}');
+      $("#game_action_buttons").append('<button id="restart_game" class="btn btn-primary" name="restart_game" type="button">Restart Game</button>');
       $("#game_action_buttons").append('{{ form.stop_game(class="btn btn-warning") }}');
     }
 
@@ -142,7 +153,7 @@ UI enhancements
 
     function start_game() {
       socket.emit('cs game started');
-      disable_start_game();
+      //disable_start_game();
     }
 
     function enable_start_game() {
@@ -154,12 +165,22 @@ UI enhancements
       $("#start_game").prop("disabled",false);
     }
 
-    // Don't want to do that for now
-    function disable_start_game() {
-      // RecursiveUnbind($("#start_game"));
-      // $("#start_game").prop("disabled",true);
+    function enable_restart_game() {
+      if (username == ownername) {
+        document.getElementById("restart_game").onclick = function() {
+          start_game();
+        }
+      }
+      $("#start_game").prop("disabled",false);
     }
 
+    // Don't want to do that for now
+    function disable_start_game() {
+      RecursiveUnbind($("#start_game"));
+      $("#start_game").prop("disabled",true);
+    }
+
+    $( '#dialog' ).dialog( { 'autoOpen': false } );
 
     // Connect to websocket
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
@@ -172,6 +193,7 @@ UI enhancements
       socket.emit('join game', {data:''});
 
       enable_start_game();
+      enable_restart_game();
       disable_deal();
       make_players_inactive();
       // active_player = {{ active_player }}
@@ -182,10 +204,12 @@ UI enhancements
       $(id_bet).change(function() {
         bet = parseInt($(id_bet).val(),10);
         if (bet == forbidden_bet) {
-          alert ("This bet is not allowed")
+          show_alert ("This bet is not allowed")
         }
         else {
           $(id_bet).attr('readonly', true);
+          $(id_bet).removeClass("highlighted_field");
+
           // $("#"+username).removeClass("active_player");
           // $("#"+username).addClass("normal_player");
           make_player_active(username);
@@ -197,8 +221,17 @@ UI enhancements
     socket.on('sc game started', function(data) {
       console.log("Game started event received")
       console.log(data)
+      $("input[name='bets']").attr('readonly', true);
+      $("input[name='bets']").removeClass("highlighted_field");
+      $("input[name='bets']").val('')
+      $("input[name='rounds']").val(0);
+      $("input[name='score']").val(0);
+
       dealer = data['player_to_deal'];
       nb_cards_to_deal = data['nb_cards']
+      $('#cards').html('');
+      $('#cards_played').empty()
+      $('#trump_card').empty()
 
       // if cards to deal is > 0, then assume cards will be delt automtically.
       // So disable the Deal button.
@@ -218,19 +251,21 @@ UI enhancements
           $("#nb_cards").removeClass("highlighted_field");
         }
       }
-      disable_start_game();
+      //disable_start_game();
     });
 
-    socket.on('new hand', function(data) {
+    socket.on('new hand', function(cards) {
       make_players_inactive();
       $('#trump_card').html('')
       $('#cards').html('');
       $('#cards_played').empty()
+      disable_deal();
+      $("#nb_cards").removeClass("highlighted_field");
 
       // $('#cards').append('<ul>');
-      for (var card_index in data) {
+      for (var card_index in cards) {
         // $('#cards').append('<br>' + data[card])
-        let card =data[card_index]
+        let card =cards[card_index]
         let image = 'img/' + card + ".svg"
         // let card = data[card]
         $('#cards').append('<td>'+
@@ -241,6 +276,10 @@ UI enhancements
           $('#rounds input').val(0);
           $('#bets input').val("");
         }
+        // Update dealing Info
+        $("#nb_cards").val(cards.length);
+        // Trum checkbox wil be updated if/when trump card received
+        $("#trump").prop('checked', false);
       });
 
       socket.on('player to bet', function(data) {
@@ -300,7 +339,7 @@ UI enhancements
       socket.on('hand completed', function(data) {
         player_name=data['player_to_deal']
         scores=data['scores']
-        show_alert("Hand completed. Next dealer is: " + player_name,"alert alert-warning")
+        show_boostrap_alert("Hand completed. Next dealer is: " + player_name,"alert alert-warning")
         Object.keys(scores).forEach(function(player) {
           score = scores[player];
           let id_score = "#score_" + player
@@ -321,6 +360,12 @@ UI enhancements
         }
       });
 
+      function play_sound(audio_file) {
+        const sound = new Audio()
+        sound.src = {{ url_for('static', filename='') }} + "audio/" + audio_file
+        sound.play()
+      }
+
       socket.on('card played', function(data) {
         if (new_round) {
           $('#cards_played').empty();
@@ -335,7 +380,11 @@ UI enhancements
         let card_table_id='#' + card + "_table"
         // $(cards_played).append("<figure>");
         $('#cards_played').append("<img id=" + card + "_table"+ " src={{ url_for('static', filename='') }}" +
-        image + ' alt=' + card + ' class="card_table"' + '>')
+        image + ' alt=' + card + ' class="card_table"' + '>');
+
+        // TOOD: this  does not work for some reason
+        // play_sound("cardSlide5.wav");
+
         // $(cards_played).append("<figcaption><h3 class='trump_caption'>" + player_name +"</h3></figcaption>");
         // $(cards_played).append("</figure>");
         make_player_inactive(player_name);
@@ -365,10 +414,12 @@ UI enhancements
           $('#trump_card').append("<figcaption><h3 class='trump_caption'>Trump</h3></figcaption>");
           $('#trump_card').append("</figure>");
           // $('#trump_card').append("Trump")
+
+          $("#trump").prop('checked', true);
       });
 
       socket.on('round ended', function(player_name) {
-        show_alert("Rounded ended. Winner is " + player_name,"alert alert-info")
+        show_boostrap_alert("Rounded ended. Winner is " + player_name,"alert alert-info")
         make_player_inactive(last_player);
         // $("#"+last_player).removeClass("active_player");
         // $("#"+last_player).addClass("normal_player");
@@ -389,15 +440,18 @@ UI enhancements
         // append("<p class='chat_text'><b>" + sender + ": </b>" + msg + "</p>");
       });
 
+      socket.on('alert', function(msg) {
+        // TODO: replace with
+        show_alert(msg);
+      });
+
+      function show_boostrap_alert(message,alerttype) {
+        $('#alert_placeholder').append('<div id="alertdiv" class="alert ' +  alerttype + '"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
+        setTimeout(function() {
+          $("#alertdiv").remove();
+        }, 3000);
+      };
     });
-
-
-    function show_alert(message,alerttype) {
-      $('#alert_placeholder').append('<div id="alertdiv" class="alert ' +  alerttype + '"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
-      setTimeout(function() {
-        $("#alertdiv").remove();
-      }, 3000);
-    }
 
 </script>
         <!--
@@ -451,6 +505,8 @@ UI enhancements
     </div>
 
     <div id="alert_placeholder"></div>
+    <div id="dialog" title="Basic dialog">
+    </div>
 
     <div id="card-table" class="container">
       <div class="bottomright" id="trump_card">
@@ -495,15 +551,7 @@ UI enhancements
         </div>
         <div class="container">
           <div id="game_action_buttons" class="btn-toolbar">
-            <!-- <div class="btn-group"> -->
             <p><br>
-            <!-- <button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>
-            {{ form.leave_game(class="btn btn-warning") }} -->
-            <!-- {% if username == ownername %}
-              {{ form.restart_game(class="btn btn-warning") }}
-              {{ form.stop_game(class="btn btn-danger") }}
-            {% endif %} -->
-            <!-- </div> -->
           </div>
         </div>
       </form>

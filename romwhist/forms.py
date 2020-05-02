@@ -30,7 +30,6 @@ class GameForm(FlaskForm):
     trump = BooleanField("Trump: ", validators=[InputRequired()], default=True)
     leave_game = SubmitField('Leave game')
     stop_game = SubmitField('Stop game')
-    restart_game = SubmitField('Restart game')
     #user_name = HiddenField("user_name")
 
 class IndexForm(FlaskForm):
