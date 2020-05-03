@@ -55,6 +55,8 @@ def index():
         username = unidecode.unidecode(form.user_name.data)
         print ("User: ", username)
         # Used by client
+        previous_alias = session.get('username')
+
         session['username'] = username
         if form.join_game.data:
             game_id = request.form['game_id']
@@ -69,7 +71,12 @@ def index():
                 return render_template('index.html', error = error, form=form)
 
             # TODO maybe prevent player from joining game in progres
+            # Remove player from game if that player was already in the games
+
             game = games[game_id]
+            if previous_alias in players[game_id]:
+                remove_player(previous_alias)
+
             session['ownername'] = game.get_owner()
             add_player(game_id)
             return redirect(url_for('game'))
@@ -140,7 +147,7 @@ def game():
             return redirect(url_for('index'))
 
         if form.leave_game.data:
-            remove_player()
+            remove_player(session['username'])
             return redirect(url_for('index'))
 
     else:
@@ -378,17 +385,16 @@ def add_player(game_id):
     socketio.emit("new player", session['username'], room=game_id)
 
 
-def remove_player():
+def remove_player(player):
     game_id = session.get('game_id')
     if not game_id is None:
         if game_id in players:
-            username = session['username']
-            players[game_id].remove(username)
-            games[game_id].remove_player(username)
-        if username in clients[game_id]:
-            del clients[game_id][username]
+            players[game_id].remove(player)
+            games[game_id].remove_player(player)
+        if player in clients[game_id]:
+            del clients[game_id][player]
 
-        socketio.emit("player left", username, room=game_id)
+        socketio.emit("player left", player, room=game_id)
 
 def next_player(player, list_players):
     pos = list_players.index(player)

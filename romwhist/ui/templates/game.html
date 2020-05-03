@@ -432,8 +432,9 @@ UI enhancements
       if (player_name.localeCompare(username) != 0) {
         // TODO: remove elements instead of refresh, but low priority
         // ALso, notify user
-        show_alert("User " + player_name + " left the game!", "Warning")
+        // Alert now shown as page is refreshed right away
         window.location.reload(false);
+        show_alert("User " + player_name + " left the game!", "Warning")
       }
     });
 
