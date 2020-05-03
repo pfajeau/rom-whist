@@ -4,6 +4,7 @@ This module implements routes.
 author: Philippe Fajeau
 
 """
+import unidecode
 from flask import Blueprint
 from . import controllers,deck,card,hand
 from .game import RomWhistGame
@@ -51,7 +52,7 @@ def index():
             # login_user(user)
     form = IndexForm()
     if form.validate_on_submit():
-        username = form.user_name.data
+        username = unidecode.unidecode(form.user_name.data)
         print ("User: ", username)
         # Used by client
         session['username'] = username

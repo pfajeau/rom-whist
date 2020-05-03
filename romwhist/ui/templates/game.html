@@ -42,10 +42,8 @@ UI enhancements
   }
 
   function make_players_inactive() {
-    $("[name='player']").each(function() {
-      $(this).removeClass("active_player");
-      $(this).addClass("normal_player");
-    })
+    $("[name='player']").removeClass("active_player");
+    $("[name='player']").addClass("normal_player");
   }
 
   function make_player_inactive(player_name) {
@@ -409,7 +407,7 @@ UI enhancements
       socket.emit('join game', player_name);
 
       // Add player info
-      $('#players').append("<td id='" + player_name + "' name='" + player_name + "' class='normal_player'>" + player_name + "</td>");
+      $('#players').append("<td id='" + player_name + "' name='player'" + " class='normal_player'>" + player_name + "</td>");
 
       let id_bet = "bets_" + player_name;
       $("#bets").append("<td>" + "<label for=" + "'bets_" + player_name + "' class='player_info'>" + "Bets</label>" +
