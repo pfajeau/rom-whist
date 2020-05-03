@@ -26,6 +26,7 @@ UI enhancements
   var last_player;
   var new_round = true;
   var first_card;
+  var last_dealer;
 
 
   // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
@@ -72,7 +73,6 @@ UI enhancements
     }
     $("#deal").prop("disabled",false);
   }
-
   function disable_deal() {
     // Never disabled for game game_creator
     if (username != ownername) {
@@ -145,8 +145,12 @@ UI enhancements
     }
     $("#game_action_buttons").append('{{ form.leave_game(class="btn btn-secondary") }}');
     if (username == ownername) {
-      $("#game_action_buttons").append('<button id="restart_game" class="btn btn-primary" name="restart_game" type="button">Restart Game</button>');
+      // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
       $("#game_action_buttons").append('{{ form.stop_game(class="btn btn-warning") }}');
+    }
+
+    if (username == ownername) {
+      enable_deal();
     }
 
     function post_msg() {
@@ -171,14 +175,15 @@ UI enhancements
       $("#start_game").prop("disabled",false);
     }
 
-    function enable_restart_game() {
-      if (username == ownername) {
-        document.getElementById("restart_game").onclick = function() {
-          start_game();
-        }
-      }
-      $("#start_game").prop("disabled",false);
-    }
+    // function enable_restart_round() {
+    //   if (username == ownername) {
+    //     document.getElementById("restart_round").onclick = function() {
+    //       // TODO re-deal cards
+    //       make_player_the_dealer(last_dealer);
+    //     }
+    //   }
+    //   $("#start_game").prop("disabled",false);
+    // }
 
     // Don't want to do that for now
     function disable_start_game() {
@@ -187,6 +192,20 @@ UI enhancements
     }
 
     $( '#dialog' ).dialog( { 'autoOpen': false } );
+
+    function make_player_the_dealer(player_name) {
+      make_player_active(player_name)
+
+      // Enable Deal button for dealer
+      if (username == player_name) {
+        enable_deal();
+        $("#nb_cards").addClass("highlighted_field");
+        $("#nb_cards").focus();
+      }
+      else {
+        $("#nb_cards").removeClass("highlighted_field");
+      }
+    }
 
     // Connect to websocket
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
@@ -199,7 +218,7 @@ UI enhancements
       socket.emit('join game', {data:''});
 
       enable_start_game();
-      enable_restart_game();
+      // enable_restart_round();
       disable_deal();
       make_players_inactive();
       // active_player = {{ active_player }}
@@ -344,8 +363,10 @@ UI enhancements
       }
     });
 
+
     socket.on('hand completed', function(data) {
       player_name=data['player_to_deal']
+      player_to_deal = player_name
       scores=data['scores']
       show_boostrap_alert("Hand completed. Next dealer is: " + player_name,"alert alert-warning")
       Object.keys(scores).forEach(function(player) {
@@ -356,17 +377,7 @@ UI enhancements
       let image = 'img/' + trump_card + ".svg"
       $('#trump_card').html('')
 
-      make_player_active(player_name)
-
-      // Enable Deal button for dealer
-      if (username == player_name) {
-        enable_deal();
-        $("#nb_cards").addClass("highlighted_field");
-        $("#nb_cards").focus();
-      }
-      else {
-        $("#nb_cards").removeClass("highlighted_field");
-      }
+      make_player_the_dealer(player_name);
     });
 
       // function play_sound(audio_file) {
