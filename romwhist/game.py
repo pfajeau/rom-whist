@@ -1,12 +1,9 @@
-from card import Card
-from deck import Deck
-# from .deck import Deck
+from romwhist.card import Card
+from romwhist.deck import Deck
 from random import choice
 from random import randrange
-# from .hand import Hand
-from hand import Hand;
-from round import Round;
-# from .round import Round
+from romwhist.hand import Hand;
+from romwhist.round import Round;
 
 class RomWhistGame():
 

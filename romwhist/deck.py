@@ -1,5 +1,5 @@
 import random
-from card import Card
+from romwhist.card import Card
 
 class Deck(object):
 

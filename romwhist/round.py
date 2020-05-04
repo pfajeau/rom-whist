@@ -1,8 +1,8 @@
-from card import Card
+from romwhist.card import Card
 # from .deck import Deck
 # from random import choice
 # from random import randrange
-from hand import Hand
+from romwhist.hand import Hand
 
 class Round():
 

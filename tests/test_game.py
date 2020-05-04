@@ -1,4 +1,3 @@
-import pytest
 from game import RomWhistGame
 
 if __name__ == '__main__':
