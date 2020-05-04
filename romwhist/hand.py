@@ -1,7 +1,5 @@
-from .card import Card
+from card import Card
 class Hand(object):
-
-    """A labeled collection of cards that can be sorted"""
 
     def __init__(self, deck, nb_cards=0, label=""):
         self.cards = []
@@ -27,7 +25,6 @@ class Hand(object):
             res[suit] = []
             for card in self.cards:
                 if card.suit() == suit:
-                    print("suit match")
                     res[suit].append(card)
             res[suit].sort()
             if not res[suit] is None:

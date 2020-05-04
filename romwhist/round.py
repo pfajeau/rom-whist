@@ -1,8 +1,8 @@
-from .card import Card
+from card import Card
 # from .deck import Deck
 # from random import choice
 # from random import randrange
-from .hand import Hand
+from hand import Hand
 
 class Round():
 

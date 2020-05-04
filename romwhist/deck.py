@@ -1,5 +1,5 @@
 import random
-from .card import Card
+from card import Card
 
 class Deck(object):
 
@@ -23,19 +23,19 @@ class Deck(object):
 
     def deal(self):
         # Deal a single card, Returns the next card in self, and removes it from self
-        assert self._size > 0
-
-        card = self.cards.pop() # removing a card from the deck
-        self._size -= 1 # update the number of cards in the deck
-
-        return card
+        if self._size > 0:
+            card = self.cards.pop()
+            self._size -= 1
+            return card
+        else:
+            return None
 
     def shuffle(self):
         random.shuffle(self.cards)
 
     def addTop(self,card):
-        self.cards.append(card) # putting the card to the top of the deck
-        self._size += 1 # incrementing the size of the deck
+        self.cards.append(card)
+        self._size += 1
 
     def addRandom(self,card):
         place = random.randint(0,self._size) # getting a random position for the card to be place into

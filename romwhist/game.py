@@ -1,9 +1,12 @@
-from .card import Card
-from .deck import Deck
+from card import Card
+from deck import Deck
+# from .deck import Deck
 from random import choice
 from random import randrange
-from .hand import Hand
-from .round import Round
+# from .hand import Hand
+from hand import Hand;
+from round import Round;
+# from .round import Round
 
 class RomWhistGame():
 
@@ -26,6 +29,9 @@ class RomWhistGame():
         self.owner = game_creator
         self.active_player = self.owner
         self.deck_size = deck_size
+        self._nb_cards_per_hand=None
+        self._current_hand_nb = 0
+        self._start_of_no_trump = 0
 
     def reset(self):
         self.current_round = None
@@ -40,7 +46,62 @@ class RomWhistGame():
         self.active_player = self.owner
         self.init_dict(self.bets, -1)
         self.init_dict(self.wins, 0)
+        self._current_hand_nb = 0
 
+    # Define the card distribution pattern
+    def set_hand_prgression(self, multiple_one_card=False, multiple_no_trump=True, increment=1):
+        self.dealing_method = RomWhistGame.AUTOMATED_DEALING
+        self._multiple_one_card = multiple_one_card
+        self._multiple_no_trump = multiple_no_trump
+        self._increment = increment
+
+        # Create list of hands to plays
+        self._nb_cards_per_hand=[]
+
+        # Note: the following assumes that the list is ordered which is only
+        # guaranteed with python3
+        # Start with the one card hands
+        if multiple_one_card:
+            for i in range(0, len(self.players)):
+                self._nb_cards_per_hand.append(1)
+        else:
+            self._nb_cards_per_hand.append(1)
+
+        # Max number of card per players
+        max_cards = int(self.deck_size / len(self.players))
+
+        for i in range(1+self._increment, max_cards, increment):
+            self._nb_cards_per_hand.append(i)
+
+        end_of_climb = len(self._nb_cards_per_hand)
+        self._start_of_no_trump = len(self._nb_cards_per_hand)
+
+        # Now the no trump _hands
+        if multiple_no_trump:
+            for i in range(0, len(self.players)):
+                self._nb_cards_per_hand.append(max_cards)
+        else:
+            self._nb_cards_per_hand.append(max_cards)
+
+        self._end_of_no_trump = len(self._nb_cards_per_hand)-1
+
+        # Now the downhill
+        for i in range(1,end_of_climb+1):
+            self._nb_cards_per_hand.append(self._nb_cards_per_hand[end_of_climb-i])
+
+        # for i in range (max_cards-self._increment, 1+self._increment, -self._increment):
+        #     self._nb_cards_per_hand.append(i)
+        #
+        # # End with the one card hands
+        # if multiple_one_card:
+        #     for i in range(0, len(self.players)):
+        #         self._nb_cards_per_hand.append(1)
+        # else:
+        #     self._nb_cards_per_hand.append(1)
+
+        print ("Distribution of cards: ", self._nb_cards_per_hand)
+        print ("Index start of no trump: ", self._start_of_no_trump)
+        print ("Index end of no trump: ", self._end_of_no_trump)
 
     def get_active_player(self):
         return self.active_player;
@@ -65,7 +126,7 @@ class RomWhistGame():
 
     def start_game(self):
         # create deck
-        pass
+        self._current_hand_nb = 0
 
     def get_hand(self, player):
         return self.hands[player]
@@ -176,31 +237,59 @@ class RomWhistGame():
     def all_rounds_played(self):
         return self.current_round.last_card_played()
 
-    def deal(self, nb_cards, with_trump=False, dealer=""):
+    def deal(self, nb_cards=0, with_trump=False, dealer=""):
         self.deck = Deck(self.deck_size)
         self.deck.shuffle()
         self.init_dict(self.bets,-1)
         self.init_dict(self.wins,0)
-        self.dealer=dealer
-        self.active_player = self.next_player(dealer)
 
-        if nb_cards <= 0 or nb_cards > self.deck.size() / len(self.players):
+        if dealer == "":
+            self.dealer = self.active_player
+        else:
+            self.dealer=dealer
+
+        self.active_player = self.next_player(self.dealer)
+
+        # If automated dealing set cards to deal
+        if self.dealing_method == RomWhistGame.AUTOMATED_DEALING:
+            print ("current_hand_nb: ", self._current_hand_nb)
+            cards_to_deal = self._nb_cards_per_hand[self._current_hand_nb]
+            if cards_to_deal is None:
+                cards_to_deal = 0
+        else:
+            cards_to_deal = nb_cards;
+
+        if cards_to_deal <= 0 or cards_to_deal > self.deck.size() / len(self.players):
             return None
         else:
             # Create a hand with nb_cards for each player
             for p in range(len(self.players)):
                 player = self.players[p]
                 print (player)
-                print ("Nb cards:", nb_cards)
-                hand = Hand(self.deck, nb_cards, player)
+                hand = Hand(self.deck, cards_to_deal, player)
                 self.hands[player] = hand.sort()
+                print ("Hand for player ", player, " : ", hand.serialize())
 
-            # Pick up trum cards
-            if with_trump:
-                self.trump_card = self.deck.deal()
+            if self.dealing_method == RomWhistGame.AUTOMATED_DEALING and \
+            (self._current_hand_nb < self._start_of_no_trump or self._current_hand_nb > self._end_of_no_trump):
+                deal_trump = True
+            else:
+                deal_trump = with_trump
+
+            # Pick up trum card
+            if deal_trump:
+                trump_card = self.deck.deal()
+                if trump_card is None:
+                    # Case where all cards have been dealt
+                    # and no more card available to be the trump card
+                    # TODO: WOuld be best to raise an excepiton
+                    return None
+                else:
+                    self.trump_card = trump_card
             else:
                 self.trump_card = None
 
+            self._current_hand_nb = self._current_hand_nb+1
             return self.hands
 
     # TODO
@@ -211,7 +300,7 @@ class RomWhistGame():
     def get_play_with_trump(self):
         return True
 
-    def end_game(self):
+    def is_game_over(self):
         pass
 
     def next_player(self, player):
@@ -224,6 +313,7 @@ class RomWhistGame():
     def init_dict(self, a_dict, value):
         for player in self.players:
             a_dict[player] = value
+
 
 def main():
     D = Deck(); #create a deck of 52 cards
