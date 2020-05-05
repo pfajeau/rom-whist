@@ -52,13 +52,14 @@ class RomWhistGame():
         self._multiple_no_trump = multiple_no_trump
         self._increment = increment
 
+    def create_hand_progression(self):
         # Create list of hands to plays
         self._nb_cards_per_hand=[]
 
         # Note: the following assumes that the list is ordered which is only
         # guaranteed with python3
         # Start with the one card hands
-        if multiple_one_card:
+        if self._multiple_one_card:
             for i in range(0, len(self.players)):
                 self._nb_cards_per_hand.append(1)
         else:
@@ -67,14 +68,13 @@ class RomWhistGame():
         # Max number of card per players
         max_cards = int(self.deck_size / len(self.players))
 
-        for i in range(1+self._increment, max_cards, increment):
+        for i in range(1+self._increment, max_cards, self._increment):
             self._nb_cards_per_hand.append(i)
 
         end_of_climb = len(self._nb_cards_per_hand)
         self._start_of_no_trump = len(self._nb_cards_per_hand)
-
         # Now the no trump _hands
-        if multiple_no_trump:
+        if self._multiple_no_trump:
             for i in range(0, len(self.players)):
                 self._nb_cards_per_hand.append(max_cards)
         else:
@@ -85,16 +85,6 @@ class RomWhistGame():
         # Now the downhill
         for i in range(1,end_of_climb+1):
             self._nb_cards_per_hand.append(self._nb_cards_per_hand[end_of_climb-i])
-
-        # for i in range (max_cards-self._increment, 1+self._increment, -self._increment):
-        #     self._nb_cards_per_hand.append(i)
-        #
-        # # End with the one card hands
-        # if multiple_one_card:
-        #     for i in range(0, len(self.players)):
-        #         self._nb_cards_per_hand.append(1)
-        # else:
-        #     self._nb_cards_per_hand.append(1)
 
         print ("Distribution of cards: ", self._nb_cards_per_hand)
         print ("Index start of no trump: ", self._start_of_no_trump)
@@ -124,6 +114,8 @@ class RomWhistGame():
     def start_game(self):
         # create deck
         self._current_hand_nb = 0
+        # Create hand progression
+        self.create_hand_progression()
 
     def get_hand(self, player):
         return self.hands[player]

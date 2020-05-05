@@ -35,18 +35,32 @@
             <br><br>
             {{ form.join_game(class="btn btn-primary") }}
           </div>
-          <div class="col-1">
-            <!-- <h2>Join a game</h2> -->
+          <div class="col-2">
             <br><h3>or</h3>
           </div>
           <!-- <h3>or</h3> -->
-          <div class="col-4">
+          <div class="col-5">
             {{ form.deck_size.label }}
             {{ form.deck_size }}
-            <br><br>
-            {{ form.start_game(class="btn btn-primary") }}
-          </div>
+            <br>
+            <div id="dealing">
+              <p><h4>Dealing</h4>
+              {{ form.dealing_method.label }}
+              {{ form.dealing_method }}
+              <br>
+              {{ form.multiple_one_card.label }}
+              {{ form.multiple_one_card }}
+              <br>
+              {{ form.multiple_no_trump.label }}
+              {{ form.multiple_no_trump }}
+              <br>
+              {{ form.increment.label }}
+              {{ form.increment(size=1) }}
+            </div>
+          <br><br>
+          {{ form.start_game(class="btn btn-primary") }}
         </div>
+      </div>
       </div>
     </form>
     <br><br>

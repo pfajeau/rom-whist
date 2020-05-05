@@ -5,12 +5,13 @@ author: Philippe Fajeau
 
 """
 import unidecode
+import threading
 from flask import Blueprint
 from . import controllers,deck,card,hand
-from .game import RomWhistGame
+from romwhist.game import RomWhistGame
 from romwhist import socketio,app
 from flask import render_template, request, flash, session, url_for, redirect
-from .forms import LoginForm, StartGameForm, JoinGameForm, GameForm, IndexForm
+from romwhist.forms import LoginForm, StartGameForm, JoinGameForm, GameForm, IndexForm
 from flask_login import current_user, login_user, logout_user, AnonymousUserMixin
 from romwhist.models import User
 from romwhist.extensions import db
@@ -99,6 +100,14 @@ def index():
             games[game_id] = game
             players[game_id] = []
             clients[game_id] = dict()
+
+            dealing_method = request.form['dealing_method']
+            if dealing_method == "Automated":
+                multiple_one_card = 'multiple_one_card' in request.form.keys()
+                multiple_no_trump = 'multiple_no_trump' in request.form.keys()
+                game.set_hand_prgression(
+                    multiple_one_card, multiple_no_trump,
+                    int(request.form['increment']))
 
             session['ownername'] = username
             add_player(game_id)
@@ -197,12 +206,14 @@ def game_started():
             # In automated dealing, call start_hands with computed nb of cards and trump
             # In case it is a restart
             game.reset()
+            game.start_game()
             player = players[game_id][randint(0,len(players[game_id])-1)]
             socketio.emit("sc game started", {'player_to_deal': player, 'nb_cards': 0}, room=game_id)
 
             # TODO: if automated dealing, need to create hands
             if games[game_id].dealing_method == RomWhistGame.AUTOMATED_DEALING:
-                start_hand(game.get_nb_cards_to_deal(), game.get_play_with_trump())
+                generate_hands(game_id, session['username'])
+            #_hand(game.get_nb_cards_to_deal(), game.get_play_with_trump())
     #
 
 @socketio.on("player bet")
@@ -258,6 +269,12 @@ def player_played(data):
                 scores = game.update_scores()
                 print ("hand completed, next player to deal:", game.next_player_to_deal())
                 emit("hand completed", {'scores':scores, 'player_to_deal': game.next_player_to_deal()}, room=game_id)
+                # If delaing is automated, distribute cards
+                # after waiting a few seconds for players to see
+                # the last card played
+                if game.dealing_method == RomWhistGame.AUTOMATED_DEALING:
+                    timer = threading.Timer(2.0, generate_hands, [game_id, session['username']])
+                    timer.start()
         else:
             # nplayer = next_player(session['username'], players[game_id])
             nplayer = game.get_active_player()
@@ -265,6 +282,7 @@ def player_played(data):
 
         print("Allowed cards: ", allowed_cards)
         emit("player to play", {'player':nplayer, 'allowed_cards':allowed_cards}, room=game_id)
+
     return
 
 @socketio.on('start hand')
@@ -272,13 +290,18 @@ def start_hand(nbcards, trump):
     #selection = data["selection"]
     #votes[selection] += 1
     print ("start hand event received")
-    generate_hands(int(nbcards), trump)
+    game_id = session.get('game_id')
+    username = session.get('username')
 
-def generate_hands(nbcards, trump):
+    if game_is is None or username is None:
+        print("Error in start_hand. username or game_id not in session")
+        return
+
+    generate_hands(game_id, username, int(nbcards), trump)
+
+def generate_hands(game_id, username, nbcards=0, trump=True):
     print (nbcards)
     print("Trump:", trump)
-
-    game_id = session.get('game_id')
 
     if not game_id in games:
        # Should never happen
@@ -287,9 +310,9 @@ def generate_hands(nbcards, trump):
     else:
         game = games[game_id]
 
-    hands = game.deal(nbcards, trump, session['username'])
+    hands = game.deal(nbcards, trump, username)
     if hands is None:
-        socketio.emit("alert", "Invalid number of card for size of deck", room=clients[game_id][session['username']])
+        socketio.emit("alert", "Invalid number of card for size of deck", room=clients[game_id][username])
     else:
         round = game.create_round()
 
