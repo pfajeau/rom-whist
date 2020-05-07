@@ -29,6 +29,9 @@ class RomWhistGame():
         self._nb_cards_per_hand=None
         self._current_hand_nb = 0
         self._start_of_no_trump = 0
+        self._multiple_one_card = False
+        self._multiple_no_trump = True
+        self._increment = 1
 
     def reset(self):
         self.current_round = None

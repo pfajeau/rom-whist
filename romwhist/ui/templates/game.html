@@ -4,11 +4,10 @@
 <!-- TODO:
 Optimize js by declaring variables for elements frequently used
 to limit the number of DOM traversals
-Separate js from html
+Separate js from html -> problem with form variables
 Add footer / contact info
-Configure score counting?
-Persistence?
-UI enhancements
+Add sound effects
+No refresh on player left
 -->
 
 {% block content %}
@@ -147,6 +146,10 @@ UI enhancements
     if (username == ownername) {
       // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
       $("#game_action_buttons").append('{{ form.stop_game(class="btn btn-warning") }}');
+    }
+
+    if ("{{ active_player }}" != "") {
+          make_player_active("{{ active_player }}")
     }
 
     if (username == ownername) {
@@ -315,6 +318,7 @@ UI enhancements
       // Enable the bet field if user is supposed to bet
       let id_bet = "#bets_" + player_name
       if (player_name == username) {
+        play_sound("bicycle_bell.wav")
         $(id_bet).attr('readonly', false);
         $(id_bet).addClass("highlighted_field");
         $(id_bet).focus();
@@ -347,6 +351,8 @@ UI enhancements
       allowed_cards = data['allowed_cards']
       make_player_active(player_name);
       if (player_name === username) {
+        play_sound("bicycle_bell.wav")
+
         // TODO: only enable for allowed list of cards
         $( '#cards img').each(function( index ) {
           card = $(this).attr('id');
@@ -376,19 +382,20 @@ UI enhancements
       });
       let image = 'img/' + trump_card + ".svg"
       $('#trump_card').html('')
-
+      // Clear table
+      $('#cards_played').empty()
       make_player_the_dealer(player_name);
     });
 
-      // function play_sound(audio_file) {
-      //   const sound = new Audio()
-      //   sound.src = {{ url_for('static', filename='') }} + "audio/" + audio_file
-      //   sound.play()
-      // }
+    function play_sound(audio_file) {
+      const sound = new Audio()
+      sound.src = {{ url_for('static', filename='') }} + "audio/" + audio_file
+      sound.play()
+    }
 
     socket.on('card played', function(data) {
       if (new_round) {
-        $('#cards_played').empty();
+        // $('#cards_played').empty();
         new_round = false;
         first_card = data['card'];
       }
@@ -397,7 +404,6 @@ UI enhancements
       // Display card on table
 
       let image = 'img/' + card + ".svg"
-      let card_table_id='#' + card + "_table"
       // $(cards_played).append("<figure>");
       $('#cards_played').append("<img id=" + card + "_table"+ " src={{ url_for('static', filename='') }}" +
       image + ' alt=' + card + ' class="card_table"' + '>');
@@ -444,7 +450,16 @@ UI enhancements
         // TODO: remove elements instead of refresh, but low priority
         // ALso, notify user
         // Alert now shown as page is refreshed right away
-        window.location.reload(false);
+        $("#" + player_name).remove()
+
+        let id_bet = "#bets_" + player_name;
+        $(id_bet).parent().remove()
+        let id_round = "#rounds_" + player_name;
+        $(id_round).parent().remove()
+        let id_score = "#score_" + player_name;
+        $(id_score).parent().remove()
+
+        // window.location.reload(false);
         show_alert("User " + player_name + " left the game!", "Warning")
       }
     });
@@ -453,10 +468,10 @@ UI enhancements
       let image = 'img/' + trump_card + ".svg"
       $('#trump_card').html('')
       $('#trump_card').append("<figure>");
-        $('#trump_card').append("<img src={{ url_for('static', filename='') }}" +
-        image + ' alt=' + trump_card + 'width=80 height=80' + '>');
-        $('#trump_card').append("<figcaption><h3 class='trump_caption'>Trump</h3></figcaption>");
-        $('#trump_card').append("</figure>");
+      $('#trump_card').append("<img src={{ url_for('static', filename='') }}" +
+      image + ' alt=' + trump_card + 'width=80 height=80' + '>');
+      $('#trump_card').append("<figcaption><h3 class='trump_caption'>Trump</h3></figcaption>");
+      $('#trump_card').append("</figure>");
         // $('#trump_card').append("Trump")
 
         $("#trump").prop('checked', true);
@@ -473,15 +488,18 @@ UI enhancements
       value++;
       document.getElementById(id_rounds).value = value;
       new_round = true
+      $('#cards_played').empty();
     });
 
     socket.on('msg posted', function(data) {
       sender=data['sender'];
       msg = data['msg'];
       // Display messages
-      content = $('#chat_text').val();
-      $('#chat_text').val(content + sender + ":" + msg + "\n");
-      // append("<p class='chat_text'><b>" + sender + ": </b>" + msg + "</p>");
+      textarea = $('#chat_text')
+      content = textarea.val();
+      textarea.val(content + sender + ": " + msg + "\n");
+      textarea.animate({scrollTop:textarea[0].scrollHeight - textarea.height()},1000);
+      // play_sound("beep.wav");
     });
 
     socket.on('alert', function(msg) {
@@ -554,9 +572,18 @@ UI enhancements
 
 <div id="card-table" class="container">
   <div class="bottomright" id="trump_card">
+    {% if trump != None %}
+      <figure>
+        <img src="{{ url_for('static', filename='') }}img/{{ trump }}.svg" alt=trump width=80 height=80>
+        <figcaption><h3 class='trump_caption'>Trump</h3></figcaption>
+      </figure>"
+    {% endif %}
   </div>
   <div id="cards_played">
     <!-- TODO populate on refresh -->
+    {% for card in cards_played -%}
+    <img id= "{{ card }}_table" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" alt="{{ card }}" class="card_table">
+    {% endfor %}
   </div>
 </div>
 
@@ -589,7 +616,7 @@ UI enhancements
     </div>
     <div class="chat" id="chat">
       <h4 class="chat_title">Chat</h4>
-      <textarea id="chat_text" rows=5 cols=80></textarea><br>
+      <textarea id="chat_text" rows=5 cols=80 readonly></textarea><br>
       <input type="text" id="chat_input" class = "chat_input" size=77></input>
       <button id="post" class="btn btn-primary" name="post" type="button">Send</button>
     </div>
@@ -601,4 +628,4 @@ UI enhancements
     </form>
   </div>
 
-            {% endblock %}
+{% endblock %}

@@ -31,6 +31,13 @@ class Round():
     def get_first_card_played(self):
         return self.first_card_played;
 
+    # REturn a list of cards as strings
+    def get_cards_played(self):
+        cards = list(self.cards_played.values())
+        str_cards = []
+        for card in cards:
+            str_cards.append(str(card))
+        return str_cards
 
     def last_card_played(self):
         return len(self.cards_played) == len (self.players)
