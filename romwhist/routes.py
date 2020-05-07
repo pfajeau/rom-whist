@@ -257,9 +257,9 @@ def hand_completed(game_id, username):
     if game.dealing_method == RomWhistGame.AUTOMATED_DEALING:
         generate_hands(game_id, username)
 
-def round_ended(game_id, winner, nplayer):
+def clear_round(game_id, nplayer):
     game = games[game_id]
-    socketio.emit("round ended", winner, room=game_id)
+    socketio.emit("clear round",room=game_id)
     if game.is_hand_completed():
         hand_completed(game_id, nplayer)
 
@@ -284,7 +284,8 @@ def player_played(data):
             allowed_cards = game.get_hand(nplayer).serialize()
 
             # There is a winnder, so round is ended
-            timer = threading.Timer(3.0, round_ended, [game_id, winner, nplayer])
+            socketio.emit("round ended", winner, room=game_id)
+            timer = threading.Timer(3.0, clear_round, [game_id, nplayer])
             timer.start()
             game.create_round()
 

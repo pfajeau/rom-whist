@@ -488,6 +488,10 @@ No refresh on player left
       value++;
       document.getElementById(id_rounds).value = value;
       new_round = true
+      play_sound("applause2_x.wav")
+    });
+
+    socket.on('clear round', function() {
       $('#cards_played').empty();
     });
 
