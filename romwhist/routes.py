@@ -102,7 +102,8 @@ def index():
             clients[game_id] = dict()
 
             dealing_method = request.form['dealing_method']
-            if dealing_method == "Automated":
+            print ("In route game, dealing method is: ", request.form['dealing_method'])
+            if dealing_method == "computer":
                 multiple_one_card = 'multiple_one_card' in request.form.keys()
                 multiple_no_trump = 'multiple_no_trump' in request.form.keys()
                 game.set_hand_prgression(
@@ -215,9 +216,9 @@ def game_started():
             player = players[game_id][randint(0,len(players[game_id])-1)]
             socketio.emit("sc game started", {'player_to_deal': player, 'nb_cards': 0}, room=game_id)
 
-            # TODO: if automated dealing, need to create hands
+            print ("Dealing method is: ", games[game_id].dealing_method)
             if games[game_id].dealing_method == RomWhistGame.AUTOMATED_DEALING:
-                generate_hands(game_id, session['username'])
+                generate_hands(game_id, player)
             #_hand(game.get_nb_cards_to_deal(), game.get_play_with_trump())
     #
 

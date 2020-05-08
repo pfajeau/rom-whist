@@ -2,13 +2,32 @@
 
 <!-- TODO: hide dealing distribution pattern area if manual dealing
     option was selected -->
-    
+
 {% block content %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
 
   {% if error %}
   <p class=error><strong>Error:</strong> {{ error }}
   {% endif %}
+
+  <script type="text/javascript">
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+      function show_deal_fields() {
+        $("#dealing_options").show()
+      }
+      function hide_deal_fields() {
+        $("#dealing_options").hide()
+      }
+
+      // Disable dealing options if manual dealing selected
+      // Enable otherwise
+      $("#deal_player").click(hide_deal_fields);
+      $("#deal_computer").click(show_deal_fields);
+    });
+
+</script>
 
     <h2>Welcome to a place to play Romanian Whist with your friends!!! </h2>
     <p>Romanian Whist, also called Ascenseur or Oh Hell! is a fun card game that can be played by 3 to 7 players</p>
@@ -30,7 +49,7 @@
         <br>
         <div class="row">
           <br/>
-          <div class="col-4">
+          <div class="col-4 data_block">
             <!-- <h2>Join a game</h2> -->
             {{ form.game_id.label }}
             {{ form.game_id(size=5) }}
@@ -38,26 +57,29 @@
             {{ form.join_game(class="btn btn-primary") }}
           </div>
           <div class="col-2">
-            <br><h3>or</h3>
+            <br><h3>&nbsp &nbsp or</h3>
           </div>
           <!-- <h3>or</h3> -->
-          <div class="col-5">
+          <div class="col-5 data_block">
             {{ form.deck_size.label }}
             {{ form.deck_size }}
-            <br>
+            <br><br>
             <div id="dealing">
-              <p><h4>Dealing</h4>
-              {{ form.dealing_method.label }}
-              {{ form.dealing_method }}
+<!--              <p><center><h4>Dealing</h4></center> -->
+              <input type="radio" name="dealing_method" id="deal_player" value="player"> Players deal cards</input><br>
+              <input type="radio" name="dealing_method" id="deal_computer" value="computer" checked="checked"> Computer deals cards</input>
               <br>
-              {{ form.multiple_one_card.label }}
-              {{ form.multiple_one_card }}
               <br>
-              {{ form.multiple_no_trump.label }}
-              {{ form.multiple_no_trump }}
-              <br>
-              {{ form.increment.label }}
-              {{ form.increment(size=1) }}
+              <div id="dealing_options">
+                {{ form.multiple_one_card.label }}
+                {{ form.multiple_one_card }}
+                <br>
+                {{ form.multiple_no_trump.label }}
+                {{ form.multiple_no_trump }}
+                <br>
+                {{ form.increment.label }}
+                {{ form.increment(size=1) }}
+              </div>
             </div>
           <br><br>
           {{ form.start_game(class="btn btn-primary") }}

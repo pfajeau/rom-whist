@@ -35,12 +35,11 @@ class GameForm(FlaskForm):
 class IndexForm(FlaskForm):
     game_id = StringField("Game id: ", validators=[Length(max=6)])
     user_name = StringField("Your Alias: ", validators=[InputRequired(), Length(max=10)])
-    start_game = SubmitField('Create a new game')
-    join_game = SubmitField('Join an existing game')
+    start_game = SubmitField('Create new game')
+    join_game = SubmitField('Join existing game')
     deck_size = SelectField("Deck size: ", choices=[('32','32'),('52','52')], default='52')
     multiple_one_card = BooleanField("Multiple one card deals: ", default=False)
     multiple_no_trump = BooleanField("Multiple no trump deals: ", default=True)
     increment = IntegerField("Increment: ", default=1)
-    dealing_method = SelectField("Card dealing: ", choices=[('Manual','Manual'),('Automated','Automated')], default='Manual')
 
 from .models import *

@@ -152,10 +152,23 @@ footer a:hover {
 	color:black;
 }
 
+.data_block {
+	background-color: #f0f0f5;
+	padding-right:10px;
+	padding-left:10px;
+	padding-top:10px;
+	padding-bottom:10px;
+}
+
 .container {
   position: relative;
 }
 
+#dealing {
+	padding-right:5px;
+	padding-left:5px;
+
+}
 .bottomright {
   position: absolute;
   bottom: 8px;

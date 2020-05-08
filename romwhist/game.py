@@ -118,7 +118,8 @@ class RomWhistGame():
         # create deck
         self._current_hand_nb = 0
         # Create hand progression
-        self.create_hand_progression()
+        if self.dealing_method == RomWhistGame.AUTOMATED_DEALING:
+            self.create_hand_progression()
 
     def get_hand(self, player):
         return self.hands[player]
