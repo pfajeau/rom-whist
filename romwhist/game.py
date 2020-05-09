@@ -137,8 +137,7 @@ class RomWhistGame():
         return self.bets
 
     def get_wins(self):
-        return self.wins
-
+        return self.wins;
 
     def is_hand_completed(self):
         for player in self.players:
@@ -175,7 +174,7 @@ class RomWhistGame():
     # Return None if all players have bet
     def next_player_to_bet(self, player):
         nplayer = self.next_player(player)
-        if self.bets[nplayer] != -1:
+        if self.bets[nplayer] != -1 or len(self.players) == 1:
             return None
         else:
             return nplayer

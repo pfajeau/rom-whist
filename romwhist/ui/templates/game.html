@@ -241,22 +241,24 @@ No refresh on player left
       $(id_bet).change(function() {
         if (isNaN(parseInt($(id_bet).val(),10))) {
           show_alert ("Please enter an integer value", "Error")
+          return;
         }
-        else {
-          bet = parseInt($(id_bet).val(),10);
-          if (bet == forbidden_bet) {
-            show_alert ("This bet is not allowed. Sum of bets cannot be equal to number of cards", "Error")
-          }
-          else {
-            $(id_bet).attr('readonly', true);
-            $(id_bet).removeClass("highlighted_field");
+        bet = parseInt($(id_bet).val(),10);
+        if (bet == forbidden_bet) {
+          show_alert ("This bet is not allowed. Sum of bets cannot be equal to number of cards", "Error");
+          return;
+        }
+        if (bet < 0) {
+          show_alert ("This bet is not allowed. The bet has to be a positive number", "Error");
+          return;
+        }
+        $(id_bet).attr('readonly', true);
+        $(id_bet).removeClass("highlighted_field");
 
-            // $("#"+username).removeClass("active_player");
-            // $("#"+username).addClass("normal_player");
-            make_player_active(username);
-            socket.emit("player bet", $(id_bet).val())
-          }
-        }
+        // $("#"+username).removeClass("active_player");
+        // $("#"+username).addClass("normal_player");
+        make_player_active(username);
+        socket.emit("player bet", $(id_bet).val())
       });
     });
 

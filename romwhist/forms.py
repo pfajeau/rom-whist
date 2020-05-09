@@ -34,10 +34,10 @@ class GameForm(FlaskForm):
 
 class IndexForm(FlaskForm):
     game_id = StringField("Game id: ", validators=[Length(max=6)])
-    user_name = StringField("Your Alias: ", validators=[InputRequired(), Length(max=10), Regexp("^[a-zA-Z0-9]+$")])
+    user_name = StringField("Your Alias: ", validators=[InputRequired(), Length(max=10), Regexp("^[a-zA-Z0-9]+$", message="Only alphanumeric characters are allowed for alias")])
     start_game = SubmitField('Create new game')
     join_game = SubmitField('Join existing game')
-    deck_size = SelectField("Deck size: ", choices=[('32','32'),('52','52')], default='52')
+    deck_size = SelectField("Deck size: ", choices=[('24','24'),('32','32'),('40','40'),('52','52')], default='32')
     multiple_one_card = BooleanField("Multiple one card deals: ", default=False)
     multiple_no_trump = BooleanField("Multiple no trump deals: ", default=True)
     increment = IntegerField("Increment: ", default=1)

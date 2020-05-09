@@ -353,10 +353,10 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
             print ("Cards for player ", player, " ", cards)
             socketio.emit("new hand", cards, room=clients[game_id][player])
 
-        if trump and not game.trum_card is None:
+        if trump and not game.trump_card is None:
             socketio.emit("trump card", str(game.trump_card), room=game_id)
 
-        socketio.emit("player to bet", {'player': nplayer, 'forbidden_bet':-1}, room=game_id)
+        socketio.emit("player to bet", {'player': nplayer, 'forbidden_bet':game.forbidden_bet(nplayer)}, room=game_id)
 
 @socketio.on('join game')
 def on_join(data):
