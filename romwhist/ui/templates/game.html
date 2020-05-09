@@ -118,6 +118,15 @@ No refresh on player left
 
   document.addEventListener('DOMContentLoaded', () => {
 
+    // Hide dealing area if automated dealing used
+    if ("{{ dealing_method }}" == "automated") {
+      $("#dealing").hide();
+    }
+    else {
+      $("#dealing").show();
+    }
+
+
     // Commonly used DOM elements to reduce DOM searches
     var alert_elem = $("#dialog");
 
@@ -230,20 +239,42 @@ No refresh on player left
       // Register action for bet input field
       let id_bet = "#bets_" + username
       $(id_bet).change(function() {
-        bet = parseInt($(id_bet).val(),10);
-        if (bet == forbidden_bet) {
-          show_alert ("This bet is not allowed. Sum of bets cannot be equal to number of cards", "Error")
+        if (isNaN(parseInt($(id_bet).val(),10))) {
+          show_alert ("Please enter an integer value", "Error")
         }
         else {
-          $(id_bet).attr('readonly', true);
-          $(id_bet).removeClass("highlighted_field");
+          bet = parseInt($(id_bet).val(),10);
+          if (bet == forbidden_bet) {
+            show_alert ("This bet is not allowed. Sum of bets cannot be equal to number of cards", "Error")
+          }
+          else {
+            $(id_bet).attr('readonly', true);
+            $(id_bet).removeClass("highlighted_field");
 
-          // $("#"+username).removeClass("active_player");
-          // $("#"+username).addClass("normal_player");
-          make_player_active(username);
-          socket.emit("player bet", $(id_bet).val())
+            // $("#"+username).removeClass("active_player");
+            // $("#"+username).addClass("normal_player");
+            make_player_active(username);
+            socket.emit("player bet", $(id_bet).val())
+          }
         }
       });
+    });
+
+    socket.on('game over', function(winners) {
+      console.log("Game started event received")
+      console.log(winners)
+      nb_winner = 0
+      winner_list = ""
+      for (var player in winners) {
+        winner_list = winner_list + " " + player
+        nb_winner++
+      }
+      if (nb_winner == 1) {
+        show_alert("Game over ! Winner is " + winner_list)
+      }
+      else {
+        show_alert("Game over ! Winner(s) are " + winner_list)
+      }
     });
 
     socket.on('sc game started', function(data) {
@@ -428,7 +459,7 @@ No refresh on player left
 
       let id_bet = "bets_" + player_name;
       $("#bets").append("<td>" + "<label for=" + "'bets_" + player_name + "' class='player_info'>" + "Bets</label>" +
-        "<input type='number' id='" + id_bet + "' name='bets' min=0 max=18 readonly>" +
+        "<input type='number' id='" + id_bet + "' name='bets' min=0 max=18 step=1 readonly>" +
         "</td>");
 
       let id_round = "rounds_" + player_name;
@@ -544,9 +575,9 @@ No refresh on player left
         <label for="'bets_' + {{ player }}" class="player_info">Bets</label>
         <!-- TODO: should set bet to '' if it is -1 -->
         {% if bets[player] == -1 %}
-        <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value='' readonly>
+        <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value='' step=1 readonly>
         {% else %}
-        <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value={{ bets[player] }} readonly>
+        <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value={{ bets[player] }} step=1 readonly>
         {% endif %}
       </td>
       {% endfor %}
@@ -594,7 +625,7 @@ No refresh on player left
 <div>
   <form action="" method="post" novalidate>
     {{ form.hidden_tag() }}
-    <div class="container">
+    <div class="container" id="dealing">
       <div class="col-md-8">
         <div class="form-group">
           <br>

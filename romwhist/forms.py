@@ -9,7 +9,7 @@ author: Philippe Fajeau
 # Optionally import flask-wtf and wtforms
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField, SelectField
-from wtforms.validators import Length, InputRequired, ValidationError
+from wtforms.validators import Length, InputRequired, ValidationError, Regexp
 
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[InputRequired(), Length(max=32)])
@@ -34,7 +34,7 @@ class GameForm(FlaskForm):
 
 class IndexForm(FlaskForm):
     game_id = StringField("Game id: ", validators=[Length(max=6)])
-    user_name = StringField("Your Alias: ", validators=[InputRequired(), Length(max=10)])
+    user_name = StringField("Your Alias: ", validators=[InputRequired(), Length(max=10), Regexp("^[a-zA-Z0-9]+$")])
     start_game = SubmitField('Create new game')
     join_game = SubmitField('Join existing game')
     deck_size = SelectField("Deck size: ", choices=[('32','32'),('52','52')], default='52')

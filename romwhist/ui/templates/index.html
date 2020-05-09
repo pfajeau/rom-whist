@@ -21,6 +21,13 @@
         $("#dealing_options").hide()
       }
 
+      $('#increment').keydown(function (e) {
+        if (e.keyCode == 13) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
       // Disable dealing options if manual dealing selected
       // Enable otherwise
       $("#deal_player").click(hide_deal_fields);

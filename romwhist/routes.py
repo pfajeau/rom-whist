@@ -53,8 +53,11 @@ def index():
             # login_user(user)
     form = IndexForm()
     if form.validate_on_submit():
+        # Sanitize the username (as it isued as IDs in the html)
         username = unidecode.unidecode(form.user_name.data)
+        username = username.replace(" ","")
         print ("User: ", username)
+
         # Used by client
         previous_alias = session.get('username')
 
@@ -172,7 +175,8 @@ def game():
             cards_played = round.get_cards_played()
 
         return render_template("game.html", form=form,  players=players[game_id], scores=game.get_scores(), \
-        hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=game.get_active_player(), cards_played=cards_played, trump=game.trump_card)
+        hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=game.get_active_player(), \
+        cards_played=cards_played, trump=game.trump_card, dealing_method=game.dealing_method)
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
@@ -232,22 +236,28 @@ def player_bet(bet):
     else:
         # If all players have bet, enable next player to play
         game = games[game_id]
-        game.place_bet(session['username'], int(bet))
-        emit("player bet", {'player':session['username'], 'bet':bet}, room = game_id)
-        nplayer = game.next_player_to_bet(session['username'])
-        if nplayer is None:
-            # next_player_to_play = next_player(session['username'], players[game_id])
-            next_player_to_play = game.get_active_player()
-            # All cards allowed for first player
-            allowed_cards = game.get_hand(next_player_to_play).serialize()
-            print("Allowed cards: ", allowed_cards)
-            emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards}, room=game_id)
 
-        # Last player to bet
-        else:
-            forbidden_bet = game.forbidden_bet(nplayer)
-            print ("Forbidden bet for player " + nplayer + " is:" + str(forbidden_bet))
-            emit("player to bet", {'player': nplayer, 'forbidden_bet':forbidden_bet}, room=game_id)
+        # TODO: check that the bet is an Integer
+        try:
+            bet_int = int(bet)
+            game.place_bet(session['username'], bet_int)
+            emit("player bet", {'player':session['username'], 'bet':bet}, room = game_id)
+            nplayer = game.next_player_to_bet(session['username'])
+            if nplayer is None:
+                # next_player_to_play = next_player(session['username'], players[game_id])
+                next_player_to_play = game.get_active_player()
+                # All cards allowed for first player
+                allowed_cards = game.get_hand(next_player_to_play).serialize()
+                print("Allowed cards: ", allowed_cards)
+                emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards}, room=game_id)
+
+            # Last player to bet
+            else:
+                forbidden_bet = game.forbidden_bet(nplayer)
+                print ("Forbidden bet for player " + nplayer + " is:" + str(forbidden_bet))
+                emit("player to bet", {'player': nplayer, 'forbidden_bet':forbidden_bet}, room=game_id)
+        except:
+            emit("alert", "Invalid bet!", room=clients[game_id][username])
     return
 
 def hand_completed(game_id, username):
@@ -255,7 +265,10 @@ def hand_completed(game_id, username):
     scores = game.update_scores()
     print ("hand completed, next player to deal:", game.next_player_to_deal())
     socketio.emit("hand completed", {'scores':scores, 'player_to_deal': game.next_player_to_deal()}, room=game_id)
-    if game.dealing_method == RomWhistGame.AUTOMATED_DEALING:
+    if game.is_game_over():
+        socketio.emit("game over", room=game_id)
+        socketio.emit("alert", "Game is Over!", game.get_highest_score_player(), oom=game_id)
+    elif game.dealing_method == RomWhistGame.AUTOMATED_DEALING:
         generate_hands(game_id, username)
 
 def clear_round(game_id, nplayer):
@@ -316,7 +329,6 @@ def start_hand(nbcards, trump):
 
 def generate_hands(game_id, username, nbcards=0, trump=True):
     print (nbcards)
-    print("Trump:", trump)
 
     if not game_id in games:
        # Should never happen
@@ -341,7 +353,7 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
             print ("Cards for player ", player, " ", cards)
             socketio.emit("new hand", cards, room=clients[game_id][player])
 
-        if trump:
+        if trump and not game.trum_card is None:
             socketio.emit("trump card", str(game.trump_card), room=game_id)
 
         socketio.emit("player to bet", {'player': nplayer, 'forbidden_bet':-1}, room=game_id)

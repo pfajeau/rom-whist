@@ -102,6 +102,12 @@ class RomWhistGame():
     def get_owner(self):
         return self.owner
 
+    # Return a list of players with the mazimum score
+    def get_highest_score_player(self):
+        maximum = max(scores.values())
+        result = filter(lambda x:x[1] == maximum,scores.items())
+        return result
+
     def add_player(self, player):
         self.players.append(player)
         self.scores[player] = 0
@@ -263,12 +269,16 @@ class RomWhistGame():
                 self.hands[player] = hand.sort()
                 print ("Hand for player ", player, " : ", hand.serialize())
 
-            if self.dealing_method == RomWhistGame.AUTOMATED_DEALING and \
-            (self._current_hand_nb < self._start_of_no_trump or self._current_hand_nb > self._end_of_no_trump):
-                deal_trump = True
-            else:
-                deal_trump = with_trump
+            deal_trump = with_trump
 
+            # Check whether play is with or without trump in case of automated dealing
+            if self.dealing_method == RomWhistGame.AUTOMATED_DEALING:
+                if self._current_hand_nb < self._start_of_no_trump or self._current_hand_nb > self._end_of_no_trump:
+                    deal_trump = True
+                else:
+                    deal_trump = False
+
+            print ("Trump: ", deal_trump)
             # Pick up trum card
             if deal_trump:
                 trump_card = self.deck.deal()
@@ -294,7 +304,7 @@ class RomWhistGame():
         return True
 
     def is_game_over(self):
-        pass
+        return self._current_hand_nb > len(self._nb_cards_per_hand)
 
     def next_player(self, player):
         pos = self.players.index(player)
