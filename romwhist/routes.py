@@ -266,8 +266,8 @@ def hand_completed(game_id, username):
     print ("hand completed, next player to deal:", game.next_player_to_deal())
     socketio.emit("hand completed", {'scores':scores, 'player_to_deal': game.next_player_to_deal()}, room=game_id)
     if game.is_game_over():
-        socketio.emit("game over", room=game_id)
-        socketio.emit("alert", "Game is Over!", game.get_highest_score_player(), oom=game_id)
+        socketio.emit("game over", game.get_highest_score_player(), room=game_id)
+        # socketio.emit("alert", "Game is Over!", game.get_highest_score_player(), oom=game_id)
     elif game.dealing_method == RomWhistGame.AUTOMATED_DEALING:
         generate_hands(game_id, username)
 
