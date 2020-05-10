@@ -230,6 +230,7 @@ def game_started():
 def player_bet(bet):
     print ("player bet event received")
     print ("Player bet: " + bet)
+    username = session['username']
     game_id = session.get('game_id')
     if game_id is None:
         print("ERROR: Game not found!!!")

@@ -239,7 +239,11 @@ No refresh on player left
       // Register action for bet input field
       let id_bet = "#bets_" + username
       $(id_bet).change(function() {
-        if (isNaN(parseInt($(id_bet).val(),10))) {
+//        if (!System.Text.RegularExpressions.Regex.IsMatch($(id_bet).val(), "^[0-9]*$")) {
+//        if (isNaN(parseInt($(id_bet).val(),10))) {
+          bet = $(id_bet).val();
+          expr = /^[0-9]*$/
+          if (!expr.test(bet)) {
           show_alert ("Please enter an integer value", "Error")
           return;
         }
