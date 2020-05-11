@@ -427,7 +427,7 @@ No refresh on player left
     function play_sound(audio_file) {
       const sound = new Audio()
       sound.src = {{ url_for('static', filename='') }} + "audio/" + audio_file
-      sound.play()
+      // sound.play()
     }
 
     socket.on('card played', function(data) {
