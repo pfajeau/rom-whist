@@ -460,7 +460,8 @@ def remove_player(game_id, player):
     # game_id = session.get('game_id')
     if not game_id is None:
         if game_id in players:
-            players[game_id].remove(player)
+            if player in players[game_id]:
+                players[game_id].remove(player)
             games[game_id].remove_player(player)
         if player in clients[game_id]:
             del clients[game_id][player]

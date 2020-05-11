@@ -152,6 +152,10 @@ footer a:hover {
 	color:black;
 }
 
+.error_msg {
+	color:red;
+	font-size: large;
+}
 .data_block {
 	background-color: #f0f0f5;
 	padding-right:10px;

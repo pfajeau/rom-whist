@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
 
   {% if error %}
-  <p class=error><strong>Error:</strong> {{ error }}
+  <p class="error_msg"><strong>Error:</strong> {{ error }}</p>
   {% endif %}
 
   <script type="text/javascript">
@@ -21,6 +21,12 @@
         $("#dealing_options").hide()
       }
 
+      $('#user_name').keydown(function (e) {
+        if (e.keyCode == 13) {
+          e.preventDefault();
+          return false;
+        }
+      });
       $('#increment').keydown(function (e) {
         if (e.keyCode == 13) {
           e.preventDefault();
