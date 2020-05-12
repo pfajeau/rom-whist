@@ -93,9 +93,10 @@ figcaption {
 	font-size: medium;
 }
 .trump_caption {
-	font-weight: bold;
+	font-size : medium;
+	/* font-weight: bold; */
 	color:white;
-	text-align: center;
+	text-align: left;
 }
 #buttons {
 	text-align:center;

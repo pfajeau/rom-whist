@@ -6,6 +6,7 @@ author: Philippe Fajeau
 """
 import unidecode
 import threading
+import traceback
 from flask import Blueprint
 from . import controllers,deck,card,hand
 from romwhist.game import RomWhistGame
@@ -174,9 +175,14 @@ def game():
         if not round is None:
             cards_played = round.get_cards_played()
 
+        print("Active Player: ", game.get_active_player())
+        print("Game Phase: ", game.get_game_phase().name)
+        active_player = game.get_active_player()
         return render_template("game.html", form=form,  players=players[game_id], scores=game.get_scores(), \
-        hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=game.get_active_player(), \
-        cards_played=cards_played, trump=game.trump_card, dealing_method=game.dealing_method)
+        hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player, \
+        cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
+        trump=game.trump_card, dealing_method=game.dealing_method, forbidden_bet=game.forbidden_bet(active_player), \
+        game_phase=game.get_game_phase().name)
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
@@ -243,7 +249,7 @@ def player_bet(bet):
             bet_int = int(bet)
             game.place_bet(session['username'], bet_int)
             emit("player bet", {'player':session['username'], 'bet':bet}, room = game_id)
-            nplayer = game.next_player_to_bet(session['username'])
+            nplayer = game.next_player_to_bet(username)
             if nplayer is None:
                 # next_player_to_play = next_player(session['username'], players[game_id])
                 next_player_to_play = game.get_active_player()
@@ -251,15 +257,19 @@ def player_bet(bet):
                 allowed_cards = game.get_hand(next_player_to_play).serialize()
                 print("Allowed cards: ", allowed_cards)
                 emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards}, room=game_id)
+                return
 
-            # Last player to bet
+                # Last player to bet
             else:
                 forbidden_bet = game.forbidden_bet(nplayer)
                 print ("Forbidden bet for player " + nplayer + " is:" + str(forbidden_bet))
                 emit("player to bet", {'player': nplayer, 'forbidden_bet':forbidden_bet}, room=game_id)
-        except:
+                return
+        except Exception as e:
+            print ("Bet received: ", bet)
+            print (e)
+            traceback.print_stack()
             emit("alert", "Invalid bet!", room=clients[game_id][username])
-    return
 
 def hand_completed(game_id, username):
     game = games[game_id]
@@ -300,7 +310,7 @@ def player_played(data):
 
             # There is a winnder, so round is ended
             socketio.emit("round ended", winner, room=game_id)
-            timer = threading.Timer(3.0, clear_round, [game_id, nplayer])
+            timer = threading.Timer(4.0, clear_round, [game_id, nplayer])
             timer.start()
             game.create_round()
 
@@ -415,7 +425,7 @@ def test_disconnect():
     client_id = request.sid
     player = session['username']
     game_id = session['game_id']
-    timer = threading.Timer(3.0, check_player_left, [player, game_id, client_id])
+    timer = threading.Timer(5.0, check_player_left, [player, game_id, client_id])
     timer.start()
 
 def check_player_left(player, game_id, client_id):
@@ -429,7 +439,7 @@ def check_player_left(player, game_id, client_id):
         if current_client_id == client_id:
             remove_player(game_id, player)
     else:
-        # Do nothing as the player has already been removeCard
+        # Do nothing as player has already been removed from game
         pass
 
 

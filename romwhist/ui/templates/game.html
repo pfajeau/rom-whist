@@ -59,6 +59,12 @@ No refresh on player left
 
   function deal() {
     let trump_flag = $("#trump").is(":checked");
+    nb_cards = $("#nb_cards").val();
+    expr = /^[1-9]+$/
+    if (!expr.test(nb_cards)) {
+      show_alert ("Please enter a positive integer value for the number of cards to deal", "Error");
+      return;
+    }
     socket.emit('start hand', document.getElementById("nb_cards").value,
     trump_flag);
     //make_player_inactive(username);
@@ -118,12 +124,14 @@ No refresh on player left
 
   document.addEventListener('DOMContentLoaded', () => {
 
-    // Hide dealing area if automated dealing used
+    forbidden_bet = {{ forbidden_bet }}
+
+    // Hide dealing button if automated dealing used
     if ("{{ dealing_method }}" == "automated") {
-      $("#dealing").hide();
+      $("#deal").hide();
     }
     else {
-      $("#dealing").show();
+      $("#deal").show();
     }
 
 
@@ -157,8 +165,19 @@ No refresh on player left
       $("#game_action_buttons").append('{{ form.stop_game(class="btn btn-warning") }}');
     }
 
-    if ("{{ active_player }}" != "") {
-          make_player_active("{{ active_player }}")
+    make_players_inactive();
+
+    if ("{{ game_phase }}" == "DEAL" && "{{ dealing_method }}" == "manual") {
+      console.log("{{ active_player }}")
+      make_player_the_dealer("{{ active_player }}");
+    }
+
+    if ("{{ game_phase }}" == "BET") {
+      make_player_the_better("{{ active_player }}");
+    }
+
+    if ("{{ game_phase }}" == "PLAY") {
+      make_player_play("{{ active_player }}", "{{ allowed_cards }}");
     }
 
     if (username == ownername) {
@@ -187,16 +206,6 @@ No refresh on player left
       $("#start_game").prop("disabled",false);
     }
 
-    // function enable_restart_round() {
-    //   if (username == ownername) {
-    //     document.getElementById("restart_round").onclick = function() {
-    //       // TODO re-deal cards
-    //       make_player_the_dealer(last_dealer);
-    //     }
-    //   }
-    //   $("#start_game").prop("disabled",false);
-    // }
-
     // Don't want to do that for now
     function disable_start_game() {
       RecursiveUnbind($("#start_game"));
@@ -219,6 +228,34 @@ No refresh on player left
       }
     }
 
+    // Register action for bet input field
+    id_bet = "#bets_" + username
+    $(id_bet).change(function() {
+      bet = $(id_bet).val();
+      expr = /^[0-9]+$/
+      if (!expr.test(bet)) {
+        show_alert ("Please enter an integer value", "Error")
+        return;
+      }
+      bet = parseInt($(id_bet).val(),10);
+      if (bet == forbidden_bet) {
+        show_alert ("This bet is not allowed. Sum of bets cannot be equal to number of cards", "Error");
+        return;
+      }
+      if (bet < 0) {
+        show_alert ("This bet is not allowed. The bet has to be a positive number", "Error");
+        return;
+      }
+      // $(id_bet).attr('readonly', true);
+      // $(id_bet).removeClass("highlighted_field");
+
+      // make_player_active(username);
+      socket.emit("player bet", $(id_bet).val())
+    });
+
+    enable_start_game();
+    disable_deal();
+
     // Connect to websocket
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
 
@@ -229,41 +266,6 @@ No refresh on player left
       // first player joining. DO NOT REMOVE
       socket.emit('join game', {data:''});
 
-      enable_start_game();
-      // enable_restart_round();
-      disable_deal();
-      make_players_inactive();
-      // active_player = {{ active_player }}
-      // make_player_active(active_player)
-
-      // Register action for bet input field
-      let id_bet = "#bets_" + username
-      $(id_bet).change(function() {
-//        if (!System.Text.RegularExpressions.Regex.IsMatch($(id_bet).val(), "^[0-9]*$")) {
-//        if (isNaN(parseInt($(id_bet).val(),10))) {
-          bet = $(id_bet).val();
-          expr = /^[0-9]*$/
-          if (!expr.test(bet)) {
-          show_alert ("Please enter an integer value", "Error")
-          return;
-        }
-        bet = parseInt($(id_bet).val(),10);
-        if (bet == forbidden_bet) {
-          show_alert ("This bet is not allowed. Sum of bets cannot be equal to number of cards", "Error");
-          return;
-        }
-        if (bet < 0) {
-          show_alert ("This bet is not allowed. The bet has to be a positive number", "Error");
-          return;
-        }
-        $(id_bet).attr('readonly', true);
-        $(id_bet).removeClass("highlighted_field");
-
-        // $("#"+username).removeClass("active_player");
-        // $("#"+username).addClass("normal_player");
-        make_player_active(username);
-        socket.emit("player bet", $(id_bet).val())
-      });
     });
 
     socket.on('game over', function(winners) {
@@ -348,24 +350,27 @@ No refresh on player left
         $("#trump").prop('checked', false);
       });
 
+      function make_player_the_better(player_name) {
+        let id_bet = "#bets_" + player_name
+        if (player_name == username) {
+          play_sound("bicycle_bell.wav")
+          $(id_bet).attr('readonly', false);
+          $(id_bet).addClass("highlighted_field");
+          $(id_bet).focus();
+        }
+        else {
+          $(id_bet).attr('readonly', true);
+          $(id_bet).removeClass("highlighted_field");
+        }
+        // Highlight Username
+        make_player_active(player_name);
+
+      }
+
     socket.on('player to bet', function(data) {
       player_name = data['player']
       forbidden_bet = data['forbidden_bet']
-
-      // Enable the bet field if user is supposed to bet
-      let id_bet = "#bets_" + player_name
-      if (player_name == username) {
-        play_sound("bicycle_bell.wav")
-        $(id_bet).attr('readonly', false);
-        $(id_bet).addClass("highlighted_field");
-        $(id_bet).focus();
-      }
-      else {
-        $(id_bet).attr('readonly', true);
-        $(id_bet).removeClass("highlighted_field");
-      }
-      // Highlight Username
-      make_player_active(player_name);
+      make_player_the_better(player_name)
     });
 
     socket.on('player bet', function(data) {
@@ -376,16 +381,9 @@ No refresh on player left
       $(id_bet).val(bet);
       make_player_inactive(player_name);
       $(id_bet).removeClass("highlighted_field");
-      // $("#"+player_name).removeClass("active_player");
-      // $("#"+player_name).addClass("normal_player");
     });
 
-    socket.on('player to play', function(data) {
-      // Enable the cards in hand to be played
-      // $("#"+player_name).addClass("active_player");
-      // $("#"+player_name).removeClass("normal_player");
-      player_name=data['player']
-      allowed_cards = data['allowed_cards']
+    function make_player_play(player_name, allowed_cards) {
       make_player_active(player_name);
       if (player_name === username) {
         play_sound("bicycle_bell.wav")
@@ -404,6 +402,15 @@ No refresh on player left
           }
         });
       }
+    }
+
+    socket.on('player to play', function(data) {
+      // Enable the cards in hand to be played
+      // $("#"+player_name).addClass("active_player");
+      // $("#"+player_name).removeClass("normal_player");
+      player_name=data['player'];
+      allowed_cards = data['allowed_cards'];
+      make_player_play(player_name, allowed_cards);
     });
 
 

@@ -1,14 +1,20 @@
-from romwhist.card import Card
-from romwhist.deck import Deck
+from enum import Enum
 from random import choice
 from random import randrange
-from romwhist.hand import Hand;
-from romwhist.round import Round;
+from romwhist.card import Card
+from romwhist.deck import Deck
+from romwhist.hand import Hand
+from romwhist.round import Round
 
 class RomWhistGame():
 
     MANUAL_DEALING = "manual"
     AUTOMATED_DEALING = "automated"
+
+    class GamePhase(Enum):
+        DEAL = "Deal"
+        BET = "Bet"
+        PLAY = "Play"
 
     def __init__(self, game_creator = "", bonus_win = 1, deck_size=52):
         self.players = []
@@ -32,6 +38,7 @@ class RomWhistGame():
         self._multiple_one_card = False
         self._multiple_no_trump = True
         self._increment = 1
+        self._phase = RomWhistGame.GamePhase.DEAL
 
     def reset(self):
         self.current_round = None
@@ -47,6 +54,9 @@ class RomWhistGame():
         self.init_dict(self.bets, -1)
         self.init_dict(self.wins, 0)
         self._current_hand_nb = 0
+
+    def get_game_phase(self):
+        return self._phase
 
     # Define the card distribution pattern
     def set_hand_prgression(self, multiple_one_card=False, multiple_no_trump=True, increment=1):
@@ -125,7 +135,10 @@ class RomWhistGame():
         self._current_hand_nb = 0
         # Create hand progression
         if self.dealing_method == RomWhistGame.AUTOMATED_DEALING:
+            self._phase = RomWhistGame.GamePhase.BET
             self.create_hand_progression()
+        else:
+            self._phase = RomWhistGame.GamePhase.DEAL
 
     def get_hand(self, player):
         return self.hands[player]
@@ -153,10 +166,14 @@ class RomWhistGame():
         self.current_round = Round(self.players, suit)
         return self.current_round
 
+    # TODO: should cehck that the bet value is authorized
     def place_bet(self, player, bet):
         print("place_bet for player {} is {}".format(player, bet))
         self.bets[player] = bet
         self.active_player = self.next_player(player)
+        if self.next_player_to_bet(player) is None:
+            self._phase = RomWhistGame.GamePhase.PLAY
+
 
     def sum_bets_placed(self):
         bets_placed = 0
@@ -166,6 +183,8 @@ class RomWhistGame():
         return bets_placed
 
     def forbidden_bet(self, player):
+        if self.hands.get(player) is None:
+            return -1   # No hand yet
         if self.next_player_to_bet(player) is None:
             return len(self.hands[player].get_cards()) - self.sum_bets_placed()
         else:
@@ -208,11 +227,17 @@ class RomWhistGame():
         # Allowed cards are cars of the same suit than the first card played
         # If no cards are of the same suit, any card is allowed_cards
         allowed_cards = []
-        for card in self.hands[player].get_cards():
-            if card.suit() == self.current_round.get_first_card_played().suit():
-                allowed_cards.append(str(card))
-        if len(allowed_cards) == 0:
-            allowed_cards = self.hands[player].serialize()
+        if self.current_round is None:
+            return allowed_cards
+        if self.current_round.get_first_card_played() is None:
+            # Round is just starting, all cards are allowed
+            allowed_cards = self.get_hand(player).serialize()
+        else:
+            for card in self.hands[player].get_cards():
+                if card.suit() == self.current_round.get_first_card_played().suit():
+                    allowed_cards.append(str(card))
+            if len(allowed_cards) == 0:
+                allowed_cards = self.hands[player].serialize()
         return allowed_cards
 
     def get_current_round(self):
@@ -292,6 +317,7 @@ class RomWhistGame():
                 self.trump_card = None
 
             self._current_hand_nb = self._current_hand_nb+1
+            self._phase = RomWhistGame.GamePhase.BET
             return self.hands
 
     # TODO
@@ -306,6 +332,7 @@ class RomWhistGame():
         return self._current_hand_nb > len(self._nb_cards_per_hand)
 
     def next_player(self, player):
+        print ("in next_player, players is: ", self.players)
         pos = self.players.index(player)
         if pos == len(self.players)-1:
             return self.players[0]
