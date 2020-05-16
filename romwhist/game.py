@@ -329,10 +329,12 @@ class RomWhistGame():
         return True
 
     def is_game_over(self):
-        return self._current_hand_nb > len(self._nb_cards_per_hand)
+        if self.dealing_method == RomWhistGame.AUTOMATED_DEALING:
+            return self._current_hand_nb == len(self._nb_cards_per_hand)
+        else:
+            return False
 
     def next_player(self, player):
-        print ("in next_player, players is: ", self.players)
         pos = self.players.index(player)
         if pos == len(self.players)-1:
             return self.players[0]

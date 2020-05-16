@@ -76,6 +76,7 @@ No refresh on player left
     document.getElementById("deal").onclick =function() {
       deal();
     }
+    // TODO: should do that when hands are received in case the deal function fails
     $("#deal").prop("disabled",false);
   }
   function disable_deal() {
@@ -250,7 +251,7 @@ No refresh on player left
       // $(id_bet).removeClass("highlighted_field");
 
       // make_player_active(username);
-      socket.emit("player bet", $(id_bet).val())
+      socket.emit("player bet", $(id_bet).val());
     });
 
     enable_start_game();
@@ -269,7 +270,7 @@ No refresh on player left
     });
 
     socket.on('game over', function(winners) {
-      console.log("Game started event received")
+      console.log("Game over event received")
       console.log(winners)
       nb_winner = 0
       winner_list = ""
