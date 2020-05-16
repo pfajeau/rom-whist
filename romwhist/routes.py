@@ -230,7 +230,7 @@ def game_started():
             if games[game_id].dealing_method == RomWhistGame.AUTOMATED_DEALING:
                 generate_hands(game_id, player)
             #_hand(game.get_nb_cards_to_deal(), game.get_play_with_trump())
-    #
+
 
 @socketio.on("player bet")
 def player_bet(bet):
@@ -282,9 +282,13 @@ def hand_completed(game_id, username):
     elif game.dealing_method == RomWhistGame.AUTOMATED_DEALING:
         generate_hands(game_id, username)
 
-def clear_round(game_id, nplayer):
+def next_round(game_id, nplayer,allowed_cards):
     game = games[game_id]
+    game.create_round()
+
     socketio.emit("clear round",room=game_id)
+    socketio.emit("player to play", {'player':nplayer, 'allowed_cards':allowed_cards}, room=game_id)
+
     if game.is_hand_completed():
         hand_completed(game_id, nplayer)
 
@@ -310,17 +314,16 @@ def player_played(data):
 
             # There is a winnder, so round is ended
             socketio.emit("round ended", winner, room=game_id)
-            timer = threading.Timer(4.0, clear_round, [game_id, nplayer])
+            timer = threading.Timer(4.0, next_round, [game_id, nplayer,allowed_cards])
             timer.start()
-            game.create_round()
 
         else:
             # Round continues
             nplayer = game.get_active_player()
             allowed_cards = game.get_allowed_cards(nplayer)
+            emit("player to play", {'player':nplayer, 'allowed_cards':allowed_cards}, room=game_id)
 
         print("Allowed cards: ", allowed_cards)
-        emit("player to play", {'player':nplayer, 'allowed_cards':allowed_cards}, room=game_id)
 
     return
 
