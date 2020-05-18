@@ -28,8 +28,8 @@ class JoinGameForm(FlaskForm):
 class GameForm(FlaskForm):
     nb_cards = IntegerField("Nb Cards: ", validators=[InputRequired(), Length(max=2)])
     trump = BooleanField("Trump: ", validators=[InputRequired()], default=True)
-    leave_game = SubmitField('Leave game')
-    stop_game = SubmitField('Stop game')
+    #leave_game = SubmitField('Leave game')
+    #stop_game = SubmitField('Stop game')
     #user_name = HiddenField("user_name")
 
 class IndexForm(FlaskForm):

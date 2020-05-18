@@ -12,8 +12,18 @@ body
 	width: 80px
 }
 
+.action_button {
+  width: 10em;
+}
 .card_table {
 	width:80px
+}
+
+.table-no-padding td {
+    padding-bottom: 5px;
+    padding-right: 10px;
+    border-spacing: 10px;
+    border-collapse: separate;
 }
 
 @keyframes blinker {
@@ -22,20 +32,28 @@ body
   }
 }
 .player_info {
+  padding-left:5px;
 	font-size: small;
 	font-weight: normal;
-	padding-right:10px;
+	padding-right:10;
 }
+
+.td_player_info_label {
+      padding-left: 20px;
+}
+
 
 .active_player {
 	font-weight: bold;
 	color: darkred;
 	animation: blinker 1s step-start infinite;
+  padding-left:10px;
 }
 
 .normal_player {
 	font-weight: bold;
 	color: black;
+  padding-left:10px;
 }
 
 #game_action_buttons {

@@ -151,16 +151,17 @@ def game():
         return redirect(url_for('index'))
 
     if request.method == 'POST':
+        print (request.form)
         if game_id is None:
             error = "Could not find game_id in session"
             print(error)
             return render_template('index.html', error = error, form=IndexForm())
 
-        if form.stop_game.data:
+        if "stop_game" in request.form:
             stop_game()
             return redirect(url_for('index'))
 
-        if form.leave_game.data:
+        if "leave_game" in request.form:
             remove_player(game_id, session['username'])
             return redirect(url_for('index'))
 
