@@ -109,7 +109,7 @@ No refresh on player left
     // $("#"+username).addClass("normal_player");
   }
 
-  function show_alert(msg, title, cancel=false, callback_ok, callback_cancel) {
+  function show_alert(msg, title, cancel=false, callback_ok, action="") {
     // alert("fsfd")
     $( "#dialog" ).html(msg);
     if (cancel) {
@@ -119,14 +119,12 @@ No refresh on player left
           Ok: function() {
             $( this ).dialog( "close" );
             if (callback_ok) {
+              $("#action_game").val(action);
               callback_ok();
             }
           },
           Cancel: function() {
             $( this ).dialog( "close" );
-            if (callback_cancel) {
-              callback_cancel();
-            }
           }
         }
       });
@@ -139,6 +137,7 @@ No refresh on player left
           Ok: function() {
             $( this ).dialog( "close" );
             if (callback_ok) {
+              $("#action_game").val(action);
               callback_ok();
             }
           }
@@ -191,16 +190,21 @@ No refresh on player left
       $("#game_action_buttons").append('<button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>');
     }
 
-    $("#game_action_buttons").append('<input id="leave_game" class="btn btn-primary" name="leave_game" type="button" value="Leave Game">');
+    // $("#game_action_buttons").append('<input id="leave_game" class="btn btn-primary" name="leave_game" value="Leave Game">');
+    // document.getElementById("leave_game").onclick = function() {
+    //   show_alert("Are you sure you want to leave the game?", "Warning", cancel=true, callback_ok=submit_form);
+    // }
+
+    $("#game_action_buttons").append('<button id="leave_game" type="button" class="btn btn-primary" name="leave_game">Leave Game</button>');
     document.getElementById("leave_game").onclick = function() {
-      show_alert("Are you sure you want to leave the game?", "Warning", cancel=true, callback_ok=submit_form);
+      show_alert("Are you sure you want to leave the game?", "Warning", cancel=true, callback_ok=submit_form, action="leave_game");
     }
 
     if (username == ownername) {
       // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
-      $("#game_action_buttons").append('<input id="stop_game" class="btn btn-warning" name="stop_game" type="button" value="Stop Game">');
+      $("#game_action_buttons").append('<button id="stop_game" type="button" class="btn btn-warning" name="stop_game">Stop Game</button>');
       document.getElementById("stop_game").onclick = function() {
-        show_alert("Are you sure you want to stop the game?", "Warning", cancel=true, callback_ok=submit_form);
+        show_alert("Are you sure you want to stop the game?", "Warning", cancel=true, callback_ok=submit_form, action="stop_game");
       }
     }
 
@@ -403,10 +407,10 @@ No refresh on player left
         }
         // Highlight Username
         make_player_active(player_name);
-
       }
 
     socket.on('player to bet', function(data) {
+      console.log("player to bet event received")
       player_name = data['player']
       forbidden_bet = data['forbidden_bet']
       make_player_the_better(player_name)
@@ -506,7 +510,7 @@ No refresh on player left
     socket.on('new player', function(player_name) {
       socket.emit('join game', player_name);
 
-      // Add player info
+      //Add player info
       // $('#players').append("<td id='" + player_name + "' name='player'" + " class='normal_player'>" + player_name + "</td>");
       //
       // let id_bet = "bets_" + player_name;
@@ -684,6 +688,7 @@ No refresh on player left
 <div>
   <form id="game_form" action="" method="post" novalidate>
     {{ form.hidden_tag() }}
+    <input type="hidden" id="action_game" name="action_game" value="">
     <div class="container" id="dealing">
       <div class="col-md-8">
         <div class="form-group">

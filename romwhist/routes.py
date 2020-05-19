@@ -75,10 +75,15 @@ def index():
                 print(error)
                 return render_template('index.html', error = error, form=form)
 
+            game = games[game_id]
             # TODO maybe prevent player from joining game in progres
+            if game.game_started():
+                error = "This game has already started! You cannot join a game in progress"
+                print(error)
+                return render_template('index.html', error = error, form=form)
+
             # Remove player from game if that player was already in the games
 
-            game = games[game_id]
             if previous_alias in players[game_id]:
                 remove_player(game_id, previous_alias)
 
@@ -157,11 +162,14 @@ def game():
             print(error)
             return render_template('index.html', error = error, form=IndexForm())
 
-        if "stop_game" in request.form:
+        # if "stop_game" in request.form:
+        if request.form['action_game'] == "stop_game":
             stop_game()
             return redirect(url_for('index'))
 
-        if "leave_game" in request.form:
+
+        # if "leave_game" in request.form:
+        if request.form['action_game'] == "leave_game":
             remove_player(game_id, session['username'])
             return redirect(url_for('index'))
 
@@ -184,6 +192,7 @@ def game():
         cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
         trump=game.trump_card, dealing_method=game.dealing_method, forbidden_bet=game.forbidden_bet(active_player), \
         game_phase=game.get_game_phase().name)
+
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
@@ -372,6 +381,7 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
             socketio.emit("trump card", str(game.trump_card), room=game_id)
 
         socketio.emit("player to bet", {'player': nplayer, 'forbidden_bet':game.forbidden_bet(nplayer)}, room=game_id)
+        return
 
 @socketio.on('join game')
 def on_join(data):
@@ -438,13 +448,14 @@ def check_player_left(player, game_id, client_id):
     # something similar. In this case, the player has to be removed
     # from the game. If the client_id has changed, it just mean
     # a refresh page has happened, so leave the player in the game
-    if player in clients[game_id]:
+    players = clients.get(game_id)
+    if players is None:
+        return
+
+    if player in players:
         current_client_id = clients[game_id][player]
         if current_client_id == client_id:
             remove_player(game_id, player)
-    else:
-        # Do nothing as player has already been removed from game
-        pass
 
 
 def stop_game():
@@ -481,6 +492,7 @@ def remove_player(game_id, player):
             del clients[game_id][player]
 
         socketio.emit("player left", player, room=game_id)
+        # TODO: create new round
 
 def next_player(player, list_players):
     pos = list_players.index(player)

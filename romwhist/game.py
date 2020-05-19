@@ -38,6 +38,7 @@ class RomWhistGame():
         self._multiple_one_card = False
         self._multiple_no_trump = True
         self._increment = 1
+        self._started = False;
         self._phase = RomWhistGame.GamePhase.DEAL
 
     def reset(self):
@@ -112,6 +113,9 @@ class RomWhistGame():
     def get_owner(self):
         return self.owner
 
+    def game_started(self):
+        return self._started;
+        
     # Return a list of players with the mazimum score
     def get_highest_score_player(self):
         maximum = max(scores.values())
@@ -131,7 +135,7 @@ class RomWhistGame():
         return self.players
 
     def start_game(self):
-        # create deck
+        self._started = True;
         self._current_hand_nb = 0
         # Create hand progression
         if self.dealing_method == RomWhistGame.AUTOMATED_DEALING:
