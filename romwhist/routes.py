@@ -4,35 +4,29 @@ This module implements routes.
 author: Philippe Fajeau
 
 """
+from random import randint
 import unidecode
 import threading
 import traceback
+from flask import render_template, request, flash, session, url_for, redirect
 from flask import Blueprint
+from flask_login import current_user, login_user, logout_user, AnonymousUserMixin
+from flask_socketio import join_room, leave_room
+from flask_socketio import SocketIO, emit
 from . import controllers,deck,card,hand
 from romwhist.game import RomWhistGame
 from romwhist import socketio,app
-from flask import render_template, request, flash, session, url_for, redirect
 from romwhist.forms import LoginForm, StartGameForm, JoinGameForm, GameForm, IndexForm
-from flask_login import current_user, login_user, logout_user, AnonymousUserMixin
 from romwhist.models import User
 from romwhist.extensions import db
-from flask_socketio import join_room, leave_room
-from flask_socketio import SocketIO, emit
-from random import randint
 
 
 # Map of games, key is game id
 games = dict()
 
-# Map keyed by game ids and containing list of players for each game id
-#players = dict()
-
 # Dictionary of session iDs for each game. This is a dictionary of Dictionary
-# Keys are game ids and then player ids. Used for socketios.
+# Keys are game ids and then player ids. Used for socketio.
 clients = dict()
-
-# Dictionary of hands for game for each player
-# hands = dict()
 
 @app.route("/",methods=['GET', 'POST'])
 @app.route("/index",methods=['GET', 'POST'])
@@ -121,17 +115,11 @@ def index():
             session['ownername'] = username
             add_player(game_id)
             return redirect(url_for('game'))
-        # else:
-        #     error = "User already exists"
-        #     print(error)
-        #     return render_template('index.html', error = error, form=form)
     else:
         return render_template("index.html", form=form, error=form.errors)
 
 @app.route("/base")
 def base():
-    # TODO - add here endpoint of resource where you want to land on page load. e.g.
-    # return redirect(url_for("auth_blueprint.home"))
     return render_template("base.html")
 
 
@@ -155,7 +143,7 @@ def game():
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        print (request.form)
+        # print (request.form)
         if game_id is None:
             error = "Could not find game_id in session"
             print(error)
@@ -165,7 +153,6 @@ def game():
         if request.form['action_game'] == "stop_game":
             stop_game()
             return redirect(url_for('index'))
-
 
         # if "leave_game" in request.form:
         if request.form['action_game'] == "leave_game":
@@ -226,7 +213,6 @@ def game_started():
     if not game_id is None:
         game = games.get(game_id)
         if not game is None:
-            # TODO:
             # If manual dealiing, just emit event game sc game started
             # In automated dealing, call start_hands with computed nb of cards and trump
             # In case it is a restart
@@ -238,7 +224,6 @@ def game_started():
             print ("Dealing method is: ", games[game_id].dealing_method)
             if games[game_id].dealing_method == RomWhistGame.AUTOMATED_DEALING:
                 generate_hands(game_id, player)
-            #_hand(game.get_nb_cards_to_deal(), game.get_play_with_trump())
 
 
 @socketio.on("player bet")
@@ -253,7 +238,6 @@ def player_bet(bet):
         # If all players have bet, enable next player to play
         game = games[game_id]
 
-        # TODO: check that the bet is an Integer
         try:
             bet_int = int(bet)
             game.place_bet(session['username'], bet_int)
@@ -269,7 +253,7 @@ def player_bet(bet):
                 emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards}, room=game_id)
                 return
 
-                # Last player to bet
+            # Last player to bet
             else:
                 forbidden_bet = game.forbidden_bet(nplayer)
                 print ("Forbidden bet for player " + nplayer + " is:" + str(forbidden_bet))
@@ -289,7 +273,6 @@ def hand_completed(game_id, username):
     socketio.emit("player to deal", game.next_player_to_deal(), room=game_id)
     if game.is_game_over():
         socketio.emit("game over", game.get_highest_score_player(), room=game_id)
-        # socketio.emit("alert", "Game is Over!", game.get_highest_score_player(), oom=game_id)
     elif game.dealing_method == RomWhistGame.AUTOMATED_DEALING:
         generate_hands(game_id, "")
 
@@ -351,7 +334,6 @@ def start_hand(nbcards, trump):
         return
 
     generate_hands(game_id, "", int(nbcards), trump)
-    #generate_hands(game_id, username, int(nbcards), trump)
 
 def generate_hands(game_id, username, nbcards=0, trump=True):
     print (nbcards)
@@ -371,7 +353,6 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
 
         # FInd out who the first player to bet is
         nplayer = game.get_active_player()
-        # nplayer = next_player(session['username'], players[game_id])
 
         # Distribute cards to each players
         for player in game.get_players():
@@ -402,17 +383,6 @@ def on_join(data):
             session['sid'] = request.sid
             join_room(game_id)
 
-@socketio.on('leave game')
-def on_leave(data):
-    pass
-    # game_id = session.get('game_id')
-    # if game_id is None:
-    #     print("NO GAME_ID IN SESSION!!!!")
-    #     # TODO: may have a case where the session has been cleared already
-    #     # (user logged out). In this case how to remove user from room?
-    # else:
-    #     leave_room(game_id)
-
 @socketio.on('stop game')
 def on_stop(data):
     game_id = session.get('game_id')
@@ -430,8 +400,6 @@ def on_post(msg):
     game_id = session.get('game_id')
     if game_id is None:
         print("NO GAME_ID IN SESSION!!!!")
-        # TODO: may have a case where the session has been cleared already
-        # (user logged out). In this case how to remove user from room?
     else:
         emit("msg posted", {'sender': session['username'], 'msg': msg}, room=game_id)
 
@@ -466,8 +434,6 @@ def stop_game():
     if game_id is None:
         print("NO GAME_ID IN SESSION!!!!")
         return
-        # TODO: may have a case where the session has been cleared already
-        # (user logged out). In this case how to remove user from room?
     if not games.get(game_id) is None:
         del games[game_id]
         del clients[game_id]
@@ -478,9 +444,7 @@ def stop_game():
 # Added a player to a game
 def add_player(game_id):
     session['game_id'] = game_id
-    #players[game_id].append(session['username'])
     games[game_id].add_player(session['username'])
-    # send(session['username'] + ' has joined game', room=game_id)
     socketio.emit("new player", session['username'], room=game_id)
 
 
