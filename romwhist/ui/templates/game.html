@@ -7,7 +7,6 @@ to limit the number of DOM traversals
 Separate js from html -> problem with form variables
 Add footer / contact info
 Add sound effects
-No refresh on player left
 -->
 
 {% block content %}
@@ -65,11 +64,7 @@ No refresh on player left
       show_alert ("Please enter a positive integer value for the number of cards to deal", "Error");
       return;
     }
-    socket.emit('start hand', document.getElementById("nb_cards").value,
-    trump_flag);
-    //make_player_inactive(username);
-    //disable_deal();
-    //$("#nb_cards").removeClass("highlighted_field");
+    socket.emit('start hand', document.getElementById("nb_cards").value, trump_flag);
   }
 
   function enable_deal() {
@@ -99,9 +94,6 @@ No refresh on player left
     RecursiveUnbind($('#cards'));
 
     // Remove borders on cards
-    // $( '#cards img').each(function( index ) {
-    //     $(this).removeClass("img_with_border");
-    // });
     $( '#cards img').removeClass("img_with_border");
 
     make_player_inactive(username);
@@ -147,6 +139,20 @@ No refresh on player left
     $( "#dialog" ).dialog('open');
   }
 
+  function make_player_the_dealer(player_name) {
+    make_player_active(player_name)
+
+    // Enable Deal button for dealer
+    if (username == player_name) {
+      enable_deal();
+      $("#nb_cards").addClass("highlighted_field");
+      $("#nb_cards").focus();
+    }
+    else {
+      $("#nb_cards").removeClass("highlighted_field");
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
 
     forbidden_bet = {{ forbidden_bet }}
@@ -158,10 +164,6 @@ No refresh on player left
     else {
       $("#deal").show();
     }
-
-
-    // Commonly used DOM elements to reduce DOM searches
-    var alert_elem = $("#dialog");
 
     // Prevent form to be submitted when user enter the number of cards to deal
     $('#nb_cards').keydown(function (e) {
@@ -175,7 +177,6 @@ No refresh on player left
     $('#chat_input').keydown(function (e) {
       if (e.keyCode == 13) {
         e.preventDefault();
-        // TODO send message
         post_msg();
         return false;
       }
@@ -189,11 +190,6 @@ No refresh on player left
     if (username == ownername) {
       $("#game_action_buttons").append('<button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>');
     }
-
-    // $("#game_action_buttons").append('<input id="leave_game" class="btn btn-primary" name="leave_game" value="Leave Game">');
-    // document.getElementById("leave_game").onclick = function() {
-    //   show_alert("Are you sure you want to leave the game?", "Warning", cancel=true, callback_ok=submit_form);
-    // }
 
     $("#game_action_buttons").append('<button id="leave_game" type="button" class="btn btn-primary" name="leave_game">Leave Game</button>');
     document.getElementById("leave_game").onclick = function() {
@@ -239,7 +235,6 @@ No refresh on player left
       socket.emit('cs game started');
       //disable_start_game();
     }
-
     function enable_start_game() {
       if (username == ownername) {
         document.getElementById("start_game").onclick = function() {
@@ -248,7 +243,6 @@ No refresh on player left
       }
       $("#start_game").prop("disabled",false);
     }
-
     // Don't want to do that for now
     function disable_start_game() {
       RecursiveUnbind($("#start_game"));
@@ -256,20 +250,6 @@ No refresh on player left
     }
 
     $( '#dialog' ).dialog( { 'autoOpen': false } );
-
-    function make_player_the_dealer(player_name) {
-      make_player_active(player_name)
-
-      // Enable Deal button for dealer
-      if (username == player_name) {
-        enable_deal();
-        $("#nb_cards").addClass("highlighted_field");
-        $("#nb_cards").focus();
-      }
-      else {
-        $("#nb_cards").removeClass("highlighted_field");
-      }
-    }
 
     // Register action for bet input field
     id_bet = "#bets_" + username
@@ -289,10 +269,6 @@ No refresh on player left
         show_alert ("This bet is not allowed. The bet has to be a positive number", "Error");
         return;
       }
-      // $(id_bet).attr('readonly', true);
-      // $(id_bet).removeClass("highlighted_field");
-
-      // make_player_active(username);
       socket.emit("player bet", $(id_bet).val());
     });
 
@@ -432,7 +408,6 @@ No refresh on player left
       if (player_name === username) {
         play_sound("bicycle_bell.wav")
 
-        // TODO: only enable for allowed list of cards
         $( '#cards img').each(function( index ) {
           card = $(this).attr('id');
           if (allowed_cards.indexOf(card) > -1) {
@@ -450,8 +425,6 @@ No refresh on player left
 
     socket.on('player to play', function(data) {
       // Enable the cards in hand to be played
-      // $("#"+player_name).addClass("active_player");
-      // $("#"+player_name).removeClass("normal_player");
       console.log("player to play event received: " + data['player']);
       player_name=data['player'];
       allowed_cards = data['allowed_cards'];
@@ -501,7 +474,6 @@ No refresh on player left
       // Display card on table
 
       let image = 'img/' + card + ".svg"
-      // $(cards_played).append("<figure>");
       $('#cards_played').append("<img id=" + card + "_table"+ " src={{ url_for('static', filename='') }}" +
       image + ' alt=' + card + ' class="card_table"' + '>');
 
@@ -520,34 +492,11 @@ No refresh on player left
     socket.on('new player', function(player_name) {
       console.log("new player event received");
       socket.emit('join game', player_name);
-
-      //Add player info
-      // $('#players').append("<td id='" + player_name + "' name='player'" + " class='normal_player'>" + player_name + "</td>");
-      //
-      // let id_bet = "bets_" + player_name;
-      // $("#bets").append("<td>" + "<label for=" + "'bets_" + player_name + "' class='player_info'>" + "Bets</label>" +
-      //   "<input type='number' id='" + id_bet + "' name='bets' min=0 max=18 step=1 readonly>" +
-      //   "</td>");
-      //
-      // let id_round = "rounds_" + player_name;
-      // $("#rounds").append("<td>" + "<label for=" + "'rounds_" + player_name + "' class='player_info'>" + "Wins</label>" +
-      //   "<input type='number' id='" + id_round + "' name='rounds' min=0 max=18 readonly>" +
-      //   "</td>");
-      //
-      // let id_score = "score_" + player_name;
-      // $("#scores").append("<td>" + "<label for=" + "'score_" + player_name + "' class='player_info'>" + "Score</label>" +
-      //   "<input type='number' id='" + id_score + "' name='score' min=0 max=99 readonly>" +
-      //   "</td>");
-
       window.location.reload(false);
     });
 
     socket.on('player left', function(player_name) {
-      socket.emit('leave game', player_name);
       if (player_name.localeCompare(username) != 0) {
-        // TODO: remove elements instead of refresh, but low priority
-        // ALso, notify user
-        // Alert now shown as page is refreshed right away
 
         $("#" + player_name).remove();
         $("#label_" + player_name).remove();
@@ -567,7 +516,6 @@ No refresh on player left
         id_score = "#label_score_" + player_name;
         $(id_score).parent().remove()
 
-        // window.location.reload(false);
         show_alert("User " + player_name + " left the game!", "Warning")
       }
     });
@@ -631,16 +579,6 @@ No refresh on player left
 
   });
 </script>
-
-          <!-- //   COuld embedd the following html in a script as shown under so it can be re-used on player joined event
-          //   rather than refreshing page
-          //   <script id="blockOfStuff" type="text/html">
-          //   Here's some random text.
-          //   <h1>Including HTML markup</h1>
-          //   And quotes too, or as one man said, "These are quotes, but
-          //   'these' are quotes too."
-          // </script>
-          // -->
 
 <div class="table-responsive">
   <br>
