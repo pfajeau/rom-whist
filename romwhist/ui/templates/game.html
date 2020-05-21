@@ -329,7 +329,7 @@ No refresh on player left
     });
 
     socket.on('sc game started', function(data) {
-      console.log("Game started event received")
+      console.log("game started event received")
       console.log(data)
       $("input[name='bets']").attr('readonly', true);
       $("input[name='bets']").removeClass("highlighted_field");
@@ -366,6 +366,7 @@ No refresh on player left
     });
 
     socket.on('new hand', function(cards) {
+      console.log("new hand event received");
       make_players_inactive();
       $('#trump_card').html('')
       $('#cards').html('');
@@ -451,6 +452,7 @@ No refresh on player left
       // Enable the cards in hand to be played
       // $("#"+player_name).addClass("active_player");
       // $("#"+player_name).removeClass("normal_player");
+      console.log("player to play event received: " + data['player']);
       player_name=data['player'];
       allowed_cards = data['allowed_cards'];
       make_player_play(player_name, allowed_cards);
@@ -458,10 +460,11 @@ No refresh on player left
 
 
     socket.on('hand completed', function(data) {
-      player_name=data['player_to_deal']
-      player_to_deal = player_name
+      console.log("hand completed event received");
+      // player_name=data['player_to_deal']
+      // player_to_deal = player_name
       scores=data['scores']
-      show_boostrap_alert("Hand completed. Next dealer is: " + player_name,"alert alert-warning")
+      // show_boostrap_alert("Hand completed","alert alert-warning")
       Object.keys(scores).forEach(function(player) {
         score = scores[player];
         let id_score = "#score_" + player
@@ -471,7 +474,7 @@ No refresh on player left
       $('#trump_card').html('')
       // Clear table
       $('#cards_played').empty()
-      make_player_the_dealer(player_name);
+      // make_player_the_dealer(player_name);
     });
 
     function play_sound(audio_file) {
@@ -480,7 +483,14 @@ No refresh on player left
       // sound.play()
     }
 
+    socket.on('player to deal', function(player_name) {
+      console.log("player to deal event received: " + player_name);
+      player_to_deal = player_name
+      make_player_the_dealer(player_name);
+    });
+
     socket.on('card played', function(data) {
+      console.log("card played event received");
       if (new_round) {
         // $('#cards_played').empty();
         new_round = false;
@@ -508,6 +518,7 @@ No refresh on player left
     });
 
     socket.on('new player', function(player_name) {
+      console.log("new player event received");
       socket.emit('join game', player_name);
 
       //Add player info
@@ -537,13 +548,23 @@ No refresh on player left
         // TODO: remove elements instead of refresh, but low priority
         // ALso, notify user
         // Alert now shown as page is refreshed right away
-        $("#" + player_name).remove()
+
+        $("#" + player_name).remove();
+        $("#label_" + player_name).remove();
 
         let id_bet = "#bets_" + player_name;
-        $(id_bet).parent().remove()
+        $(id_bet).parent().remove();
+        id_bet = "#label_bets_" + player_name;
+        $(id_bet).parent().remove();
+
         let id_round = "#rounds_" + player_name;
         $(id_round).parent().remove()
+        id_round = "#label_rounds_" + player_name;
+        $(id_round).parent().remove();
+
         let id_score = "#score_" + player_name;
+        $(id_score).parent().remove()
+        id_score = "#label_score_" + player_name;
         $(id_score).parent().remove()
 
         // window.location.reload(false);
@@ -552,6 +573,7 @@ No refresh on player left
     });
 
     socket.on('trump card', function(trump_card) {
+      console.log("trump card event received");
       let image = 'img/' + trump_card + ".svg"
       $('#trump_card').html('')
       $('#trump_card').append("<figure>");
@@ -565,6 +587,7 @@ No refresh on player left
       });
 
     socket.on('round ended', function(player_name) {
+      console.log("round ended event received: " + player_name);
       show_boostrap_alert("Rounded ended. Winner is " + player_name,"alert alert-info")
       make_player_inactive(last_player);
       // $("#"+last_player).removeClass("active_player");
@@ -579,6 +602,7 @@ No refresh on player left
     });
 
     socket.on('clear round', function() {
+      console.log("clear round event received");
       $('#cards_played').empty();
     });
 
@@ -623,14 +647,14 @@ No refresh on player left
   <table class="table-no-padding">
     <tr id="players">
       {% for player in players -%}
-      <td></td>
+      <td id="label_{{ player }}" ></td>
       <td id="{{ player }}" name="player" class="normal_player">{{ player }} </td>
       {% endfor %}
     </tr>
     <tr id="bets">
       {% for player in players -%}
       <td class="td_player_info_label">
-        <label for="'bets_' + {{ player }}" class="player_info">Bets</label>
+        <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">Bets</label>
       </td>
       <td class="td_player_info">
         {% if bets[player] == -1 %}
@@ -644,7 +668,7 @@ No refresh on player left
     <tr id="rounds">
       {% for player in players -%}
       <td class="td_player_info_label" >
-        <label for="'rounds_' + {{ player }}" class="player_info">Wins</label>
+        <label for="rounds_{{ player }}"  id="label_rounds_{{ player }}" class="player_info">Wins</label>
       </td>
       <td class="td_player_info" >
         <input type="number" id="rounds_{{ player }}" name="rounds" class="player_info" min=0 max=18 readonly value={{ wins[player] }}>
@@ -654,7 +678,7 @@ No refresh on player left
     <tr id=scores>
       {% for player in players -%}
       <td class="td_player_info_label" >
-        <label for="'score_' + {{ player }}" class="player_info">Score</label>
+        <label for="score_{{ player }}"  id="label_score_{{ player }}" class="player_info">Score</label>
       </td>
       <td class="td_player_info" >
         <input type="number" id="score_{{ player }}" name="score" class="player_info" min=0 max=99 readonly value={{ scores[player] }}>

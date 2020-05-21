@@ -20,7 +20,6 @@ class RomWhistGame():
         self.players = []
         self.current_round = None
         self.trump_card = None
-        self.deck = Deck()
         self.hands=dict()
         self.scores=dict()
         self.bets=dict()
@@ -44,7 +43,6 @@ class RomWhistGame():
     def reset(self):
         self.current_round = None
         self.trump_card = None
-        self.deck = Deck()
         self.hands=dict()
         self.scores=dict()
         self.bets=dict()
@@ -115,7 +113,7 @@ class RomWhistGame():
 
     def game_started(self):
         return self._started;
-        
+
     # Return a list of players with the mazimum score
     def get_highest_score_player(self):
         maximum = max(scores.values())
@@ -129,7 +127,19 @@ class RomWhistGame():
         self.wins[player] = 0
 
     def remove_player(self, player):
-        self.players.remove(player)
+        if player in self.players:
+            if player == self.dealer:
+                self.dealer = self.next_player_to_deal()
+            self.active_player = self.dealer
+            self.players.remove(player)
+
+            self.game_phase = RomWhistGame.GamePhase.DEAL
+            self.current_round = None
+            # self.trump_card = None
+            self.bets = dict()
+            self.wins = dict()
+            self.init_dict(self.bets, -1)
+            self.init_dict(self.wins, 0)
 
     def get_players(self):
         return self.players
