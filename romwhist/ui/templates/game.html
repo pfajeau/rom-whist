@@ -5,6 +5,7 @@
 Optimize js by declaring variables for elements frequently used
 to limit the number of DOM traversals
 Separate js from html -> problem with form variables
+show where game is at in hand sequence
 Add footer / contact info
 Add sound effects
 -->
@@ -300,7 +301,7 @@ Add sound effects
         show_alert("Game over ! Winner is " + winner_list)
       }
       else {
-        show_alert("Game over ! Winner(s) are " + winner_list)
+        show_alert("Game over ! Winners are " + winner_list)
       }
     });
 
@@ -629,7 +630,7 @@ Add sound effects
 <div id="alert_placeholder"></div>
 <div id="dialog" title="Basic dialog">
 </div>
-
+<br>
 <div id="card-table" class="container">
   <div class="bottomright" id="trump_card">
     {% if trump != None %}
@@ -657,6 +658,7 @@ Add sound effects
           <br>
           {{ form.nb_cards.label(class="deal") }}
           {{ form.nb_cards(size=2) }}
+          &nbsp &nbsp
           {{ form.trump.label(class="deal") }}
           {{ form.trump }}
           <button id="deal" class="btn btn-primary" name="deal" type="button">Deal</button>
