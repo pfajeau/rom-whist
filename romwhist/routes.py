@@ -410,7 +410,7 @@ def test_disconnect():
     client_id = request.sid
     player = session['username']
     game_id = session['game_id']
-    timer = threading.Timer(10.0, check_player_left, [player, game_id, client_id])
+    timer = threading.Timer(120.0, check_player_left, [player, game_id, client_id])
     timer.start()
 
 def check_player_left(player, game_id, client_id):
