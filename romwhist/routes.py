@@ -153,6 +153,7 @@ def game():
         if request.form['action_game'] == "stop_game":
             stop_game()
             return redirect(url_for('index'))
+            #return redirect(url_for('game'))
 
         # if "leave_game" in request.form:
         if request.form['action_game'] == "leave_game":
@@ -435,10 +436,12 @@ def stop_game():
         print("NO GAME_ID IN SESSION!!!!")
         return
     if not games.get(game_id) is None:
+        socketio.emit("game over", games.get(game_id).get_highest_score_player(), room=game_id)
+        # socketio.emit("game stopped", session['username'], room=game_id)
+
         del games[game_id]
         del clients[game_id]
         #del players[game_id]
-        socketio.emit("game stopped", session['username'], room=game_id)
         return
 
 # Added a player to a game

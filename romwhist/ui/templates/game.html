@@ -291,13 +291,17 @@ Add sound effects
     socket.on('game over', function(winners) {
       console.log("Game over event received")
       console.log(winners)
-      nb_winner = 0
-      winner_list = ""
-      for (var player in winners) {
-        winner_list = winner_list + " " + player
-        nb_winner++
-      }
-      if (nb_winner == 1) {
+      var nb_winner = 0
+      var winner_list = ""
+      winners.forEach(function(item, index) {
+        winner_list = winner_list.concat(item, " ");
+      });
+
+      // for (var player in winners) {
+      //   winner_list = winner_list + " " + player
+      //   nb_winner++
+      // }
+      if (winners.length == 1) {
         show_alert("Game over ! Winner is " + winner_list)
       }
       else {

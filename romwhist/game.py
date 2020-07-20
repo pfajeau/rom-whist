@@ -117,10 +117,14 @@ class RomWhistGame():
     # Return a list of players with the mazimum score
     def get_highest_score_player(self):
         maximum = max(self.scores.values())
-        result = filter(lambda x:x[1] == maximum,self.scores.items())
         winners = []
-        for player in result:
-            winners.append(player[0])
+        for player in self.scores:
+            if self.scores[player] == maximum:
+                winners.append(player)
+
+        # result = filter(lambda x:x[1] == maximum,self.scores.items())
+        # for player in result:
+        #     winners.append(player[0])
 
         return winners
 
