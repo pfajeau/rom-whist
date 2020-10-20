@@ -236,16 +236,15 @@ def player_bet(bet):
     if game_id is None:
         print("ERROR: Game not found!!!")
     else:
-        # If all players have bet, enable next player to play
         game = games[game_id]
-
         try:
             bet_int = int(bet)
             game.place_bet(session['username'], bet_int)
             emit("player bet", {'player':session['username'], 'bet':bet}, room = game_id)
             nplayer = game.next_player_to_bet(username)
+
             if nplayer is None:
-                # next_player_to_play = next_player(session['username'], players[game_id])
+                # All players have bet
                 next_player_to_play = game.get_active_player()
                 # All cards allowed for first player
                 allowed_cards = game.get_hand(next_player_to_play).serialize()
@@ -254,7 +253,6 @@ def player_bet(bet):
                 emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards}, room=game_id)
                 return
 
-            # Last player to bet
             else:
                 forbidden_bet = game.forbidden_bet(nplayer)
                 print ("Forbidden bet for player " + nplayer + " is:" + str(forbidden_bet))

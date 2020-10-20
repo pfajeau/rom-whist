@@ -379,14 +379,14 @@ Add sound effects
         let id_bet = "#bets_" + player_name
         if (player_name == username) {
           play_sound("bicycle_bell.wav")
-          $(id_bet).attr('readonly', false);
+          $(id_bet).prop('readonly', false);
           $(id_bet).addClass("highlighted_field");
           $(id_bet).focus();
         }
-        else {
-          $(id_bet).attr('readonly', true);
-          $(id_bet).removeClass("highlighted_field");
-        }
+        // else {
+        //   $(id_bet).prop('readonly', true);
+        //   $(id_bet).removeClass("highlighted_field");
+        // }
         // Highlight Username
         make_player_active(player_name);
       }
@@ -399,11 +399,11 @@ Add sound effects
     });
 
     socket.on('player bet', function(data) {
-      // Enable the bet field
       player_name=data['player']
       bet=data['bet']
       let id_bet = "#bets_" + player_name
       $(id_bet).val(bet);
+      $(id_bet).prop('readonly', true);
       make_player_inactive(player_name);
       $(id_bet).removeClass("highlighted_field");
     });
