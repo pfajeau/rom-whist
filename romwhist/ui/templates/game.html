@@ -29,7 +29,12 @@ Add sound effects
 
 
   // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
-  $("#topnav").last().after("<span class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</span>")
+  let html_frag="<span class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}"
+  html_frag = html_frag.concat(" - " + "{{ session['username'] }}"+ "</span>")
+  html_frag = html_frag.concat("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
+  $("#topnav").last().after(html_frag);
+  // $("#topnav").last().after("<span class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</span>")
+  // $("#topnav").last().after("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
 
 
   function RecursiveUnbind($jElement) {
@@ -344,6 +349,9 @@ Add sound effects
         }
       }
       //disable_start_game();
+
+      // Add scoresheet
+      $("#scoresheet_div").append("<td>")
     });
 
     socket.on('new hand', function(cards) {
@@ -442,17 +450,28 @@ Add sound effects
       // player_name=data['player_to_deal']
       // player_to_deal = player_name
       scores=data['scores']
+      hand_nb=data['hand_nb']
+
       // show_boostrap_alert("Hand completed","alert alert-warning")
+      let score_row_id = "#hand_score_nb" + hand_nb
+      let html = "<tr>"
+      // $("#scoresheet_body").append ("<tr id=" + score_row_id + ">/tr")
+
       Object.keys(scores).forEach(function(player) {
         score = scores[player];
         let id_score = "#score_" + player
         $(id_score).val(score);
+
+        html = html.concat("<td>" + score + "</td>")
+        // $(score_row_id).append ("<td>" + score + "</td>")
       });
+
+      html = html.concat("</tr>")
+      $("#scoresheet_body").append(html)
+
       let image = 'img/' + trump_card + ".svg"
       $('#trump_card').html('')
-      // Clear table
       $('#cards_played').empty()
-      // make_player_the_dealer(player_name);
     });
 
     function play_sound(audio_file) {
@@ -645,13 +664,13 @@ Add sound effects
     {% endif %}
   </div>
   <div id="cards_played">
-    <!-- TODO populate on refresh -->
     {% for card in cards_played -%}
     <img id= "{{ card }}_table" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" alt="{{ card }}" class="card_table">
     {% endfor %}
   </div>
 </div>
 
+<!-- Deal button and pplayer cards section-->
 <div>
   <form id="game_form" action="" method="post" novalidate>
     {{ form.hidden_tag() }}
@@ -690,9 +709,31 @@ Add sound effects
     <div>
       <div id="game_action_buttons" class="btn-toolbar">
         <p><br>
-        </div>
       </div>
-    </form>
-  </div>
+    </div>
+    <div id="scoresheet_div">
+      <br/>
+      <h4 class="chat_title">Scoresheet</h4>
+      <table id="scoresheet_table" class="table">
+        <thead>
+          <tr id="player_names">
+            {% for player in players -%}
+            <th class="td_player_info">{{player}}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody id="scoresheet_body">
+          {% for scores_hand in scoresheet -%}
+          <tr>
+            {% for player in players -%}
+            <td>{{scores_hand[player]}}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+</div>
 
 {% endblock %}

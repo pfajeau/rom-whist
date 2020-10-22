@@ -178,7 +178,7 @@ def game():
         hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player, \
         cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
         trump=game.trump_card, dealing_method=game.dealing_method, forbidden_bet=game.forbidden_bet(active_player), \
-        game_phase=game.get_game_phase().name)
+        game_phase=game.get_game_phase().name, hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet)
 
 
 # @app.route("/login",methods=['GET', 'POST'])
@@ -268,7 +268,7 @@ def hand_completed(game_id, username):
     game = games[game_id]
     scores = game.update_scores()
     print ("hand completed, next player to deal:", game.next_player_to_deal())
-    socketio.emit("hand completed", {'scores':scores, 'player_to_deal': game.next_player_to_deal()}, room=game_id)
+    socketio.emit("hand completed", {'scores':scores, 'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal()}, room=game_id)
     socketio.emit("player to deal", game.next_player_to_deal(), room=game_id)
     if game.is_game_over():
         socketio.emit("game over", game.get_highest_score_player(), room=game_id)

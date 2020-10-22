@@ -39,6 +39,7 @@ class RomWhistGame():
         self._increment = 1
         self._started = False;
         self._phase = RomWhistGame.GamePhase.DEAL
+        self.scoresheet=[]
 
     def reset(self):
         self.current_round = None
@@ -274,6 +275,8 @@ class RomWhistGame():
             else:
                 self.scores[player] = self.scores[player] - \
                 abs(self.wins[player] - self.bets[player])
+        self.scoresheet.append(self.scores)
+
         return self.scores
 
     def get_scores(self):
