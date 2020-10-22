@@ -76,6 +76,10 @@ body
 		padding-left:100px;
 }
 
+.div_title {
+  font-weight: bold;
+}
+
 .alert_text {
 	color: darkgrey;
 }

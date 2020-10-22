@@ -275,7 +275,7 @@ class RomWhistGame():
             else:
                 self.scores[player] = self.scores[player] - \
                 abs(self.wins[player] - self.bets[player])
-        self.scoresheet.append(self.scores)
+        self.scoresheet.append(self.scores.copy())
 
         return self.scores
 

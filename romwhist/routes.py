@@ -174,11 +174,18 @@ def game():
         print("Active Player: ", game.get_active_player())
         print("Game Phase: ", game.get_game_phase().name)
         active_player = game.get_active_player()
+
+        print ("Scoresheet:")
+        for i in range(game._current_hand_nb-1):
+            print (i, " ",game.scoresheet[i])
+
         return render_template("game.html", form=form,  players=game.get_players(), scores=game.get_scores(), \
         hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player, \
         cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
         trump=game.trump_card, dealing_method=game.dealing_method, forbidden_bet=game.forbidden_bet(active_player), \
         game_phase=game.get_game_phase().name, hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet)
+
+
 
 
 # @app.route("/login",methods=['GET', 'POST'])
