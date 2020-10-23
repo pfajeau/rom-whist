@@ -19,13 +19,19 @@ body
 	width:80px
 }
 
-.table-no-padding td {
+.table-with-padding td {
     padding-bottom: 5px;
     padding-right: 10px;
     border-spacing: 10px;
     border-collapse: separate;
 }
 
+.table-no-padding-border{
+    border: 5px;
+    padding:0;
+    margin:0;
+    border-collapse: collapse;
+}
 @keyframes blinker {
   50% {
     opacity: 0;
@@ -120,6 +126,19 @@ figcaption {
 	color:white;
 	text-align: left;
 }
+
+.scoresheet_nb {
+  width:24px;
+}
+
+.padding-between-cols th {
+    padding:0 15px 0 15px;
+}
+
+.padding-between-cols td {
+    padding:0 5px 0 5px;
+}
+
 #buttons {
 	text-align:center;
 }

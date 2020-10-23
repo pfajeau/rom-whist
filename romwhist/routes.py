@@ -177,7 +177,9 @@ def game():
 
         print ("Scoresheet:")
         for i in range(game._current_hand_nb-1):
-            print (i, " ",game.scoresheet[i])
+            print (i, " ",game.scoresheet[i][0])
+            print (i, " ",game.scoresheet[i][1])
+            print (i, " ",game.scoresheet[i][2])
 
         return render_template("game.html", form=form,  players=game.get_players(), scores=game.get_scores(), \
         hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player, \
@@ -275,7 +277,7 @@ def hand_completed(game_id, username):
     game = games[game_id]
     scores = game.update_scores()
     print ("hand completed, next player to deal:", game.next_player_to_deal())
-    socketio.emit("hand completed", {'scores':scores, 'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal()}, room=game_id)
+    socketio.emit("hand completed", {'scores':scores, 'bets' :game.bets, 'wins': game.wins, 'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal()}, room=game_id)
     socketio.emit("player to deal", game.next_player_to_deal(), room=game_id)
     if game.is_game_over():
         socketio.emit("game over", game.get_highest_score_player(), room=game_id)

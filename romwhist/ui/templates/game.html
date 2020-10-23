@@ -449,8 +449,11 @@ Add sound effects
       console.log("hand completed event received");
       // player_name=data['player_to_deal']
       // player_to_deal = player_name
-      scores=data['scores']
-      hand_nb=data['hand_nb']
+      let scores=data['scores']
+      let hand_nb=data['hand_nb']
+      let bets=data['bets']
+      let wins=data['wins']
+
 
       // show_boostrap_alert("Hand completed","alert alert-warning")
       let score_row_id = "#hand_score_nb" + hand_nb
@@ -459,10 +462,14 @@ Add sound effects
 
       Object.keys(scores).forEach(function(player) {
         score = scores[player];
+        bet=bets[player]
+        win=wins[player]
         let id_score = "#score_" + player
         $(id_score).val(score);
 
-        html = html.concat("<td>" + score + "</td>")
+        html = html.concat("<td><table class='padding-between-cols'><tr><td class='scoresheet_nb'>" + bet + "</td>")
+        html = html.concat("<td class='scoresheet_nb'>" + win + "</td>" + "<td class='scoresheet_nb'>" + score + "</td></tr></table></td>")
+        // html = html.concat("<td>" + score + "</td>")
         // $(score_row_id).append ("<td>" + score + "</td>")
       });
 
@@ -606,7 +613,7 @@ Add sound effects
 
 <div class="table-responsive">
   <br>
-  <table class="table-no-padding">
+  <table class="table-with-padding">
     <tr id="players">
       {% for player in players -%}
       <td id="label_{{ player }}" ></td>
@@ -701,6 +708,7 @@ Add sound effects
       </div>
     </div>
     <div class="chat" id="chat">
+      <br/>
       <h4 class="div_title">Chat</h4>
       <textarea id="chat_text" rows=5 cols=80 readonly></textarea><br>
       <input type="text" id="chat_input" class = "chat_input" size=77></input>
@@ -714,23 +722,40 @@ Add sound effects
     <div id="scoresheet_div">
       <br/>
       <h4 class="div_title">Scoresheet</h4>
-      <table id="scoresheet_table" class="table">
+      <!-- <table id="scoresheet_table" class="table-no-padding-border padding-between-cols"> -->
+      <table id="scoresheet_table" class="table-no-padding-border table table-sm table-bordered table-fit">
         <thead>
-          <tr id="player_names">
+          <tr>
             {% for player in players -%}
-            <th class="td_player_info">{{player}}</th>
+            <th class="td_player_info">{{player}}
+              <table>
+                <tr>
+                  <td class="scoresheet_title scoresheet_nb">B</td>
+                  <td class="scoresheet_titles scoresheet_nb">W</td>
+                  <td class="scoresheet_titles scoresheet_nb">S</td>
+                </tr>
+              </table>
+            </th>
             {% endfor %}
           </tr>
         </thead>
-        <tbody id="scoresheet_body">
-          {% for scores_hand in scoresheet -%}
+          <tbody id="scoresheet_body">
+    {% for scores_hand in scoresheet -%}
+    <tr>
+      {% for player in players -%}
+      <td>
+        <table>
           <tr>
-            {% for player in players -%}
-            <td>{{scores_hand[player]}}</td>
-            {% endfor %}
+            <td class="scoresheet_nb">{{scores_hand[0][player]}}</td>
+            <td class="scoresheet_nb">{{scores_hand[1][player]}}</td>
+            <td class="scoresheet_nb">{{scores_hand[2][player]}}</td>
           </tr>
-          {% endfor %}
-        </tbody>
+        </table>
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+          </tbody>
       </table>
     </div>
   </form>
