@@ -209,6 +209,25 @@ Add sound effects
         show_alert("Are you sure you want to stop the game?", "Warning", cancel=true, callback_ok=submit_form, action="stop_game");
       }
     }
+    if (username == ownername) {
+      $("#game_action_buttons").append('&nbsp;&nbsp;');
+
+      // Have to use an html framgment here
+      // Appending directly to the hame_action_buttons element does not work
+      // with the loop otherwise
+      var html = '<select name="player_list" id="player_list">'
+      {% for the_player in players -%}
+        html= html.concat('<option value="' + "{{ the_player }}" + '">' + "{{ the_player }}" + '</option>');
+      {% endfor %}
+
+      html= html.concat('</select>');
+      html= html.concat('&nbsp;');
+      $("#game_action_buttons").append(html);
+      $("#game_action_buttons").append('<button id="remove_player" class="btn btn-primary" name="remove_player" type="button">Remove Plsyer</button>');
+      document.getElementById("remove_player").onclick = function() {
+        show_alert("Are you sure you want to remove this player?", "Warning", cancel=true, callback_ok=submit_form, action="remove_player");
+      }
+    }
 
     make_players_inactive();
 

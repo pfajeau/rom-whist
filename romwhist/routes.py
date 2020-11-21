@@ -66,12 +66,17 @@ def index():
                 return render_template('index.html', error = error, form=form)
 
             game = games[game_id]
-            if previous_alias in game.get_players():
+            # Not allowed to connect if another player has the same alias
+            # and game has not started. If game has started, assume player
+            # is trying to reconnect after having lost a connection
+            if username in game.get_players() and not game.game_started():
                 error = "The game already has a user with the same name"
                 print(error)
                 return render_template('index.html', error = error, form=form)
 
-            if game.game_started():
+            # Not allowed to connect to a game already started unless the player
+            # is already an existing player (same alias)
+            if game.game_started() and not username in game.get_players():
                 error = "This game has already started! You cannot join a game in progress"
                 print(error)
                 return render_template('index.html', error = error, form=form)
@@ -160,6 +165,17 @@ def game():
             remove_player(game_id, session['username'])
             return redirect(url_for('index'))
 
+        if request.form['action_game'] == "remove_player":
+            print("Remve Player button pressed")
+            rplayer = request.form['player_list']
+            print ("Player to remove: ", rplayer)
+
+            remove_player(game_id, rplayer)
+            return redirect(url_for('game'))
+            # get user that needs to be removed
+            # remove user
+            # re-distribute and display game page
+
     else:
         hand = game.get_hands().get(player)
         if hand is None:
@@ -181,7 +197,7 @@ def game():
             print (i, " ",game.scoresheet[i][1])
             print (i, " ",game.scoresheet[i][2])
 
-        return render_template("game.html", form=form,  players=game.get_players(), scores=game.get_scores(), \
+        return render_template("game.html", form=form,  players=game.get_playing_players(), scores=game.get_scores(), \
         hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player, \
         cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
         trump=game.trump_card, dealing_method=game.dealing_method, forbidden_bet=game.forbidden_bet(active_player), \
@@ -228,7 +244,7 @@ def game_started():
             # In case it is a restart
             game.reset()
             game.start_game()
-            player = game.get_players()[randint(0,len(game.get_players())-1)]
+            player = game.get_playing_players()[randint(0,len(game.get_playing_players())-1)]
             socketio.emit("sc game started", {'player_to_deal': player, 'nb_cards': 0}, room=game_id)
 
             print ("Dealing method is: ", games[game_id].dealing_method)
@@ -310,18 +326,15 @@ def player_played(data):
         game = games[game_id]
         winner = game.card_played(session['username'], card)
 
+        nplayer = game.get_active_player()
         if not winner is None:
-            nplayer = game.get_active_player()
-            allowed_cards = game.get_hand(nplayer).serialize()
-
             # There is a winnder, so round is ended
+            allowed_cards = game.get_hand(nplayer).serialize()
             socketio.emit("round ended", winner, room=game_id)
             timer = threading.Timer(4.0, next_round, [game_id, nplayer,allowed_cards])
             timer.start()
-
         else:
             # Round continues
-            nplayer = game.get_active_player()
             allowed_cards = game.get_allowed_cards(nplayer)
             emit("player to play", {'player':nplayer, 'allowed_cards':allowed_cards}, room=game_id)
 
@@ -363,7 +376,7 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
         nplayer = game.get_active_player()
 
         # Distribute cards to each players
-        for player in game.get_players():
+        for player in game.get_playing_players():
             cards = hands[player].serialize()
             print ("Cards for player ", player, " ", cards)
             socketio.emit("new hand", cards, room=clients[game_id][player])
@@ -418,6 +431,7 @@ def test_disconnect():
     client_id = request.sid
     player = session['username']
     game_id = session['game_id']
+    leave_room(game_id)
     timer = threading.Timer(120.0, check_player_left, [player, game_id, client_id])
     timer.start()
 
@@ -427,14 +441,16 @@ def check_player_left(player, game_id, client_id):
     # something similar. In this case, the player has to be removed
     # from the game. If the client_id has changed, it just mean
     # a refresh page has happened, so leave the player in the game
+
+    # Do nothing, let game owner remove user manually if needed
     players = clients.get(game_id)
     if players is None:
         return
 
-    if player in players:
-        current_client_id = clients[game_id][player]
-        if current_client_id == client_id:
-            remove_player(game_id, player)
+    # if player in players:
+    #     current_client_id = clients[game_id][player]
+    #     if current_client_id == client_id:
+            #remove_player(game_id, player)
 
 
 def stop_game():
@@ -451,11 +467,13 @@ def stop_game():
         #del players[game_id]
         return
 
-# Added a player to a game
+# Add player to a game
 def add_player(game_id):
     session['game_id'] = game_id
+
     games[game_id].add_player(session['username'])
     socketio.emit("new player", session['username'], room=game_id)
+    restart_hand(game_id)
 
 
 def remove_player(game_id, player):
@@ -463,21 +481,28 @@ def remove_player(game_id, player):
     if not game_id is None:
         game = games.get(game_id)
         if not game is None:
-            game.remove_player(player)
-        if player in clients[game_id]:
-            del clients[game_id][player]
+            if game.game_started():
+                game.disable_player(player)
+            else:
+                game.remove_player(player)
+                if player in clients[game_id]:
+                    del clients[game_id][player]
 
         socketio.emit("player left", player, room=game_id)
-        # If manueal dealing, generate player to deal event
-        # Othrwise deal another hand
         socketio.emit("clear round",room=game_id)
-        if game.dealing_method == RomWhistGame.MANUAL_DEALING:
-            socketio.emit("hand completed", {'scores':game.get_scores(), 'player_to_deal': game.dealer}, room=game_id)
-            socketio.emit("alert", "Hand to be replayed", room=game_id)
-            socketio.emit("player to deal", game.dealer, room=game_id)
-        elif game.game_started():
-            game._current_hand_nb = game._current_hand_nb - 1  # Deal again
-            generate_hands(game_id, "")
+        restart_hand(game_id)
+
+def restart_hand(game_id):
+    game = games.get(game_id)
+    # If manueal dealing, generate player to deal event
+    # Othrwise deal another hand
+    socketio.emit("alert", "Hand to be replayed", room=game_id)
+    if game.dealing_method == RomWhistGame.MANUAL_DEALING:
+      #socketio.emit("hand completed", {'scores':game.get_scores(), 'player_to_deal': game.dealer}, room=game_id)
+      socketio.emit("player to deal", game.dealer, room=game_id)
+    elif game.game_started():
+      game._current_hand_nb = game._current_hand_nb - 1  # Deal again
+      generate_hands(game_id, "")
 
 # e.g blueprint and routes
 # auth_blueprint = Blueprint("auth", "auth", url_prefix="/auth")

@@ -40,6 +40,8 @@ class RomWhistGame():
         self._started = False;
         self._phase = RomWhistGame.GamePhase.DEAL
         self.scoresheet=[]
+        self._player_status=dict()
+        self.init_dict(self._player_status, 1)
 
     def reset(self):
         self.current_round = None
@@ -73,13 +75,13 @@ class RomWhistGame():
         # guaranteed with python3
         # Start with the one card hands
         if self._multiple_one_card:
-            for i in range(0, len(self.players)):
+            for i in range(0, len(self.get_playing_players())):
                 self._nb_cards_per_hand.append(1)
         else:
             self._nb_cards_per_hand.append(1)
 
         # Max number of card per players
-        max_cards = int(self.deck_size / len(self.players))
+        max_cards = int(self.deck_size / len(self.get_playing_players()))
 
         for i in range(1+self._increment, max_cards, self._increment):
             self._nb_cards_per_hand.append(i)
@@ -88,7 +90,7 @@ class RomWhistGame():
         self._start_of_no_trump = len(self._nb_cards_per_hand)
         # Now the no trump _hands
         if self._multiple_no_trump:
-            for i in range(0, len(self.players)):
+            for i in range(0, len(self.get_playing_players())):
                 self._nb_cards_per_hand.append(max_cards)
         else:
             self._nb_cards_per_hand.append(max_cards)
@@ -130,18 +132,11 @@ class RomWhistGame():
         return winners
 
     def add_player(self, player):
-        self.players.append(player)
-        self.scores[player] = 0
-        self.bets[player] = -1
-        self.wins[player] = 0
-
-    def remove_player(self, player):
         if player in self.players:
-            if player == self.dealer:
-                self.dealer = self.next_player_to_deal()
+            print ("player already exits - re-enabling")
+            self._player_status[player] = 1
+            # Need to re-start hands
             self.active_player = self.dealer
-            self.players.remove(player)
-
             self.game_phase = RomWhistGame.GamePhase.DEAL
             self.current_round = None
             # self.trump_card = None
@@ -150,8 +145,44 @@ class RomWhistGame():
             self.init_dict(self.bets, -1)
             self.init_dict(self.wins, 0)
 
+        else:
+            self.players.append(player)
+            self._player_status[player] = 1
+            self.scores[player] = 0
+            self.bets[player] = -1
+            self.wins[player] = 0
+
+    def disable_player(self, player):
+        print("In Game.disable_player, disabloing playerL " + player)
+        if player in self.players:
+            self._player_status[player] = 0
+            print(self._player_status)
+            if player == self.dealer:
+                self.dealer = self.next_player_to_deal()
+            self.active_player = self.dealer
+            self.game_phase = RomWhistGame.GamePhase.DEAL
+            self.current_round = None
+            # self.trump_card = None
+            self.bets = dict()
+            self.wins = dict()
+            self.init_dict(self.bets, -1)
+            self.init_dict(self.wins, 0)
+
+
+    def remove_player(self, player):
+        self.disable_player(player)
+        self.players.remove(player)
+
     def get_players(self):
         return self.players
+
+    def get_playing_players(self):
+        # TODO: could probably do that with a filter in one line of code
+        playing_players = []
+        for player in self.players:
+            if self._player_status[player] == 1:
+                playing_players.append(player)
+        return playing_players
 
     def start_game(self):
         self._started = True;
@@ -176,7 +207,7 @@ class RomWhistGame():
         return self.wins;
 
     def is_hand_completed(self):
-        for player in self.players:
+        for player in self.get_playing_players():
             if len(self.hands[player].get_cards()) > 0:
                 return False
         return True
@@ -186,7 +217,7 @@ class RomWhistGame():
             suit = None
         else:
             suit = self.trump_card.suit()
-        self.current_round = Round(self.players, suit)
+        self.current_round = Round(self.get_playing_players(), suit)
         return self.current_round
 
     # TODO: should cehck that the bet value is authorized
@@ -216,7 +247,7 @@ class RomWhistGame():
     # Return None if all players have bet
     def next_player_to_bet(self, player):
         nplayer = self.next_player(player)
-        if self.bets[nplayer] != -1 or len(self.players) == 1:
+        if self.bets[nplayer] != -1 or len(self.get_playing_players()) == 1:
             return None
         else:
             return nplayer
@@ -267,10 +298,14 @@ class RomWhistGame():
         return self.current_round
 
     def update_scores(self):
+        # TODO: may have to change to playing players only?
         for p in range(len(self.players)):
             player = self.players[p]
             print ("Player bet: {} - PLayer wins: {}".format(self.bets[player], self.wins[player]))
-            if self.bets[player] == self.wins[player]:
+            if self.bets[player] == -1:
+                # Do nothing, means player is not playing
+                self.scores[player] = self.scores[player]
+            elif self.bets[player] == self.wins[player]:
                 self.scores[player] = self.scores[player] + self.bonus_win + self.wins[player]
             else:
                 self.scores[player] = self.scores[player] - \
@@ -307,12 +342,11 @@ class RomWhistGame():
         else:
             cards_to_deal = nb_cards;
 
-        if cards_to_deal <= 0 or cards_to_deal > self.deck.size() / len(self.players):
+        if cards_to_deal <= 0 or cards_to_deal > self.deck.size() / len(self.get_playing_players()):
             return None
         else:
             # Create a hand with nb_cards for each player
-            for p in range(len(self.players)):
-                player = self.players[p]
+            for player in self.get_playing_players():
                 print (player)
                 hand = Hand(self.deck, cards_to_deal, player)
                 self.hands[player] = hand.sort()
@@ -362,9 +396,14 @@ class RomWhistGame():
     def next_player(self, player):
         pos = self.players.index(player)
         if pos == len(self.players)-1:
-            return self.players[0]
+            next_player = self.players[0]
         else:
-            return self.players[pos+1]
+            next_player = self.players[pos+1]
+
+        if  self._player_status[next_player] == 1:
+            return next_player
+        else:
+            return self.next_player(next_player)
 
     def init_dict(self, a_dict, value):
         for player in self.players:
