@@ -244,6 +244,18 @@ class RomWhistGame():
         else:
             return -1
 
+    def allowed_bets(self, player):
+        if self.hands.get(player) is None:
+            return []   # No hand yet
+        allowed_bets = list(range(len(self.get_hand(player).get_cards())+1))
+        print("allowed bets:", allowed_bets)
+        if self.next_player_to_bet(player) is None:
+            forbidden_bet = self.forbidden_bet(player)
+            if (forbidden_bet >= 0):
+                print("forbidden bet:", forbidden_bet)
+                allowed_bets.remove(forbidden_bet)
+        return allowed_bets
+
     # Return None if all players have bet
     def next_player_to_bet(self, player):
         nplayer = self.next_player(player)
