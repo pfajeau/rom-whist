@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-grid.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-ui.min.css') }}"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/alertify.min.css') }}"/>
+  <!-- include a theme  for alertify-->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/default.min.css') }}"/>
   <meta name="google-site-verification" content="Dt6SYFK7D7hqlxV-lPFrRWziscSMbsCvtaiXzikjFrI" />
   {{super()}}
 {% endblock %}
@@ -15,6 +18,7 @@
   {{super()}}
   <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/alertify.min.js') }}"></script>
 {% endblock %}
 {% block title %}Romanian Whist {% endblock %}
 

@@ -108,42 +108,23 @@ Add sound effects
   }
 
   function show_alert(msg, title, cancel=false, callback_ok, action="") {
-    // alert("fsfd")
-    $( "#dialog" ).html(msg);
     if (cancel) {
-      $( "#dialog" ).dialog({
-        title:title,
-        buttons: {
-          Ok: function() {
-            $( this ).dialog( "close" );
-            if (callback_ok) {
-              $("#action_game").val(action);
-              callback_ok();
-            }
-          },
-          Cancel: function() {
-            $( this ).dialog( "close" );
-          }
+      alertify.confirm(title, msg, function() {
+        //after clicking OK
+        if (callback_ok) {
+          $("#action_game").val(action);
+          callback_ok();
         }
-      });
+      }, function(){});
+    }
 
-    }
     else {
-      $( "#dialog" ).dialog({
-        title:title,
-        buttons: {
-          Ok: function() {
-            $( this ).dialog( "close" );
-            if (callback_ok) {
-              $("#action_game").val(action);
-              callback_ok();
-            }
-          }
+      alertify.alert(title, msg, function() {
+        if (callback_ok) {
+          $("#action_game").val(action);
+          callback_ok();
         }
       });
-    }
-    $( "#dialog" ).dialog('open');
-  }
 
   function make_player_the_dealer(player_name) {
     make_player_active(player_name)
