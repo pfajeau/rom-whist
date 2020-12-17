@@ -73,15 +73,12 @@
           </div>
           <!-- <h3>or</h3> -->
           <div class="col-5 data_block">
-            {{ form.deck_size.label }}
-            {{ form.deck_size }}
-            <br><br>
             <div id="dealing">
 <!--              <p><center><h4>Dealing</h4></center> -->
+<!--
               <input type="radio" name="dealing_method" id="deal_player" value="player"> Players deal cards</input><br>
               <input type="radio" name="dealing_method" id="deal_computer" value="computer" checked="checked"> Computer deals cards</input>
-              <br>
-              <br>
+-->
               <div id="dealing_options">
                 {{ form.multiple_one_card.label }}
                 {{ form.multiple_one_card }}
@@ -93,7 +90,7 @@
                 {{ form.increment(size=1) }}
               </div>
             </div>
-          <br><br>
+          <br>
           {{ form.start_game(class="btn btn-primary") }}
         </div>
       </div>

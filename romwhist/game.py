@@ -16,7 +16,7 @@ class RomWhistGame():
         BET = "Bet"
         PLAY = "Play"
 
-    def __init__(self, game_creator = "", bonus_win = 1, deck_size=52):
+    def __init__(self, game_creator = "", bonus_win = 1, deck_size=0):
         self.players = []
         self.current_round = None
         self.trump_card = None
@@ -187,6 +187,10 @@ class RomWhistGame():
     def start_game(self):
         self._started = True;
         self._current_hand_nb = 0
+
+        # Set deck size based on number of players
+        self.deck_size = len(self.players) * 8
+
         # Create hand progression
         if self.dealing_method == RomWhistGame.AUTOMATED_DEALING:
             self._phase = RomWhistGame.GamePhase.BET

@@ -62,32 +62,6 @@ Add sound effects
     $("#"+player_name).addClass("active_player");
   }
 
-  function deal() {
-    let trump_flag = $("#trump").is(":checked");
-    nb_cards = $("#nb_cards").val();
-    expr = /^[1-9]+$/
-    if (!expr.test(nb_cards)) {
-      show_alert ("Please enter a positive integer value for the number of cards to deal", "Error");
-      return;
-    }
-    socket.emit('start hand', document.getElementById("nb_cards").value, trump_flag);
-  }
-
-  function enable_deal() {
-    document.getElementById("deal").onclick =function() {
-      deal();
-    }
-    // TODO: should do that when hands are received in case the deal function fails
-    $("#deal").prop("disabled",false);
-  }
-  function disable_deal() {
-    // Never disabled for game game_creator
-    if (username != ownername) {
-      RecursiveUnbind($("#deal"));
-      $("#deal").prop("disabled",true);
-    }
-  }
-
   function card_played (card) {
 
     // Remove card from hand being displayed
@@ -125,42 +99,12 @@ Add sound effects
           callback_ok();
         }
       });
+    }}
 
-  function make_player_the_dealer(player_name) {
-    make_player_active(player_name)
-
-    // Enable Deal button for dealer
-    if (username == player_name) {
-      enable_deal();
-      $("#nb_cards").addClass("highlighted_field");
-      $("#nb_cards").focus();
-    }
-    else {
-      $("#nb_cards").removeClass("highlighted_field");
-    }
-  }
 
   document.addEventListener('DOMContentLoaded', () => {
 
     allowed_bets = {{ allowed_bets }}
-    // Hide dealing button if automated dealing used
-    if ("{{ dealing_method }}" == "automated") {
-      // Cannot disable a checkbox, so doing this trick instead
-      $("#trump").bind("click", false);
-      $("#deal").hide();
-      $("#nb_cards").prop("disabled",true);
-    }
-    else {
-      $("#deal").show();
-    }
-
-    // Prevent form to be submitted when user enter the number of cards to deal
-    $('#nb_cards').keydown(function (e) {
-      if (e.keyCode == 13) {
-        e.preventDefault();
-        return false;
-      }
-    });
 
     // Prevent form to be submitted when user enter a message in chat area
     $('#chat_input').keydown(function (e) {
@@ -227,10 +171,6 @@ Add sound effects
       make_player_play("{{ active_player }}", "{{ allowed_cards }}");
     }
 
-    if (username == ownername) {
-      enable_deal();
-    }
-
     function post_msg() {
       socket.emit("client post", document.getElementById("chat_input").value);
       $("#chat_input").val("");
@@ -257,8 +197,6 @@ Add sound effects
       $("#start_game").prop("disabled",true);
     }
 
-    $( '#dialog' ).dialog( { 'autoOpen': false } );
-
     // Register action for bet input field
     id_bet = "#bets_" + username
     $(id_bet).change(function() {
@@ -283,7 +221,6 @@ Add sound effects
     });
 
     enable_start_game();
-    disable_deal();
 
     // Connect to websocket
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
@@ -327,32 +264,10 @@ Add sound effects
       $("input[name='rounds']").val(0);
       $("input[name='score']").val(0);
 
-      dealer = data['player_to_deal'];
       nb_cards_to_deal = data['nb_cards']
       $('#cards').html('');
       $('#cards_played').empty()
       $('#trump_card').empty()
-
-      // if cards to deal is > 0, then assume cards will be delt automtically.
-      // So disable the Deal button.
-      // Otherwise, do nothing
-      if (nb_cards_to_deal > 0) {
-        disable_deal();
-      }
-      else {
-        make_player_active(dealer);
-        // Enable deal button if player is dealer
-        if (dealer == username) {
-          enable_deal();
-          $("#nb_cards").addClass("highlighted_field");
-          $("#nb_cards").focus();
-        }
-        else {
-          disable_deal();
-          $("#nb_cards").removeClass("highlighted_field");
-        }
-      }
-      //disable_start_game();
 
       // Add scoresheet
       $("#scoresheet_div").append("<td>")
@@ -364,7 +279,6 @@ Add sound effects
       $('#trump_card').html('')
       $('#cards').html('');
       $('#cards_played').empty()
-      disable_deal();
       $("#nb_cards").removeClass("highlighted_field");
 
       // $('#cards').append('<ul>');
@@ -381,8 +295,6 @@ Add sound effects
           $('#rounds input').val(0);
           $('#bets input').val("");
         }
-        // Update dealing Info
-        $("#nb_cards").val(cards.length);
 
         // Trump checkbox wil be updated if/when trump card received
         $("#trump").prop('disabled', false);
@@ -397,10 +309,6 @@ Add sound effects
           $(id_bet).addClass("highlighted_field");
           $(id_bet).focus();
         }
-        // else {
-        //   $(id_bet).prop('readonly', true);
-        //   $(id_bet).removeClass("highlighted_field");
-        // }
         // Highlight Username
         make_player_active(player_name);
       }
@@ -453,15 +361,12 @@ Add sound effects
 
     socket.on('hand completed', function(data) {
       console.log("hand completed event received");
-      // player_name=data['player_to_deal']
-      // player_to_deal = player_name
       let scores=data['scores']
       let hand_nb=data['hand_nb']
       let bets=data['bets']
       let wins=data['wins']
 
 
-      // show_boostrap_alert("Hand completed","alert alert-warning")
       let score_row_id = "#hand_score_nb" + hand_nb
       let html = "<tr>"
       // $("#scoresheet_body").append ("<tr id=" + score_row_id + ">/tr")
@@ -492,12 +397,6 @@ Add sound effects
       sound.src = {{ url_for('static', filename='') }} + "audio/" + audio_file
       // sound.play()
     }
-
-    socket.on('player to deal', function(player_name) {
-      console.log("player to deal event received: " + player_name);
-      player_to_deal = player_name
-      make_player_the_dealer(player_name);
-    });
 
     socket.on('card played', function(data) {
       console.log("card played event received");
@@ -573,7 +472,7 @@ Add sound effects
 
     socket.on('round ended', function(player_name) {
       console.log("round ended event received: " + player_name);
-      show_boostrap_alert("Rounded ended. Winner is " + player_name,"alert alert-info")
+      alertify.alert("Round ended", "Round winner is: " + player_name)
       make_player_inactive(last_player);
       // $("#"+last_player).removeClass("active_player");
       // $("#"+last_player).addClass("normal_player");
@@ -582,7 +481,7 @@ Add sound effects
       var value = parseInt(document.getElementById(id_rounds).value, 10);
       value++;
       document.getElementById(id_rounds).value = value;
-      new_round = true
+      new_round = true;
       play_sound("applause2_x.wav")
     });
 
@@ -606,14 +505,6 @@ Add sound effects
       // TODO: replace with
       show_alert(msg, "Warning");
     });
-
-    function show_boostrap_alert(message,alerttype) {
-      $('#alert_placeholder').append('<div id="alertdiv" class="alert ' +  alerttype + '"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
-      setTimeout(function() {
-        $("#alertdiv").remove();
-      }, 3000);
-    };
-
   });
 </script>
 
@@ -662,10 +553,6 @@ Add sound effects
     </tr>
   </table>
 </div>
-
-<div id="alert_placeholder"></div>
-<div id="dialog" title="Basic dialog">
-</div>
 <br>
 <div id="card-table" class="container">
   <div class="bottomright" id="trump_card">
@@ -683,27 +570,14 @@ Add sound effects
   </div>
 </div>
 
-<!-- Deal button and pplayer cards section-->
+<!-- Player cards section-->
 <div>
   <form id="game_form" action="" method="post" novalidate>
     {{ form.hidden_tag() }}
     <input type="hidden" id="action_game" name="action_game" value="">
-    <div class="container" id="dealing">
-      <div class="col-md-8">
-        <div class="form-group">
-          <br>
-          {{ form.nb_cards.label(class="deal") }}
-          {{ form.nb_cards(size=2) }}
-          &nbsp &nbsp
-          {{ form.trump.label(class="deal") }}
-          {{ form.trump }}
-          <button id="deal" class="btn btn-primary" name="deal" type="button">Deal</button>
-        </div>
-        <br>
-      </div>
-    </div>
     <div>
       <div class="col-md-12" id="cards">
+        <br>
         <!-- <tr id="cards"></tr> -->
         {% for card in hand -%}
         <td>

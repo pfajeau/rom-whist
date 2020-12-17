@@ -26,18 +26,19 @@ class JoinGameForm(FlaskForm):
     join_game = SubmitField('Join game')
 
 class GameForm(FlaskForm):
-    nb_cards = IntegerField("Nb Cards: ", validators=[InputRequired(), Length(max=2)])
-    trump = BooleanField("Trump: ", validators=[InputRequired()], default=True)
+    #nb_cards = IntegerField("Nb Cards: ", validators=[InputRequired(), Length(max=2)])
+    #trump = BooleanField("Trump: ", validators=[InputRequired()], default=True)
     #leave_game = SubmitField('Leave game')
     #stop_game = SubmitField('Stop game')
     #user_name = HiddenField("user_name")
+    i=1; # dummy
 
 class IndexForm(FlaskForm):
     game_id = StringField("Game id: ", validators=[Length(max=6)])
     user_name = StringField("Your Alias: ", validators=[InputRequired(), Length(max=10), Regexp("^[a-zA-Z0-9]+$", message="Only alphanumeric characters are allowed for alias")])
     start_game = SubmitField('Create new game')
     join_game = SubmitField('Join existing game')
-    deck_size = SelectField("Deck size: ", choices=[('24','24'),('32','32'),('40','40'),('52','52')], default='32')
+    #deck_size = SelectField("Deck size: ", choices=[('24','24'),('32','32'),('40','40'),('52','52')], default='32')
     multiple_one_card = BooleanField("Multiple one card deals: ", default=False)
     multiple_no_trump = BooleanField("Multiple no trump deals: ", default=True)
     increment = IntegerField("Increment: ", default=1, validators=[InputRequired(), NumberRange(min=1, max=5, message="Enter an increment between 1 and 5")])

@@ -16,7 +16,7 @@ from flask_socketio import SocketIO, emit
 from . import controllers,deck,card,hand
 from romwhist.game import RomWhistGame
 from romwhist import socketio,app
-from romwhist.forms import LoginForm, StartGameForm, JoinGameForm, GameForm, IndexForm
+from romwhist.forms import LoginForm, StartGameForm, GameForm, JoinGameForm, IndexForm
 from romwhist.models import User
 from romwhist.extensions import db
 
@@ -103,13 +103,14 @@ def index():
 
             print("creating new game with id: ", game_id)
             # Add game id in session
-            game = RomWhistGame(game_creator=username, deck_size=int(request.form['deck_size']))
+            game = RomWhistGame(game_creator=username)
             games[game_id] = game
             #players[game_id] = []
             clients[game_id] = dict()
 
-            dealing_method = request.form['dealing_method']
-            print ("In route game, dealing method is: ", request.form['dealing_method'])
+            # dealing_method = request.form['dealing_method']
+            # print ("In route game, dealing method is: ", request.form['dealing_method'])
+            dealing_method = "computer"
             if dealing_method == "computer":
                 multiple_one_card = 'multiple_one_card' in request.form.keys()
                 multiple_no_trump = 'multiple_no_trump' in request.form.keys()
@@ -152,7 +153,7 @@ def game():
         if game_id is None:
             error = "Could not find game_id in session"
             print(error)
-            return render_template('index.html', error = error, form=IndexForm())
+            return render_template('index.html', error = error)
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":
