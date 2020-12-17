@@ -162,10 +162,12 @@ Add sound effects
   document.addEventListener('DOMContentLoaded', () => {
 
     allowed_bets = {{ allowed_bets }}
-
     // Hide dealing button if automated dealing used
     if ("{{ dealing_method }}" == "automated") {
+      // Cannot disable a checkbox, so doing this trick instead
+      $("#trump").bind("click", false);
       $("#deal").hide();
+      $("#nb_cards").prop("disabled",true);
     }
     else {
       $("#deal").show();
@@ -400,7 +402,9 @@ Add sound effects
         }
         // Update dealing Info
         $("#nb_cards").val(cards.length);
-        // Trum checkbox wil be updated if/when trump card received
+
+        // Trump checkbox wil be updated if/when trump card received
+        $("#trump").prop('disabled', false);
         $("#trump").prop('checked', false);
       });
 
@@ -583,8 +587,8 @@ Add sound effects
       $('#trump_card').append("</figure>");
         // $('#trump_card').append("Trump")
 
-        $("#trump").prop('checked', true);
-      });
+      $("#trump").prop('checked', true);
+    });
 
     socket.on('round ended', function(player_name) {
       console.log("round ended event received: " + player_name);
