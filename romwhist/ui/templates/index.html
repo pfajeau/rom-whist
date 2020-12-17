@@ -62,7 +62,8 @@
         <div class="row">
           <br/>
           <div class="col-4 data_block">
-            <!-- <h2>Join a game</h2> -->
+            <h2>Join a game</h2>
+            <br/>
             {{ form.game_id.label }}
             {{ form.game_id(size=5) }}
             <br><br>
@@ -74,11 +75,8 @@
           <!-- <h3>or</h3> -->
           <div class="col-5 data_block">
             <div id="dealing">
-<!--              <p><center><h4>Dealing</h4></center> -->
-<!--
-              <input type="radio" name="dealing_method" id="deal_player" value="player"> Players deal cards</input><br>
-              <input type="radio" name="dealing_method" id="deal_computer" value="computer" checked="checked"> Computer deals cards</input>
--->
+              <h2>Create a new game</h2>
+              <br/>
               <div id="dealing_options">
                 {{ form.multiple_one_card.label }}
                 {{ form.multiple_one_card }}
