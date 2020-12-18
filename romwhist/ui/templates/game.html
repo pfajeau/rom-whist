@@ -243,16 +243,8 @@ Add sound effects
         winner_list = winner_list.concat(item, " ");
       });
 
-      // for (var player in winners) {
-      //   winner_list = winner_list + " " + player
-      //   nb_winner++
-      // }
-      if (winners.length == 1) {
-        show_alert("Game over ! Winner is " + winner_list)
-      }
-      else {
-        show_alert("Game over ! Winners are " + winner_list)
-      }
+      show_alert("Game Over!", "Winner: " + winner_list);
+      play_sound("applause2_x.wav")
     });
 
     socket.on('sc game started', function(data) {
@@ -304,7 +296,7 @@ Add sound effects
       function make_player_the_better(player_name) {
         let id_bet = "#bets_" + player_name
         if (player_name == username) {
-          play_sound("bicycle_bell.wav")
+          //play_sound("bicycle_bell.wav")
           $(id_bet).prop('readonly', false);
           $(id_bet).addClass("highlighted_field");
           $(id_bet).focus();
@@ -333,7 +325,7 @@ Add sound effects
     function make_player_play(player_name, allowed_cards) {
       make_player_active(player_name);
       if (player_name === username) {
-        play_sound("bicycle_bell.wav")
+        //play_sound("bicycle_bell.wav")
 
         $( '#cards img').each(function( index ) {
           card = $(this).attr('id');
@@ -395,7 +387,7 @@ Add sound effects
     function play_sound(audio_file) {
       const sound = new Audio()
       sound.src = {{ url_for('static', filename='') }} + "audio/" + audio_file
-      // sound.play()
+      sound.play()
     }
 
     socket.on('card played', function(data) {
@@ -482,7 +474,7 @@ Add sound effects
       value++;
       document.getElementById(id_rounds).value = value;
       new_round = true;
-      play_sound("applause2_x.wav")
+      //play_sound("applause2_x.wav")
     });
 
     socket.on('clear round', function() {
@@ -502,7 +494,6 @@ Add sound effects
     });
 
     socket.on('alert', function(msg) {
-      // TODO: replace with
       show_alert(msg, "Warning");
     });
   });
