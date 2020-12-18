@@ -1,0 +1,284 @@
+function play_sound(audio_file) {
+  const sound = new Audio()
+  sound.src = static_folder + "audio/" + audio_file
+  sound.play()
+}
+
+function submit_form() {
+  console.log("Submiting game_form");
+  document.getElementById("game_form").submit();
+}
+
+function RecursiveUnbind($jElement) {
+  // remove this element's and all of its children's click events
+  $jElement.unbind();
+  $jElement.removeAttr('onclick');
+  $jElement.children().each(function () {
+    RecursiveUnbind($(this));
+  });
+}
+
+function make_players_inactive() {
+  $("[name='player']").removeClass("active_player");
+  $("[name='player']").addClass("normal_player");
+}
+
+function make_player_inactive(player_name) {
+  $("#"+player_name).addClass("normal_player");
+  $("#"+player_name).removeClass("active_player");
+}
+
+function make_player_active(player_name) {
+  make_players_inactive()
+  $("#"+player_name).removeClass("normal_player");
+  $("#"+player_name).addClass("active_player");
+}
+
+function initialize(players) {
+  // Prevent form to be submitted when user enter a message in chat area
+  $('#chat_input').keydown(function (e) {
+    if (e.keyCode == 13) {
+      e.preventDefault();
+      post_msg();
+      return false;
+    }
+  });
+
+  // Add game action buttons
+  if (username == ownername) {
+    $("#game_action_buttons").append('<button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>');
+  }
+
+  $("#game_action_buttons").append('<button id="leave_game" type="button" class="btn btn-primary" name="leave_game">Leave Game</button>');
+  document.getElementById("leave_game").onclick = function() {
+    show_alert("Are you sure you want to leave the game?", "Warning", cancel=true, callback_ok=submit_form, action="leave_game");
+  }
+
+  if (username == ownername) {
+    // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
+    $("#game_action_buttons").append('<button id="stop_game" type="button" class="btn btn-warning" name="stop_game">Stop Game</button>');
+    document.getElementById("stop_game").onclick = function() {
+      show_alert("Are you sure you want to stop the game?", "Warning", cancel=true, callback_ok=submit_form, action="stop_game");
+    }
+  }
+  if (username == ownername) {
+    $("#game_action_buttons").append('&nbsp;&nbsp;');
+
+    // Have to use an html framgment here
+    // Appending directly to the hame_action_buttons element does not work
+    // with the loop otherwise
+    var html = '<select name="player_list" id="player_list">'
+    for (var the_player in players) {
+      html= html.concat('<option value="' + the_player + '">' + the_player + '</option>');
+    }
+
+    html= html.concat('</select>');
+    html= html.concat('&nbsp;');
+    $("#game_action_buttons").append(html);
+    $("#game_action_buttons").append('<button id="remove_player" class="btn btn-primary" name="remove_player" type="button">Remove Plsyer</button>');
+    document.getElementById("remove_player").onclick = function() {
+      show_alert("Are you sure you want to remove this player?", "Warning", cancel=true, callback_ok=submit_form, action="remove_player");
+    }
+  }
+  make_players_inactive();
+}
+
+function start_game() {
+  socket.emit('cs game started');
+  //disable_start_game();
+}
+function enable_start_game() {
+  if (username == ownername) {
+    document.getElementById("start_game").onclick = function() {
+      start_game();
+    }
+  }
+  $("#start_game").prop("disabled",false);
+}
+
+function disable_start_game() {
+  RecursiveUnbind($("#start_game"));
+  $("#start_game").prop("disabled",true);
+}
+
+function make_player_play(player_name, allowed_cards) {
+  make_player_active(player_name);
+  if (player_name === username) {
+    // play_sound("bicycle_bell.wav")
+
+    $( '#cards img').each(function( index ) {
+      card = $(this).attr('id');
+      if (allowed_cards.indexOf(card) > -1) {
+        $(this).addClass("img_with_border");
+        $(this).bind("click", (function () {
+          card_played($(this).attr('id'))
+        }));
+      }
+      else {
+        $(this).removeClass("img_with_border");
+      }
+    });
+  }
+}
+
+function make_player_the_better(player_name) {
+  let id_bet = "#bets_" + player_name
+  if (player_name == username) {
+    //play_sound("bicycle_bell.wav")
+    $(id_bet).prop('readonly', false);
+    $(id_bet).addClass("highlighted_field");
+    $(id_bet).focus();
+  }
+  // Highlight Username
+  make_player_active(player_name);
+}
+
+function player_to_play(data) {
+  // Enable the cards in hand to be played
+  console.log("player to play event received: " + data['player']);
+  player_name=data['player'];
+  allowed_cards = data['allowed_cards'];
+  make_player_play(player_name, allowed_cards);
+}
+
+function card_played (card) {
+
+  // Remove card from hand being displayed
+  document.getElementById(card).remove();
+
+  // Emit an event indicating a card has been card_played
+  socket.emit('player played', {data:card});
+
+  // Prevent player from playing again until round is finished
+  RecursiveUnbind($('#cards'));
+
+  // Remove borders on cards
+  $( '#cards img').removeClass("img_with_border");
+
+  make_player_inactive(username);
+  // $("#"+username).removeClass("active_player");
+  // $("#"+username).addClass("normal_player");
+}
+
+
+function card_played_event(data) {
+
+  console.log("card played event received");
+  if (new_round) {
+    // $('#cards_played').empty();
+    new_round = false;
+    first_card = data['card'];
+  }
+  let player_name = data['player']
+  let card = data['card']
+  // Display card on table
+
+  let image = 'img/' + card + ".svg"
+  $('#cards_played').append("<img id=" + card + "_table"+ " src=" + static_folder +
+  image + ' alt=' + card + ' class="card_table"' + '>');
+
+  // TOOD: this  does not work for some reason
+  // play_sound("cardSlide5.wav");
+
+  // Trying to display player name under card, but causes issues
+  // $(cards_played).append("<figcaption><h3 class='trump_caption'>" + player_name +"</h3></figcaption>");
+  // $(cards_played).append("</figure>");
+  make_player_inactive(player_name);
+  // $("#"+player_name).removeClass("active_player");
+  // $("#"+player_name).addClass("normal_player");
+  last_player = player_name
+}
+
+function round_ended(player_name) {
+  console.log("round ended event received: " + player_name);
+  alertify.alert("Round ended", "Round winner is: " + player_name)
+  make_player_inactive(last_player);
+  // $("#"+last_player).removeClass("active_player");
+  // $("#"+last_player).addClass("normal_player");
+
+  let id_rounds = "rounds_" + player_name
+  var value = parseInt(document.getElementById(id_rounds).value, 10);
+  value++;
+  document.getElementById(id_rounds).value = value;
+  new_round = true;
+  //play_sound("applause2_x.wav")
+}
+
+function clear_round() {
+  console.log("clear round event received");
+  $('#cards_played').empty();
+}
+
+function trump_card_received(trump_card) {
+  console.log("trump card event received");
+  let image = 'img/' + trump_card + ".svg"
+  $('#trump_card').html('')
+  $('#trump_card').append("<figure>");
+  // $('#trump_card').append("<img src={{ url_for('static', filename='') }}" +
+  // image + ' alt=' + trump_card + 'width=80 height=80' + '>');
+  $('#trump_card').append("<img src = " + static_folder +
+  image + ' alt=' + trump_card + 'width=80 height=80' + '>');
+  $('#trump_card').append("<figcaption><h3 class='trump_caption'>Trump</h3></figcaption>");
+  $('#trump_card').append("</figure>");
+  // $('#trump_card').append("Trump")
+
+  $("#trump").prop('checked', true);
+}
+
+function new_player(player_name) {
+  console.log("new player event received");
+  socket.emit('join game', player_name);
+  window.location.reload(false);
+}
+
+function game_over(winners) {
+  console.log("Game over event received")
+  console.log(winners)
+  var nb_winner = 0
+  var winner_list = ""
+  winners.forEach(function(item, index) {
+    winner_list = winner_list.concat(item, " ");
+  });
+
+  show_alert("Game Over!", "Winner: " + winner_list);
+  play_sound("applause2_x.wav")
+}
+
+function post_msg() {
+  socket.emit("client post", document.getElementById("chat_input").value);
+  $("#chat_input").val("");
+}
+
+
+function msg_posted(data) {
+  sender=data['sender'];
+  msg = data['msg'];
+  // Display messages
+  textarea = $('#chat_text')
+  content = textarea.val();
+  textarea.val(content + sender + ": " + msg + "\n");
+  textarea.animate({scrollTop:textarea[0].scrollHeight - textarea.height()},1000);
+  // play_sound("beep.wav");
+}
+
+
+function show_alert(msg, title, cancel=false, callback_ok, action="") {
+  if (cancel) {
+    alertify.confirm(title, msg, function() {
+      //after clicking OK
+      if (callback_ok) {
+        $("#action_game").val(action);
+        callback_ok();
+      }
+    }, function(){});
+  }
+
+  else {
+    alertify.alert(title, msg, function() {
+      if (callback_ok) {
+        $("#action_game").val(action);
+        callback_ok();
+      }
+    });
+  }
+}
