@@ -23,7 +23,7 @@ socketio = SocketIO(app, logger=True)
 #app = Flask(__name__, instance_relative_config=True, template_folder="ui/templates", static_folder="ui/static")
 #socketio = SocketIO(app)
 from .routes import *
-
+from .belote.belote_routes import *
 
 def create_app():
     login_manager = LoginManager()
