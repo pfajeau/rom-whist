@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+
+<!-- TODO:
+Optimize js by declaring variables for elements frequently used
+to limit the number of DOM traversals
+show where game is at in hand sequence
+Add footer / contact info
+-->
+
+{% block content %}
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/game_common.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
+<script type="text/javascript">
+
+  // Note that js cannot be separated from html as JINJA2 expressions are not
+  // processed then during rendering
+
+  var socket;
+  var username = "{{ session['username'] }}";
+  var ownername = "{{ session['ownername'] }}";
+  var allowed_bets;
+  var last_player;
+  var new_round = true;
+  var first_card;
+  var last_dealer;
+  var static_folder={{ url_for('static', filename='') }}
+
+  // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
+  let html_frag="<span class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}"
+  html_frag = html_frag.concat(" - " + "{{ session['username'] }}"+ "</span>")
+  html_frag = html_frag.concat("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
+  $("#topnav").last().after(html_frag);
+  // $("#topnav").last().after("<card_playedspan class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</span>")
+  // $("#topnav").last().after("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
+
+  document.addEventListener('DOMContentLoaded', () => {
+
+    allowed_bets = {{ allowed_bets }}
+
+    the_players = []
+    {% for the_player in players -%}
+       the_players.push("{{ the_player }}")
+    {% endfor %}
+    initialize(the_players)
+
+    if ("{{ game_phase }}" == "BET") {
+      make_player_the_better("{{ active_player }}");
+    }
+
+    if ("{{ game_phase }}" == "PLAY") {
+      make_player_play("{{ active_player }}", "{{ allowed_cards }}");
+    }
+
+    document.getElementById("post").onclick = function() {
+      post_msg();
+    }
+
+    // Register action for bet input field
+    id_bet = "#bets_" + username
+    $(id_bet).change(function() {
+      bet = $(id_bet).val();
+      expr = /^[0-9]+$/
+      if (!expr.test(bet)) {
+        show_alert ("Please enter an integer value", "Error")
+        return;
+      }
+      bet = parseInt($(id_bet).val(),10);
+      console.log("allowed_bets:" )
+      console.log(allowed_bets)
+
+      if (allowed_bets.includes(bet)) {
+        socket.emit("player bet", $(id_bet).val());
+        return
+      }
+      else {
+        show_alert ("This bet is not allowed.", "Error");
+        return;
+      }
+    });
+
+    enable_start_game();
+
+    // Connect to websocket
+    console.log("Connecting to io")
+    socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/belote');
+    socket.on('connect', function() {
+      console.log("Connected to io")
+
+      // Register user - only used here to cover the case of
+      // first player joining. DO NOT REMOVE
+      socket.emit('join game', {data:''});
+
+    });
+
+    socket.on('sc game started', function(data) {
+      console.log("game started event received")
+      console.log(data)
+      $("input[name='bets']").attr('readonly', true);
+      $("input[name='bets']").removeClass("highlighted_field");
+      $("input[name='bets']").val('')
+      $("input[name='rounds']").val(0);
+      $("input[name='score']").val(0);
+
+      nb_cards_to_deal = data['nb_cards']
+      $('#cards').html('');
+      $('#cards_played').empty()
+      $('#trump_card').empty()
+
+      // Add scoresheet
+      $("#scoresheet_div").append("<td>")
+    });
+
+    socket.on('new hand', function(cards) {
+      console.log("new hand event received");
+      make_players_inactive();
+      $('#trump_card').html('')
+      $('#cards').html('');
+      $('#cards_played').empty()
+      $("#nb_cards").removeClass("highlighted_field");
+
+      // $('#cards').append('<ul>');
+      for (var card_index in cards) {
+        // $('#cards').append('<br>' + data[card])
+        let card =cards[card_index]
+        let image = 'img/' + card + ".svg"
+        // let card = data[card]
+        $('#cards').append('<td>'+
+          "<img id=" + card + " src={{ url_for('static', filename='') }}" +
+          image + ' alt=' + card + ' class="card_hand"' + '>' + '</td>')
+
+          // Reset bets and wins to 0
+          $('#rounds input').val(0);
+          $('#bets input').val("");
+        }
+
+        // Trump checkbox wil be updated if/when trump card received
+        // $("#trump").prop('disabled', false);
+        // $("#trump").prop('checked', false);
+      });
+
+
+    socket.on('player to bet', function(data) {
+      console.log("player to bet event received")
+      player_name = data['player']
+      allowed_bets = data['allowed_bets']
+      make_player_the_better(player_name)
+    });
+
+    socket.on('player bet', function(data) {
+      player_name=data['player']
+      bet=data['bet']
+      let id_bet = "#bets_" + player_name
+      $(id_bet).val(bet);
+      $(id_bet).prop('readonly', true);
+      make_player_inactive(player_name);
+      $(id_bet).removeClass("highlighted_field");
+    });
+
+
+    socket.on('player to play', function(data) { player_to_play(data) })
+
+    socket.on('hand completed', function(data) {
+      console.log("hand completed event received");
+      let scores=data['scores']
+      let hand_nb=data['hand_nb']
+      let bets=data['bets']
+      let wins=data['wins']
+
+
+      let score_row_id = "#hand_score_nb" + hand_nb
+      let html = "<tr>"
+      // $("#scoresheet_body").append ("<tr id=" + score_row_id + ">/tr")
+
+      Object.keys(scores).forEach(function(player) {
+        score = scores[player];
+        bet=bets[player]
+        win=wins[player]
+        let id_score = "#score_" + player
+        $(id_score).val(score);
+
+        html = html.concat("<td><table class='padding-between-cols'><tr><td class='scoresheet_nb'>" + bet + "</td>")
+        html = html.concat("<td class='scoresheet_nb'>" + win + "</td>" + "<td class='scoresheet_nb'>" + score + "</td></tr></table></td>")
+        // html = html.concat("<td>" + score + "</td>")
+        // $(score_row_id).append ("<td>" + score + "</td>")
+      });
+
+      html = html.concat("</tr>")
+      $("#scoresheet_body").append(html)
+
+      let image = 'img/' + trump_card + ".svg"
+      $('#trump_card').html('')
+      $('#cards_played').empty()
+    });
+
+    socket.on('card played', function(data) { card_played_event(data) })
+    socket.on('new player', function(player_name) { new_player(player_name) })
+
+
+    socket.on('player left', function(player_name) {
+      if (player_name.localeCompare(username) != 0) {
+
+        $("#" + player_name).remove();
+        $("#label_" + player_name).remove();
+
+        let id_bet = "#bets_" + player_name;
+        $(id_bet).parent().remove();
+        id_bet = "#label_bets_" + player_name;
+        $(id_bet).parent().remove();
+
+        let id_round = "#rounds_" + player_name;
+        $(id_round).parent().remove()
+        id_round = "#label_rounds_" + player_name;
+        $(id_round).parent().remove();
+
+        let id_score = "#score_" + player_name;
+        $(id_score).parent().remove()
+        id_score = "#label_score_" + player_name;
+        $(id_score).parent().remove()
+
+        show_alert("User " + player_name + " left the game!", "Warning")
+      }
+    });
+
+    socket.on('trump card', function(trump_card) { trump_card_received(trump_card) })
+    socket.on('round ended', function(player_name) { round_ended(player_name) });
+    socket.on('clear round', function() { clear_round() });
+    socket.on('game over', function(winners) { game_over(winners) })
+    socket.on('msg posted', function(data) { msg_posted(data) });
+
+    socket.on('alert', function(msg) {
+      show_alert(msg, "Warning");
+    });
+  });
+
+</script>
+
+<div class="table-responsive">
+  <br>
+  <table class="table-with-padding">
+    <tr id="players">
+      {% for player in players -%}
+      <td id="label_{{ player }}" ></td>
+      <td id="{{ player }}" name="player" class="normal_player">{{ player }} </td>
+      {% endfor %}
+    </tr>
+    <tr id="bets">
+      {% for player in players -%}
+      <td class="td_player_info_label">
+        <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">Bets</label>
+      </td>
+      <td class="td_player_info">
+        {% if bets[player] == -1 %}
+        <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value='' step=1 readonly>
+        {% else %}
+        <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value={{ bets[player] }} step=1 readonly>
+        {% endif %}
+      </td>
+      {% endfor %}
+    </tr>
+    <tr id="rounds">
+      {% for player in players -%}
+      <td class="td_player_info_label" >
+        <label for="rounds_{{ player }}"  id="label_rounds_{{ player }}" class="player_info">Wins</label>
+      </td>
+      <td class="td_player_info" >
+        <input type="number" id="rounds_{{ player }}" name="rounds" class="player_info" min=0 max=18 readonly value={{ wins[player] }}>
+      </td>
+      {% endfor %}
+    </tr>
+    <tr id=scores>
+      {% for player in players -%}
+      <td class="td_player_info_label" >
+        <label for="score_{{ player }}"  id="label_score_{{ player }}" class="player_info">Score</label>
+      </td>
+      <td class="td_player_info" >
+        <input type="number" id="score_{{ player }}" name="score" class="player_info" min=0 max=99 readonly value={{ scores[player] }}>
+      </td>
+      {% endfor %}
+    </tr>
+  </table>
+</div>
+<br>
+<div id="card-table" class="container">
+  <div class="bottomright" id="trump_card">
+    {% if trump != None %}
+      <figure>
+        <img src="{{ url_for('static', filename='') }}img/{{ trump }}.svg" alt=trump width=80 height=80>
+        <figcaption><h3 class='trump_caption'>Trump</h3></figcaption>
+      </figure>"
+    {% endif %}
+  </div>
+  <div id="cards_played">
+    {% for card in cards_played -%}
+    <img id= "{{ card }}_table" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" alt="{{ card }}" class="card_table">
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Player cards section-->
+<div>
+  <form id="game_form" action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <input type="hidden" id="action_game" name="action_game" value="">
+    <div>
+      <div class="col-md-12" id="cards">
+        <br>
+        <!-- <tr id="cards"></tr> -->
+        {% for card in hand -%}
+        <td>
+          <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" class="card_hand">
+          <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
+        </td>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="chat" id="chat">
+      <br/>
+      <h4 class="div_title">Chat</h4>
+      <textarea id="chat_text" rows=5 cols=80 readonly></textarea><br>
+      <input type="text" id="chat_input" class = "chat_input" size=77></input>
+      <button id="post" class="btn btn-primary" name="post" type="button">Send</button>
+    </div>
+    <div>
+      <div id="game_action_buttons" class="btn-toolbar">
+        <p><br>
+      </div>
+    </div>
+    <div id="scoresheet_div">
+      <br/>
+      <h4 class="div_title">Scoresheet</h4>
+      <!-- <table id="scoresheet_table" class="table-no-padding-border padding-between-cols"> -->
+      <table id="scoresheet_table" class="table-no-padding-border table table-sm table-bordered">
+        <thead>
+          <tr>
+            {% for player in players -%}
+            <th class="td_player_info">{{player}}
+              <table>
+                <tr>
+                  <td class="scoresheet_title scoresheet_nb">B</td>
+                  <td class="scoresheet_titles scoresheet_nb">W</td>
+                  <td class="scoresheet_titles scoresheet_nb">S</td>
+                </tr>
+              </table>
+            </th>
+            {% endfor %}
+          </tr>
+        </thead>
+          <tbody id="scoresheet_body">
+    {% for scores_hand in scoresheet -%}
+    <tr>
+      {% for player in players -%}
+      <td>
+        <table>
+          <tr>
+            <td class="scoresheet_nb">{{scores_hand[0][player]}}</td>
+            <td class="scoresheet_nb">{{scores_hand[1][player]}}</td>
+            <td class="scoresheet_nb">{{scores_hand[2][player]}}</td>
+          </tr>
+        </table>
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+          </tbody>
+      </table>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

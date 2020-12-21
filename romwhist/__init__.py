@@ -9,7 +9,7 @@ App init module
 @author: Philippe Fajeau
 """
 
-from flask import Flask, redirect, url_for, render_template
+from flask import Flask
 from flask_login import LoginManager
 import logging
 import logging.handlers
@@ -22,8 +22,17 @@ socketio = SocketIO(app, logger=True)
 
 #app = Flask(__name__, instance_relative_config=True, template_folder="ui/templates", static_folder="ui/static")
 #socketio = SocketIO(app)
-from .routes import *
-from .belote.belote_routes import *
+
+#from .routes import *
+from ohell import ohell_routes
+
+app.add_url_rule('/', view_func=ohell_routes.index, methods=["GET", "POST"])
+app.add_url_rule('/index', view_func=ohell_routes.index, methods=["GET", "POST"])
+app.add_url_rule('/ohell_play', view_func=ohell_routes.ohell_play, methods=["GET", "POST"])
+
+# When adding those, events are not received by the client anymre
+# app.add_url_rule('/belote_start', view_func=belote_routes.belote_start, methods=["GET", "POST"])
+# app.add_url_rule('/belote_play', view_func=belote_routes.belote_play, methods=["GET", "POST"])
 
 def create_app():
     login_manager = LoginManager()

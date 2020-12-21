@@ -1,9 +1,9 @@
 print('__file__={0:<35} | __name__={1:<20} | __package__={2:<20}'.format(__file__,__name__,str(__package__)))
 
-from romwhist.game import RomWhistGame
+from romwhist.game import CardGame
 
 if __name__ == '__main__':
-        whist = RomWhistGame("Joe", 1, 32)
+        whist = CardGame("Joe", 1, 32)
         whist.add_player("Joe")
         whist.add_player("Jack")
         whist.add_player("Jim")
@@ -25,7 +25,7 @@ if __name__ == '__main__':
         whist.deal(dealer="")
         assert(whist.trump_card is None)
 
-        whist = RomWhistGame("Joe", 1, 32)
+        whist = CardGame("Joe", 1, 32)
         whist.add_player("Joe")
         whist.add_player("Jack")
         whist.add_player("Jim")

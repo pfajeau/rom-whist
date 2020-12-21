@@ -6,7 +6,7 @@ from romwhist.deck import Deck
 from romwhist.hand import Hand
 from romwhist.round import Round
 
-class RomWhistGame():
+class CardGame():
 
     MANUAL_DEALING = "manual"
     AUTOMATED_DEALING = "automated"
@@ -27,7 +27,7 @@ class RomWhistGame():
         self.bonus_win = bonus_win
         self.dealer = None
         self.init_dict(self.scores,0)
-        self.dealing_method = RomWhistGame.MANUAL_DEALING
+        self.dealing_method = CardGame.MANUAL_DEALING
         self.owner = game_creator
         self.active_player = self.owner
         self.deck_size = deck_size
@@ -38,7 +38,7 @@ class RomWhistGame():
         self._multiple_no_trump = True
         self._increment = 1
         self._started = False;
-        self._phase = RomWhistGame.GamePhase.DEAL
+        self._phase = CardGame.GamePhase.DEAL
         self.scoresheet=[]
         self._player_status=dict()
         self.init_dict(self._player_status, 1)
@@ -62,7 +62,7 @@ class RomWhistGame():
 
     # Define the card distribution pattern
     def set_hand_prgression(self, multiple_one_card=False, multiple_no_trump=True, increment=1):
-        self.dealing_method = RomWhistGame.AUTOMATED_DEALING
+        self.dealing_method = CardGame.AUTOMATED_DEALING
         self._multiple_one_card = multiple_one_card
         self._multiple_no_trump = multiple_no_trump
         self._increment = increment
@@ -137,7 +137,7 @@ class RomWhistGame():
             self._player_status[player] = 1
             # Need to re-start hands
             self.active_player = self.dealer
-            self.game_phase = RomWhistGame.GamePhase.DEAL
+            self.game_phase = CardGame.GamePhase.DEAL
             self.current_round = None
             # self.trump_card = None
             self.bets = dict()
@@ -160,7 +160,7 @@ class RomWhistGame():
             if player == self.dealer:
                 self.dealer = self.next_player_to_deal()
             self.active_player = self.dealer
-            self.game_phase = RomWhistGame.GamePhase.DEAL
+            self.game_phase = CardGame.GamePhase.DEAL
             self.current_round = None
             # self.trump_card = None
             self.bets = dict()
@@ -192,11 +192,11 @@ class RomWhistGame():
         self.deck_size = len(self.players) * 8
 
         # Create hand progression
-        if self.dealing_method == RomWhistGame.AUTOMATED_DEALING:
-            self._phase = RomWhistGame.GamePhase.BET
+        if self.dealing_method == CardGame.AUTOMATED_DEALING:
+            self._phase = CardGame.GamePhase.BET
             self.create_hand_progression()
         else:
-            self._phase = RomWhistGame.GamePhase.DEAL
+            self._phase = CardGame.GamePhase.DEAL
 
     def get_hand(self, player):
         return self.hands[player]
@@ -230,7 +230,7 @@ class RomWhistGame():
         self.bets[player] = bet
         self.active_player = self.next_player(player)
         if self.next_player_to_bet(player) is None:
-            self._phase = RomWhistGame.GamePhase.PLAY
+            self._phase = CardGame.GamePhase.PLAY
 
 
     def sum_bets_placed(self):
@@ -350,7 +350,7 @@ class RomWhistGame():
         self.active_player = self.next_player(self.dealer)
 
         # If automated dealing set cards to deal
-        if self.dealing_method == RomWhistGame.AUTOMATED_DEALING:
+        if self.dealing_method == CardGame.AUTOMATED_DEALING:
             print ("current_hand_nb: ", self._current_hand_nb)
             cards_to_deal = self._nb_cards_per_hand[self._current_hand_nb]
             if cards_to_deal is None:
@@ -371,7 +371,7 @@ class RomWhistGame():
             deal_trump = with_trump
 
             # Check whether play is with or without trump in case of automated dealing
-            if self.dealing_method == RomWhistGame.AUTOMATED_DEALING:
+            if self.dealing_method == CardGame.AUTOMATED_DEALING:
                 if self._current_hand_nb < self._start_of_no_trump or self._current_hand_nb > self._end_of_no_trump:
                     deal_trump = True
                 else:
@@ -392,7 +392,7 @@ class RomWhistGame():
                 self.trump_card = None
 
             self._current_hand_nb = self._current_hand_nb+1
-            self._phase = RomWhistGame.GamePhase.BET
+            self._phase = CardGame.GamePhase.BET
             return self.hands
 
     # TODO
@@ -404,7 +404,7 @@ class RomWhistGame():
         return True
 
     def is_game_over(self):
-        if self.dealing_method == RomWhistGame.AUTOMATED_DEALING:
+        if self.dealing_method == CardGame.AUTOMATED_DEALING:
             return self._current_hand_nb == len(self._nb_cards_per_hand)
         else:
             return False

@@ -68,8 +68,9 @@ function initialize(players) {
     // Appending directly to the hame_action_buttons element does not work
     // with the loop otherwise
     var html = '<select name="player_list" id="player_list">'
-    for (var the_player in players) {
-      html= html.concat('<option value="' + the_player + '">' + the_player + '</option>');
+    for (var i in players) {
+      console.log(i)
+      html= html.concat('<option value="' + players[i] + '">' + players[i] + '</option>');
     }
 
     html= html.concat('</select>');

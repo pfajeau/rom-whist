@@ -9,7 +9,7 @@ import unidecode
 import threading
 import traceback
 from flask import render_template, request, flash, session, url_for, redirect
-from flask import Blueprint
+#from flask import Blueprint
 from flask_login import current_user, login_user, logout_user, AnonymousUserMixin
 from flask_socketio import join_room, leave_room
 from flask_socketio import SocketIO, emit
@@ -20,16 +20,16 @@ from romwhist.forms import LoginForm, StartGameForm, GameForm, JoinGameForm, Ind
 from romwhist.models import User
 from romwhist.extensions import db
 
+NAMESPACE='/belote'
 
 # Map of games, key is game id
-games = dict()
+bel_games = dict()
 
 # Dictionary of session iDs for each game. This is a dictionary of Dictionary
 # Keys are game ids and then player ids. Used for socketio.
-clients = dict()
+bel_clients = dict()
 
-@app.route("/",methods=['GET', 'POST'])
-@app.route("/belote_start",methods=['GET', 'POST'])
+# @app.route("/belote_start",methods=['GET', 'POST'])
 def belote_start():
 
         # print (current_user)
@@ -60,12 +60,12 @@ def belote_start():
         if form.join_game.data:
             game_id = request.form['game_id']
             print("game id: ", game_id)
-            if not game_id in games:
+            if not game_id in bel_games:
                 error = "This game has not been created yet"
                 print(error)
                 return render_template('index.html', error = error, form=form)
 
-            game = games[game_id]
+            game = bel_games[game_id]
             # Not allowed to connect if another player has the same alias
             # and game has not started. If game has started, assume player
             # is trying to reconnect after having lost a connection
@@ -91,22 +91,22 @@ def belote_start():
 
         elif form.start_game.data:
             print("start game")
-            if len(games) == 999:
+            if len(bel_games) == 999:
                 error = "No more games available!!! Please try again later"
                 print(error)
                 return render_template('index.html', error = error, form=form)
 
             game_id = str(randint(1,999))
-            while game_id in games:
+            while game_id in bel_games:
                 game_id = str(randint(1,999))
             print ("game_id:", game_id)
 
             print("creating new game with id: ", game_id)
             # Add game id in session
-            game = RomWhistGame(game_creator=username)
-            games[game_id] = game
+            game = CardGame(game_creator=username)
+            bel_games[game_id] = game
             #players[game_id] = []
-            clients[game_id] = dict()
+            bel_clients[game_id] = dict()
 
             # dealing_method = request.form['dealing_method']
             # print ("In route game, dealing method is: ", request.form['dealing_method'])
@@ -120,12 +120,12 @@ def belote_start():
 
             session['ownername'] = username
             add_player(game_id)
-            return redirect(url_for('game'))
+            return redirect(url_for('belote_play'))
     else:
         return render_template("index.html", form=form, error=form.errors)
 
 
-@app.route("/belote_play", methods=['GET', 'POST'])
+# @app.route("/belote_play", methods=['GET', 'POST'])
 def belote_play():
     print("In belote_play route")
     form=GameForm()
@@ -139,7 +139,7 @@ def belote_play():
         flash("Game does not exist")
         return redirect(url_for('index'))
 
-    game=games.get(game_id);
+    game=bel_games.get(game_id);
     if game is None:
         flash("Game does not exist")
         return redirect(url_for('index'))
@@ -168,7 +168,7 @@ def belote_play():
             print ("Player to remove: ", rplayer)
 
             remove_player(game_id, rplayer)
-            return redirect(url_for('game'))
+            return redirect(url_for('belote_play'))
             # get user that needs to be removed
             # remove user
             # re-distribute and display game page
@@ -194,7 +194,7 @@ def belote_play():
             print (i, " ",game.scoresheet[i][1])
             print (i, " ",game.scoresheet[i][2])
 
-        return render_template("game.html", form=form,  players=game.get_playing_players(), scores=game.get_scores(), \
+        return render_template("ohell.html", form=form,  players=game.get_playing_players(), scores=game.get_scores(), \
         hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player, \
         cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
         trump=game.trump_card, dealing_method=game.dealing_method,  \
@@ -229,11 +229,11 @@ def login():
 def message(data):
     print ("message received");
 
-@socketio.on("cs game started")
+@socketio.on("cs game started", namespace=NAMESPACE))
 def game_started():
     game_id = session.get('game_id')
     if not game_id is None:
-        game = games.get(game_id)
+        game = bel_games.get(game_id)
         if not game is None:
             # If manual dealiing, just emit event game sc game started
             # In automated dealing, call start_hands with computed nb of cards and trump
@@ -243,12 +243,10 @@ def game_started():
             player = game.get_playing_players()[randint(0,len(game.get_playing_players())-1)]
             socketio.emit("sc game started", {'player_to_deal': player, 'nb_cards': 0}, room=game_id)
 
-            print ("Dealing method is: ", games[game_id].dealing_method)
-            if games[game_id].dealing_method == RomWhistGame.AUTOMATED_DEALING:
-                generate_hands(game_id, player)
+            generate_hands(game_id, player)
 
 
-@socketio.on("player bet")
+@socketio.on("player bet", namespace=NAMESPACE))
 def player_bet(bet):
     print ("player bet event received")
     print ("Player bet: " + bet)
@@ -257,7 +255,7 @@ def player_bet(bet):
     if game_id is None:
         print("ERROR: Game not found!!!")
     else:
-        game = games[game_id]
+        game = bel_games[game_id]
         try:
             bet_int = int(bet)
             game.place_bet(session['username'], bet_int)
@@ -281,21 +279,21 @@ def player_bet(bet):
             print ("Bet received: ", bet)
             print (e)
             traceback.print_stack()
-            emit("alert", "Invalid bet!", room=clients[game_id][username])
+            emit("alert", "Invalid bet!", room=bel_clients[game_id][username])
 
 def hand_completed(game_id, username):
-    game = games[game_id]
+    game = bel_games[game_id]
     scores = game.update_scores()
     print ("hand completed, next player to deal:", game.next_player_to_deal())
     socketio.emit("hand completed", {'scores':scores, 'bets' :game.bets, 'wins': game.wins, 'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal()}, room=game_id)
     socketio.emit("player to deal", game.next_player_to_deal(), room=game_id)
     if game.is_game_over():
         socketio.emit("game over", game.get_highest_score_player(), room=game_id)
-    elif game.dealing_method == RomWhistGame.AUTOMATED_DEALING:
+    else:
         generate_hands(game_id, "")
 
 def next_round(game_id, nplayer,allowed_cards):
-    game = games[game_id]
+    game = bel_games[game_id]
     game.create_round()
 
     socketio.emit("clear round",room=game_id)
@@ -317,7 +315,7 @@ def player_played(data):
         new_data = {'player': session['username'], 'card': card}
         emit("card played", new_data, room=game_id)
 
-        game = games[game_id]
+        game = bel_games[game_id]
         winner = game.card_played(session['username'], card)
 
         nplayer = game.get_active_player()
@@ -353,16 +351,16 @@ def start_hand(nbcards, trump):
 def generate_hands(game_id, username, nbcards=0, trump=True):
     print (nbcards)
 
-    if not game_id in games:
+    if not game_id in bel_games:
        # Should never happen
-        game = RomWhistGame();
-        games[game_id] = game
+        game = OhellGame();
+        bel_games[game_id] = game
     else:
-        game = games[game_id]
+        game = bel_games[game_id]
 
     hands = game.deal(nbcards, trump, username)
     if hands is None:
-        socketio.emit("alert", "Invalid number of card for size of deck", room=clients[game_id][username])
+        socketio.emit("alert", "Invalid number of card for size of deck", room=bel_clients[game_id][username])
     else:
         round = game.create_round()
 
@@ -373,7 +371,7 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
         for player in game.get_playing_players():
             cards = hands[player].serialize()
             print ("Cards for player ", player, " ", cards)
-            socketio.emit("new hand", cards, room=clients[game_id][player])
+            socketio.emit("new hand", cards, room=bel_clients[game_id][player])
 
         if trump and not game.trump_card is None:
             socketio.emit("trump card", str(game.trump_card), room=game_id)
@@ -388,13 +386,13 @@ def on_join(data):
     print ("on_join")
     game_id = session.get('game_id')
     if not game_id is None:
-        if session['game_id'] in games:
+        if session['game_id'] in bel_games:
             # Add user to room if user is not there already
             player = session.get('username')
-            current_client_room = clients[game_id].get(player)
+            current_client_room = bel_clients[game_id].get(player)
 
             # Adding new client room id (sid) to list of clients
-            clients[game_id][player] = request.sid
+            bel_clients[game_id][player] = request.sid
             session['sid'] = request.sid
             join_room(game_id)
 
@@ -437,7 +435,7 @@ def check_player_left(player, game_id, client_id):
     # a refresh page has happened, so leave the player in the game
 
     # Do nothing, let game owner remove user manually if needed
-    players = clients.get(game_id)
+    players = bel_clients.get(game_id)
     if players is None:
         return
 
@@ -452,12 +450,12 @@ def stop_game():
     if game_id is None:
         print("NO GAME_ID IN SESSION!!!!")
         return
-    if not games.get(game_id) is None:
-        socketio.emit("game over", games.get(game_id).get_highest_score_player(), room=game_id)
+    if not bel_games.get(game_id) is None:
+        socketio.emit("game over", bel_games.get(game_id).get_highest_score_player(), room=game_id)
         # socketio.emit("game stopped", session['username'], room=game_id)
 
-        del games[game_id]
-        del clients[game_id]
+        del bel_games[game_id]
+        del bel_clients[game_id]
         #del players[game_id]
         return
 
@@ -465,7 +463,7 @@ def stop_game():
 def add_player(game_id):
     session['game_id'] = game_id
 
-    games[game_id].add_player(session['username'])
+    bel_games[game_id].add_player(session['username'])
     socketio.emit("new player", session['username'], room=game_id)
     restart_hand(game_id)
 
@@ -473,28 +471,25 @@ def add_player(game_id):
 def remove_player(game_id, player):
     # game_id = session.get('game_id')
     if not game_id is None:
-        game = games.get(game_id)
+        game = bel_games.get(game_id)
         if not game is None:
             if game.game_started():
                 game.disable_player(player)
             else:
                 game.remove_player(player)
-                if player in clients[game_id]:
-                    del clients[game_id][player]
+                if player in bel_clients[game_id]:
+                    del bel_clients[game_id][player]
 
         socketio.emit("player left", player, room=game_id)
         socketio.emit("clear round",room=game_id)
         restart_hand(game_id)
 
 def restart_hand(game_id):
-    game = games.get(game_id)
+    game = bel_games.get(game_id)
     # If manueal dealing, generate player to deal event
     # Othrwise deal another hand
     socketio.emit("alert", "Hand to be replayed", room=game_id)
-    if game.dealing_method == RomWhistGame.MANUAL_DEALING:
-      #socketio.emit("hand completed", {'scores':game.get_scores(), 'player_to_deal': game.dealer}, room=game_id)
-      socketio.emit("player to deal", game.dealer, room=game_id)
-    elif game.game_started():
+    if game.game_started():
       game._current_hand_nb = game._current_hand_nb - 1  # Deal again
       generate_hands(game_id, "")
 

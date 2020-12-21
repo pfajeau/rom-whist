@@ -35,16 +35,15 @@ Add footer / contact info
   // $("#topnav").last().after("<card_playedspan class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</span>")
   // $("#topnav").last().after("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
 
-
   document.addEventListener('DOMContentLoaded', () => {
 
     allowed_bets = {{ allowed_bets }}
 
-    players = []
+    the_players = []
     {% for the_player in players -%}
-       players.push( {{ the_player }} )
-     {% endfor %}
-    initialize(players)
+       the_players.push("{{ the_player }}")
+    {% endfor %}
+    initialize(the_players)
 
     if ("{{ game_phase }}" == "BET") {
       make_player_the_better("{{ active_player }}");
@@ -84,10 +83,10 @@ Add footer / contact info
     enable_start_game();
 
     // Connect to websocket
-    socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
-
-    // When connected, configure buttons
+    console.log("Connecting to io")
+    socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/ohell');
     socket.on('connect', function() {
+      console.log("Connected to io")
 
       // Register user - only used here to cover the case of
       // first player joining. DO NOT REMOVE

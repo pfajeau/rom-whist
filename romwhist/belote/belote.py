@@ -8,9 +8,6 @@ from ..round import Round
 
 class BeloteGame():
 
-    MANUAL_DEALING = "manual"
-    AUTOMATED_DEALING = "automated"
-
     class GamePhase(Enum):
         DEAL = "Deal"
         BET = "Bet"
@@ -38,7 +35,7 @@ class BeloteGame():
         self._multiple_no_trump = True
         self._increment = 1
         self._started = False;
-        self._phase = RomWhistGame.GamePhase.DEAL
+        self._phase = BeloteGame.GamePhase.DEAL
         self.scoresheet=[]
         self._player_status=dict()
         self.init_dict(self._player_status, 1)
