@@ -44,6 +44,10 @@ Add footer / contact info
        the_players.push("{{ the_player }}")
     {% endfor %}
     initialize(the_players)
+    if (len(players != 4) {
+      $("#start_game").prop('disabled', true);
+    }
+    // TODO: disable Start button if number of player is not 4
 
     if ("{{ game_phase }}" == "BET") {
       make_player_the_better("{{ active_player }}");
