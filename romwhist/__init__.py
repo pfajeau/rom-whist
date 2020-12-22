@@ -26,13 +26,14 @@ socketio = SocketIO(app, logger=True)
 #from .routes import *
 from ohell import ohell_routes
 
-app.add_url_rule('/', view_func=ohell_routes.index, methods=["GET", "POST"])
-app.add_url_rule('/index', view_func=ohell_routes.index, methods=["GET", "POST"])
+app.add_url_rule('/', view_func=ohell_routes.ohell_start, methods=["GET", "POST"])
+app.add_url_rule('/ohell_start', view_func=ohell_routes.ohell_start, methods=["GET", "POST"])
 app.add_url_rule('/ohell_play', view_func=ohell_routes.ohell_play, methods=["GET", "POST"])
 
 # When adding those, events are not received by the client anymre
-# app.add_url_rule('/belote_start', view_func=belote_routes.belote_start, methods=["GET", "POST"])
-# app.add_url_rule('/belote_play', view_func=belote_routes.belote_play, methods=["GET", "POST"])
+from belote import belote_routes
+app.add_url_rule('/belote_start', view_func=belote_routes.belote_start, methods=["GET", "POST"])
+app.add_url_rule('/belote_play', view_func=belote_routes.belote_play, methods=["GET", "POST"])
 
 def create_app():
     login_manager = LoginManager()

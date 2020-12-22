@@ -13,10 +13,10 @@ from flask import render_template, request, flash, session, url_for, redirect
 from flask_login import current_user, login_user, logout_user, AnonymousUserMixin
 from flask_socketio import join_room, leave_room
 from flask_socketio import SocketIO, emit
-from .. import controllers,deck,card,hand
+from romwhist import controllers,deck,card,hand
 from romwhist.belote.belote import BeloteGame
 from romwhist import socketio,app
-from romwhist.forms import LoginForm, StartGameForm, GameForm, JoinGameForm, IndexForm
+from romwhist.forms import LoginForm, StartForm, GameForm
 from romwhist.models import User
 from romwhist.extensions import db
 
@@ -32,21 +32,7 @@ bel_clients = dict()
 # @app.route("/belote_start",methods=['GET', 'POST'])
 def belote_start():
 
-        # print (current_user)
-        # if isinstance(current_user, User):
-        #     logout_user()
-        #     #user = User(username=user_name)
-        #     db.session.delete(current_user)
-        #     db.session.commit()
-        #
-        # user = User.query.filter_by(username=user_name).first()
-        # print ("User retrieved:", user)
-        # if user is None:
-            # user = User(username=user_name)
-            # db.session.add(user)
-            # db.session.commit()
-            # login_user(user)
-    form = IndexForm()
+    form = StartForm()
     if form.validate_on_submit():
         # Sanitize the username (as it isued as IDs in the html)
         username = unidecode.unidecode(form.user_name.data)
@@ -63,7 +49,7 @@ def belote_start():
             if not game_id in bel_games:
                 error = "This game has not been created yet"
                 print(error)
-                return render_template('index.html', error = error, form=form)
+                return render_template('belote_start.html', error = error, form=form)
 
             game = bel_games[game_id]
             # Not allowed to connect if another player has the same alias
@@ -72,14 +58,14 @@ def belote_start():
             if username in game.get_players() and not game.game_started():
                 error = "The game already has a user with the same name"
                 print(error)
-                return render_template('index.html', error = error, form=form)
+                return render_template('belote_start.html', error = error, form=form)
 
             # Not allowed to connect to a game already started unless the player
             # is already an existing player (same alias)
             if game.game_started() and not username in game.get_players():
                 error = "This game has already started! You cannot join a game in progress"
                 print(error)
-                return render_template('index.html', error = error, form=form)
+                return render_template('belote_start.html', error = error, form=form)
 
             # Remove player from game if that player was already in the games
             # if previous_alias in players[game_id]:
@@ -94,7 +80,7 @@ def belote_start():
             if len(bel_games) == 999:
                 error = "No more games available!!! Please try again later"
                 print(error)
-                return render_template('index.html', error = error, form=form)
+                return render_template('belote_start.html', error = error, form=form)
 
             game_id = str(randint(1,999))
             while game_id in bel_games:
@@ -103,7 +89,7 @@ def belote_start():
 
             print("creating new game with id: ", game_id)
             # Add game id in session
-            game = CardGame(game_creator=username)
+            game = BeloteGame(game_creator=username)
             bel_games[game_id] = game
             #players[game_id] = []
             bel_clients[game_id] = dict()
@@ -111,18 +97,11 @@ def belote_start():
             # dealing_method = request.form['dealing_method']
             # print ("In route game, dealing method is: ", request.form['dealing_method'])
             dealing_method = "computer"
-            if dealing_method == "computer":
-                multiple_one_card = 'multiple_one_card' in request.form.keys()
-                multiple_no_trump = 'multiple_no_trump' in request.form.keys()
-                game.set_hand_prgression(
-                    multiple_one_card, multiple_no_trump,
-                    int(request.form['increment']))
-
             session['ownername'] = username
             add_player(game_id)
             return redirect(url_for('belote_play'))
     else:
-        return render_template("index.html", form=form, error=form.errors)
+        return render_template("belote_start.html", form=form, error=form.errors)
 
 
 # @app.route("/belote_play", methods=['GET', 'POST'])
@@ -132,35 +111,35 @@ def belote_play():
     player = session.get('username')
     if player is None:
         flash("Session has expired")
-        return redirect(url_for('index'))
+        return redirect(url_for('belote_start'))
 
     game_id = session.get('game_id')
     if game_id is None:
         flash("Game does not exist")
-        return redirect(url_for('index'))
+        return redirect(url_for('belote_start'))
 
     game=bel_games.get(game_id);
     if game is None:
         flash("Game does not exist")
-        return redirect(url_for('index'))
+        return redirect(url_for('belote_start'))
 
     if request.method == 'POST':
         # print (request.form)
         if game_id is None:
             error = "Could not find game_id in session"
             print(error)
-            return render_template('index.html', error = error)
+            return render_template('belote_start.html', error = error)
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":
             stop_game()
-            return redirect(url_for('index'))
+            return redirect(url_for(''))
             #return redirect(url_for('game'))
 
         # if "leave_game" in request.form:
         if request.form['action_game'] == "leave_game":
             remove_player(game_id, session['username'])
-            return redirect(url_for('index'))
+            return redirect(url_for(''))
 
         if request.form['action_game'] == "remove_player":
             print("Remve Player button pressed")
@@ -194,10 +173,10 @@ def belote_play():
             print (i, " ",game.scoresheet[i][1])
             print (i, " ",game.scoresheet[i][2])
 
-        return render_template("ohell.html", form=form,  players=game.get_playing_players(), scores=game.get_scores(), \
+        return render_template("belote.html", form=form,  players=game.get_playing_players(), scores=game.get_scores(), \
         hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player, \
         cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
-        trump=game.trump_card, dealing_method=game.dealing_method,  \
+        trump=game.trump_card,  \
         allowed_bets=game.allowed_bets(player),game_phase=game.get_game_phase().name,
         hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet)
 
@@ -205,7 +184,7 @@ def belote_play():
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('belote_start'))
     form = LoginForm()
     if form.validate_on_submit():
         print("User name from form:", form.username.data)
@@ -216,7 +195,7 @@ def login():
             db.session.commit()
         login_user(user, remember=form.remember_me.data)
         print ("current user: ", session['username'])
-        return redirect(url_for('index'))
+        return redirect(url_for("belote_start"))
     return render_template('login.html', title='Sign In', form=form)
 
 # @app.route("/logout",methods=['GET', 'POST'])
@@ -225,11 +204,11 @@ def login():
 #     logout_user()
 #     return redirect(url_for('login'))
 
-@socketio.on('message')
+@socketio.on('message', namespace=NAMESPACE)
 def message(data):
     print ("message received");
 
-@socketio.on("cs game started", namespace=NAMESPACE))
+@socketio.on("cs game started", namespace=NAMESPACE)
 def game_started():
     game_id = session.get('game_id')
     if not game_id is None:
@@ -241,12 +220,12 @@ def game_started():
             game.reset()
             game.start_game()
             player = game.get_playing_players()[randint(0,len(game.get_playing_players())-1)]
-            socketio.emit("sc game started", {'player_to_deal': player, 'nb_cards': 0}, room=game_id)
+            socketio.emit("sc game started", {'player_to_deal': player, 'nb_cards': 0}, room=game_id, namespace=NAMESPACE)
 
             generate_hands(game_id, player)
 
 
-@socketio.on("player bet", namespace=NAMESPACE))
+@socketio.on("player bet", namespace=NAMESPACE)
 def player_bet(bet):
     print ("player bet event received")
     print ("Player bet: " + bet)
@@ -285,8 +264,10 @@ def hand_completed(game_id, username):
     game = bel_games[game_id]
     scores = game.update_scores()
     print ("hand completed, next player to deal:", game.next_player_to_deal())
-    socketio.emit("hand completed", {'scores':scores, 'bets' :game.bets, 'wins': game.wins, 'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal()}, room=game_id)
-    socketio.emit("player to deal", game.next_player_to_deal(), room=game_id)
+    socketio.emit("hand completed", {'scores':scores, 'bets' :game.bets, 'wins': game.wins,
+                                     'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal()},
+                  room=game_id, namespace=NAMESPACE)
+    socketio.emit("player to deal", game.next_player_to_deal(), room=game_id, namespace=NAMESPACE)
     if game.is_game_over():
         socketio.emit("game over", game.get_highest_score_player(), room=game_id)
     else:
@@ -297,13 +278,14 @@ def next_round(game_id, nplayer,allowed_cards):
     game.create_round()
 
     socketio.emit("clear round",room=game_id)
-    socketio.emit("player to play", {'player':nplayer, 'allowed_cards':allowed_cards}, room=game_id)
+    socketio.emit("player to play", {'player':nplayer, 'allowed_cards':allowed_cards},
+                  room=game_id, namespace=NAMESPACE)
 
     if game.is_hand_completed():
         hand_completed(game_id, nplayer)
 
 
-@socketio.on('player played')
+@socketio.on('player played', namespace=NAMESPACE)
 def player_played(data):
     print ("card played event received")
     game_id = session.get('game_id')
@@ -313,7 +295,7 @@ def player_played(data):
     else:
         card = data['data']
         new_data = {'player': session['username'], 'card': card}
-        emit("card played", new_data, room=game_id)
+        emit("card played", new_data, room=game_id, namespace=NAMESPACE)
 
         game = bel_games[game_id]
         winner = game.card_played(session['username'], card)
@@ -322,19 +304,19 @@ def player_played(data):
         if not winner is None:
             # There is a winnder, so round is ended
             allowed_cards = game.get_hand(nplayer).serialize()
-            socketio.emit("round ended", winner, room=game_id)
+            socketio.emit("round ended", winner, room=game_id, namespace=NAMESPACE)
             timer = threading.Timer(4.0, next_round, [game_id, nplayer,allowed_cards])
             timer.start()
         else:
             # Round continues
             allowed_cards = game.get_allowed_cards(nplayer)
-            emit("player to play", {'player':nplayer, 'allowed_cards':allowed_cards}, room=game_id)
+            emit("player to play", {'player':nplayer, 'allowed_cards':allowed_cards}, room=game_id, namespace=NAMESPACE)
 
         print("Allowed cards: ", allowed_cards)
 
     return
 
-@socketio.on('start hand')
+@socketio.on('start hand', namespace=NAMESPACE)
 def start_hand(nbcards, trump):
     #selection = data["selection"]
     #votes[selection] += 1
@@ -371,15 +353,15 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
         for player in game.get_playing_players():
             cards = hands[player].serialize()
             print ("Cards for player ", player, " ", cards)
-            socketio.emit("new hand", cards, room=bel_clients[game_id][player])
+            socketio.emit("new hand", cards, room=bel_clients[game_id][player], namespace=NAMESPACE)
 
         if trump and not game.trump_card is None:
-            socketio.emit("trump card", str(game.trump_card), room=game_id)
+            socketio.emit("trump card", str(game.trump_card), room=game_id, namespace=NAMESPACE)
 
-        socketio.emit("player to bet", {'player': nplayer,'allowed_bets':game.allowed_bets(player)}, room=game_id)
+        socketio.emit("player to bet", {'player': nplayer,'allowed_bets':game.allowed_bets(player)}, room=game_id, namespace=NAMESPACE)
         return
 
-@socketio.on('join game')
+@socketio.on('join game', namespace=NAMESPACE)
 def on_join(data):
     # Note that a refresh on the client side causes the socketio sid to changed
     # so need to remove the previous sid from the room
@@ -396,7 +378,7 @@ def on_join(data):
             session['sid'] = request.sid
             join_room(game_id)
 
-@socketio.on('stop game')
+@socketio.on('stop game', namespace=NAMESPACE)
 def on_stop(data):
     game_id = session.get('game_id')
     if game_id is None:
@@ -405,19 +387,19 @@ def on_stop(data):
         # (user logged out). In this case how to remove user from room?
     else:
         leave_room(game_id)
-        emit("game stopped", session['username'], room=game_id)
+        emit("game stopped", session['username'], room=game_id, namespace=NAMESPACE)
 
-@socketio.on('client post')
+@socketio.on('client post', namespace=NAMESPACE)
 def on_post(msg):
     # Just distribute to players in room
     game_id = session.get('game_id')
     if game_id is None:
         print("NO GAME_ID IN SESSION!!!!")
     else:
-        emit("msg posted", {'sender': session['username'], 'msg': msg}, room=game_id)
+        emit("msg posted", {'sender': session['username'], 'msg': msg}, room=game_id, namespace=NAMESPACE)
 
 
-@socketio.on('disconnect')
+@socketio.on('disconnect', namespace=NAMESPACE)
 def test_disconnect():
     print('Client disconnected. ', session['username'])
     client_id = request.sid
@@ -451,8 +433,8 @@ def stop_game():
         print("NO GAME_ID IN SESSION!!!!")
         return
     if not bel_games.get(game_id) is None:
-        socketio.emit("game over", bel_games.get(game_id).get_highest_score_player(), room=game_id)
-        # socketio.emit("game stopped", session['username'], room=game_id)
+        socketio.emit("game over", bel_games.get(game_id).get_highest_score_player(), room=game_id, namespace=NAMESPACE)
+        # socketio.emit("game stopped", session['username'], room=game_id, namespace=NAMESPACE)
 
         del bel_games[game_id]
         del bel_clients[game_id]
@@ -464,7 +446,7 @@ def add_player(game_id):
     session['game_id'] = game_id
 
     bel_games[game_id].add_player(session['username'])
-    socketio.emit("new player", session['username'], room=game_id)
+    socketio.emit("new player", session['username'], room=game_id, namespace=NAMESPACE)
     restart_hand(game_id)
 
 
@@ -480,15 +462,15 @@ def remove_player(game_id, player):
                 if player in bel_clients[game_id]:
                     del bel_clients[game_id][player]
 
-        socketio.emit("player left", player, room=game_id)
-        socketio.emit("clear round",room=game_id)
+        socketio.emit("player left", player, room=game_id, namespace=NAMESPACE)
+        socketio.emit("clear round",room=game_id, namespace=NAMESPACE)
         restart_hand(game_id)
 
 def restart_hand(game_id):
     game = bel_games.get(game_id)
     # If manueal dealing, generate player to deal event
     # Othrwise deal another hand
-    socketio.emit("alert", "Hand to be replayed", room=game_id)
+    socketio.emit("alert", "Hand to be replayed", room=game_id, namespace=NAMESPACE)
     if game.game_started():
       game._current_hand_nb = game._current_hand_nb - 1  # Deal again
       generate_hands(game_id, "")

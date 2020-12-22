@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
+
+  {% if error %}
+  <p class="error_msg"><strong>Error:</strong> {{ error }}</p>
+  {% endif %}
+
+  <script type="text/javascript">
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+      $('#user_name').keydown(function (e) {
+        if (e.keyCode == 13) {
+          e.preventDefault();
+          return false;
+        }
+      });
+      $('#increment').keydown(function (e) {
+        if (e.keyCode == 13) {
+          e.preventDefault();
+          return false;
+        }
+      });
+    });
+
+</script>
+
+    <h2>Welcome to a place to play Belote with your friends!!! </h2>
+    <p>Belote is a fun card game that is played with 4 players</p>
+    <p>The <a href="#rules">rules</a> are fairly simple, it is a perfect game to spend some time with family and friends</p>
+    See <a href="#user_guide">user guide</a> for instructions on how to start or join a game.
+    <br><br>
+
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+      <div class="container">
+        <h3>Enter your alias for the game</h3>
+        <div class="row">
+          <div class="col-12">
+            {{ form.user_name.label }}
+            {{ form.user_name(size=10) }}
+          </div>
+        </div>
+        <br><br>
+        <h3>Then choose one of the following options:</h3>
+        <br>
+        <div class="row">
+          <br/>
+          <div class="col-4 data_block">
+            <h2>Join a game</h2>
+            <br/>
+            {{ form.game_id.label }}
+            {{ form.game_id(size=5) }}
+            <br><br>
+            {{ form.join_game(class="btn btn-primary") }}
+          </div>
+          <div class="col-2">
+            <br><h3>&nbsp &nbsp or</h3>
+          </div>
+          <!-- <h3>or</h3> -->
+          <div class="col-5 data_block">
+            <div id="dealing">
+              <h2>Create a new game</h2>
+              <br/>
+            </div>
+          <br>
+          {{ form.start_game(class="btn btn-primary") }}
+        </div>
+      </div>
+      </div>
+    </form>
+    <br><br>
+    <div id="user_guide">
+      <h2>User Guide</h2>
+      <h3> Creating and joining a game</h3>
+      You can either create a new game, or join an existing game. Somebody first need to create a game.
+      Then the game creator has to inform other players of the game id so they can join the newly
+      created game.
+      <p>When creating or joining a game, each player has to specify their alias for the game. The computer does not play, so all
+      players have to be 'real'</p>
+
+      <h3>Playing</h3>
+      Playing involves three phases: dealing cards, betting, and playing rounds for each hand. Whenever a player has to do something (bet, or play), the player alias
+      flashes to remind the player that they have to do something.
+      To play a card, just clik that card. Cards that can be played have a green border.
+    </div>
+    <div id="rules">
+      <h2>Rules of game</h2>
+        <p>
+    </div>
+    <div>
+      <h3> References</h3>
+      <a href="https://en.wikipedia.org/wiki/Romanian_whist"> Wikipedia page on Romanian Whist</a><br><br>
+
+    {% block footer %}
+    {{ super() }}
+    {% endblock %}
+
+{% endblock %}

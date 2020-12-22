@@ -28,7 +28,7 @@ Add footer / contact info
   var static_folder={{ url_for('static', filename='') }}
 
   // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
-  let html_frag="<span class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}"
+  let html_frag="<span class='game_page_title'>Belote - Game ID: "  + "{{ session['game_id'] }}"
   html_frag = html_frag.concat(" - " + "{{ session['username'] }}"+ "</span>")
   html_frag = html_frag.concat("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
   $("#topnav").last().after(html_frag);

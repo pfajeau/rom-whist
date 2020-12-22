@@ -16,7 +16,7 @@ from flask_socketio import SocketIO, emit
 from romwhist import controllers,deck,card,hand
 from romwhist.ohell.ohell import OhellGame
 from romwhist import socketio,app
-from romwhist.forms import LoginForm, StartGameForm, GameForm, JoinGameForm, IndexForm
+from romwhist.forms import LoginForm, OhellForm, GameForm
 from romwhist.models import User
 from romwhist.extensions import db
 
@@ -30,7 +30,7 @@ games = dict()
 # Keys are game ids and then player ids. Used for socketio.
 clients = dict()
 
-def index():
+def ohell_start():
 
         # print (current_user)
         # if isinstance(current_user, User):
@@ -46,7 +46,7 @@ def index():
             # db.session.add(user)
             # db.session.commit()
             # login_user(user)
-    form = IndexForm()
+    form = OhellForm()
     if form.validate_on_submit():
         # Sanitize the username (as it isued as IDs in the html)
         username = unidecode.unidecode(form.user_name.data)
@@ -63,7 +63,7 @@ def index():
             if not game_id in games:
                 error = "This game has not been created yet"
                 print(error)
-                return render_template('index.html', error = error, form=form)
+                return render_template('ohell_start.html', error = error, form=form)
 
             game = games[game_id]
             # Not allowed to connect if another player has the same alias
@@ -72,14 +72,14 @@ def index():
             if username in game.get_players() and not game.game_started():
                 error = "The game already has a user with the same name"
                 print(error)
-                return render_template('index.html', error = error, form=form)
+                return render_template('ohell_start.html', error = error, form=form)
 
             # Not allowed to connect to a game already started unless the player
             # is already an existing player (same alias)
             if game.game_started() and not username in game.get_players():
                 error = "This game has already started! You cannot join a game in progress"
                 print(error)
-                return render_template('index.html', error = error, form=form)
+                return render_template('ohell_start.html', error = error, form=form)
 
             # Remove player from game if that player was already in the games
             # if previous_alias in players[game_id]:
@@ -94,7 +94,7 @@ def index():
             if len(games) == 999:
                 error = "No more games available!!! Please try again later"
                 print(error)
-                return render_template('index.html', error = error, form=form)
+                return render_template('ohell_start.html', error = error, form=form)
 
             game_id = str(randint(1,999))
             while game_id in games:
@@ -122,7 +122,7 @@ def index():
             add_player(game_id)
             return redirect(url_for('ohell_play'))
     else:
-        return render_template("index.html", form=form, error=form.errors)
+        return render_template("ohell_start.html", form=form, error=form.errors)
 
 @app.route("/base")
 def base():
@@ -135,35 +135,35 @@ def ohell_play():
     print ("Player name: ", player)
     if player is None:
         flash("Session has expired")
-        return redirect(url_for('index'))
+        return redirect(url_for('ohell_start'))
 
     game_id = session.get('game_id')
     if game_id is None:
         flash("Game does not exist")
-        return redirect(url_for('index'))
+        return redirect(url_for('ohell_start'))
 
     game=games.get(game_id);
     if game is None:
         flash("Game does not exist")
-        return redirect(url_for('index'))
+        return redirect(url_for('ohell_start'))
 
     if request.method == 'POST':
         # print (request.form)
         if game_id is None:
             error = "Could not find game_id in session"
             print(error)
-            return render_template('index.html', error = error)
+            return render_template('ohell_start.html', error = error)
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":
             stop_game()
-            return redirect(url_for('index'))
+            return redirect(url_for('ohell_start'))
             #return redirect(url_for('game'))
 
         # if "leave_game" in request.form:
         if request.form['action_game'] == "leave_game":
             remove_player(game_id, session['username'])
-            return redirect(url_for('index'))
+            return redirect(url_for('ohell_start'))
 
         if request.form['action_game'] == "remove_player":
             print("Remve Player button pressed")
@@ -274,7 +274,8 @@ def player_bet(bet):
                 allowed_cards = game.get_hand(next_player_to_play).serialize()
                 print("Allowed cards: ", allowed_cards)
                 print ("Player to play: ", next_player_to_play)
-                emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards}, room=game_id)
+                emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards},
+                     room=game_id, namespace=NAMESPACE)
                 return
 
             else:
