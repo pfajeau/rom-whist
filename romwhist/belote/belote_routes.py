@@ -174,10 +174,10 @@ def belote_play():
             print (i, " ",game.scoresheet[i][2])
 
         return render_template("belote.html", form=form,  players=game.get_playing_players(), scores=game.get_scores(), \
-        hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player, \
+        hand=hand,  wins=game.get_wins(), active_player=active_player, \
         cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
         trump=game.trump_card,  \
-        allowed_bets=game.allowed_bets(player),game_phase=game.get_game_phase().name,
+        game_phase=game.get_game_phase().name,
         hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet)
 
 
@@ -214,13 +214,12 @@ def game_started():
     if not game_id is None:
         game = bel_games.get(game_id)
         if not game is None:
-            # If manual dealiing, just emit event game sc game started
             # In automated dealing, call start_hands with computed nb of cards and trump
             # In case it is a restart
             game.reset()
             game.start_game()
             player = game.get_playing_players()[randint(0,len(game.get_playing_players())-1)]
-            socketio.emit("sc game started", {'player_to_deal': player, 'nb_cards': 0}, room=game_id, namespace=NAMESPACE)
+            socketio.emit("sc game started", {'player_to_deal': player, 'nb_cards': 5}, room=game_id, namespace=NAMESPACE)
 
             generate_hands(game_id, player)
 
@@ -252,7 +251,7 @@ def player_bet(bet):
                 return
 
             else:
-                emit("player to bet", {'player': nplayer, 'allowed_bets':game.allowed_bets(nplayer)},room=game_id)
+                emit("player to bet", {'player': nplayer},room=game_id)
                 return
         except Exception as e:
             print ("Bet received: ", bet)
@@ -264,7 +263,7 @@ def hand_completed(game_id, username):
     game = bel_games[game_id]
     scores = game.update_scores()
     print ("hand completed, next player to deal:", game.next_player_to_deal())
-    socketio.emit("hand completed", {'scores':scores, 'bets' :game.bets, 'wins': game.wins,
+    socketio.emit("hand completed", {'scores':scores,'wins': game.wins,
                                      'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal()},
                   room=game_id, namespace=NAMESPACE)
     socketio.emit("player to deal", game.next_player_to_deal(), room=game_id, namespace=NAMESPACE)
@@ -330,17 +329,18 @@ def start_hand(nbcards, trump):
 
     generate_hands(game_id, "", int(nbcards), trump)
 
-def generate_hands(game_id, username, nbcards=0, trump=True):
+# TODO factorize with ohell
+def generate_hands(game_id, username, nbcards=5, trump=True):
     print (nbcards)
 
     if not game_id in bel_games:
        # Should never happen
-        game = OhellGame();
+        game = BeloteGame();
         bel_games[game_id] = game
     else:
         game = bel_games[game_id]
 
-    hands = game.deal(nbcards, trump, username)
+    hands = game.deal1(username)
     if hands is None:
         socketio.emit("alert", "Invalid number of card for size of deck", room=bel_clients[game_id][username])
     else:
@@ -358,7 +358,7 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
         if trump and not game.trump_card is None:
             socketio.emit("trump card", str(game.trump_card), room=game_id, namespace=NAMESPACE)
 
-        socketio.emit("player to bet", {'player': nplayer,'allowed_bets':game.allowed_bets(player)}, room=game_id, namespace=NAMESPACE)
+        socketio.emit("player to bet", {'player': nplayer}, room=game_id, namespace=NAMESPACE)
         return
 
 @socketio.on('join game', namespace=NAMESPACE)
@@ -468,8 +468,7 @@ def remove_player(game_id, player):
 
 def restart_hand(game_id):
     game = bel_games.get(game_id)
-    # If manueal dealing, generate player to deal event
-    # Othrwise deal another hand
+    # Deal another hand
     socketio.emit("alert", "Hand to be replayed", room=game_id, namespace=NAMESPACE)
     if game.game_started():
       game._current_hand_nb = game._current_hand_nb - 1  # Deal again

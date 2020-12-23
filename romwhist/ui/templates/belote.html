@@ -20,7 +20,6 @@ Add footer / contact info
   var socket;
   var username = "{{ session['username'] }}";
   var ownername = "{{ session['ownername'] }}";
-  var allowed_bets;
   var last_player;
   var new_round = true;
   var first_card;
@@ -37,16 +36,16 @@ Add footer / contact info
 
   document.addEventListener('DOMContentLoaded', () => {
 
-    allowed_bets = {{ allowed_bets }}
-
     the_players = []
     {% for the_player in players -%}
        the_players.push("{{ the_player }}")
     {% endfor %}
     initialize(the_players)
-    if (len(players != 4) {
-      $("#start_game").prop('disabled', true);
-    }
+
+    // TODO: uncomment the following
+    // if (len(players != 4) {
+    //   $("#start_game").prop('disabled', true);
+    // }
     // TODO: disable Start button if number of player is not 4
 
     if ("{{ game_phase }}" == "BET") {
@@ -60,29 +59,6 @@ Add footer / contact info
     document.getElementById("post").onclick = function() {
       post_msg();
     }
-
-    // Register action for bet input field
-    id_bet = "#bets_" + username
-    $(id_bet).change(function() {
-      bet = $(id_bet).val();
-      expr = /^[0-9]+$/
-      if (!expr.test(bet)) {
-        show_alert ("Please enter an integer value", "Error")
-        return;
-      }
-      bet = parseInt($(id_bet).val(),10);
-      console.log("allowed_bets:" )
-      console.log(allowed_bets)
-
-      if (allowed_bets.includes(bet)) {
-        socket.emit("player bet", $(id_bet).val());
-        return
-      }
-      else {
-        show_alert ("This bet is not allowed.", "Error");
-        return;
-      }
-    });
 
     enable_start_game();
 
@@ -101,9 +77,6 @@ Add footer / contact info
     socket.on('sc game started', function(data) {
       console.log("game started event received")
       console.log(data)
-      $("input[name='bets']").attr('readonly', true);
-      $("input[name='bets']").removeClass("highlighted_field");
-      $("input[name='bets']").val('')
       $("input[name='rounds']").val(0);
       $("input[name='score']").val(0);
 
@@ -134,32 +107,37 @@ Add footer / contact info
           "<img id=" + card + " src={{ url_for('static', filename='') }}" +
           image + ' alt=' + card + ' class="card_hand"' + '>' + '</td>')
 
-          // Reset bets and wins to 0
           $('#rounds input').val(0);
-          $('#bets input').val("");
         }
-
-        // Trump checkbox wil be updated if/when trump card received
-        // $("#trump").prop('disabled', false);
-        // $("#trump").prop('checked', false);
       });
 
 
     socket.on('player to bet', function(data) {
       console.log("player to bet event received")
       player_name = data['player']
-      allowed_bets = data['allowed_bets']
-      make_player_the_better(player_name)
+      // Highlight Username
+      make_player_active(player_name);
+
+      // Ask player if they want to take
+      show_question("Are you taking?", "",
+      "Yes", function() { player_takes() },
+      "No", function() { player_does_not_take() })
     });
+
+    // TODO: pass color taken instead
+    function player_takes() {
+      socket.emit("player bet", "1");
+      return
+    }
+
+    function player_does_not_take() {
+      socket.emit("player bet", "0");
+      return
+    }
 
     socket.on('player bet', function(data) {
       player_name=data['player']
-      bet=data['bet']
-      let id_bet = "#bets_" + player_name
-      $(id_bet).val(bet);
-      $(id_bet).prop('readonly', true);
       make_player_inactive(player_name);
-      $(id_bet).removeClass("highlighted_field");
     });
 
 
@@ -169,7 +147,6 @@ Add footer / contact info
       console.log("hand completed event received");
       let scores=data['scores']
       let hand_nb=data['hand_nb']
-      let bets=data['bets']
       let wins=data['wins']
 
 
@@ -179,7 +156,6 @@ Add footer / contact info
 
       Object.keys(scores).forEach(function(player) {
         score = scores[player];
-        bet=bets[player]
         win=wins[player]
         let id_score = "#score_" + player
         $(id_score).val(score);
@@ -207,11 +183,6 @@ Add footer / contact info
 
         $("#" + player_name).remove();
         $("#label_" + player_name).remove();
-
-        let id_bet = "#bets_" + player_name;
-        $(id_bet).parent().remove();
-        id_bet = "#label_bets_" + player_name;
-        $(id_bet).parent().remove();
 
         let id_round = "#rounds_" + player_name;
         $(id_round).parent().remove()
@@ -247,20 +218,6 @@ Add footer / contact info
       {% for player in players -%}
       <td id="label_{{ player }}" ></td>
       <td id="{{ player }}" name="player" class="normal_player">{{ player }} </td>
-      {% endfor %}
-    </tr>
-    <tr id="bets">
-      {% for player in players -%}
-      <td class="td_player_info_label">
-        <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">Bets</label>
-      </td>
-      <td class="td_player_info">
-        {% if bets[player] == -1 %}
-        <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value='' step=1 readonly>
-        {% else %}
-        <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value={{ bets[player] }} step=1 readonly>
-        {% endif %}
-      </td>
       {% endfor %}
     </tr>
     <tr id="rounds">

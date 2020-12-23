@@ -122,6 +122,7 @@ function make_player_play(player_name, allowed_cards) {
   }
 }
 
+// TODO: Rename tnis function to "enable_bet"
 function make_player_the_better(player_name) {
   let id_bet = "#bets_" + player_name
   if (player_name == username) {
@@ -130,8 +131,6 @@ function make_player_the_better(player_name) {
     $(id_bet).addClass("highlighted_field");
     $(id_bet).focus();
   }
-  // Highlight Username
-  make_player_active(player_name);
 }
 
 function player_to_play(data) {
@@ -262,6 +261,11 @@ function msg_posted(data) {
   // play_sound("beep.wav");
 }
 
+function show_question(msg, title, rsp1="Yes", rsp1_callback, rsp2="No", rsp2_callback) {
+//  alertify.set({ labels: { ok: rsp1, cancel : rsp2} });
+  alertify.confirm(title, msg, function() { rsp1_callback(); }, function(){ rsp2_callback });
+//  alertify.set({ labels: { ok: "Ok", cancel : "Cancel"} });
+}
 
 function show_alert(msg, title, cancel=false, callback_ok, action="") {
   if (cancel) {

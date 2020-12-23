@@ -28,7 +28,7 @@ Add footer / contact info
   var static_folder={{ url_for('static', filename='') }}
 
   // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
-  let html_frag="<span class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}"
+  let html_frag="<span class='game_page_title'>Oh Hell! - Game ID: "  + "{{ session['game_id'] }}"
   html_frag = html_frag.concat(" - " + "{{ session['username'] }}"+ "</span>")
   html_frag = html_frag.concat("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
   $("#topnav").last().after(html_frag);
@@ -47,6 +47,7 @@ Add footer / contact info
 
     if ("{{ game_phase }}" == "BET") {
       make_player_the_better("{{ active_player }}");
+      make_player_active(player_name);
     }
 
     if ("{{ game_phase }}" == "PLAY") {
@@ -146,6 +147,8 @@ Add footer / contact info
       player_name = data['player']
       allowed_bets = data['allowed_bets']
       make_player_the_better(player_name)
+      make_player_active(player_name);
+
     });
 
     socket.on('player bet', function(data) {
