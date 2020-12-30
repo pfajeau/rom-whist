@@ -19,6 +19,7 @@ class CardGame():
     def __init__(self, game_creator = "", deck_size=0):
         self.players = []
         self.current_round = None
+        self.trump_card = None
         self.hands=dict()
         self.scores=dict()
         self.bets=dict()

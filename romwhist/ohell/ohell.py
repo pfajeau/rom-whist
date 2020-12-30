@@ -10,7 +10,6 @@ class OhellGame(CardGame):
 
     def __init__(self, game_creator = "", bonus_win = 1, deck_size=0):
         CardGame.__init__(self, game_creator, deck_size)
-        self.trump_card = None
         self.bonus_win = bonus_win
         self._start_of_no_trump = 0
         self._multiple_one_card = False
@@ -20,7 +19,6 @@ class OhellGame(CardGame):
 
     def reset(self):
         CardGame.reset(self)
-        self.trump_card = None
 
     # Define the card distribution pattern
     def set_hand_prgression(self, multiple_one_card=False, multiple_no_trump=True, increment=1):

@@ -78,7 +78,8 @@ class BeloteGame(CardGame):
         print("place_bet for player {} is {}".format(player, bet))
         self.bets[player] = bet
 
-        if (bet == "Pass"):
+        if (bet == "p"):
+            print ("Player passed")
             # Ask next player
             self.active_player = self.next_player(player)
             if self.next_player_to_bet(player) is None:
@@ -86,9 +87,12 @@ class BeloteGame(CardGame):
                     self._phase = BeloteGame.GamePhase.BET2
                 else:
                     # TODO: redistribute cards and reset game
-                    self.reset()
+                    self.init_bets()
                     self._phase = BeloteGame.GamePhase.BET
+                    self.dealer = self.next_player_to_deal()
         else:
+            print ("Player took")
+            # Deal reamining cards
             self._phase = BeloteGame.GamePhase.PLAY
             self.trump_suit = bet
             self.taker = player
@@ -161,15 +165,18 @@ class BeloteGame(CardGame):
 
     # Distribute 3 cards for each player
     def deal_2(self, dealer=""):
+        print("In deal_2")
+        print ("Trum card:", self.trump_card)
         # Taker takes the trump card then two more, other players take 3 cards
-        self.hands[taker].append(self.trump_card)
+        self.hands[self.taker].add(self.trump_card)
         for i in range(2):
-            self.hands[taker].append(self.self.deck.deal())
+            self.hands[self.taker].add(self.deck.deal())
 
         for i in range(3):
             for player in self.get_playing_players():
                 if player != self.taker:
-                    self.hands[player].append(self.deck.deal())
+                    self.hands[player].add(self.deck.deal())
+        return self.hands
 
     # TODO: change this to be based on score reaching a certain threshold
     def is_game_over(self):
@@ -181,4 +188,4 @@ class BeloteGame(CardGame):
             a_dict[player] = value
 
     def init_bets(self):
-        self.init_dict(bets, "")
+        self.init_dict(self.bets, "")
