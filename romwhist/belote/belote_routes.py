@@ -340,7 +340,7 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
     else:
         game = bel_games[game_id]
 
-    hands = game.deal1(username)
+    hands = game.deal_1(username)
     if hands is None:
         socketio.emit("alert", "Invalid number of card for size of deck", room=bel_clients[game_id][username])
     else:

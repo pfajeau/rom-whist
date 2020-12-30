@@ -9,7 +9,7 @@ class Deck(object):
         nb_ranks = int(deck_size / 4)
         remainder = deck_size % 4
         for suit in Card.SUITS:
-            ranks = Card.RANKS[len(Card.RANKS) - nb_ranks : len(Card.RANKS)]
+            ranks = Card.NUMBERS[len(Card.NUMBERS) - nb_ranks: len(Card.NUMBERS)]
             for rank in ranks:
                 cards.append(Card(rank,suit))
 

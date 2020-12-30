@@ -263,7 +263,9 @@ function msg_posted(data) {
 
 function show_question(msg, title, rsp1="Yes", rsp1_callback, rsp2="No", rsp2_callback) {
 //  alertify.set({ labels: { ok: rsp1, cancel : rsp2} });
+  alertify.confirm().set('labels', {ok:'Yes!', cancel:'No!'});
   alertify.confirm(title, msg, function() { rsp1_callback(); }, function(){ rsp2_callback });
+  alertify.confirm().set('labels', {ok:'Ok', cancel:'Cancel'});
 //  alertify.set({ labels: { ok: "Ok", cancel : "Cancel"} });
 }
 

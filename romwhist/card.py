@@ -8,8 +8,8 @@ class Card(object):
     SUITS = 'dchs'
     SUIT_NAMES = ['Clubs', 'Diamonds', 'Hearts', 'Spades']
 
-    RANKS = list(range(2,15))
-    RANK_NAMES = ['Two', 'Three', 'Four', 'Five', 'Six',
+    NUMBERS = list(range(2, 15))
+    CARD_NAMES = ['Two', 'Three', 'Four', 'Five', 'Six',
                   'Seven', 'Eight', 'Nine', 'Ten',
                   'Jack', 'Queen', 'King', 'Ace']
 
@@ -34,8 +34,8 @@ class Card(object):
         return self.SUIT_NAMES[index]
 
     def rankName(self):
-        index = self.RANKS.index(self.rank_num)
-        return self.RANK_NAMES[index]
+        index = self.NUMBERS.index(self.rank_num)
+        return self.CARD_NAMES[index]
 
     def __lt__(self, other):
          return self.rank() < other.rank()

@@ -5,80 +5,27 @@ from ..card import Card
 from ..deck import Deck
 from ..hand import Hand
 from ..round import Round
+from ..game import CardGame
 
-class BeloteGame():
+class BeloteGame(CardGame):
 
     class GamePhase(Enum):
         DEAL = "Deal"
+        DEAL2 = "Deal2"
         BET = "Bet"
         BET2 = "Bet2"
         PLAY = "Play"
 
-    def __init__(self, game_creator = "", bonus_win = 1, deck_size=32):
-        self.players = []
-        self.current_round = None
-        self.trump_card = None
-        self.hands=dict()
-        self.scores=dict()
-        self.bets=dict()
-        self.wins=dict()
-        self.bonus_win = bonus_win
-        self.dealer = None
-        self.init_dict(self.scores,0)
-        self.owner = game_creator
-        self.active_player = self.owner
-        self.deck_size = deck_size
-        self._nb_cards_per_hand=None
-        self._current_hand_nb = 0
-        self._started = False;
-        self._phase = BeloteGame.GamePhase.DEAL
-        self.scoresheet=[]
-        self._player_status=dict()
-        self.init_dict(self._player_status, 1)
+    def __init__(self, game_creator = ""):
+        CardGame.__init__(self, game_creator, 0)
         self.taker = None
 
     def reset(self):
-        self.current_round = None
-        self.trump_card = None
-        self.hands=dict()
-        self.scores=dict()
-        self.bets=dict()
-        self.wins=dict()
-        self.dealer = None
-        self.init_dict(self.scores,0)
-        self.active_player = self.owner
-        self.init_dict(self.bets, -1)
-        self.init_dict(self.wins, 0)
+        CardGame.reset(self)
         self.taker = None
 
     def get_game_phase(self):
         return self._phase
-
-    def get_active_player(self):
-        return self.active_player;
-
-    def set_owner(self, player):
-        self.owner = player
-
-    def get_owner(self):
-        return self.owner
-
-    def game_started(self):
-        return self._started;
-
-    # Return a list of players with the mazimum score
-    def get_highest_score_player(self):
-        maximum = max(self.scores.values())
-        winners = []
-        for player in self.scores:
-            if self.scores[player] == maximum:
-                winners.append(player)
-
-        # result = filter(lambda x:x[1] == maximum,self.scores.items())
-        # for player in result:
-        #     winners.append(player[0])
-
-        return winners
 
     def add_player(self, player):
         if player in self.players:
@@ -91,14 +38,14 @@ class BeloteGame():
             # self.trump_card = None
             self.bets = dict()
             self.wins = dict()
-            self.init_dict(self.bets, -1)
+            self.init_dict(self.bets, "")
             self.init_dict(self.wins, 0)
 
         else:
             self.players.append(player)
             self._player_status[player] = 1
             self.scores[player] = 0
-            self.bets[player] = -1
+            self.bets[player] = ""
             self.wins[player] = 0
 
     def disable_player(self, player):
@@ -117,22 +64,6 @@ class BeloteGame():
             self.init_dict(self.bets, -1)
             self.init_dict(self.wins, 0)
 
-
-    def remove_player(self, player):
-        self.disable_player(player)
-        self.players.remove(player)
-
-    def get_players(self):
-        return self.players
-
-    def get_playing_players(self):
-        # TODO: could probably do that with a filter in one line of code
-        playing_players = []
-        for player in self.players:
-            if self._player_status[player] == 1:
-                playing_players.append(player)
-        return playing_players
-
     def start_game(self):
         self._started = True;
 
@@ -142,81 +73,34 @@ class BeloteGame():
         # Create hand progression
         self._phase = BeloteGame.GamePhase.BET
 
-    def get_hand(self, player):
-        return self.hands[player]
-
-    def get_hands(self):
-        return self.hands
-
-    def get_bets(self):
-        return self.bets
-
-    def get_wins(self):
-        return self.wins;
-
-    def is_hand_completed(self):
-        for player in self.get_playing_players():
-            if len(self.hands[player].get_cards()) > 0:
-                return False
-        return True
-
-    def create_round(self):
-        if self.trump_card is None:
-            suit = None
-        else:
-            suit = self.trump_card.suit()
-        self.current_round = Round(self.get_playing_players(), suit)
-        return self.current_round
-
     # TODO: should cehck that the bet value is authorized
     def place_bet(self, player, bet):
         print("place_bet for player {} is {}".format(player, bet))
         self.bets[player] = bet
 
-        if (bet == 0):
+        if (bet == "Pass"):
             # Ask next player
             self.active_player = self.next_player(player)
             if self.next_player_to_bet(player) is None:
-                # TODO: if first round of betting then move to second round. Phase shoulb be BET2
                 if self._phase == BeloteGame.GamePhase.BET:
                     self._phase = BeloteGame.GamePhase.BET2
                 else:
-                    self._phase = BeloteGame.GamePhase.PLAY
+                    # TODO: redistribute cards and reset game
+                    self.reset()
+                    self._phase = BeloteGame.GamePhase.BET
         else:
-            # Start the play phase
             self._phase = BeloteGame.GamePhase.PLAY
+            self.trump_suit = bet
+            self.taker = player
             # TODO: active player must now be the one after the one that dealt the cards
 
     # Return None if all players have bet
     def next_player_to_bet(self, player):
         nplayer = self.next_player(player)
-        if self.bets[nplayer] != -1 or len(self.get_playing_players()) == 1:
+        if self.bets[nplayer] != "" or len(self.get_playing_players()) == 1:
             return None
         else:
             return nplayer
-
-    def next_player_to_deal(self):
-        nplayer = self.next_player(self.dealer)
-        return nplayer
-
-    # Return round winner if last card played None otherwise
-    def card_played(self, player, trump_card_value):
-        # Remove card from player hands
-        card = Card.card_from_value(trump_card_value)
-        self.hands[player].remove(card)
-        self.current_round.card_played(player, card)
-        if self.current_round.last_card_played():
-            winner = self.current_round.compute_winner()
-            self.wins[winner] = self.wins[winner] + 1
-            print("in card_played, wins for player {} is {}".format(player, self.wins[player]))
-            if self.is_hand_completed():
-                self.active_player = self.next_player_to_deal()
-            else:
-                self.active_player = winner
-            return winner
-        else:
-            self.active_player = self.next_player(player)
-            return None
 
     # Return list of allowed cards as a list of
     # cards represented as string (e.g. 'c4')
@@ -238,9 +122,6 @@ class BeloteGame():
                 allowed_cards = self.hands[player].serialize()
         return allowed_cards
 
-    def get_current_round(self):
-        return self.current_round
-
     def update_scores(self):
         # TODO: may have to change to playing players only?
         # TODO: count score based on cards in winned rounds
@@ -251,17 +132,11 @@ class BeloteGame():
 
         return self.scores
 
-    def get_scores(self):
-        return self.scores
-
-    def all_rounds_played(self):
-        return self.current_round.last_card_played()
-
     # Iniial deal of 5 card per player
-    def deal1(self, dealer=""):
+    def deal_1(self, dealer=""):
         self.deck = Deck(self.deck_size)
         self.deck.shuffle()
-        self.init_dict(self.bets,-1)
+        self.init_bets()
         self.init_dict(self.wins,0)
 
         if dealer == "":
@@ -279,44 +154,31 @@ class BeloteGame():
             print ("Hand for player ", player, " : ", hand.serialize())
 
         # Pick up trum card
-        trump_card = self.deck.deal()
-        self.trump_card = trump_card
+        self.trump_card = self.deck.deal()
 
         self._phase = BeloteGame.GamePhase.BET
         return self.hands
 
     # Distribute 3 cards for each player
-    def deal2(self, dealer=""):
-        # TODO: player that won the bet takes the trump card
+    def deal_2(self, dealer=""):
+        # Taker takes the trump card then two more, other players take 3 cards
+        self.hands[taker].append(self.trump_card)
+        for i in range(2):
+            self.hands[taker].append(self.self.deck.deal())
+
         for i in range(3):
             for player in self.get_playing_players():
                 if player != self.taker:
                     self.hands[player].append(self.deck.deal())
 
-
-    # TODO
-    def get_nb_cards_to_deal(self):
-        return 0
-
-    # TODO
-    def get_play_with_trump(self):
-        return True
-
+    # TODO: change this to be based on score reaching a certain threshold
     def is_game_over(self):
         return self._current_hand_nb == len(self._nb_cards_per_hand)
 
-    def next_player(self, player):
-        pos = self.players.index(player)
-        if pos == len(self.players)-1:
-            next_player = self.players[0]
-        else:
-            next_player = self.players[pos+1]
-
-        if  self._player_status[next_player] == 1:
-            return next_player
-        else:
-            return self.next_player(next_player)
 
     def init_dict(self, a_dict, value):
         for player in self.players:
             a_dict[player] = value
+
+    def init_bets(self):
+        self.init_dict(bets, "")

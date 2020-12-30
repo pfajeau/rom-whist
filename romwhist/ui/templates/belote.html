@@ -220,6 +220,20 @@ Add footer / contact info
       <td id="{{ player }}" name="player" class="normal_player">{{ player }} </td>
       {% endfor %}
     </tr>
+    <tr id="bets">
+      {% for player in players -%}
+      <td class="td_player_info_label">
+        <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">Bid</label>
+      </td>
+      <td class="td_player_info">
+        {% if bets[player] == -1 %}
+        <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value='' step=1 readonly>
+        {% else %}
+        <input type="number" id="bets_{{ player }}" class="player_info" name="bets" min=0 max=18 value={{ bets[player] }} step=1 readonly>
+        {% endif %}
+      </td>
+      {% endfor %}
+    </tr>
     <tr id="rounds">
       {% for player in players -%}
       <td class="td_player_info_label" >
