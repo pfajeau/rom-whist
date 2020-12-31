@@ -26,6 +26,9 @@ Add footer / contact info
   var first_card;
   var last_dealer;
   var static_folder={{ url_for('static', filename='') }}
+  var trump_suit
+  var trump_card
+  var allowed_bets
 
   // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
   let html_frag="<span class='game_page_title'>Oh Hell! - Game ID: "  + "{{ session['game_id'] }}"

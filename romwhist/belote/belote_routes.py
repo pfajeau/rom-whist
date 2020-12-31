@@ -176,7 +176,7 @@ def belote_play():
         return render_template("belote.html", form=form,  players=game.get_playing_players(), scores=game.get_scores(), \
         hand=hand,  wins=game.get_wins(), bets = game.get_bets(), active_player=active_player, \
         cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
-        trump=game.trump_card, game_phase=game.get_game_phase().name, scoresheet=game.scoresheet)
+        trump=game.trump_card, allowed_bets=game.allowed_bets(player), game_phase=game.get_game_phase().name, scoresheet=game.scoresheet)
 
 
 # @app.route("/login",methods=['GET', 'POST'])
@@ -232,39 +232,38 @@ def player_bet(bet):
         print("ERROR: Game not found!!!")
     else:
         game = bel_games[game_id]
-        try:
-            game.place_bet(session['username'], bet)
-            emit("player bet", {'player':session['username'], 'bet':bet}, room = game_id)
-            if game.get_game_phase() == BeloteGame.GamePhase.BET2:
-                emit ('player to bet', {'player': game.get_active_player()},room=game_id, namespace=NAMESPACE)
+        if game.get_game_phase()==BeloteGame.GamePhase.BET or game.get_game_phase()==BeloteGame.GamePhase.BET2:
+            game = bel_games[game_id]
+            try:
+                game.place_bet(session['username'], bet)
+                emit("player bet", {'player':session['username'], 'bet':bet}, room = game_id)
+                nplayer = game.get_active_player()
+                if game.get_game_phase() == BeloteGame.GamePhase.DEAL:
+                    restart_hand(game_id)
 
-            elif game.get_game_phase() == BeloteGame.GamePhase.BET:
-                emit("player to bet", {'player': game.get_active_player()}, room=game_id, namespace=NAMESPACE)
+                elif game.get_game_phase() == BeloteGame.GamePhase.BET or game.get_game_phase() == BeloteGame.GamePhase.BET2:
+                    emit("player to bet", {'player': nplayer, 'allowed_bets': game.allowed_bets(nplayer)}, room=game_id,namespace=NAMESPACE)
 
-            elif game.get_game_phase() == BeloteGame.GamePhase.PLAY:
-                hands = game.deal_2(game.dealer)
-                print ("After deal_2")
-                round = game.create_round()
-                # Distribute cards to each players
-                for player in game.get_playing_players():
-                    cards = hands[player].serialize()
-                    print("Cards for player ", player, " ", cards)
-                    socketio.emit("new hand", cards, room=bel_clients[game_id][player], namespace=NAMESPACE)
-                next_player_to_play = game.get_active_player()
-                allowed_cards = game.get_hand(next_player_to_play).serialize()
-                print("Allowed cards: ", allowed_cards)
-                print ("Player to play: ", next_player_to_play)
-                emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards}, room=game_id)
+                elif game.get_game_phase() == BeloteGame.GamePhase.PLAY:
+                    hands = game.deal_2(game.dealer)
+                    print ("After deal_2")
+                    round = game.create_round()
+                    # Distribute cards to each players
+                    for player in game.get_playing_players():
+                        cards = hands[player].serialize()
+                        print("Cards for player ", player, " ", cards)
+                        socketio.emit("new hand", cards, room=bel_clients[game_id][player], namespace=NAMESPACE)
+                    next_player_to_play = game.get_active_player()
+                    allowed_cards = game.get_hand(next_player_to_play).serialize()
+                    print("Allowed cards: ", allowed_cards)
+                    print ("Player to play: ", next_player_to_play)
+                    emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards}, room=game_id)
                 return
-
-            else:
-                emit("player to bet", {'player': nplayer},room=game_id, namespace=NAMESPACE)
-                return
-        except Exception as e:
-            print ("Bet received: ", bet)
-            print (e)
-            traceback.print_stack()
-            emit("alert", "Invalid bet!", room=bel_clients[game_id][username], namespace=NAMESPACE)
+            except Exception as e:
+                print ("Bet received: ", bet)
+                print (e)
+                traceback.print_stack()
+                emit("alert", "Invalid bet!", room=bel_clients[game_id][username], namespace=NAMESPACE)
 
 def hand_completed(game_id, username):
     game = bel_games[game_id]
@@ -309,6 +308,7 @@ def player_played(data):
         nplayer = game.get_active_player()
         if not winner is None:
             # There is a winnder, so round is ended
+            game.round_ended(winner)
             allowed_cards = game.get_hand(nplayer).serialize()
             socketio.emit("round ended", winner, room=game_id, namespace=NAMESPACE)
             timer = threading.Timer(4.0, next_round, [game_id, nplayer,allowed_cards])
@@ -358,8 +358,8 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
         print ("Cards for player ", player, " ", cards)
         socketio.emit("new hand", cards, room=bel_clients[game_id][player], namespace=NAMESPACE)
 
-    socketio.emit("trump card", str(game.trump_card), room=game_id, namespace=NAMESPACE)
-    socketio.emit("player to bet", {'player': nplayer}, room=game_id, namespace=NAMESPACE)
+    socketio.emit("trump card", {"trump_card": str(game.trump_card), "trump_suit": str(game.trump_suit)}, room=game_id, namespace=NAMESPACE)
+    socketio.emit("player to bet", {'player': nplayer, 'allowed_bets':game.allowed_bets(nplayer)}, room=game_id, namespace=NAMESPACE)
     return
 
 @socketio.on('join game', namespace=NAMESPACE)

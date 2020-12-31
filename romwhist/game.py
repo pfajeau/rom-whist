@@ -24,6 +24,7 @@ class CardGame():
         self.scores=dict()
         self.bets=dict()
         self.wins=dict()
+        self.points=dict()
         self.dealer = None
         self.init_dict(self.scores,0)
         self.dealing_method = CardGame.AUTOMATED_DEALING
@@ -45,6 +46,7 @@ class CardGame():
         self.scores=dict()
         self.bets=dict()
         self.wins=dict()
+        self.points = dict()
         self.dealer = None
         self.init_dict(self.scores,0)
         self.active_player = self.owner
@@ -101,6 +103,7 @@ class CardGame():
             self.scores[player] = 0
             self.bets[player] = -1
             self.wins[player] = 0
+            self.points[player] = 0
 
     def disable_player(self, player):
         print("In Game.disable_player, disabloing playerL " + player)
@@ -158,6 +161,9 @@ class CardGame():
     def get_wins(self):
         return self.wins;
 
+    def round_ended(self, winner):
+        return 0
+
     def is_hand_completed(self):
         for player in self.get_playing_players():
             if len(self.hands[player].get_cards()) > 0:
@@ -168,7 +174,7 @@ class CardGame():
         if self.trump_card is None:
             suit = None
         else:
-            suit = self.trump_card.suit()
+            suit = self.trump_card.get_suit()
         self.current_round = Round(self.get_playing_players(), suit)
         return self.current_round
 

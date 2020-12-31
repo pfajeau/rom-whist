@@ -21,10 +21,10 @@ class Hand(object):
         string_hand=self.serialize()
         res=dict()
         sorted_cards = []
-        for suit in Card.SUITS:
+        for suit in 'cdsh':
             res[suit] = []
             for card in self.cards:
-                if card.suit() == suit:
+                if card.get_suit() == suit:
                     res[suit].append(card)
             res[suit].sort()
             if not res[suit] is None:

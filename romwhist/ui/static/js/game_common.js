@@ -209,8 +209,10 @@ function clear_round() {
   $('#cards_played').empty();
 }
 
-function trump_card_received(trump_card) {
+function trump_card_received(data) {
   console.log("trump card event received");
+  trump_suit = data["trump_suit"]
+  trump_card = data["trump_card"]
   let image = 'img/' + trump_card + ".svg"
   $('#trump_card').html('')
   $('#trump_card').append("<figure>");

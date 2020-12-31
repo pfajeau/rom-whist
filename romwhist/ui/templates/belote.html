@@ -63,13 +63,10 @@ Add footer / contact info
     // Register action for bet input field
     id_bet = "#bets_" + username
     $(id_bet).change(function() {
-      bet = $(id_bet).val();
-      expr = /p|c|d|h|s/
-      if (!expr.test(bet)) {
-        show_alert ("Please enter one of the following values: p (pass), c (club), d (diamon), h (heart), s (spade)", "Error")
-        return;
-      }
-      socket.emit("player bet", $(id_bet).val());
+      bet = $(id_bet + " option:selected").text();
+      console.log("Bet:" + bet)
+      socket.emit("player bet", bet);
+      $(id_bet).prop("disabled", true)
       return
     });
 
@@ -128,30 +125,29 @@ Add footer / contact info
     socket.on('player to bet', function(data) {
       console.log("player to bet event received")
       player_name = data['player']
+      allowed_bets = data['allowed_bets']
+      let id_bet = "#bets_" + player_name
+      $(id_bet).prop("disabled", false)
+
       // Highlight Username
       make_player_active(player_name);
       make_player_the_better(player_name)
 
-      // Ask player if they want to take
-      // show_question("Are you taking?", "",
-      // "Yes", function() { player_takes() },
-      // "No", function() { player_does_not_take() })
+      $(id_bet).empty();
+      let html = ""
+      html = html.concat('<option value="0">Select</option>')
+      for (bet in allowed_bets) {
+        html = html.concat('<option value="' + bet + '">' + allowed_bets[bet] + '</option>')
+      }
+      $(id_bet).append(html)
     });
-
-    // TODO: pass color taken instead
-    function player_takes() {
-      socket.emit("player bet", "1");
-      return
-    }
-
-    function player_does_not_take() {
-      socket.emit("player bet", "0");
-      return
-    }
 
     socket.on('player bet', function(data) {
       player_name=data['player']
+      $(id_bet).prop('readonly', true);
       make_player_inactive(player_name);
+      $(id_bet).removeClass("highlighted_field");
+      $(id_bet).prop("disabled", true)
     });
 
 
@@ -240,11 +236,14 @@ Add footer / contact info
         <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">Bid</label>
       </td>
       <td class="td_player_info">
-        {% if bets[player] == "" %}
-        <input type="text" id="bets_{{ player }}" class="player_info" name="bets" maxlength="1" value=''>
-        {% else %}
-        <input type="text" id="bets_{{ player }}" class="player_info" name="bets" maxlength="1" value={{ bets[player] }}>
-        {% endif %}
+        <select name="bets" id="bets_{{ player }}">
+          {% if bets[player] == "" %}
+            <option value="none" selected> </option>
+          {% endif %}
+          {% for bet in allowed_bets -%}
+              <option value="{{ bet }}">{{ bet }}</option>
+          {% endfor %}
+        </select>
       </td>
       {% endfor %}
     </tr>
@@ -273,11 +272,17 @@ Add footer / contact info
 <br>
 <div id="card-table" class="container">
   <div class="bottomright" id="trump_card">
-    {% if trump != None %}
+    {% if game_phase != "PLAY" and trump != None %}
       <figure>
         <img src="{{ url_for('static', filename='') }}img/{{ trump }}.svg" alt=trump width=80 height=80>
         <figcaption><h3 class='trump_caption'>Trump</h3></figcaption>
-      </figure>"
+      </figure>
+    {% elif game_phase == "PLAY" %}
+    <figure>
+      <!-- TODO: Use image of suit instead of joker -->
+      <img src="{{ url_for('static', filename='') }}img/joker_red.svg" alt=trump width=80 height=80>
+      <figcaption><h3 class='trump_caption'>Trump</h3></figcaption>
+    </figure>
     {% endif %}
   </div>
   <div id="cards_played">

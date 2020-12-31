@@ -44,7 +44,7 @@ class Round():
 
     # Override for a particular game
     def compute_winner(self):
-        self.winning_player = self.winning_player_for_suit(self.cards_played[self.first_player].suit)
+        self.winning_player = self.winning_player_for_suit(self.cards_played[self.first_player].get_suit)
 
         # If there is a trump, highest trump card wins
         if not self.trump_suit is None:
@@ -53,17 +53,17 @@ class Round():
 
     def winning_player_for_suit (self, trump_suit):
         self.winning_player = self.first_player
-        winning_suit = self.cards_played[self.first_player].suit()
+        winning_suit = self.cards_played[self.first_player].get_suit()
         trump_played = False
         for player in self.cards_played:
-            print ("player - suit - rank: ", player, self.cards_played[player].suit(), self.cards_played[player].rank())
-            if self.cards_played[player].suit() == trump_suit and not trump_played:
+            print ("player - suit - rank: ", player, self.cards_played[player].get_suit(), self.cards_played[player].get_card_num())
+            if self.cards_played[player].get_suit() == trump_suit and not trump_played:
                 trump_played = True
                 winning_suit = trump_suit
                 self.winning_player = player
             else:
-                if self.cards_played[player].suit() == winning_suit and \
-                self.cards_played[player].rank() > self.cards_played[self.winning_player].rank():
+                if self.cards_played[player].get_suit() == winning_suit and \
+                self.cards_played[player] > self.cards_played[self.winning_player]:
                     self.winning_player = player
 
         return self.winning_player

@@ -113,7 +113,7 @@ class OhellGame(CardGame):
             allowed_cards = self.get_hand(player).serialize()
         else:
             for card in self.hands[player].get_cards():
-                if card.suit() == self.current_round.get_first_card_played().suit():
+                if card.get_suit() == self.current_round.get_first_card_played().get_suit():
                     allowed_cards.append(str(card))
             if len(allowed_cards) == 0:
                 allowed_cards = self.hands[player].serialize()
@@ -189,7 +189,7 @@ class OhellGame(CardGame):
                     return None
                 else:
                     self.trump_card = trump_card
-                    self.trump_suit = trump_card.suit()
+                    self.trump_suit = trump_card.get_suit()
 
             else:
                 self.trump_card = None
