@@ -120,6 +120,7 @@ figcaption {
 .deal {
 	font-size: medium;
 }
+
 .trump_caption {
 	font-size : medium;
 	/* font-weight: bold; */
@@ -159,7 +160,7 @@ img.preload {
 	display:none;
 }
 
-#card-table {
+#card-table-green {
 	background-color:green;
 	height:250px;
 	width:100%;
@@ -171,6 +172,20 @@ img.preload {
 	-o-border-radius:8px;
 	box-shadow:#111 1px 1px 2px;
 }
+#card-table-burgundy {
+	background-color:#800020;
+	height:250px;
+	width:100%;
+	border:solid 6px blue;
+	border-radius:8px;
+	-webkit-border-radius:8px;
+	-moz-border-radius:8px;
+	-ms-border-radius:8px;
+	-o-border-radius:8px;
+	box-shadow:#111 1px 1px 2px;
+}
+
+
 a:visited {color:blue;}
 
 /*

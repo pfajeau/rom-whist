@@ -16,6 +16,7 @@ class Deck(object):
         # TODO: should add extra cards to account for remainder
         # Only applies when size is not a multiple of 4
         self.cards = cards # cards in the deck
+        self.all_cards = cards.copy()
         self._size = deck_size # number of cards initally in a deck
 
     def size(self):

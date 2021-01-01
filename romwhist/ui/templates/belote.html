@@ -151,15 +151,18 @@ Add footer / contact info
     });
 
 
-    socket.on('player to play', function(data) { player_to_play(data) })
+    socket.on('player to play', function(data) {
+      player_to_play(data)
+      // $('#trump_card').html('')
+      // $("#trump_card").append('<label class="trump_caption">Trump:' + trump_suit + '</label>')
+    })
 
     socket.on('hand completed', function(data) {
       console.log("hand completed event received");
+
       let scores=data['scores']
       let hand_nb=data['hand_nb']
       let wins=data['wins']
-
-
       let score_row_id = "#hand_score_nb" + hand_nb
       let html = "<tr>"
       // $("#scoresheet_body").append ("<tr id=" + score_row_id + ">/tr")
@@ -270,7 +273,7 @@ Add footer / contact info
   </table>
 </div>
 <br>
-<div id="card-table" class="container">
+<div id="card-table-burgundy" class="container">
   <div class="bottomright" id="trump_card">
     {% if game_phase != "PLAY" and trump != None %}
       <figure>
@@ -278,11 +281,12 @@ Add footer / contact info
         <figcaption><h3 class='trump_caption'>Trump</h3></figcaption>
       </figure>
     {% elif game_phase == "PLAY" %}
-    <figure>
-      <!-- TODO: Use image of suit instead of joker -->
+      <label class="trump_caption">Trump: {{ trump_suit }}<label>
+    <!-- <figure>
+      <!-- TODO: Use image of suit instead of joker
       <img src="{{ url_for('static', filename='') }}img/joker_red.svg" alt=trump width=80 height=80>
       <figcaption><h3 class='trump_caption'>Trump</h3></figcaption>
-    </figure>
+    </figure> -->
     {% endif %}
   </div>
   <div id="cards_played">

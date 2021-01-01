@@ -101,6 +101,7 @@ class BeloteGame(CardGame):
             if self.next_player_to_bet(player) is None:
                 if self._phase == BeloteGame.GamePhase.BET:
                     self._phase = BeloteGame.GamePhase.BET2
+                    self.init_dict(self.bets,"")
                 else:
                     # TODO: redistribute cards and reset game
                     self.init_bets()
@@ -112,14 +113,18 @@ class BeloteGame(CardGame):
             self._phase = BeloteGame.GamePhase.PLAY
             self.trump_suit = bet
             self.taker = player
+            self.set_cards_rank_and_value()
             # TODO: active player must now be the one after the one that dealt the cards
 
     # Return None if all players have bet
     def next_player_to_bet(self, player):
+        print("Next player to bet after: "+ player)
         nplayer = self.next_player(player)
         if self.bets[nplayer] != "" or len(self.get_playing_players()) == 1:
+            print ("No more player to bet")
             return None
         else:
+            print ("Next player to bet after {} is: {}", player, nplayer)
             return nplayer
 
     def allowed_bets(self, player):
@@ -215,7 +220,7 @@ class BeloteGame(CardGame):
 
     # TODO: change this to be based on score reaching a certain threshold
     def is_game_over(self):
-        return self._current_hand_nb == len(self._nb_cards_per_hand)
+        return False
 
     def round_ended(self, winner):
         cards_per_player = self.current_round.cards_played
@@ -236,7 +241,7 @@ class BeloteGame(CardGame):
         self.card_points[suit_char+"11"] = 20
         self.card_ranks[suit_char + "9"] = 16
         self.card_ranks[suit_char + "11"] = 17
-        for card in self.deck.cards:
+        for card in self.deck.all_cards:
             card.rank = self.card_ranks[str(card)]
             card.points = self.card_points[str(card)]
 

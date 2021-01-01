@@ -192,10 +192,12 @@ class CardGame():
 
     # Return round winner if last card played None otherwise
     def card_played(self, player, card_value):
-        # Remove card from player hands
-        card = Card.card_from_value(card_value)
-        self.hands[player].remove(card)
-        self.current_round.card_played(player, card)
+        # Find card in hand that matches card played and remove it from hand
+        for card in self.hands[player].get_cards():
+            if str(card) == card_value:
+                # Remove card from player hands
+                self.hands[player].remove(card)
+                self.current_round.card_played(player, card)
         if self.current_round.last_card_played():
             winner = self.current_round.compute_winner()
             self.wins[winner] = self.wins[winner] + 1

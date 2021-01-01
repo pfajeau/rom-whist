@@ -176,7 +176,8 @@ def belote_play():
         return render_template("belote.html", form=form,  players=game.get_playing_players(), scores=game.get_scores(), \
         hand=hand,  wins=game.get_wins(), bets = game.get_bets(), active_player=active_player, \
         cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
-        trump=game.trump_card, allowed_bets=game.allowed_bets(player), game_phase=game.get_game_phase().name, scoresheet=game.scoresheet)
+        trump=game.trump_card, trump_suit = game.trump_suit, allowed_bets=game.allowed_bets(player), \
+        game_phase=game.get_game_phase().name, scoresheet=game.scoresheet)
 
 
 # @app.route("/login",methods=['GET', 'POST'])
