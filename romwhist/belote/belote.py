@@ -16,12 +16,17 @@ class BeloteGame(CardGame):
         BET2 = "Bet2"
         PLAY = "Play"
 
+    # Number of cards to deal depending on number of players
+    nb_cards_first_deal = {2:6, 3:6, 4: 5}
+    nb_cards_second_deal = {2:3, 3:3, 4:3}
+
     def __init__(self, game_creator = ""):
         CardGame.__init__(self, game_creator, 0)
         self.taker = None
         self.teams = []
         self.hand_points=dict()   # The number of points collected while the hand is played
         self.init_dict(self.hand_points,0)
+
 
         # Points and ranks will change for the trump suit once it is known
         self.card_points={"c7": 0, "c8":0, "c9":0, "c10":10, "c11":2, "c12":3, "c13":4, "c14":11,
@@ -114,6 +119,7 @@ class BeloteGame(CardGame):
             self.trump_suit = bet
             self.taker = player
             self.set_cards_rank_and_value()
+            self.active_player = self.next_player(self.dealer)
             # TODO: active player must now be the one after the one that dealt the cards
 
     # Return None if all players have bet
@@ -163,15 +169,59 @@ class BeloteGame(CardGame):
         return allowed_cards
 
     def update_scores(self):
-        # Calculate the total points of cards in round
+        # Check each player points
+        # If 2 or 3 players, player that took need to have more points that other players to win
+        # if 4 players, player that took and partner neeed to have more points than other pplayers
+        nb_players = len(self.players)
+        players = []
+        players.append(self.taker)
+        player_points = []
+        player_points.append(self.hand_points[self.taker])
+        player = self.taker
+        for i in range(1, nb_players):
+            players.append(self.next_player(players[i-1]))
+            player_points.append(self.hand_points[players[i]])
 
-        for p in range(len(self.players)):
-            player = self.players[p]
-          #self.scoresheet.append([self.bets.copy(), self.wins.copy(), self.scores.copy()])
 
+        # player1_points = self.hand_points[self.taker]
+        # player2 = self.next_player(self.taker)
+        # player2_points = self.hand_points[player2]
+        # if len(self.players) >= 3:
+        #     player3 = self.next_player(player2)
+        #     player3_points = self.hand_points[player3]
+        # elif len(self.players) == 4:
+        #     player4 = self.next_player(player3)
+        #     player4_points = self.hand_points[player4]
+
+        if nb_players == 2:
+            if player_points[0] >= 82:
+                self.scores[players[0]] += player_points[0]
+                self.scores[players[1]] += player_points[1]
+            else:
+                self.scores[players[1]] += 162
+        elif nb_players == 3:
+            if player_points[0] >=player_points[1] and player_points[0] >=player_points[2]:
+                self.scores[players[0]] += player_points[0]
+                self.scores[players[1]] += player_points[1]
+                self.scores[players[2]] += player_points[2]
+            elif player_points[1] >=player_points[2]:
+                self.scores[players[1]] += player_points[1] + player_points[0]
+                self.scores[players[2]] += player_points[2]
+            else:
+                self.scores[players[1]] += player_points[1]
+                self.scores[players[2]] += player_points[2] + player_points[0]
+        elif nb_players == 4:
+            if player_points[0] + player_points[2] >= 82:
+                for i in range(0,4):
+                    self.scores[players[i]] += player_points[i]
+            else:
+                self.scores[players[1]] += player_points[1] + 162
+                self.scores[players[3]] += player_points[3] + 162
+
+        self.scoresheet.append(self.scores.copy())
         return self.scores
 
-    # Iniial deal of 5 card per player
+    # Iniial deal
     def deal_1(self, dealer=""):
         self.deck = Deck(self.deck_size)
         self.deck.shuffle()
@@ -188,7 +238,7 @@ class BeloteGame(CardGame):
         # Create a hand with nb_cards for each player
         for player in self.get_playing_players():
             print (player)
-            hand = Hand(self.deck, 5, player)
+            hand = Hand(self.deck, BeloteGame.nb_cards_first_deal[len(self.players)], player)
             self.hands[player] = hand.sort()
             print ("Hand for player ", player, " : ", hand.serialize())
 
@@ -204,16 +254,18 @@ class BeloteGame(CardGame):
         print("In deal_2")
         print ("Trum card:", self.trump_card)
 
+        nb_cards = BeloteGame.nb_cards_second_deal[len(self.players)]
+
         # Taker takes the trump card then two more
         self.hands[self.taker].add(self.trump_card)
-        for i in range(2):
+        for i in range(nb_cards-1):
             self.hands[self.taker].add(self.deck.deal())
         self.hands[self.taker].sort()
 
         # Other players take 3 cards
         for player in self.get_playing_players():
             if player != self.taker:
-                for i in range(3):
+                for i in range(nb_cards):
                     self.hands[player].add(self.deck.deal())
                 self.hands[player].sort()
         return self.hands
@@ -222,18 +274,22 @@ class BeloteGame(CardGame):
     def is_game_over(self):
         return False
 
+    def card_played(self, player, card_value):
+        winner = CardGame.card_played(self, player, card_value)
+        if self.is_hand_completed():
+            # Add 10 points to the winnder of the last round
+            self.hand_points[winner] += 10
+        return winner
+
     def round_ended(self, winner):
-        cards_per_player = self.current_round.cards_played
+        player_cards = self.current_round.cards_played
         points = 0
-        for player in cards_per_player:
-            print("Player: " + player)
-            print (cards_per_player)
-            card = str(cards_per_player[player])
-            print("Card: " + card)
+        for player in player_cards:
+            card = str(player_cards[player])
             points = points + self.card_points[card]
         print("Points in round:" + str(points))
         self.hand_points[winner] += points
-        return points
+        return
 
     def set_cards_rank_and_value(self):
         suit_char = self.trump_card.get_suit()

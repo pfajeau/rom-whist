@@ -153,8 +153,8 @@ Add footer / contact info
 
     socket.on('player to play', function(data) {
       player_to_play(data)
-      // $('#trump_card').html('')
-      // $("#trump_card").append('<label class="trump_caption">Trump:' + trump_suit + '</label>')
+      $('#trump_card').html('')
+      $("#trump_card").append('<label class="trump_caption">Trump:' + trump_suit + '</label>')
     })
 
     socket.on('hand completed', function(data) {
@@ -172,9 +172,7 @@ Add footer / contact info
         win=wins[player]
         let id_score = "#score_" + player
         $(id_score).val(score);
-
-        html = html.concat("<td><table class='padding-between-cols'><tr><td class='scoresheet_nb'>" + bet + "</td>")
-        html = html.concat("<td class='scoresheet_nb'>" + win + "</td>" + "<td class='scoresheet_nb'>" + score + "</td></tr></table></td>")
+        html = html.concat("<td class='scoresheet_nb'>" + score + "</td></tr></table></td>")
         // html = html.concat("<td>" + score + "</td>")
         // $(score_row_id).append ("<td>" + score + "</td>")
       });
@@ -189,7 +187,6 @@ Add footer / contact info
 
     socket.on('card played', function(data) { card_played_event(data) })
     socket.on('new player', function(player_name) { new_player(player_name) })
-
 
     socket.on('player left', function(player_name) {
       if (player_name.localeCompare(username) != 0) {
@@ -212,7 +209,7 @@ Add footer / contact info
     });
 
     socket.on('trump card', function(trump_card) { trump_card_received(trump_card) })
-    socket.on('round ended', function(player_name) { round_ended(player_name) });
+    socket.on('round ended', function(data) { round_ended(data) });
     socket.on('clear round', function() { clear_round() });
     socket.on('game over', function(winners) { game_over(winners) })
     socket.on('msg posted', function(data) { msg_posted(data) });
@@ -336,8 +333,6 @@ Add footer / contact info
             <th class="td_player_info">{{player}}
               <table>
                 <tr>
-                  <td class="scoresheet_title scoresheet_nb">B</td>
-                  <td class="scoresheet_titles scoresheet_nb">W</td>
                   <td class="scoresheet_titles scoresheet_nb">S</td>
                 </tr>
               </table>
@@ -352,9 +347,7 @@ Add footer / contact info
       <td>
         <table>
           <tr>
-            <td class="scoresheet_nb">{{scores_hand[0][player]}}</td>
-            <td class="scoresheet_nb">{{scores_hand[1][player]}}</td>
-            <td class="scoresheet_nb">{{scores_hand[2][player]}}</td>
+            <td class="scoresheet_nb">{{scores_hand[player]}}</td>
           </tr>
         </table>
         </td>

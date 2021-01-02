@@ -330,7 +330,9 @@ def player_played(data):
         if not winner is None:
             # There is a winnder, so round is ended
             allowed_cards = game.get_hand(nplayer).serialize()
-            socketio.emit("round ended", winner, room=game_id, namespace=NAMESPACE)
+            winnning_card = game.get_current_round().cards_played[winner]
+            socketio.emit("round ended", {"winner": winner, "card": winnning_card.desc()}, room=game_id,
+                          namespace=NAMESPACE)
             timer = threading.Timer(4.0, next_round, [game_id, nplayer,allowed_cards])
             timer.start()
         else:
@@ -339,7 +341,6 @@ def player_played(data):
             emit("player to play", {'player':nplayer, 'allowed_cards':allowed_cards}, room=game_id, namespace=NAMESPACE)
 
         print("Allowed cards: ", allowed_cards)
-
     return
 
 @socketio.on('start hand', namespace=NAMESPACE)
@@ -382,7 +383,7 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
             socketio.emit("new hand", cards, room=clients[game_id][player], namespace=NAMESPACE)
 
         if trump and not game.trump_card is None:
-            socketio.emit("trump card", str(game.trump_card), room=game_id, namespace=NAMESPACE)
+            socketio.emit("trump card", {"trump_card": str(game.trump_card), "trump_suit": str(game.trump_suit)}, room=game_id, namespace=NAMESPACE)
 
         socketio.emit("player to bet", {'player': nplayer,'allowed_bets':game.allowed_bets(player)}, room=game_id, namespace=NAMESPACE)
         return

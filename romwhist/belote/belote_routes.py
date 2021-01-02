@@ -268,7 +268,8 @@ def player_bet(bet):
 
 def hand_completed(game_id, username):
     game = bel_games[game_id]
-    scores = game.update_scores()
+    game.hand_completed()
+    scores = game.get_scores()
     print ("hand completed, next player to deal:", game.next_player_to_deal())
     socketio.emit("hand completed", {'scores':scores,'wins': game.wins,
                                      'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal()},
@@ -305,19 +306,21 @@ def player_played(data):
 
         game = bel_games[game_id]
         winner = game.card_played(session['username'], card)
-
         nplayer = game.get_active_player()
-        if not winner is None:
+
+        if  winner is None:
+            # Round continues
+            allowed_cards = game.get_allowed_cards(nplayer)
+            emit("player to play", {'player': nplayer, 'allowed_cards': allowed_cards}, room=game_id,
+                 namespace=NAMESPACE)
+        else:
             # There is a winnder, so round is ended
             game.round_ended(winner)
             allowed_cards = game.get_hand(nplayer).serialize()
-            socketio.emit("round ended", winner, room=game_id, namespace=NAMESPACE)
+            winnning_card = game.get_current_round().cards_played[winner]
+            socketio.emit("round ended", {"winner": winner, "card": winnning_card.desc()}, room=game_id, namespace=NAMESPACE)
             timer = threading.Timer(4.0, next_round, [game_id, nplayer,allowed_cards])
             timer.start()
-        else:
-            # Round continues
-            allowed_cards = game.get_allowed_cards(nplayer)
-            emit("player to play", {'player':nplayer, 'allowed_cards':allowed_cards}, room=game_id, namespace=NAMESPACE)
 
         print("Allowed cards: ", allowed_cards)
 

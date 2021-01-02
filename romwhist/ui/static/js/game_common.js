@@ -189,9 +189,9 @@ function card_played_event(data) {
   last_player = player_name
 }
 
-function round_ended(player_name) {
-  console.log("round ended event received: " + player_name);
-  alertify.alert("Round ended", "Round winner is: " + player_name)
+function round_ended(data) {
+  console.log("round ended event received: " + data["winner"]);
+  alertify.alert("Round ended", "Round winner is: " + data["winner"] + " with the " + data["card"])
   make_player_inactive(last_player);
   // $("#"+last_player).removeClass("active_player");
   // $("#"+last_player).addClass("normal_player");

@@ -162,7 +162,10 @@ class CardGame():
         return self.wins;
 
     def round_ended(self, winner):
-        return 0
+        return
+
+    def hand_completed(self):
+        self.update_scores()
 
     def is_hand_completed(self):
         for player in self.get_playing_players():

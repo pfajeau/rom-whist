@@ -61,3 +61,6 @@ class Card(object):
     def __str__(self):
         return str(self.suit_char) + str(self.card_num)
         #return self.rankName() + ' of ' + self.suitName()
+
+    def desc(self):
+        return self.get_card_name() + ' of ' + self.get_suit_name()

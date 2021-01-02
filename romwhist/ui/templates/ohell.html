@@ -50,7 +50,7 @@ Add footer / contact info
 
     if ("{{ game_phase }}" == "BET") {
       make_player_the_better("{{ active_player }}");
-      make_player_active(player_name);
+      make_player_active("{{ active_player }}");
     }
 
     if ("{{ game_phase }}" == "PLAY") {
@@ -230,7 +230,7 @@ Add footer / contact info
     });
 
     socket.on('trump card', function(trump_card) { trump_card_received(trump_card) })
-    socket.on('round ended', function(player_name) { round_ended(player_name) });
+    socket.on('round ended', function(data) { round_ended(data) });
     socket.on('clear round', function() { clear_round() });
     socket.on('game over', function(winners) { game_over(winners) })
     socket.on('msg posted', function(data) { msg_posted(data) });

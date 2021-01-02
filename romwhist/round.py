@@ -15,6 +15,7 @@ class Round():
         self.winning_player = ""
         self.first_card_played=None
         self.round_started = False
+        self.winning_card = None
 
     # Return the number of players left to play for the Round
     # when last player has played, return 0
@@ -49,6 +50,7 @@ class Round():
         # If there is a trump, highest trump card wins
         if not self.trump_suit is None:
             self.winning_player = self.winning_player_for_suit(self.trump_suit)
+
         return self.winning_player
 
     def winning_player_for_suit (self, trump_suit):
