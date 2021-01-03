@@ -58,7 +58,7 @@ class Round():
         winning_suit = self.cards_played[self.first_player].get_suit()
         trump_played = False
         for player in self.cards_played:
-            print ("player - suit - rank: ", player, self.cards_played[player].get_suit(), self.cards_played[player].rank)
+            # print ("player - suit - rank: ", player, self.cards_played[player].get_suit(), self.cards_played[player].rank)
             if self.cards_played[player].get_suit() == trump_suit and not trump_played:
                 trump_played = True
                 winning_suit = trump_suit

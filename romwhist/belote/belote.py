@@ -20,6 +20,13 @@ class BeloteGame(CardGame):
     nb_cards_first_deal = {2:6, 3:6, 4: 5}
     nb_cards_second_deal = {2:3, 3:3, 4:3}
 
+    # Total number of points
+    TOTAL_POINTS = 162
+    BONUS_CAPOT = 100
+    BONUS_CAPOT = 100
+    DIX_DE_DER = 10
+    BELOTE_REBELOTE = 20
+
     def __init__(self, game_creator = ""):
         CardGame.__init__(self, game_creator, 0)
         self.taker = None
@@ -168,6 +175,7 @@ class BeloteGame(CardGame):
                 allowed_cards = self.hands[player].serialize()
         return allowed_cards
 
+    # TODO: Belote / Rebelote
     def update_scores(self):
         # Check each player points
         # If 2 or 3 players, player that took need to have more points that other players to win
@@ -182,41 +190,67 @@ class BeloteGame(CardGame):
             players.append(self.next_player(players[i-1]))
             player_points.append(self.hand_points[players[i]])
 
-
-        # player1_points = self.hand_points[self.taker]
-        # player2 = self.next_player(self.taker)
-        # player2_points = self.hand_points[player2]
-        # if len(self.players) >= 3:
-        #     player3 = self.next_player(player2)
-        #     player3_points = self.hand_points[player3]
-        # elif len(self.players) == 4:
-        #     player4 = self.next_player(player3)
-        #     player4_points = self.hand_points[player4]
-
         if nb_players == 2:
-            if player_points[0] >= 82:
+            if player_points[0] > BeloteGame.TOTAL_POINTS/2:
                 self.scores[players[0]] += player_points[0]
                 self.scores[players[1]] += player_points[1]
             else:
-                self.scores[players[1]] += 162
+                self.scores[players[1]] += player_points[0] + player_points[1]
+            # Capot
+            if self.wins[players[1]] == 0:
+                self.scores[players[0]] += BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
+            elif self.wins[players[0]] == 0:
+                self.scores[players[1]] += BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
+
         elif nb_players == 3:
-            if player_points[0] >=player_points[1] and player_points[0] >=player_points[2]:
+            if player_points[0] > player_points[1] and player_points[0] > player_points[2]:
                 self.scores[players[0]] += player_points[0]
                 self.scores[players[1]] += player_points[1]
                 self.scores[players[2]] += player_points[2]
-            elif player_points[1] >=player_points[2]:
+            elif player_points[1] > player_points[2]:
                 self.scores[players[1]] += player_points[1] + player_points[0]
                 self.scores[players[2]] += player_points[2]
-            else:
-                self.scores[players[1]] += player_points[1]
+            elif player_points[2] > player_points[1]:
                 self.scores[players[2]] += player_points[2] + player_points[0]
+                self.scores[players[1]] += player_points[1]
+            # Player 1 has same number of points than player 2
+            else:
+                self.scores[players[1]] += player_points[1] + player_points[0] / 2
+                self.scores[players[2]] += player_points[2] + player_points[0] / 2
+
+            # Capot
+            # TODO: How is dix de der handled?
+            for i in range(3):
+                if self.wins[players[i]] == 0:
+                    np = self.next_player(players[i])
+                    nnp = self.next_player(players[np])
+                    if self.wins[np] == 0:
+                        # nnp gets the entire bonus
+                        self.scores[nnp] += BeloteGame.BONUS_CAPOT
+                    elif self.wins[nnp] == 0:
+                        # np gets the entire bonus
+                        self.scores[np] += BeloteGame.BONUS_CAPOT
+                    else:
+                        # np and nnp share the bonus
+                        self.scores[np] += BeloteGame.BONUS_CAPOT / 2
+                        self.scores[nnp] += BeloteGame.BONUS_CAPOT / 2
+
         elif nb_players == 4:
-            if player_points[0] + player_points[2] >= 82:
+            if player_points[0] + player_points[2] > BeloteGame.TOTAL_POINTS / 2:
                 for i in range(0,4):
                     self.scores[players[i]] += player_points[i]
             else:
-                self.scores[players[1]] += player_points[1] + 162
-                self.scores[players[3]] += player_points[3] + 162
+                # TODO: SOme rules give more points to the team in this case
+                self.scores[players[1]] += BeloteGame.TOTAL_POINTS
+                self.scores[players[3]] += BeloteGame.TOTAL_POINTS
+
+            # Capot
+            if self.wins[players[1]] + self.wins[players[3]] == 0:
+                self.scores[players[0]] += BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
+                self.scores[players[2]] += BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
+            elif self.wins[players[0]] + self.wins[players[2]] == 0:
+                self.scores[players[1]] += BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
+                self.scores[players[3]] += BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
 
         self.scoresheet.append(self.scores.copy())
         return self.scores

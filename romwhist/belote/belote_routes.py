@@ -315,7 +315,7 @@ def player_played(data):
                  namespace=NAMESPACE)
         else:
             # There is a winnder, so round is ended
-            game.round_ended(winner)
+            # game.round_ended(winner)
             allowed_cards = game.get_hand(nplayer).serialize()
             winnning_card = game.get_current_round().cards_played[winner]
             socketio.emit("round ended", {"winner": winner, "card": winnning_card.desc()}, room=game_id, namespace=NAMESPACE)

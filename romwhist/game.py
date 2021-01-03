@@ -37,7 +37,8 @@ class CardGame():
         self.scoresheet=[]
         self._player_status=dict()
         self.init_dict(self._player_status, 1)
-        self.trump_suit= ""
+        self.trump_suit=None
+        self.rounds = []   # The rounds for the hand
 
     def reset(self):
         self.current_round = None
@@ -179,6 +180,7 @@ class CardGame():
         else:
             suit = self.trump_card.get_suit()
         self.current_round = Round(self.get_playing_players(), suit)
+        self.rounds.append(self.current_round)
         return self.current_round
 
     # Return None if all players have bet
@@ -195,6 +197,7 @@ class CardGame():
 
     # Return round winner if last card played None otherwise
     def card_played(self, player, card_value):
+        print(player + " played: " + card_value)
         # Find card in hand that matches card played and remove it from hand
         for card in self.hands[player].get_cards():
             if str(card) == card_value:
@@ -204,11 +207,12 @@ class CardGame():
         if self.current_round.last_card_played():
             winner = self.current_round.compute_winner()
             self.wins[winner] = self.wins[winner] + 1
-            print("in card_played, wins for player {} is {}".format(player, self.wins[player]))
             if self.is_hand_completed():
                 self.active_player = self.next_player_to_deal()
             else:
                 self.active_player = winner
+
+            self.round_ended(winner)
             return winner
         else:
             self.active_player = self.next_player(player)
