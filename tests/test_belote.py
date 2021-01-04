@@ -2,12 +2,7 @@ from romwhist.belote.belote import BeloteGame
 from romwhist.card import Card
 
 if __name__ == '__main__':
-    players = []
-    players.append("Joe")
-    players.append("Jack")
-    players.append("Jim")
-    players.append("Johnny")
-
+    players = ["Joe", "Jack", "Jim" , "Johnny"]
     belote = BeloteGame("Joe")
 
     for player in players:
@@ -44,3 +39,5 @@ if __name__ == '__main__':
     print ("Scores: ")
     for player in players:
         print (player + ": " + format(scores[player]))
+
+    # TODO: add tests for 2 and 3 players
