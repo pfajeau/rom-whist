@@ -25,8 +25,24 @@ if __name__ == '__main__':
         ohell.deal(dealer="")
         assert(ohell.trump_card is None)
 
-        # Test game play
+        # Testing game play
+        for player in players:
+                ohell.place_bet(player, 1)
 
+        print ("Playing Hand...")
+        for round in range(8):
+                print ("    Playing round: " + format(round))
+                ohell.create_round()
+                active_player = ohell.get_active_player()
+                for i in range(len(players)):
+                        ohell.card_played(players[i], ohell.get_allowed_cards(players[i])[0])
+                print("Winner for round " + format(round) + " is " + ohell.current_round.winning_player)
+
+        ohell.hand_completed()
+        scores = ohell.get_scores()
+        print("Scores: ")
+        for player in players:
+                print(player + ": " + format(scores[player]))
 
         # Test scores
         ohell = OhellGame("Joe", 1, 32)

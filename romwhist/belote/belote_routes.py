@@ -133,13 +133,13 @@ def belote_play():
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":
             stop_game()
-            return redirect(url_for(''))
+            return redirect(url_for('belote_start'))
             #return redirect(url_for('game'))
 
         # if "leave_game" in request.form:
         if request.form['action_game'] == "leave_game":
             remove_player(game_id, session['username'])
-            return redirect(url_for(''))
+            return redirect(url_for('belote_start'))
 
         if request.form['action_game'] == "remove_player":
             print("Remve Player button pressed")
@@ -237,7 +237,7 @@ def player_bet(bet):
             game = bel_games[game_id]
             try:
                 game.place_bet(session['username'], bet)
-                emit("player bet", {'player':session['username'], 'bet':bet}, room = game_id)
+                emit("player bet", {'player':session['username'], 'bet':bet}, room = game_id, namespace=NAMESPACE)
                 nplayer = game.get_active_player()
                 if game.get_game_phase() == BeloteGame.GamePhase.DEAL:
                     restart_hand(game_id)
@@ -258,7 +258,8 @@ def player_bet(bet):
                     allowed_cards = game.get_hand(next_player_to_play).serialize()
                     print("Allowed cards: ", allowed_cards)
                     print ("Player to play: ", next_player_to_play)
-                    emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards}, room=game_id)
+                    emit("trump suit", game.trump_suit,  room=game_id, namespace=NAMESPACE)
+                    emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards}, room=game_id, namespace=NAMESPACE)
                 return
             except Exception as e:
                 print ("Bet received: ", bet)
@@ -276,7 +277,7 @@ def hand_completed(game_id, username):
                   room=game_id, namespace=NAMESPACE)
     socketio.emit("player to deal", game.next_player_to_deal(), room=game_id, namespace=NAMESPACE)
     if game.is_game_over():
-        socketio.emit("game over", game.get_highest_score_player(), room=game_id)
+        socketio.emit("game over", game.get_highest_score_player(), room=game_id, namespace=NAMESPACE)
     else:
         generate_hands(game_id, "")
 
