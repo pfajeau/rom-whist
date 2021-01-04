@@ -297,6 +297,7 @@ Add footer / contact info
       </figure>"
     {% endif %}
   </div>
+  <br>
   <div id="cards_played">
     {% for card in cards_played -%}
     <img id= "{{ card }}_table" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" alt="{{ card }}" class="card_table">
@@ -308,10 +309,10 @@ Add footer / contact info
 <div>
   <form id="game_form" action="" method="post" novalidate>
     {{ form.hidden_tag() }}
+    <br>
     <input type="hidden" id="action_game" name="action_game" value="">
     <div>
       <div class="col-md-12" id="cards">
-        <br>
         <!-- <tr id="cards"></tr> -->
         {% for card in hand -%}
         <td>

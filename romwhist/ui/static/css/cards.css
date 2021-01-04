@@ -161,10 +161,10 @@ img.preload {
 }
 
 #card-table-green {
-	background-color:green;
+	background-color:#11520F;
 	height:250px;
 	width:100%;
-	border:solid 6px brown;
+	border:solid 6px #072607;
 	border-radius:8px;
 	-webkit-border-radius:8px;
 	-moz-border-radius:8px;
