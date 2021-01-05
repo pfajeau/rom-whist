@@ -217,7 +217,8 @@ function round_ended(data) {
   let player_name = data["winner"]
   let last_player = data["last_player"]
   console.log("round ended event received: " + player_name);
-  alertify.alert("Round ended", "Round winner is: " + data["winner"] + " with the " + data["card"])
+  // alertify.alert("Round ended", "Round winner is: " + data["winner"] + " with the " + data["card"])
+  // sleep(3000)
   make_player_inactive(last_player);
 
   let id_rounds = "rounds_" + player_name
@@ -317,4 +318,9 @@ function show_alert(msg, title, cancel=false, callback_ok, action="") {
       }
     });
   }
+}
+
+function sleep(miliseconds) {
+ var currentTime = new Date().getTime();
+ while (currentTime + miliseconds >= new Date().getTime()) {}
 }

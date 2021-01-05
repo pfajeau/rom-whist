@@ -28,6 +28,7 @@ Add footer / contact info
   var trump_suit
   var trump_card
   var allowed_bets
+  var the_players
 
   // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
   let html_frag="<span class='game_page_title'>Oh Hell! - Game ID: "  + "{{ session['game_id'] }}"
@@ -182,18 +183,30 @@ Add footer / contact info
       let html = "<tr>"
       // $("#scoresheet_body").append ("<tr id=" + score_row_id + ">/tr")
 
-      Object.keys(scores).forEach(function(player) {
+      for (var i in the_players) {
+        let player = the_players[i]
         score = scores[player];
         bet=bets[player]
         win=wins[player]
         let id_score = "#score_" + player
         $(id_score).val(score);
-
         html = html.concat("<td><table class='padding-between-cols'><tr><td class='scoresheet_nb'>" + bet + "</td>")
         html = html.concat("<td class='scoresheet_nb'>" + win + "</td>" + "<td class='scoresheet_nb'>" + score + "</td></tr></table></td>")
-        // html = html.concat("<td>" + score + "</td>")
-        // $(score_row_id).append ("<td>" + score + "</td>")
-      });
+      }
+
+      //
+      // Object.keys(scores).forEach(function(player) {
+      //   score = scores[player];
+      //   bet=bets[player]
+      //   win=wins[player]
+      //   let id_score = "#score_" + player
+      //   $(id_score).val(score);
+      //
+      //   html = html.concat("<td><table class='padding-between-cols'><tr><td class='scoresheet_nb'>" + bet + "</td>")
+      //   html = html.concat("<td class='scoresheet_nb'>" + win + "</td>" + "<td class='scoresheet_nb'>" + score + "</td></tr></table></td>")
+      //   // html = html.concat("<td>" + score + "</td>")
+      //   // $(score_row_id).append ("<td>" + score + "</td>")
+      // });
 
       html = html.concat("</tr>")
       $("#scoresheet_body").append(html)
