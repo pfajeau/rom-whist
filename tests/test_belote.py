@@ -16,6 +16,8 @@ if __name__ == '__main__':
         assert (len(belote.get_hand(player).cards) == 5)
 
     belote.place_bet("Joe", Card.SuitName.SPADE)
+    print ("TRump suit: " + str(belote.trump_suit))
+    assert(belote.trump_suit is "Spade")
 
     belote.deal_2(dealer="")
     for player in players:
