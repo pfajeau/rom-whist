@@ -194,20 +194,6 @@ Add footer / contact info
         html = html.concat("<td class='scoresheet_nb'>" + win + "</td>" + "<td class='scoresheet_nb'>" + score + "</td></tr></table></td>")
       }
 
-      //
-      // Object.keys(scores).forEach(function(player) {
-      //   score = scores[player];
-      //   bet=bets[player]
-      //   win=wins[player]
-      //   let id_score = "#score_" + player
-      //   $(id_score).val(score);
-      //
-      //   html = html.concat("<td><table class='padding-between-cols'><tr><td class='scoresheet_nb'>" + bet + "</td>")
-      //   html = html.concat("<td class='scoresheet_nb'>" + win + "</td>" + "<td class='scoresheet_nb'>" + score + "</td></tr></table></td>")
-      //   // html = html.concat("<td>" + score + "</td>")
-      //   // $(score_row_id).append ("<td>" + score + "</td>")
-      // });
-
       html = html.concat("</tr>")
       $("#scoresheet_body").append(html)
 
