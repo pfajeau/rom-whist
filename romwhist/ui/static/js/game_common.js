@@ -1,4 +1,3 @@
-var player_card = {}
 
 function play_sound(audio_file) {
   const sound = new Audio()
@@ -200,17 +199,6 @@ function card_played_event(data) {
   html = html.concat("</figure>")
   $('#cards_played').append(html)
 
-  player_card[card] = player_name
-
-  // Trying to display player name under card, but causes issues
-  // $(cards_played).append("<figcaption><h3 class='trump_caption'>" + player_name +"</h3></figcaption>");
-  // $(cards_played).append("</figure>");
-
-//   <figure>
-//   <img src="pic_trulli.jpg" alt="Trulli" style="width:100%">
-//   <figcaption>Fig.1 - Trulli, Puglia, Italy.</figcaption>
-// </figure>
-
   make_player_inactive(player_name);
 }
 
@@ -228,9 +216,6 @@ function round_ended(data) {
   document.getElementById(id_rounds).value = value;
   new_round = true;
   //play_sound("applause2_x.wav")
-
-  player_card = {}
-
 }
 
 function clear_round() {
