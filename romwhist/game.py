@@ -165,6 +165,17 @@ class CardGame():
     def round_ended(self, winner):
         return
 
+    # Return a dictionary of cards played per player for the current round
+    def get_cards_played(self):
+        if len(self.rounds) > 0:
+            cards = self.rounds[-1].cards_played
+            card_played_as_str = dict()
+            for player in cards:
+                card_played_as_str[player] = str(cards[player])
+            return card_played_as_str
+        else:
+            return None
+
     def hand_completed(self):
         self.update_scores()
 
@@ -178,7 +189,7 @@ class CardGame():
         if self.trump_card is None:
             suit = None
         else:
-            suit = self.trump_card.get_suit()
+            suit = self.trump_suit
         self.current_round = Round(self.get_playing_players(), suit)
         self.rounds.append(self.current_round)
         return self.current_round

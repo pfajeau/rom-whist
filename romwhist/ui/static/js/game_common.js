@@ -87,12 +87,13 @@ function initialize(players) {
   make_players_inactive();
 }
 
-function add_card_to_table(card) {
+function add_card_to_table(player, card) {
   let image = "img/" + card + ".svg"
   let html = '<figure class="figures">'
+  console.log("PLayer: " + player)
   console.log("Card: " + card)
   html = html.concat("<img id=" + card + "_table" + ' class="card_table"' + " src=" + static_folder + image + ">")
-  // html = html.concat("<figcaption class='trump_caption'>" + player_card[card] + "</figcaption>")
+  html = html.concat("<figcaption class='trump_caption'>" + player + "</figcaption>")
   html = html.concat("</figure>")
   $('#cards_played').append(html)
 }

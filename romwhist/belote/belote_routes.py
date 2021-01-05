@@ -159,9 +159,8 @@ def belote_play():
         else:
             hand = hand.serialize()
         round = game.get_current_round()
-        cards_played = []
-        if not round is None:
-            cards_played = round.get_cards_played()
+
+        cards_played = game.get_cards_played()
 
         print("Active Player: ", game.get_active_player())
         print("Game Phase: ", game.get_game_phase().name)
@@ -343,7 +342,6 @@ def start_hand(nbcards, trump):
 
 # TODO factorize with ohell
 def generate_hands(game_id, username, nbcards=5, trump=True):
-    print (nbcards)
 
     if not game_id in bel_games:
        # Should never happen

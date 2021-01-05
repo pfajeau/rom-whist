@@ -26,7 +26,7 @@ Add footer / contact info
   var static_folder={{ url_for('static', filename='') }}
   var trump_suit = ""
   var the_players
-  
+
   // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
   let html_frag="<span class='game_page_title'>Belote - Game ID: "  + "{{ session['game_id'] }}"
   html_frag = html_frag.concat(" - " + "{{ session['username'] }}"+ "</span>")
@@ -43,10 +43,11 @@ Add footer / contact info
     {% endfor %}
     initialize(the_players)
 
-    {% for card in cards_played -%}
-    add_card_to_table("{{ card }}")
-    {% endfor %}
-
+    {% if cards_played != None %}
+      {% for key, value in cards_played.items() %}
+      add_card_to_table("{{ key }}", "{{ value }}")
+      {% endfor %}
+    {% endif %}
 
     console.log(player_card)
 

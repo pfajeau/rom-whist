@@ -48,9 +48,11 @@ Add footer / contact info
     {% endfor %}
     initialize(the_players)
 
-    {% for card in cards_played -%}
-      add_card_to_table("{{ card }}")
-    {% endfor %}
+    {% if cards_played != None %}
+      {% for key, value in cards_played.items() %}
+      add_card_to_table("{{ key }}", "{{ value }}")
+      {% endfor %}
+    {% endif %}
 
     if ("{{ game_phase }}" == "BET") {
       make_player_the_better("{{ active_player }}");
