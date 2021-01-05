@@ -319,7 +319,7 @@ def player_played(data):
             # game.round_ended(winner)
             allowed_cards = game.get_hand(nplayer).serialize()
             winnning_card = game.get_current_round().cards_played[winner]
-            socketio.emit("round ended", {"winner": winner, "card": winnning_card.desc()}, room=game_id, namespace=NAMESPACE)
+            socketio.emit("round ended", {"winner": winner, "card": winnning_card.desc(), "last_player": session['username']}, room=game_id, namespace=NAMESPACE)
             timer = threading.Timer(4.0, next_round, [game_id, nplayer,allowed_cards])
             timer.start()
 

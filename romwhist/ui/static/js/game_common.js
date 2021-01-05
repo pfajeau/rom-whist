@@ -1,3 +1,5 @@
+var player_card = {}
+
 function play_sound(audio_file) {
   const sound = new Audio()
   sound.src = static_folder + "audio/" + audio_file
@@ -44,6 +46,7 @@ function initialize(players) {
     }
   });
 
+
   // Add game action buttons
   if (username == ownername) {
     $("#game_action_buttons").append('<button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>');
@@ -82,6 +85,16 @@ function initialize(players) {
     }
   }
   make_players_inactive();
+}
+
+function add_card_to_table(card) {
+  let image = "img/" + card + ".svg"
+  let html = '<figure class="figures">'
+  console.log("Card: " + card)
+  html = html.concat("<img id=" + card + "_table" + ' class="card_table"' + " src=" + static_folder + image + ">")
+  // html = html.concat("<figcaption class='trump_caption'>" + player_card[card] + "</figcaption>")
+  html = html.concat("</figure>")
+  $('#cards_played').append(html)
 }
 
 function start_game() {
@@ -128,6 +141,7 @@ function make_player_the_better(player_name) {
   if (player_name == username) {
     //play_sound("bicycle_bell.wav")
     $(id_bet).prop('readonly', false);
+    $(id_bet).prop('disabled', false);
     $(id_bet).addClass("highlighted_field");
     $(id_bet).focus();
   }
@@ -174,27 +188,37 @@ function card_played_event(data) {
   // Display card on table
 
   let image = 'img/' + card + ".svg"
-  $('#cards_played').append("<img id=" + card + "_table"+ " src=" + static_folder +
-  image + ' alt=' + card + ' class="card_table"' + '>');
+  // $('#cards_played').append("<img id=" + card + "_table" + " src=" + static_folder + image + ">");
 
   // TOOD: this  does not work for some reason
   // play_sound("cardSlide5.wav");
 
+  let html = '<figure class="figures">'
+  html = html.concat("<img id=" + card + "_table" + ' class="card_table"' + " src=" + static_folder + image + ">")
+  html = html.concat("<figcaption class='trump_caption'>" + player_name + "</figcaption>")
+  html = html.concat("</figure>")
+  $('#cards_played').append(html)
+
+  player_card[card] = player_name
+
   // Trying to display player name under card, but causes issues
   // $(cards_played).append("<figcaption><h3 class='trump_caption'>" + player_name +"</h3></figcaption>");
   // $(cards_played).append("</figure>");
+
+//   <figure>
+//   <img src="pic_trulli.jpg" alt="Trulli" style="width:100%">
+//   <figcaption>Fig.1 - Trulli, Puglia, Italy.</figcaption>
+// </figure>
+
   make_player_inactive(player_name);
-  // $("#"+player_name).removeClass("active_player");
-  // $("#"+player_name).addClass("normal_player");
-  last_player = player_name
 }
 
 function round_ended(data) {
-  console.log("round ended event received: " + data["winner"]);
+  let player_name = data["winner"]
+  let last_player = data["last_player"]
+  console.log("round ended event received: " + player_name);
   alertify.alert("Round ended", "Round winner is: " + data["winner"] + " with the " + data["card"])
   make_player_inactive(last_player);
-  // $("#"+last_player).removeClass("active_player");
-  // $("#"+last_player).addClass("normal_player");
 
   let id_rounds = "rounds_" + player_name
   var value = parseInt(document.getElementById(id_rounds).value, 10);
@@ -202,6 +226,9 @@ function round_ended(data) {
   document.getElementById(id_rounds).value = value;
   new_round = true;
   //play_sound("applause2_x.wav")
+
+  player_card = {}
+
 }
 
 function clear_round() {

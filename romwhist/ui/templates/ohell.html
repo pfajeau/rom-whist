@@ -21,7 +21,6 @@ Add footer / contact info
   var username = "{{ session['username'] }}";
   var ownername = "{{ session['ownername'] }}";
   var allowed_bets;
-  var last_player;
   var new_round = true;
   var first_card;
   var last_dealer;
@@ -47,6 +46,10 @@ Add footer / contact info
        the_players.push("{{ the_player }}")
     {% endfor %}
     initialize(the_players)
+
+    {% for card in cards_played -%}
+      add_card_to_table("{{ card }}")
+    {% endfor %}
 
     if ("{{ game_phase }}" == "BET") {
       make_player_the_better("{{ active_player }}");
@@ -299,9 +302,6 @@ Add footer / contact info
   </div>
   <br>
   <div id="cards_played">
-    {% for card in cards_played -%}
-    <img id= "{{ card }}_table" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" alt="{{ card }}" class="card_table">
-    {% endfor %}
   </div>
 </div>
 

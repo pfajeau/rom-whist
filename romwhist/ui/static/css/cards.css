@@ -19,6 +19,18 @@ body
 	width:80px
 }
 
+figure {
+  /* display: table; */
+  width: 90px;
+}
+
+
+figcaption {
+  display: table-caption;
+  caption-side: bottom;
+  text-align: center;
+}
+
 .table-with-padding td {
     padding-bottom: 5px;
     padding-right: 10px;
@@ -108,14 +120,6 @@ input[type=number]::-webkit-inner-spin-button,
   -webkit-appearance: none;
 }
 
-figure {
-  display: table;
-}
-
-figcaption {
-  display: table-caption;
-  caption-side: bottom;
-}
 
 .deal {
 	font-size: medium;
@@ -125,7 +129,7 @@ figcaption {
 	font-size : medium;
 	/* font-weight: bold; */
 	color:white;
-	text-align: left;
+	text-align: center;
 }
 
 .scoresheet_nb {
@@ -185,6 +189,14 @@ img.preload {
 	box-shadow:#111 1px 1px 2px;
 }
 
+
+.figures
+{
+  display: inline-block;
+  float:left;
+  margin: 0px;
+  padding: 0px;
+}
 
 a:visited {color:blue;}
 

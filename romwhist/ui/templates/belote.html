@@ -20,7 +20,6 @@ Add footer / contact info
   var socket;
   var username = "{{ session['username'] }}";
   var ownername = "{{ session['ownername'] }}";
-  var last_player;
   var new_round = true;
   var first_card;
   var last_dealer;
@@ -42,6 +41,13 @@ Add footer / contact info
        the_players.push("{{ the_player }}")
     {% endfor %}
     initialize(the_players)
+
+    {% for card in cards_played -%}
+    add_card_to_table("{{ card }}")
+    {% endfor %}
+
+
+    console.log(player_card)
 
     // TODO: allow start button when numbe of players is between 2 and 4
     // if (len(players != 4) {
@@ -120,7 +126,7 @@ Add footer / contact info
           image + ' alt=' + card + ' class="card_hand"' + '>' + '</td>')
 
           $('#rounds input').val(0);
-          $('#bets').html('');
+          // $('#bets input').html('');
         }
       });
 
@@ -179,14 +185,12 @@ Add footer / contact info
 
       let scores=data['scores']
       let hand_nb=data['hand_nb']
-      let wins=data['wins']
       let score_row_id = "#hand_score_nb" + hand_nb
       let html = "<tr>"
       // $("#scoresheet_body").append ("<tr id=" + score_row_id + ">/tr")
 
       Object.keys(scores).forEach(function(player) {
         score = scores[player];
-        win=wins[player]
         let id_score = "#score_" + player
         $(id_score).val(score);
         html = html.concat("<td><table class='padding-between-cols'><tr>")
@@ -311,9 +315,6 @@ Add footer / contact info
     {% endif %}
   </div>
   <div id="cards_played">
-    {% for card in cards_played -%}
-    <img id= "{{ card }}_table" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" alt="{{ card }}" class="card_table">
-    {% endfor %}
   </div>
 </div>
 
@@ -321,6 +322,7 @@ Add footer / contact info
 <div>
   <form id="game_form" action="" method="post" novalidate>
     {{ form.hidden_tag() }}
+    <br>
     <input type="hidden" id="action_game" name="action_game" value="">
     <div>
       <div class="col-md-12" id="cards">
