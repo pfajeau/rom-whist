@@ -15,9 +15,8 @@ if __name__ == '__main__':
     for player in players:
         assert (len(belote.get_hand(player).cards) == 5)
 
-    belote.place_bet("Joe", Card.SuitName.SPADE)
-    print ("TRump suit: " + str(belote.trump_suit))
-    assert(belote.trump_suit is "Spade")
+    belote.place_bet("Joe", "Spade")
+    assert(belote.trump_suit == "Spade")
 
     belote.deal_2(dealer="")
     for player in players:
@@ -32,6 +31,7 @@ if __name__ == '__main__':
         belote.create_round()
         active_player = belote.get_active_player()
         for i in range(len(players)):
+            print ("Allowed cards for " + players[i] + " : {}".format(belote.get_allowed_cards(players[i])))
             belote.card_played(players[i], belote.get_allowed_cards(players[i])[0])
         print ("Winner for round " + format(round) + " is " +  belote.current_round.winning_player)
         cards_played = belote.get_cards_played()

@@ -159,7 +159,8 @@ class BeloteGame(CardGame):
     # cards represented as string (e.g. 'c4')
     def get_allowed_cards(self, player):
         # Allowed cards are cars of the same suit than the first card played
-        # If no cards are of the same suit, any card is allowed_cards
+        # If no cards are of the same suit, trump cards must be played. If no trump card
+        # any card is allowed
         allowed_cards = []
         if self.current_round is None:
             return allowed_cards
@@ -170,9 +171,21 @@ class BeloteGame(CardGame):
             for card in self.hands[player].get_cards():
                 if card.get_suit() == self.current_round.get_first_card_played().get_suit():
                     allowed_cards.append(str(card))
-            # TODO: If player has trump, must play it
+
+            # If player has trump, must play it
+            if len(allowed_cards) == 0:
+                for card in self.hands[player].get_cards():
+                    # Check for trump cards
+                    if card.get_suit_name() == self.trump_suit:
+                        print ("User as to cut!!!")
+                        allowed_cards.append(str(card))
+
+            # Any card is allowed if no asked suit and no trump
             if len(allowed_cards) == 0:
                 allowed_cards = self.hands[player].serialize()
+
+        # TODO: user has to surcouper if they can
+
         return allowed_cards
 
     # TODO: Belote / Rebelote
@@ -279,6 +292,7 @@ class BeloteGame(CardGame):
         # Pick up trump card
         self.trump_card = self.deck.deal()
         self.trump_suit = self.trump_card.get_suit_name()
+        print("Trump suit set to " + str(self.trump_suit))
 
         self._phase = BeloteGame.GamePhase.BET
         return self.hands
