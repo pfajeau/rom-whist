@@ -30,6 +30,11 @@ games = dict()
 # Keys are game ids and then player ids. Used for socketio.
 clients = dict()
 
+# TODO: move this route to a common route file
+def home():
+    return render_template("home.html")
+
+
 def ohell_start():
 
         # print (current_user)
