@@ -2,13 +2,14 @@ from enum import Enum
 
 class Card(object):
 
-    class SuitName(Enum):
-        CLUB = "Club"
-        DIAMOND = "Diamond"
-        HEART = "Heart"
-        SPADE = "Spade"
+    # class SuitName(Enum):
+    #     CLUB = "Club"
+    #     DIAMOND = "Diamond"
+    #     HEART = "Heart"
+    #     SPADE = "Spade"
 
     SUITS = 'cdhs'
+
     SUIT_NAMES = ["Club", "Diamond", "Heart", "Spade"]
 
     NUMBERS = list(range(2, 15))
@@ -17,10 +18,10 @@ class Card(object):
                   'Jack', 'Queen', 'King', 'Ace']
 
     SUIT_NAMES_BY_INITIAL = {
-        "c": SuitName.CLUB,
-        "d": SuitName.DIAMOND,
-        "h": SuitName.HEART,
-        "s": SuitName.SPADE
+        'c': "Club",
+        'd': "Diamond",
+        'h': "Heart",
+        's': "Spade"
     }
 
     def __init__(self, card_number, suit):
@@ -35,6 +36,11 @@ class Card(object):
         print (card_value[1:len(card_value)])
         return cls(int(card_value[1:len(card_value)]), card_value[0])
 
+    @classmethod
+    def get_suit_initial (cls, suit_name):
+        index = list(Card.SUIT_NAMES_BY_INITIAL.values()).index(suit_name)
+        return list(Card.SUIT_NAMES_BY_INITIAL.keys())[index]
+
     def get_suit(self):
         return self.suit_char
 
@@ -42,8 +48,9 @@ class Card(object):
         return self.card_num
 
     def get_suit_name(self):
-        index = self.SUITS.index(self.suit_char)
-        return self.SUIT_NAMES[index]
+        # index = self.SUITS.index(self.suit_char)
+        # return self.SUIT_NAMES[index]
+        return Card.SUIT_NAMES_BY_INITIAL[self.suit_char]
 
     def get_card_name(self):
         index = self.NUMBERS.index(self.card_num)

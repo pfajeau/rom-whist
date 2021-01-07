@@ -28,12 +28,12 @@ class CardGame():
         self.dealer = None
         self.init_dict(self.scores,0)
         self.dealing_method = CardGame.AUTOMATED_DEALING
-        self.owner = game_creator
+        self.__owner = game_creator
         self.active_player = self.owner
         self.deck_size = deck_size
         self._current_hand_nb = 0
-        self._started = False;
-        self._phase = CardGame.GamePhase.DEAL
+        self.started = False;
+        self.phase = CardGame.GamePhase.DEAL
         self.scoresheet=[]
         self._player_status=dict()
         self.init_dict(self._player_status, 1)
@@ -55,20 +55,34 @@ class CardGame():
         self.init_dict(self.wins, 0)
         self._current_hand_nb = 0
 
-    def get_game_phase(self):
-        return self._phase
+    @property
+    def phase(self):
+        return self.__phase
+
+    @phase.setter
+    def phase(self, value):
+        self.__phase = value
 
     def get_active_player(self):
         return self.active_player;
 
+    @property
+    def owner(self):
+        return self.__owner
+
+    @owner.setter
     def set_owner(self, player):
-        self.owner = player
+        self.__owner = player
 
-    def get_owner(self):
-        return self.owner
 
-    def game_started(self):
-        return self._started;
+    @property
+    def started(self):
+        return self.__started;
+
+    # Set to true or false
+    @started.setter
+    def started(self, value):
+        self.__started = value
 
     # Return a list of players with the mazimum score
     def get_highest_score_player(self):
@@ -137,7 +151,7 @@ class CardGame():
         return playing_players
 
     def start_game(self):
-        self._started = True;
+        self.started = True;
         self._current_hand_nb = 0
 
         # Set deck size based on number of players
@@ -145,10 +159,10 @@ class CardGame():
 
         # Create hand progression
         if self.dealing_method == CardGame.AUTOMATED_DEALING:
-            self._phase = CardGame.GamePhase.BET
+            self.phase = CardGame.GamePhase.BET
             self.create_hand_progression()
         else:
-            self._phase = CardGame.GamePhase.DEAL
+            self.phase = CardGame.GamePhase.DEAL
 
     def get_hand(self, player):
         return self.hands[player]

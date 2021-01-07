@@ -16,6 +16,18 @@ class BeloteGame(CardGame):
         BET2 = "Bet2"
         PLAY = "Play"
 
+    class BeloteAnnounced(Enum):
+        No = 1
+        Belote = 2
+        Rebelote = 3
+
+    class BeloteState(Enum):
+        Not_Allowed = 1
+        Allowed = 2
+        Belote_PLayed = 3
+        Rebelote_Played = 4
+
+
     # Number of cards to deal depending on number of players
     nb_cards_first_deal = {2:6, 3:6, 4: 5}
     nb_cards_second_deal = {2:3, 3:3, 4:3}
@@ -32,6 +44,9 @@ class BeloteGame(CardGame):
         self.taker = None
         self.teams = []
         self.hand_points=dict()   # The number of points collected while the hand is played
+        self.__belote_announced = BeloteGame.BeloteAnnounced.No
+        self.__belote_state = BeloteGame.BeloteState.Not_Allowed
+        self.__player_with_belote = None
         self.init_dict(self.hand_points,0)
 
 
@@ -46,13 +61,36 @@ class BeloteGame(CardGame):
                          "h7": 7, "h8": 8, "h9": 9, "h10": 14, "h11": 11, "h12": 12, "h13": 13, "h14": 15,
                          "s7": 7, "s8": 8, "s9": 9, "s10": 14, "s11": 11, "s12": 12, "s13": 14, "s14": 15}
 
+    @property
+    def player_with_belote(self):
+        return self.__player_with_belote
+
+    @player_with_belote.setter
+    def player_with_belote(self, value):
+        self.__player_with_belote = value
+
+    @property
+    def belote_announced(self):
+        return self.__belote_announced
+
+    @belote_announced.setter
+    def belote_announced(self, value):
+        self.__belote_announced = value
+
+    @property
+    def belote_state(self):
+        return self.__belote_state
+
+    @belote_state.setter
+    def belote_state(self, value):
+        self.__belote_state = value
 
     def reset(self):
         CardGame.reset(self)
         self.taker = None
 
-    def get_game_phase(self):
-        return self._phase
+    def phase(self):
+        return self.__phase
 
     def add_player(self, player):
         if player in self.players:
@@ -111,18 +149,18 @@ class BeloteGame(CardGame):
             # Ask next player
             self.active_player = self.next_player(player)
             if self.next_player_to_bet(player) is None:
-                if self._phase == BeloteGame.GamePhase.BET:
-                    self._phase = BeloteGame.GamePhase.BET2
+                if self.phase == BeloteGame.GamePhase.BET:
+                    self.phase = BeloteGame.GamePhase.BET2
                     self.init_dict(self.bets,"")
                 else:
                     # TODO: redistribute cards and reset game
                     self.init_bets()
-                    self._phase = BeloteGame.GamePhase.DEAL
+                    self.phase = BeloteGame.GamePhase.DEAL
                     self.dealer = self.next_player_to_deal()
         else:
             print ("Player took")
             # Deal reamining cards
-            self._phase = BeloteGame.GamePhase.PLAY
+            self.phase = BeloteGame.GamePhase.PLAY
             self.trump_suit = bet
             self.taker = player
             self.set_cards_rank_and_value()
@@ -144,9 +182,9 @@ class BeloteGame(CardGame):
         allowed_bets = []
         # if self.hands.get(player) is None:
         #     allowed_bets = []  # No hand yet
-        if self.get_game_phase() == self.GamePhase.BET:
+        if self.phase == self.GamePhase.BET:
             allowed_bets = ['Pass', str(self.trump_suit)]
-        elif self.get_game_phase() == self.GamePhase.BET2:
+        elif self.phase == self.GamePhase.BET2:
             allowed_bets = ['Pass']
             for suit in Card.SUIT_NAMES:
                 if suit != self.trump_suit:
@@ -294,7 +332,7 @@ class BeloteGame(CardGame):
         self.trump_suit = self.trump_card.get_suit_name()
         print("Trump suit set to " + str(self.trump_suit))
 
-        self._phase = BeloteGame.GamePhase.BET
+        self.phase = BeloteGame.GamePhase.BET
         return self.hands
 
     # Distribute 3 cards for each player
@@ -316,6 +354,20 @@ class BeloteGame(CardGame):
                 for i in range(nb_cards):
                     self.hands[player].add(self.deck.deal())
                 self.hands[player].sort()
+
+        # Determine whether Belote / Rebelote enabled for each player
+        queen = False
+        king = False
+        for player in self.get_playing_players():
+            for card in self.hands[player].cards:
+                if str(card) == Card.get_suit_initial(self.trump_suit) + "12":
+                    queen = True
+                elif str(card) == Card.get_suit_initial(self.trump_suit) + "13":
+                    king = True
+            if queen and king:
+                self.BeloteState = BeloteGame.BeloteState.Allowed
+                self.player_with_belote = player
+                return self.hands
         return self.hands
 
     # TODO: change this to be based on score reaching a certain threshold

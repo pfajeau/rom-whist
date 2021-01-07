@@ -74,14 +74,14 @@ def ohell_start():
             # Not allowed to connect if another player has the same alias
             # and game has not started. If game has started, assume player
             # is trying to reconnect after having lost a connection
-            if username in game.get_players() and not game.game_started():
+            if username in game.get_players() and not game.started:
                 error = "The game already has a user with the same name"
                 print(error)
                 return render_template('ohell_start.html', error = error, form=form)
 
             # Not allowed to connect to a game already started unless the player
             # is already an existing player (same alias)
-            if game.game_started() and not username in game.get_players():
+            if game.started and not username in game.get_players():
                 error = "This game has already started! You cannot join a game in progress"
                 print(error)
                 return render_template('ohell_start.html', error = error, form=form)
@@ -90,7 +90,7 @@ def ohell_start():
             # if previous_alias in players[game_id]:
             #     remove_player(game_id, previous_alias)
 
-            session['ownername'] = game.get_owner()
+            session['ownername'] = game.ownerstar
             add_player(game_id)
             return redirect(url_for('ohell_play'))
 
@@ -192,7 +192,7 @@ def ohell_play():
         cards_played = game.get_cards_played()
 
         print("Active Player: ", game.get_active_player())
-        print("Game Phase: ", game.get_game_phase().name)
+        print("Game Phase: ", game.phase.name)
         active_player = game.get_active_player()
 
         print ("Scoresheet:")
@@ -205,7 +205,7 @@ def ohell_play():
         hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player, \
         cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
         trump=game.trump_card, dealing_method=game.dealing_method,  \
-        allowed_bets=game.allowed_bets(player),game_phase=game.get_game_phase().name, \
+        allowed_bets=game.allowed_bets(player),game_phase=game.phase.name, \
         hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet)
 
 
@@ -486,7 +486,7 @@ def remove_player(game_id, player):
     if not game_id is None:
         game = games.get(game_id)
         if not game is None:
-            if game.game_started():
+            if game.started:
                 game.disable_player(player)
             else:
                 game.remove_player(player)
@@ -505,7 +505,7 @@ def restart_hand(game_id):
     if game.dealing_method == OhellGame.MANUAL_DEALING:
       #socketio.emit("hand completed", {'scores':game.get_scores(), 'player_to_deal': game.dealer}, room=game_id, namespace=NAMESPACE)
       socketio.emit("player to deal", game.dealer, room=game_id, namespace=NAMESPACE)
-    elif game.game_started():
+    elif game.started:
       game._current_hand_nb = game._current_hand_nb - 1  # Deal again
       generate_hands(game_id, "")
 

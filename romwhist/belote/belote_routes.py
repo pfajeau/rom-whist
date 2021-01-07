@@ -55,14 +55,14 @@ def belote_start():
             # Not allowed to connect if another player has the same alias
             # and game has not started. If game has started, assume player
             # is trying to reconnect after having lost a connection
-            if username in game.get_players() and not game.game_started():
+            if username in game.get_players() and not game.started:
                 error = "The game already has a user with the same name"
                 print(error)
                 return render_template('belote_start.html', error = error, form=form)
 
             # Not allowed to connect to a game already started unless the player
             # is already an existing player (same alias)
-            if game.game_started() and not username in game.get_players():
+            if game.started and not username in game.get_players():
                 error = "This game has already started! You cannot join a game in progress"
                 print(error)
                 return render_template('belote_start.html', error = error, form=form)
@@ -71,7 +71,7 @@ def belote_start():
             # if previous_alias in players[game_id]:
             #     remove_player(game_id, previous_alias)
 
-            session['ownername'] = game.get_owner()
+            session['ownername'] = game.owner
             add_player(game_id)
             return redirect(url_for('belote_play'))
 
@@ -163,7 +163,7 @@ def belote_play():
         cards_played = game.get_cards_played()
 
         print("Active Player: ", game.get_active_player())
-        print("Game Phase: ", game.get_game_phase().name)
+        print("Game Phase: ", game.phase.name)
         active_player = game.get_active_player()
 
         print ("Scoresheet:")
@@ -176,7 +176,7 @@ def belote_play():
         hand=hand,  wins=game.get_wins(), bets = game.get_bets(), active_player=active_player, \
         cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
         trump=game.trump_card, trump_suit = game.trump_suit, allowed_bets=game.allowed_bets(player), \
-        game_phase=game.get_game_phase().name, scoresheet=game.scoresheet)
+        game_phase=game.phase.name, scoresheet=game.scoresheet)
 
 
 # @app.route("/login",methods=['GET', 'POST'])
@@ -232,19 +232,19 @@ def player_bet(bet):
         print("ERROR: Game not found!!!")
     else:
         game = bel_games[game_id]
-        if game.get_game_phase()==BeloteGame.GamePhase.BET or game.get_game_phase()==BeloteGame.GamePhase.BET2:
+        if game.phase==BeloteGame.GamePhase.BET or game.phase==BeloteGame.GamePhase.BET2:
             game = bel_games[game_id]
             try:
                 game.place_bet(session['username'], bet)
                 emit("player bet", {'player':session['username'], 'bet':bet}, room = game_id, namespace=NAMESPACE)
                 nplayer = game.get_active_player()
-                if game.get_game_phase() == BeloteGame.GamePhase.DEAL:
+                if game.phase == BeloteGame.GamePhase.DEAL:
                     restart_hand(game_id)
 
-                elif game.get_game_phase() == BeloteGame.GamePhase.BET or game.get_game_phase() == BeloteGame.GamePhase.BET2:
+                elif game.phase == BeloteGame.GamePhase.BET or game.phase == BeloteGame.GamePhase.BET2:
                     emit("player to bet", {'player': nplayer, 'allowed_bets': game.allowed_bets(nplayer)}, room=game_id,namespace=NAMESPACE)
 
-                elif game.get_game_phase() == BeloteGame.GamePhase.PLAY:
+                elif game.phase == BeloteGame.GamePhase.PLAY:
                     hands = game.deal_2(game.dealer)
                     print ("After deal_2")
                     round = game.create_round()
@@ -259,12 +259,17 @@ def player_bet(bet):
                     print ("Player to play: ", next_player_to_play)
                     emit("trump suit", game.trump_suit,  room=game_id, namespace=NAMESPACE)
                     emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards}, room=game_id, namespace=NAMESPACE)
-                return
+                    player_belote = game.player_with_belote
+                    print ("player with belote: " + player_belote)
+                    if (not player_belote == None):
+                        print ("Belote / Rebelote: " + player_belote)
+                        #emit ("belote rebelote enabled", player_belote, room=bel_clients[game_id][player_belote], namespace=NAMESPACE)
+                #return
             except Exception as e:
                 print ("Bet received: ", bet)
                 print (e)
                 traceback.print_stack()
-                emit("alert", "Invalid bet!", room=bel_clients[game_id][username], namespace=NAMESPACE)
+                emit("alert", "Error", room=bel_clients[game_id][username], namespace=NAMESPACE)
 
 def hand_completed(game_id, username):
     game = bel_games[game_id]
@@ -459,7 +464,7 @@ def remove_player(game_id, player):
     if not game_id is None:
         game = bel_games.get(game_id)
         if not game is None:
-            if game.game_started():
+            if game.started:
                 game.disable_player(player)
             else:
                 game.remove_player(player)
@@ -474,7 +479,7 @@ def restart_hand(game_id):
     game = bel_games.get(game_id)
     # Deal another hand
     socketio.emit("alert", "Hand to be replayed", room=game_id, namespace=NAMESPACE)
-    if game.game_started():
+    if game.started:
       game._current_hand_nb = game._current_hand_nb - 1  # Deal again
       generate_hands(game_id, "")
 

@@ -130,6 +130,10 @@ Add footer / contact info
         }
       });
 
+    socket.on('belote rebelote enabled', function(data) {
+      // TODO: enable or display  Belote/Rebelote button
+      alert("Belote / Rebelote possible")
+    });
 
     socket.on('player to bet', function(data) {
       console.log("player to bet event received")
@@ -305,6 +309,8 @@ Add footer / contact info
   </table>
 </div>
 <br>
+<div id = "#dialog-message">
+</div>
 <div id="card-table-burgundy" class="container">
   <div class="bottomright" id="trump_card">
     {% if game_phase != "PLAY" and trump != None %}

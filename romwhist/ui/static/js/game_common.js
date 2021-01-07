@@ -54,6 +54,7 @@ function initialize(players) {
   $("#game_action_buttons").append('<button id="leave_game" type="button" class="btn btn-primary" name="leave_game">Leave Game</button>');
   document.getElementById("leave_game").onclick = function() {
     show_alert("Are you sure you want to leave the game?", "Warning", cancel=true, callback_ok=submit_form, action="leave_game");
+    // show_dialog_ok("Warning", "Are you sure you want to leave the game?", ok_function=submit_form, action="leave_game")
   }
 
   if (username == ownername) {
@@ -305,6 +306,19 @@ function show_alert(msg, title, cancel=false, callback_ok, action="") {
     });
   }
 }
+
+function show_dialog_ok(title,text,ok_function, action="") {
+  $( "#dialog-message" ).dialog({
+    modal: true,
+    title: title,
+    buttons: {
+      Ok: ok_function
+    }
+  })
+  $( "#dialog-message").val(text)
+  $("#action_game").val(action);
+}
+
 
 function sleep(miliseconds) {
  var currentTime = new Date().getTime();
