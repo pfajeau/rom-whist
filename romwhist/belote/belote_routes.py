@@ -263,8 +263,8 @@ def player_bet(bet):
                     print ("player with belote: " + player_belote)
                     if (not player_belote == None):
                         print ("Belote / Rebelote: " + player_belote)
-                        #emit ("belote rebelote enabled", player_belote, room=bel_clients[game_id][player_belote], namespace=NAMESPACE)
-                #return
+                        emit ("belote rebelote enabled", player_belote, room=bel_clients[game_id][player_belote], namespace=NAMESPACE)
+                return
             except Exception as e:
                 print ("Bet received: ", bet)
                 print (e)
@@ -326,6 +326,17 @@ def player_played(data):
             socketio.emit("round ended", {"winner": winner, "card": winnning_card.desc(), "last_player": session['username']}, room=game_id, namespace=NAMESPACE)
             timer = threading.Timer(4.0, next_round, [game_id, nplayer,allowed_cards])
             timer.start()
+
+        belote_played = game.belote_state
+        if belote_played == BeloteGame.BeloteState.Belote_Played:
+            print("Belote card played")
+            socketio.emit("belote", game.player_with_belote, room=game_id, namespace=NAMESPACE)
+            socketio.emit("msg posted", {'sender': session['username'], 'msg': 'Belote'}, room=game_id, namespace=NAMESPACE)
+
+        elif belote_played == BeloteGame.BeloteState.Rebelote_Played:
+            print("Belote card played")
+            socketio.emit("rebelote", game.player_with_belote, room=game_id, namespace=NAMESPACE)
+            socketio.emit("msg posted", {'sender': session['username'], 'msg': 'Rebelote'}, room=game_id, namespace=NAMESPACE)
 
         print("Allowed cards: ", allowed_cards)
 

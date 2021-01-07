@@ -24,7 +24,7 @@ class BeloteGame(CardGame):
     class BeloteState(Enum):
         Not_Allowed = 1
         Allowed = 2
-        Belote_PLayed = 3
+        Belote_Played = 3
         Rebelote_Played = 4
 
 
@@ -379,6 +379,19 @@ class BeloteGame(CardGame):
         if self.is_hand_completed():
             # Add 10 points to the winnder of the last round
             self.hand_points[winner] += 10
+
+        # Check wheter belote / rebelote card played
+        if self.belote_announced == BeloteGame.BeloteAnnounced.Belote:
+            for card in self.hands[player].cards:
+                if str(card) == Card.get_suit_initial(self.trump_suit) + "12" or \
+                        str(card) == Card.get_suit_initial(self.trump_suit) + "13":
+                    self.belote_state = BeloteGame.BeloteState.Belote_Played
+        elif self.belote_announced == BeloteGame.BeloteAnnounced.Rebelote:
+            for card in self.hands[player].cards:
+                if str(card) == Card.get_suit_initial(self.trump_suit) + "12" or \
+                        str(card) == Card.get_suit_initial(self.trump_suit) + "13":
+                    self.belote_state = BeloteGame.BeloteState.Rebelote_Played
+
         return winner
 
     def round_ended(self, winner):
