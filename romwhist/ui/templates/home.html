@@ -1,7 +1,19 @@
-{% extends "bootstrap/base.html" %}
+{% extends "base.html" %}
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
+<br><br>
+<h2>Welcome to a place to play card games with your friends! <br></h2>
+<p><h3>Pick the game you want to play:</p></h3>
+<br>
+<a href="ohell_start">
+<img border="0" alt="Play Oh Hell" src="{{ url_for('static', filename='') }}img/ohell.png" width="200"></a>
+<br>
+<br>
+<a href="belote_start">
+<img border="0" alt="Play Belote" src="{{ url_for('static', filename='') }}img/belote.png" width="200"></a>
 
-<h2><a href="http://funwhist.ca/ohell_start">Play Oh Hell</h2>
-<h2><a href="http://funwhist.ca/belote_start">Play Belote</h2>
-
+<br><br>
+  {% block footer %}
+  {{ super() }}
+  {% endblock %}
 {% endblock %}
