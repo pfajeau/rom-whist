@@ -172,11 +172,20 @@ def belote_play():
             print (i, " ",game.scoresheet[i][1])
             print (i, " ",game.scoresheet[i][2])
 
+        # TODO Determine status of belote button
+        # if game phase = play and user has both queen and king then enabled. If user has already play belote, then
+        # enable.
+        belote_enabled = False
+        if game.belote_state == BeloteGame.BeloteState.Belote_Played or game.belote_state == BeloteGame.BeloteState.Allowed:
+            belote_enabled = True
+
+
         return render_template("belote.html", form=form,  players=game.get_playing_players(), scores=game.get_scores(), \
         hand=hand,  wins=game.get_wins(), bets = game.get_bets(), active_player=active_player, \
         cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
         trump=game.trump_card, trump_suit = game.trump_suit, allowed_bets=game.allowed_bets(player), \
-        game_phase=game.phase.name, scoresheet=game.scoresheet)
+        game_phase=game.phase.name, scoresheet=game.scoresheet, \
+        belote_allowed = belote_enabled, player__with_belote = game.player_with_belote)
 
 
 # @app.route("/login",methods=['GET', 'POST'])
@@ -269,7 +278,7 @@ def player_bet(bet):
                 print ("Bet received: ", bet)
                 print (e)
                 traceback.print_stack()
-                emit("alert", "Error", room=bel_clients[game_id][username], namespace=NAMESPACE)
+                emit("alert", "Error in place bet", room=bel_clients[game_id][username], namespace=NAMESPACE)
 
 def hand_completed(game_id, username):
     game = bel_games[game_id]
@@ -323,22 +332,30 @@ def player_played(data):
             # game.round_ended(winner)
             allowed_cards = game.get_hand(nplayer).serialize()
             winnning_card = game.get_current_round().cards_played[winner]
-            socketio.emit("round ended", {"winner": winner, "card": winnning_card.desc(), "last_player": session['username']}, room=game_id, namespace=NAMESPACE)
+            emit("round ended", {"winner": winner, "card": winnning_card.desc(), "last_player": session['username']}, room=game_id, namespace=NAMESPACE)
             timer = threading.Timer(4.0, next_round, [game_id, nplayer,allowed_cards])
             timer.start()
 
-        belote_played = game.belote_state
-        if belote_played == BeloteGame.BeloteState.Belote_Played:
-            print("Belote card played")
-            socketio.emit("belote", game.player_with_belote, room=game_id, namespace=NAMESPACE)
-            socketio.emit("msg posted", {'sender': session['username'], 'msg': 'Belote'}, room=game_id, namespace=NAMESPACE)
+        # TODO: set timer - Belote or Rebelote announcement must be within a certain period of the queen or king being played
+        # Otherwise, player does not get the points
+        timer = threading.Timer(4.0, belote_played, [game_id, session['username']])
+        timer.start()
 
-        elif belote_played == BeloteGame.BeloteState.Rebelote_Played:
-            print("Belote card played")
-            socketio.emit("rebelote", game.player_with_belote, room=game_id, namespace=NAMESPACE)
-            socketio.emit("msg posted", {'sender': session['username'], 'msg': 'Rebelote'}, room=game_id, namespace=NAMESPACE)
+def  belote_played(game_id, player):
+    print("In belote played")
+    game = bel_games[game_id]
+    belote_played = game.belote_state
+    if belote_played == BeloteGame.BeloteState.Belote_Played:
+        print("Belote card played")
+        emit("belote played", game.player_with_belote, room=game_id, namespace=NAMESPACE)
+        #emit("msg posted", {'sender': session['username'], 'msg': 'Belote'}, room=game_id, namespace=NAMESPACE)
 
-        print("Allowed cards: ", allowed_cards)
+    elif belote_played == BeloteGame.BeloteState.Rebelote_Played:
+        print("Belote card played")
+        emit("rebelote played", game.player_with_belote, room=game_id, namespace=NAMESPACE)
+        #socketio.emit("msg posted", {'sender': session['username'], 'msg': 'Rebelote'}, room=game_id, namespace=NAMESPACE)
+
+    print("Allowed cards: ", allowed_cards)
 
     return
 
@@ -380,6 +397,23 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
     socketio.emit("trump card", {"trump_card": str(game.trump_card), "trump_suit": str(game.trump_suit)}, room=game_id, namespace=NAMESPACE)
     socketio.emit("player to bet", {'player': nplayer, 'allowed_bets':game.allowed_bets(nplayer)}, room=game_id, namespace=NAMESPACE)
     return
+
+@socketio.on('belote announced', namespace=NAMESPACE)
+def belote_announced(announce):
+    print("belote announced event received. Announce is: " + announce)
+    # Set in game and issue notification if applicable
+    game_id = session.get('game_id')
+    if not game_id is None:
+        player = session.get('username')
+        game = bel_games[game_id]
+        if announce == 'Belote':
+            game.belote_announced = BeloteGame.BeloteAnnounced.Belote
+        elif announce == 'Rebelote':
+            game.belote_announced = BeloteGame.BeloteAnnounced.Rebelote
+
+        emit("alert", announce + " announced by " + player, room=game_id, namespace=NAMESPACE)
+        emit("belote announced", {'player' : player, 'announced': announce}, room=game_id, namespace=NAMESPACE)
+        emit("msg posted", {'sender': session['username'], 'msg': announce}, room=game_id, namespace=NAMESPACE)
 
 @socketio.on('join game', namespace=NAMESPACE)
 def on_join(data):

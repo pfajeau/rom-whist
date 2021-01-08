@@ -29,8 +29,8 @@ class BeloteGame(CardGame):
 
 
     # Number of cards to deal depending on number of players
-    nb_cards_first_deal = {2:6, 3:6, 4: 5}
-    nb_cards_second_deal = {2:3, 3:3, 4:3}
+    nb_cards_first_deal = {2:15, 3:6, 4: 5}
+    nb_cards_second_deal = {2:1, 3:3, 4:3}
 
     # Total number of points
     TOTAL_POINTS = 162
@@ -161,6 +161,8 @@ class BeloteGame(CardGame):
             print ("Player took")
             # Deal reamining cards
             self.phase = BeloteGame.GamePhase.PLAY
+            # TODO: this will not work when UI translated to diferent language, as string passed will be diifferent
+            # than what is in the enum
             self.trump_suit = bet
             self.taker = player
             self.set_cards_rank_and_value()
@@ -381,6 +383,7 @@ class BeloteGame(CardGame):
             self.hand_points[winner] += 10
 
         # Check wheter belote / rebelote card played
+        print ("In Belote.card_played, belote_announced is: " + self.belote_announced)
         if self.belote_announced == BeloteGame.BeloteAnnounced.Belote:
             for card in self.hands[player].cards:
                 if str(card) == Card.get_suit_initial(self.trump_suit) + "12" or \

@@ -90,7 +90,7 @@ def ohell_start():
             # if previous_alias in players[game_id]:
             #     remove_player(game_id, previous_alias)
 
-            session['ownername'] = game.ownerstar
+            session['ownername'] = game.owner
             add_player(game_id)
             return redirect(url_for('ohell_play'))
 

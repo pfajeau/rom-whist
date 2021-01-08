@@ -46,6 +46,13 @@ Add footer / contact info
     {% endfor %}
     initialize(the_players)
 
+    console.log("player_with_belote: " + "{{ player__with_belote }}")
+    console.log("belote_allowed: " + "{{ belote_allowed }}")
+
+    if (username == "{{ player_with_belote }}") {
+      add_belote_button({{ belote_allowed }})
+  }
+
     {% if cards_played != None %}
       {% for key, value in cards_played.items() %}
       add_card_to_table("{{ key }}", "{{ value }}")
@@ -82,6 +89,15 @@ Add footer / contact info
     });
 
     enable_start_game();
+
+    function add_belote_button(enabled = true) {
+      $("#game_action_buttons").append('<button id="belote" type="button" class="btn-primary" name="belote">Belote</button>');
+      document.getElementById("belote").onclick = function() {
+        announced = $("#belote").text()
+        socket.emit('belote announced', announced);
+        console.log ("Belote announced")
+      }
+    }
 
     // Connect to websocket
     console.log("Connecting to io")
@@ -134,8 +150,19 @@ Add footer / contact info
       });
 
     socket.on('belote rebelote enabled', function(data) {
-      // TODO: enable or display  Belote/Rebelote button
+      // Add Belote/Rebelote button
       alert("Belote / Rebelote possible")
+      add_belote_button(true)
+    });
+
+    socket.on('belote played', function(data) {
+      // Add Belote/Rebelote button
+      $("#belote").text("Rebelote")
+    });
+
+    socket.on('rebelote played', function(data) {
+      // Disable Belote/Rebelote button
+      $("belote").prop("disabled", true)
     });
 
     socket.on('player to bet', function(data) {
@@ -256,6 +283,7 @@ Add footer / contact info
       show_alert(msg, "Warning");
     });
   });
+
 
 </script>
 

@@ -200,11 +200,7 @@ class CardGame():
         return True
 
     def create_round(self):
-        if self.trump_card is None:
-            suit = None
-        else:
-            suit = self.trump_suit
-        self.current_round = Round(self.get_playing_players(), suit)
+        self.current_round = Round(self.get_playing_players(), self.trump_suit)
         self.rounds.append(self.current_round)
         return self.current_round
 

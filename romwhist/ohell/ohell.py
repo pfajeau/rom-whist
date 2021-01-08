@@ -189,7 +189,7 @@ class OhellGame(CardGame):
                     return None
                 else:
                     self.trump_card = trump_card
-                    self.trump_suit = trump_card.get_suit()
+                    self.trump_suit = trump_card.get_suit_name()
 
             else:
                 self.trump_card = None
