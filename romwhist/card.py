@@ -32,8 +32,6 @@ class Card(object):
 
     @classmethod
     def card_from_value (cls, card_value):
-        print ("card_from_value:", card_value)
-        print (card_value[1:len(card_value)])
         return cls(int(card_value[1:len(card_value)]), card_value[0])
 
     @classmethod

@@ -305,20 +305,23 @@ class BeloteGame(CardGame):
 
         elif nb_players == 4:
             if player_points[0] + player_points[2] > BeloteGame.TOTAL_POINTS / 2:
-                for i in range(0,4):
-                    self.scores[players[i]] += player_points[i]
+                self.scores[players[0]] += player_points[0] + player_points[2]
+                self.scores[players[2]]  = self.scores[players[0]]
+                self.scores[players[1]] += player_points[1] + player_points[3]
+                self.scores[players[3]] = self.scores[players[1]]
             else:
                 # TODO: SOme rules give more points to the team in this case
                 self.scores[players[1]] += BeloteGame.TOTAL_POINTS
                 self.scores[players[3]] += BeloteGame.TOTAL_POINTS
 
             # Capot
+            points_capot = BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
             if self.wins[players[1]] + self.wins[players[3]] == 0:
-                self.scores[players[0]] += BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
-                self.scores[players[2]] += BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
+                self.scores[players[0]] += points_capot
+                self.scores[players[2]] += points_capot
             elif self.wins[players[0]] + self.wins[players[2]] == 0:
-                self.scores[players[1]] += BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
-                self.scores[players[3]] += BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
+                self.scores[players[1]] += points_capot
+                self.scores[players[3]] += points_capot
 
         self.scoresheet.append(self.scores.copy())
         return self.scores
