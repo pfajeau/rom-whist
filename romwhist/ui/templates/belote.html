@@ -26,6 +26,7 @@ Add footer / contact info
   var static_folder={{ url_for('static', filename='') }}
   var trump_suit = ""
   var the_players
+  var bool = {"True": true, "False": false}
 
   // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
   let html_frag = ''
@@ -46,12 +47,18 @@ Add footer / contact info
     {% endfor %}
     initialize(the_players)
 
-    console.log("player_with_belote: " + "{{ player__with_belote }}")
+    console.log("player_with_belote: " + "{{ player_with_belote }}")
     console.log("belote_allowed: " + "{{ belote_allowed }}")
+    belote_allowed = bool["{{ belote_allowed }}"]
 
     if (username == "{{ player_with_belote }}") {
-      add_belote_button({{ belote_allowed }})
-  }
+      // TODO: need to know whether to put belote or rebelote on button
+      add_belote_button(belote_allowed, "belote")
+    }
+    else {
+      // Remove belote button
+      $("#belote").remove()
+    }
 
     {% if cards_played != None %}
       {% for key, value in cards_played.items() %}
@@ -90,12 +97,16 @@ Add footer / contact info
 
     enable_start_game();
 
-    function add_belote_button(enabled = true) {
-      $("#game_action_buttons").append('<button id="belote" type="button" class="btn-primary" name="belote">Belote</button>');
+    function add_belote_button(enabled, text) {
+      $("#game_action_buttons").append('<button id="belote" type="button" class="btn-primary" name="belote">' + text + '</button>');
       document.getElementById("belote").onclick = function() {
         announced = $("#belote").text()
         socket.emit('belote announced', announced);
         console.log ("Belote announced")
+      }
+      console.log("In add_belote_button enabled is" + enabled)
+      if (enabled == false) {
+        $("#belote").prop("disabled", true)
       }
     }
 
@@ -149,10 +160,24 @@ Add footer / contact info
         }
       });
 
+      socket.on('belote announced', function(data) {
+        // Add Belote/Rebelote button
+        console.log("belote announced event received")
+        announce_player = data['player']
+        announce = data['announced']
+        if (username != announce_player) {
+          show_alert("Player " + announce_player + " annouced " + data['announced'], data['announced'])
+        }
+        if (announce == "Rebelote" && announce_player == username) {
+          // Disable Belote button
+          $("#belote").prop("disabled", true)
+        }
+      });
+
     socket.on('belote rebelote enabled', function(data) {
       // Add Belote/Rebelote button
-      alert("Belote / Rebelote possible")
-      add_belote_button(true)
+      console.log("Belote / Rebelote possible")
+      add_belote_button(true, "Belote")
     });
 
     socket.on('belote played', function(data) {

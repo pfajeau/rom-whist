@@ -185,7 +185,7 @@ def belote_play():
         cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
         trump=game.trump_card, trump_suit = game.trump_suit, allowed_bets=game.allowed_bets(player), \
         game_phase=game.phase.name, scoresheet=game.scoresheet, \
-        belote_allowed = belote_enabled, player__with_belote = game.player_with_belote)
+        belote_allowed = belote_enabled, player_with_belote = game.player_with_belote)
 
 
 # @app.route("/login",methods=['GET', 'POST'])
@@ -340,6 +340,7 @@ def player_played(data):
         # Otherwise, player does not get the points
         timer = threading.Timer(4.0, belote_played, [game_id, session['username']])
         timer.start()
+        print("Allowed cards: ", allowed_cards)
 
 def  belote_played(game_id, player):
     print("In belote played")
@@ -347,16 +348,13 @@ def  belote_played(game_id, player):
     belote_played = game.belote_state
     if belote_played == BeloteGame.BeloteState.Belote_Played:
         print("Belote card played")
-        emit("belote played", game.player_with_belote, room=game_id, namespace=NAMESPACE)
+        socketio.emit("belote played", game.player_with_belote, room=game_id, namespace=NAMESPACE)
         #emit("msg posted", {'sender': session['username'], 'msg': 'Belote'}, room=game_id, namespace=NAMESPACE)
 
     elif belote_played == BeloteGame.BeloteState.Rebelote_Played:
         print("Belote card played")
-        emit("rebelote played", game.player_with_belote, room=game_id, namespace=NAMESPACE)
+        socketio.emit("rebelote played", game.player_with_belote, room=game_id, namespace=NAMESPACE)
         #socketio.emit("msg posted", {'sender': session['username'], 'msg': 'Rebelote'}, room=game_id, namespace=NAMESPACE)
-
-    print("Allowed cards: ", allowed_cards)
-
     return
 
 @socketio.on('start hand', namespace=NAMESPACE)
@@ -411,7 +409,7 @@ def belote_announced(announce):
         elif announce == 'Rebelote':
             game.belote_announced = BeloteGame.BeloteAnnounced.Rebelote
 
-        emit("alert", announce + " announced by " + player, room=game_id, namespace=NAMESPACE)
+        # emit("alert", announce + " announced by " + player, room=game_id, namespace=NAMESPACE)
         emit("belote announced", {'player' : player, 'announced': announce}, room=game_id, namespace=NAMESPACE)
         emit("msg posted", {'sender': session['username'], 'msg': announce}, room=game_id, namespace=NAMESPACE)
 

@@ -167,6 +167,21 @@ class BeloteGame(CardGame):
             self.taker = player
             self.set_cards_rank_and_value()
             self.active_player = self.next_player(self.dealer)
+
+            # Determine whether Belote / Rebelote enabled for each player
+            queen = False
+            king = False
+            for player in self.get_playing_players():
+                for card in self.hands[player].cards:
+                    if str(card) == Card.get_suit_initial(self.trump_suit) + "12":
+                        queen = True
+                    elif str(card) == Card.get_suit_initial(self.trump_suit) + "13":
+                        king = True
+                if queen and king:
+                    self.BeloteState = BeloteGame.BeloteState.Allowed
+                    self.player_with_belote = player
+                    return
+
             # TODO: active player must now be the one after the one that dealt the cards
 
     # Return None if all players have bet
@@ -357,19 +372,6 @@ class BeloteGame(CardGame):
                     self.hands[player].add(self.deck.deal())
                 self.hands[player].sort()
 
-        # Determine whether Belote / Rebelote enabled for each player
-        queen = False
-        king = False
-        for player in self.get_playing_players():
-            for card in self.hands[player].cards:
-                if str(card) == Card.get_suit_initial(self.trump_suit) + "12":
-                    queen = True
-                elif str(card) == Card.get_suit_initial(self.trump_suit) + "13":
-                    king = True
-            if queen and king:
-                self.BeloteState = BeloteGame.BeloteState.Allowed
-                self.player_with_belote = player
-                return self.hands
         return self.hands
 
     # TODO: change this to be based on score reaching a certain threshold
@@ -383,7 +385,7 @@ class BeloteGame(CardGame):
             self.hand_points[winner] += 10
 
         # Check wheter belote / rebelote card played
-        print ("In Belote.card_played, belote_announced is: " + self.belote_announced)
+        print ("In Belote.card_played, belote_announced is: " + self.belote_announced.name)
         if self.belote_announced == BeloteGame.BeloteAnnounced.Belote:
             for card in self.hands[player].cards:
                 if str(card) == Card.get_suit_initial(self.trump_suit) + "12" or \
@@ -408,7 +410,7 @@ class BeloteGame(CardGame):
         return
 
     def set_cards_rank_and_value(self):
-        suit_char = self.trump_card.get_suit()
+        suit_char = Card.get_suit_initial(self.trump_suit)
         self.card_points[suit_char+"9"] = 14
         self.card_points[suit_char+"11"] = 20
         self.card_ranks[suit_char + "9"] = 16
