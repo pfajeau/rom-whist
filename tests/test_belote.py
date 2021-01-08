@@ -1,7 +1,7 @@
 from romwhist.belote.belote import BeloteGame
 from romwhist.card import Card
 from romwhist.hand import Hand
-
+from tests import test_common
 
 if __name__ == '__main__':
     players = ["Joe", "Jack", "Jim" , "Johnny"]
@@ -24,6 +24,7 @@ if __name__ == '__main__':
     for player in players:
         assert (len(belote.get_hand(player).cards) == 8)
 
+
     cards_played = belote.get_cards_played()
     assert (cards_played is None)
 
@@ -35,22 +36,14 @@ if __name__ == '__main__':
     cards_as_str["Jim"] =  ['s12', 's13', 'h8', 'h9', 'c11', 'c12', 'd10', 'd14']
     cards_as_str["Johnny"] = ['h12', 'h14', 'c7', 'c13', 'c14', 'd8', 'd11', 'd12']
 
-    cards = dict()
-    for player in players:
-        hand = Hand(belote.deck, 0)
-        for card_as_str in cards_as_str[player]:
-            hand.add(Card.card_from_value(card_as_str))
-        belote.hands[player] = hand
-        print("Hand for player " + player + ": " + str(belote.hands[player].serialize()))
+    test_common.create_hands(belote, cards_as_str)
 
     for game_round in range(8):
         print("Creating new round")
-        belote.create_round()
-        active_player = belote.get_active_player()
-        for i in range(len(players)):
-            print ("Allowed cards for " + players[i] + " : {}".format(belote.get_allowed_cards(players[i])))
-            belote.card_played(players[i], belote.get_allowed_cards(players[i])[0])
+        round = belote.create_round()
+        winner = test_common. play_round(belote, round)
         print ("Winner for round " + format(game_round) + " is " + belote.current_round.winning_player)
+
         cards_played = belote.get_cards_played()
         print("Displaying last round cards")
         for player in cards_played:

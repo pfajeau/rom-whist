@@ -193,6 +193,7 @@ class OhellGame(CardGame):
 
             else:
                 self.trump_card = None
+                self.trump_suit = None
 
             self._current_hand_nb = self._current_hand_nb+1
             self._phase = CardGame.GamePhase.BET

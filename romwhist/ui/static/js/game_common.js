@@ -275,6 +275,11 @@ function msg_posted(data) {
   content = textarea.val();
   textarea.val(content + sender + ": " + msg + "\n");
   textarea.animate({scrollTop:textarea[0].scrollHeight - textarea.height()},1000);
+
+  // For testing TODO: remove
+  if (msg == "alert") {
+    show_dialog_ok("Title", "Hello!")
+  }
   // play_sound("beep.wav");
 }
 
@@ -308,6 +313,7 @@ function show_alert(msg, title, cancel=false, callback_ok, action="") {
 }
 
 function show_dialog_ok(title,text,ok_function, action="") {
+  console.log("In show_dialog_ok...")
   $( "#dialog-message" ).dialog({
     modal: true,
     title: title,
@@ -315,7 +321,7 @@ function show_dialog_ok(title,text,ok_function, action="") {
       Ok: ok_function
     }
   })
-  $( "#dialog-message").val(text)
+  $( "#dialog-message").html(text)
   $("#action_game").val(action);
 }
 
