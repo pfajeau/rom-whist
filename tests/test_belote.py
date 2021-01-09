@@ -28,7 +28,7 @@ if __name__ == '__main__':
     cards_played = belote.get_cards_played()
     assert (cards_played is None)
 
-    # TODO: Simulate a game and check scoring works
+    # Simulate a game and check scoring works
     # First use a pre-defined set of cards for each player
     cards_as_str = dict()
     cards_as_str["Joe"] =  ['s9', 's10', 's11', 's14', 'h7','h10', 'c8', 'd9']
@@ -37,12 +37,12 @@ if __name__ == '__main__':
     cards_as_str["Johnny"] = ['h12', 'h14', 'c7', 'c13', 'c14', 'd8', 'd11', 'd12']
 
     test_common.create_hands(belote, cards_as_str)
-
-    for game_round in range(8):
+    belote.active_player = "Joe"
+    for i in range(8):
         print("Creating new round")
         round = belote.create_round()
         winner = test_common. play_round(belote, round)
-        print ("Winner for round " + format(game_round) + " is " + belote.current_round.winning_player)
+        print ("Winner for round " + str(i) + " is " + belote.current_round.winning_player)
 
         cards_played = belote.get_cards_played()
         print("Displaying last round cards")

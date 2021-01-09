@@ -1,6 +1,7 @@
 print('__file__={0:<35} | __name__={1:<20} | __package__={2:<20}'.format(__file__, __name__, str(__package__)))
 
 from romwhist.ohell.ohell import OhellGame
+from tests import test_common
 
 if __name__ == '__main__':
     players = ["Joe", "Jack", "Jim", "Johnny"]
@@ -19,11 +20,19 @@ if __name__ == '__main__':
     ohell.create_hand_progression()
     ohell.deal(dealer="")
     assert (not ohell.trump_card is None)
+    assert (not ohell.trump_suit is None)
     ohell.deal(dealer="")
+    assert (not ohell.trump_card is None)
+    assert (not ohell.trump_suit is None)
     ohell.deal(dealer="")
+    assert (not ohell.trump_card is None)
+    assert (not ohell.trump_suit is None)
     ohell.deal(dealer="")
+    assert (not ohell.trump_card is None)
+    assert (not ohell.trump_suit is None)
     ohell.deal(dealer="")
     assert (ohell.trump_card is None)
+    assert (ohell.trump_suit is None)
 
     # Testing game play
     for player in players:
@@ -32,14 +41,24 @@ if __name__ == '__main__':
     cards_played = ohell.get_cards_played()
     assert (cards_played is None)
 
+    # Simulate a game and check scoring works
+    # First use a pre-defined set of cards for each player
+    cards_as_str = dict()
+    cards_as_str["Joe"] = ['s9', 's10', 's11', 's14', 'h7', 'h10', 'c8', 'd9']
+    cards_as_str["Jack"] = ['s7', 's8', 'h13', 'h11', 'c9', 'c10', 'd7', 'd13']
+    cards_as_str["Jim"] = ['s12', 's13', 'h8', 'h9', 'c11', 'c12', 'd10', 'd14']
+    cards_as_str["Johnny"] = ['h12', 'h14', 'c7', 'c13', 'c14', 'd8', 'd11', 'd12']
+
+    test_common.create_hands(ohell, cards_as_str)
+    ohell.active_player = "Joe"
+
     print("Playing Hand...")
-    for round in range(8):
-        print("    Playing round: " + format(round))
-        ohell.create_round()
-        active_player = ohell.get_active_player()
-        for i in range(len(players)):
-            ohell.card_played(players[i], ohell.get_allowed_cards(players[i])[0])
-        print("Winner for round " + format(round) + " is " + ohell.current_round.winning_player)
+    for i in range(8):
+        print("    Playing round: " + str(i))
+        round = ohell.create_round()
+        winner = test_common.play_round(ohell, round)
+        print("Winner for round " + str(i) + " is " + ohell.current_round.winning_player)
+
         cards_played = ohell.get_cards_played()
         print("Displaying last round cards")
         for player in cards_played:
