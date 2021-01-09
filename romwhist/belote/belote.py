@@ -29,8 +29,9 @@ class BeloteGame(CardGame):
 
 
     # Number of cards to deal depending on number of players
-    nb_cards_first_deal = {2:15, 3:6, 4: 5}
-    nb_cards_second_deal = {2:1, 3:3, 4:3}
+    # TODO: change for 2 players
+    nb_cards_first_deal = {1:6, 2:15, 3:6, 4: 5}
+    nb_cards_second_deal = {1:3, 2:1, 3:3, 4:3}
 
     # Total number of points
     TOTAL_POINTS = 162

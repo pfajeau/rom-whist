@@ -17,6 +17,7 @@ from romwhist import controllers,deck,card,hand
 from romwhist.belote.belote import BeloteGame
 from romwhist import socketio,app
 from romwhist.forms import LoginForm, StartForm, GameForm
+from romwhist import common_routes
 from romwhist.models import User
 from romwhist.extensions import db
 
@@ -444,11 +445,12 @@ def on_stop(data):
 @socketio.on('client post', namespace=NAMESPACE)
 def on_post(msg):
     # Just distribute to players in room
-    game_id = session.get('game_id')
-    if game_id is None:
-        print("NO GAME_ID IN SESSION!!!!")
-    else:
-        emit("msg posted", {'sender': session['username'], 'msg': msg}, room=game_id, namespace=NAMESPACE)
+    common_routes.post_msg(msg, session['username'], session.get('game_id'), NAMESPACE)
+    # game_id = session.get('game_id')
+    # if game_id is None:
+    #     print("NO GAME_ID IN SESSION!!!!")
+    # else:
+    #     emit("msg posted", {'sender': session['username'], 'msg': msg}, room=game_id, namespace=NAMESPACE)
 
 
 @socketio.on('disconnect', namespace=NAMESPACE)

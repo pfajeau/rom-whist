@@ -1,12 +1,14 @@
 from romwhist.card import Card
 from romwhist.hand import Hand
 
+
 def create_hands(game, player_cards):
     for player in player_cards:
         hand = Hand(game.deck, 0)
         for card_as_str in player_cards[player]:
             hand.add(Card.card_from_value(card_as_str))
         game.hands[player] = hand
+
 
 def play_round(game, game_round):
     active_player = game.get_active_player()
