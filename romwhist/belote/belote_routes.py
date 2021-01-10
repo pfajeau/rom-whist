@@ -270,9 +270,8 @@ def player_bet(bet):
                     emit("trump suit", game.trump_suit,  room=game_id, namespace=NAMESPACE)
                     emit("player to play", {'player': next_player_to_play, 'allowed_cards':allowed_cards}, room=game_id, namespace=NAMESPACE)
                     player_belote = game.player_with_belote
-                    print ("player with belote: " + player_belote)
-                    if (not player_belote == None):
-                        print ("Belote / Rebelote: " + player_belote)
+                    if (not player_belote is None):
+                        print ("Player with Belote / Rebelote: " + player_belote)
                         emit ("belote rebelote enabled", player_belote, room=bel_clients[game_id][player_belote], namespace=NAMESPACE)
                 return
             except Exception as e:

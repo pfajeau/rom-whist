@@ -218,11 +218,11 @@ class BeloteGame(CardGame):
         # if self.hands.get(player) is None:
         #     allowed_bets = []  # No hand yet
         if self.phase == self.GamePhase.BET:
-            allowed_bets = ['Pass', str(self.trump_suit)]
+            allowed_bets = ['Pass', str(self.trump_card.get_suit_name())]
         elif self.phase == self.GamePhase.BET2:
             allowed_bets = ['Pass']
             for suit in Card.SUIT_NAMES:
-                if suit != self.trump_suit:
+                if suit != self.trump_card.get_suit_name():
                     allowed_bets.append(suit)
 
         print("allowed bets:", allowed_bets)
@@ -283,7 +283,7 @@ class BeloteGame(CardGame):
 
         # TODO: handle case where both players have the same number of points
         if nb_players == 2:
-            if player_points[0] > points_to_reach:
+            if player_points[0] > player_points[1]:
                 self.scores[players[0]] += player_points[0]
                 self.scores[players[1]] += player_points[1]
             else:
