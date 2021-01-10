@@ -54,13 +54,13 @@ class Round():
         return self.winning_player
 
     def winning_player_for_suit (self, suit):
-        print ("Suit passed to winning_player_for_suit : " + suit)
+        #print ("Suit passed to winning_player_for_suit : " + suit)
         self.winning_player = self.first_player
         winning_suit = self.cards_played[self.first_player].get_suit_name()
-        print ("Winning suit: " + winning_suit)
+        #print ("Winning suit: " + winning_suit)
         trump_played = False
         for player in self.cards_played:
-            print ("player - suit - rank: ", player, self.cards_played[player].get_suit(), self.cards_played[player].rank)
+            # print ("player - suit - rank: ", player, self.cards_played[player].get_suit(), self.cards_played[player].rank)
             if self.cards_played[player].get_suit_name() == self.trump_suit and not trump_played:
                 trump_played = True
                 winning_suit = self.trump_suit

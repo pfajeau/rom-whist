@@ -234,6 +234,7 @@ class CardGame():
                 self.active_player = winner
 
             self.round_ended(winner)
+            print("Winner of round is: "  + winner)
             return winner
         else:
             self.active_player = self.next_player(player)

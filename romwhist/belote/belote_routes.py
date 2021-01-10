@@ -406,9 +406,9 @@ def belote_announced(announce):
         player = session.get('username')
         game = bel_games[game_id]
         if announce == 'Belote':
-            game.belote_announced = BeloteGame.BeloteAnnounced.Belote
+            game.player_announced_belote(player, BeloteGame.BeloteAnnounced.Belote)
         elif announce == 'Rebelote':
-            game.belote_announced = BeloteGame.BeloteAnnounced.Rebelote
+            game.player_announced_belote(belote, BeloteGame.BeloteAnnounced.Rebelote)
 
         # emit("alert", announce + " announced by " + player, room=game_id, namespace=NAMESPACE)
         emit("belote announced", {'player' : player, 'announced': announce}, room=game_id, namespace=NAMESPACE)
