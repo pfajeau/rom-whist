@@ -320,6 +320,8 @@ def player_played(data):
 
         game = bel_games[game_id]
         winner = game.card_played(session['username'], card)
+
+        check_belote_played(game_id, session['username'])
         nplayer = game.get_active_player()
 
         if  winner is None:
@@ -338,11 +340,11 @@ def player_played(data):
 
         # TODO: set timer - Belote or Rebelote announcement must be within a certain period of the queen or king being played
         # Otherwise, player does not get the points
-        timer = threading.Timer(4.0, belote_played, [game_id, session['username']])
-        timer.start()
+        # timer = threading.Timer(4.0, belote_played, [game_id, session['username']])
+        # timer.start()
         print("Allowed cards: ", allowed_cards)
 
-def  belote_played(game_id, player):
+def  check_belote_played(game_id, player):
     print("In belote played")
     game = bel_games[game_id]
     belote_played = game.belote_state

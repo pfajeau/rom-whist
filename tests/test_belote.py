@@ -43,8 +43,8 @@ if __name__ == '__main__':
     cards_as_str["Johnny"] = ['h12', 'h14', 'c7', 'c13', 'c14', 'd8', 'd11', 'd12']
 
     test_common.create_hands(belote, cards_as_str)
+    belote.place_bet("Joe", "Spade")
     # Has to set card values (was overwritten by new cards)
-    belote.set_cards_rank_and_value()
     a_round = belote.create_round()
 
     belote.active_player = "Joe"
@@ -66,8 +66,7 @@ if __name__ == '__main__':
         print("Creating new round")
         a_round = belote.create_round()
         winner = test_common.play_round(belote, a_round)
-        assert (belote.belote_announced == BeloteGame.BeloteAnnounced.No)
-        assert (belote.belote_state == BeloteGame.BeloteState.Not_Allowed)
+        assert belote.belote_state == BeloteGame.BeloteState.Not_Allowed, belote.belote_state
         print("Player with belote: " + str(belote.player_with_belote))
         assert (belote.player_with_belote is None)
         print("Winner for round " + str(i) + " is " + belote.current_round.winning_player)
@@ -105,8 +104,8 @@ if __name__ == '__main__':
     # Override cards with pre-defined set
     test_common.create_hands(belote, cards_as_str)
     belote.place_bet("Joe", "Spade")
-    belote.set_cards_rank_and_value()
     assert (belote.trump_suit == "Spade")
+    assert belote.belote_state == BeloteGame.BeloteState.Allowed, belote.belote_state.name
 
     belote.deal_2(dealer="")
 
@@ -116,29 +115,33 @@ if __name__ == '__main__':
         assert (len(belote.get_hand(player).cards) == 8)
 
     test_common.create_hands(belote, cards_as_str)
+    belote.place_bet("Joe", "Spade")
     belote.active_player = "Joe"
     assert(belote.has_player_card("Joe", "s12") is True)
     assert(belote.has_player_card("Joe", "s13") is True)
-    assert(belote.BeloteState == BeloteGame.BeloteState.Allowed)
+    assert belote.belote_state == BeloteGame.BeloteState.Allowed, belote.belote_state.name
     assert(belote.player_with_belote == "Joe")
 
+    # First round
     a_round = belote.create_round()
-    winner = test_common.play_round(belote, a_round)
+    belote.active_player = "Joe"
+    belote.player_announced_belote("Joe", BeloteGame.BeloteAnnounced.BELOTE)
+    print ("Belote state is: ")
+    print (belote.belote_state)
+    assert (belote.belote_state == BeloteGame.BeloteState.Belote_Announced)
+    winner = test_common.play_round(belote, a_round, "s12")
+    assert belote.belote_state == BeloteGame.BeloteState.Belote_Played,belote.belote_state
     print("Winner for round 1" + " is " + winner)
-    assert (winner == "Joe")
-
-    a_round = belote.create_round()
-    belote.player_announced_belote("Joe", BeloteGame.BeloteAnnounced.Belote)
-    assert (belote.belote_announced == BeloteGame.BeloteAnnounced.Belote)
-    winner = test_common.play_round(belote, a_round)
-    print("Winner for round 2" + " is " + winner)
-    assert (winner == "Joe")
+    assert (winner == "Johnny")
     assert (belote.player_with_belote == "Joe")
 
+    # Second round
     a_round = belote.create_round()
-    belote.player_announced_belote("Joe", BeloteGame.BeloteAnnounced.Rebelote)
-    assert (belote.belote_announced == BeloteGame.BeloteAnnounced.Rebelote)
-    winner = test_common.play_round(belote, a_round)
+    belote.active_player = "Joe"
+    belote.player_announced_belote("Joe", BeloteGame.BeloteAnnounced.REBELOTE)
+    assert (belote.belote_state == BeloteGame.BeloteState.Rebelote_Announced)
+    winner = test_common.play_round(belote, a_round, "s13")
+    assert (belote.belote_state == BeloteGame.BeloteState.Rebelote_Played)
     print("Winner for round 3" + " is " + winner)
     assert (winner == "Joe")
     assert (belote.player_with_belote == "Joe")
