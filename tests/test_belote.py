@@ -101,18 +101,18 @@ if __name__ == '__main__':
 
     a_round = belote.create_round()
     belote.player_announced_belote("Joe", BeloteGame.BeloteAnnounced.Belote)
+    assert (belote.belote_announced == BeloteGame.BeloteAnnounced.Belote)
     winner = test_common.play_round(belote, a_round)
     print("Winner for round 2" + " is " + winner)
     assert (winner == "Joe")
-    assert (belote.belote_announced == BeloteGame.BeloteAnnounced.Belote)
     assert (belote.player_with_belote == "Joe")
 
     a_round = belote.create_round()
     belote.player_announced_belote("Joe", BeloteGame.BeloteAnnounced.Rebelote)
+    assert (belote.belote_announced == BeloteGame.BeloteAnnounced.Rebelote)
     winner = test_common.play_round(belote, a_round)
     print("Winner for round 3" + " is " + winner)
     assert (winner == "Joe")
-    assert (belote.belote_announced == BeloteGame.BeloteAnnounced.Rebelote)
     assert (belote.player_with_belote == "Joe")
     # TODO: check that Joe's points have increased by 20
 

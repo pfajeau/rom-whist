@@ -241,15 +241,39 @@ class BeloteGame(CardGame):
             # Round is just starting, all cards are allowed
             allowed_cards = self.get_hand(player).serialize()
         else:
+            asked_suit = self.current_round.get_first_card_played().get_suit_name()
+            winning_player = self.current_round.winning_player_for_suit(asked_suit)
+            winning_card = self.current_round.cards_played[winning_player]
+            trump_asked = (asked_suit == self.trump_suit)
+            lower_trumps = []
+            higher_trump = False
             for card in self.hands[player].get_cards():
-                if card.get_suit() == self.current_round.get_first_card_played().get_suit():
-                    allowed_cards.append(str(card))
+                if card.get_suit_name() == asked_suit:
+                    if trump_asked:
+                        # if winning_player == self.next_player(self.next_player(player)):
+                        #     allowed_cards.append(str(card))
+                        if card > winning_card:
+                            # Only allow cards higher than already played trump
+                            allowed_cards.append(str(card))
+                            higher_trump = True
+                        else:
+                            lower_trumps.append(str(card))
+                    else:
+                        allowed_cards.append(str(card))
+
+            # Allow smaller trumps if no higher trump
+            if not higher_trump and len(lower_trumps) > 0:
+                allowed_cards = lower_trumps
 
             # If player has trump, must play it
             if len(allowed_cards) == 0:
-                for card in self.hands[player].get_cards():
+                for card in self.hands[player].cards:
                     # Check for trump cards
                     if card.get_suit_name() == self.trump_suit:
+                        # TODO: if a trump has already being played, must play trump
+                        # TODO: if someboy already played a trump, must play higher one
+                        # if possible (unless partner played the trump)
+                        # higher than the one played unless it is from partner
                         allowed_cards.append(str(card))
 
             # Any card is allowed if no asked suit and no trump
@@ -445,6 +469,7 @@ class BeloteGame(CardGame):
             points = points + self.card_points[card]
         print("Points in round:" + str(points))
         self.hand_points[winner] += points
+        self.__belote_announced = BeloteGame.BeloteAnnounced.No
         return
 
     def hand_completed(self):
