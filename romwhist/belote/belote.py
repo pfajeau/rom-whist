@@ -285,7 +285,7 @@ class BeloteGame(CardGame):
                     if card.get_suit_name() == self.trump_suit:
                         if not cut:
                             # Then trump card allowed
-                            allowed_cards.append(card)
+                            allowed_cards.append(str(card))
                         else:
                             # Somebody has cut already
                             if len(self.players) != 4:

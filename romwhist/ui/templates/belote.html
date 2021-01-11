@@ -98,7 +98,7 @@ Add footer / contact info
     enable_start_game();
 
     function add_belote_button(enabled, text) {
-      $("#game_action_buttons").append('<button id="belote" type="button" class="btn-primary" name="belote">' + text + '</button>');
+      $("#belote_button_div").append('<button id="belote" type="button" class="btn-primary" name="belote">' + text + '</button>');
       document.getElementById("belote").onclick = function() {
         announced = $("#belote").text()
         socket.emit('belote announced', announced);
@@ -167,6 +167,7 @@ Add footer / contact info
         announce = data['announced']
         if (username != announce_player) {
           show_alert("Player " + announce_player + " annouced " + data['announced'], data['announced'])
+          $("#belote_state_div").append('<p id="belote_announce">'  + announce + " announced by " + announce_player + "</p")
         }
         if (announce == "Rebelote" && announce_player == username) {
           // Disable Belote button
@@ -299,7 +300,10 @@ Add footer / contact info
         $('#trump_card').html('')
         $("#trump_card").append('<label class="trump_caption">Trump:' + trump_suit + '</label>')
     })
-    socket.on('round ended', function(data) { round_ended(data) });
+    socket.on('round ended', function(data) {
+      round_ended(data)
+      $("#belote_announce").text('')
+    });
     socket.on('clear round', function() { clear_round() });
     socket.on('game over', function(winners) { game_over(winners) })
     socket.on('msg posted', function(data) { msg_posted(data) });
@@ -379,6 +383,17 @@ Add footer / contact info
     {% endif %}
   </div>
   <div id="cards_played">
+  </div>
+</div>
+
+<!-- Belote / Rebelote section -->
+<div id="belote_container">
+  <br>
+  <div id="belote_div">
+    <div id="belote_state_div">
+    </div>
+    <div id="belote_button_div">
+    </div>
   </div>
 </div>
 
