@@ -188,12 +188,16 @@ class BeloteGame(CardGame):
 
             # Determine whether Belote / Rebelote enabled for each player
             for player in self.get_playing_players():
+                print ("Teesting " + player)
                 queen = False
                 king = False
+                print (Card.get_suit_initial(self.trump_suit) + "12")
                 if self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "12"):
                     queen = True
-                elif self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "13"):
+                if self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "13"):
                     king = True
+                print (queen)
+                print (king)
                 if queen and king:
                     print ("Player " + player + " can announce belote/re-belote")
                     self.BeloteState = BeloteGame.BeloteState.Allowed
@@ -250,8 +254,6 @@ class BeloteGame(CardGame):
             for card in self.hands[player].get_cards():
                 if card.get_suit_name() == asked_suit:
                     if trump_asked:
-                        # if winning_player == self.next_player(self.next_player(player)):
-                        #     allowed_cards.append(str(card))
                         if card > winning_card:
                             # Only allow cards higher than already played trump
                             allowed_cards.append(str(card))
@@ -265,16 +267,38 @@ class BeloteGame(CardGame):
             if not higher_trump and len(lower_trumps) > 0:
                 allowed_cards = lower_trumps
 
-            # If player has trump, must play it
+            # If player has trump, must play it unless partner has already cut.
+            # Also need to surcouper if applicable
             if len(allowed_cards) == 0:
+                cut = (winning_card.get_suit_name == self.trump_suit)
                 for card in self.hands[player].cards:
                     # Check for trump cards
                     if card.get_suit_name() == self.trump_suit:
-                        # TODO: if a trump has already being played, must play trump
-                        # TODO: if someboy already played a trump, must play higher one
-                        # if possible (unless partner played the trump)
-                        # higher than the one played unless it is from partner
-                        allowed_cards.append(str(card))
+                        if not cut:
+                            # Then trump card allowed
+                            allowed_cards.append(card)
+                        else:
+                            # Somebody has cut already
+                            if len(self.players) != 4:
+                                if card > winning_card:
+                                    # Only allow cards higher than already played trump
+                                    allowed_cards.append(str(card))
+                                    higher_trump = True
+                                else:
+                                    lower_trumps.append(str(card))
+                            else:
+                                # 4 players
+                                 if winning_player != self.next_player(self.next_player(player)):
+                                    if card > winning_card:
+                                        # Only allow cards higher than already played trump
+                                        allowed_cards.append(str(card))
+                                        higher_trump = True
+                                    else:
+                                        lower_trumps.append(str(card))
+
+                if not higher_trump and len(lower_trumps) > 0:
+                    allowed_cards = lower_trumps
+
 
             # Any card is allowed if no asked suit and no trump
             if len(allowed_cards) == 0:
@@ -411,11 +435,10 @@ class BeloteGame(CardGame):
     # Distribute 3 cards for each player
     def deal_2(self, dealer=""):
         print("In deal_2")
-        print ("Trum card:", self.trump_card)
 
         nb_cards = BeloteGame.nb_cards_second_deal[len(self.players)]
 
-        # Taker takes the trump card then two more
+        # Taker takes the top card then two more
         self.hands[self.taker].add(self.trump_card)
         for i in range(nb_cards-1):
             self.hands[self.taker].add(self.deck.deal())
