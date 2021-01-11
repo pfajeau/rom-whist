@@ -49,6 +49,7 @@ class BeloteGame(CardGame):
         #self.__belote_announced = BeloteGame.BeloteAnnounced.No
         self.__belote_state = BeloteGame.BeloteState.Not_Allowed
         self.__player_with_belote = None
+        self.__bonus_litige = 0
         self.init_dict(self.hand_points,0)
 
 
@@ -62,6 +63,14 @@ class BeloteGame(CardGame):
                          "d7": 7, "d8": 8, "d9": 9, "d10": 14, "d11": 11, "d12": 12, "d13": 13, "d14": 15,
                          "h7": 7, "h8": 8, "h9": 9, "h10": 14, "h11": 11, "h12": 12, "h13": 13, "h14": 15,
                          "s7": 7, "s8": 8, "s9": 9, "s10": 14, "s11": 11, "s12": 12, "s13": 14, "s14": 15}
+
+    @property
+    def bonus_litige(self):
+        return self.__bonus_litige
+
+    @bonus_litige.setter
+    def bonus_litige(self, value):
+        self.__bonus_litige = value
 
     @property
     def player_with_belote(self):
@@ -195,7 +204,6 @@ class BeloteGame(CardGame):
 
             # Determine whether Belote / Rebelote enabled for each player
             for player in self.get_playing_players():
-                print ("Teesting " + player)
                 queen = False
                 king = False
                 print (Card.get_suit_initial(self.trump_suit) + "12")
@@ -203,8 +211,6 @@ class BeloteGame(CardGame):
                     queen = True
                 if self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "13"):
                     king = True
-                print (queen)
-                print (king)
                 if queen and king:
                     print ("Player " + player + " can announce belote/re-belote")
                     self.belote_state = BeloteGame.BeloteState.Allowed
@@ -328,23 +334,32 @@ class BeloteGame(CardGame):
         player_points = []
         player_points.append(self.hand_points[self.taker])
         player = self.taker
+
         for i in range(1, nb_players):
-            players.append(self.next_player(players[i-1]))
+            players.append(self.next_player(players[i - 1]))
             player_points.append(self.hand_points[players[i]])
 
-        # Belote / Rebelote
-        if self.belote_state == BeloteGame.BeloteState.Rebelote_Played:
-            points_to_reach = (BeloteGame.TOTAL_POINTS + BeloteGame.BELOTE_REBELOTE) / 2
-        else:
-            points_to_reach = BeloteGame.TOTAL_POINTS/2
+        for i in range(nb_players):
+            if (self.player_with_belote != None):
+                print ("zz self.player_with_belote" + self.player_with_belote)
+            if self.belote_state == BeloteGame.BeloteState.Rebelote_Played and \
+               self.player_with_belote == players[i]:
+                print("In update_scores, adding belote / rebelote points to " + players[i])
+                player_points[i] += BeloteGame.BELOTE_REBELOTE
+                self.hand_points[players[i]] = player_points[i]
 
-        # TODO: handle case where both players have the same number of points
         if nb_players == 2:
             if player_points[0] > player_points[1]:
-                self.scores[players[0]] += player_points[0]
+                self.scores[players[0]] += player_points[0] + self.bonus_litige
                 self.scores[players[1]] += player_points[1]
+                self.bonus_litige = 0
+            elif player_points[1] > player_points[0]:
+                self.scores[players[1]] += player_points[0] + player_points[1] + self.bonus_litige
+                self.bonus_litige = 0
             else:
-                self.scores[players[1]] += player_points[0] + player_points[1]
+                # Players are tied
+                self.bonus_litige += player_points[0]
+                print ("Points litige: " + str(self.bonus_litige))
 
             # Capot
             if self.wins[players[1]] == 0:
@@ -386,15 +401,27 @@ class BeloteGame(CardGame):
                         self.scores[nnp] += BeloteGame.BONUS_CAPOT / 2
 
         elif nb_players == 4:
-            if player_points[0] + player_points[2] > points_to_reach:
-                self.scores[players[0]] += player_points[0] + player_points[2]
+            if self.player_with_belote != None:
+                # set score of partner of player who may have gotten
+                # the belote points to be the same
+                partner = self.next_player(self.next_player(self.player_with_belote))
+                self.scores[partner] = self.scores[self.player_with_belote]
+            if player_points[0] + player_points[2] > player_points[1] + player_points[3]:
+                self.scores[players[0]] += player_points[0] + player_points[2] + self.bonus_litige
                 self.scores[players[2]]  = self.scores[players[0]]
                 self.scores[players[1]] += player_points[1] + player_points[3]
                 self.scores[players[3]] = self.scores[players[1]]
-            else:
-                # TODO: SOme rules give more points to the team in this case
-                self.scores[players[1]] += BeloteGame.TOTAL_POINTS
+                self.bonus_litige = 0
+            elif player_points[1] + player_points[3] > player_points[0] + player_points[2]:
+                self.scores[players[1]] += BeloteGame.TOTAL_POINTS + self.bonus_litige
                 self.scores[players[3]] = self.scores[players[1]]
+                self.bonus_litige = 0
+            else:
+                # Same number of points for both teams
+                # The team that did not take get their points
+                # The other team points are attributed to the winner of the next hand
+                self.bonus_litige += player_points[0]
+                print ("Points litige: " + str(self.bonus_litige))
 
             # Capot
             points_capot = BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
@@ -486,7 +513,7 @@ class BeloteGame(CardGame):
                 card_value == Card.get_suit_initial(self.trump_suit) + "13":
                 print ("Giving belote/rebelote points")
                 self.belote_state = BeloteGame.BeloteState.Rebelote_Played
-                self.hand_points[player] += BeloteGame.BELOTE_REBELOTE
+                #self.hand_points[player] += BeloteGame.BELOTE_REBELOTE
                 #self.player_with_belote = player
                 print("Player " + player + " played re-belote card: " + card_value)
 
@@ -500,7 +527,6 @@ class BeloteGame(CardGame):
             points = points + self.card_points[card]
         print("Points in round:" + str(points))
         self.hand_points[winner] += points
-        #self.__belote_announced = BeloteGame.BeloteAnnounced.No
         return
 
     def hand_completed(self):

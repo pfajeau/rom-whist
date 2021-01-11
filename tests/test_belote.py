@@ -79,9 +79,12 @@ if __name__ == '__main__':
     belote.hand_completed()
     scores = belote.get_scores()
 
+    total_points = 0
     print("Points collected for hand: ")
     for player in players:
         print(player + ": " + format(belote.hand_points[player]))
+        total_points += belote.hand_points[player]
+    assert total_points == BeloteGame.TOTAL_POINTS
 
     print("Scores: ")
     for player in players:
@@ -142,12 +145,12 @@ if __name__ == '__main__':
     assert (belote.belote_state == BeloteGame.BeloteState.Rebelote_Announced)
     winner = test_common.play_round(belote, a_round, "s13")
     assert (belote.belote_state == BeloteGame.BeloteState.Rebelote_Played)
-    print("Winner for round 3" + " is " + winner)
+    print("Winner for round 2" + " is " + winner)
     assert (winner == "Joe")
     assert (belote.player_with_belote == "Joe")
     # TODO: check that Joe's points have increased by 20
 
-    for i in range(5):
+    for i in range(3,9):
         print("Creating new round")
         a_round = belote.create_round()
         winner = test_common.play_round(belote, a_round)
@@ -162,8 +165,11 @@ if __name__ == '__main__':
     scores = belote.get_scores()
 
     print("Points collected for hand: ")
+    total_points = 0
     for player in players:
         print(player + ": " + format(belote.hand_points[player]))
+        total_points += belote.hand_points[player]
+    assert total_points == BeloteGame.TOTAL_POINTS + BeloteGame.BELOTE_REBELOTE, total_points
 
     print("Scores: ")
     for player in players:
