@@ -12,6 +12,7 @@ Add footer / contact info
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/game_common.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/belote.css') }}"/>
 <script type="text/javascript">
 
   // Note that js cannot be separated from html as JINJA2 expressions are not
@@ -31,10 +32,10 @@ Add footer / contact info
   // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
   let html_frag = ''
   html_frag = html_frag.concat("<span class='game_page_title'>")
-  html_frag = html_frag.concat("<img border='0' alt='Belote' src='{{ url_for('static', filename='') }}img/belote.png' width='80'></a>")
-  html_frag = html_frag.concat(" Game ID: "  + "{{ session['game_id'] }}")
-  html_frag = html_frag.concat(" - " + "{{ session['username'] }}"+ "</span>")
-  html_frag = html_frag.concat("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
+  html_frag = html_frag.concat(" Game ID: {{ session['game_id'] }}")
+  html_frag = html_frag.concat(" - {{ session['username'] }}</span>")
+  html_frag = html_frag.concat("<span class='game_page_title'><a href='#scoresheet_div'>Scoresheet</a></span>")
+  html_frag = html_frag.concat("<span class='logo_game'><img border='0' alt='Belote' src='{{ url_for('static', filename='') }}img/belote.png' width='80'></a> </span>")
   $("#topnav").last().after(html_frag);
   // $("#topnav").last().after("<card_playedspan class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</span>")
   // $("#topnav").last().after("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
@@ -322,8 +323,20 @@ Add footer / contact info
     <tr id="players">
       {% for player in players -%}
       <td id="label_{{ player }}" ></td>
-      <td id="{{ player }}" name="player" class="normal_player">{{ player }} </td>
+      <td id="name_{{ player }}" name="player" class="normal_player">{{ player }} </td>
       {% endfor %}
+      <script>
+        i = 0
+        {% for player in players -%}
+          if (i%2 == 0 ) {
+            $("#name_{{ player }}").addClass("team_1_player")
+          }
+          else {
+            $("#name_{{ player }}").addClass("team_2_player")
+          }
+          i++
+        {% endfor %}
+      </script>
     </tr>
     <tr id="bets">
       {% for player in players -%}

@@ -33,10 +33,10 @@ Add footer / contact info
   // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
   let html_frag = ''
   html_frag = html_frag.concat("<span class='game_page_title'>")
-  html_frag = html_frag.concat("<img border='0' alt='Oh Hell!' src='{{ url_for('static', filename='') }}img/ohell.png' width='80'></a>")
-  html_frag = html_frag.concat(" Game ID: "  + "{{ session['game_id'] }}")
-  html_frag = html_frag.concat(" - " + "{{ session['username'] }}"+ "</span>")
-  html_frag = html_frag.concat("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
+  html_frag = html_frag.concat(" Game ID: {{ session['game_id'] }}")
+  html_frag = html_frag.concat(" - {{ session['username'] }}</span>")
+  html_frag = html_frag.concat("<span class='game_page_title'><a href='#scoresheet_div'>Scoresheet</a></span>")
+  html_frag = html_frag.concat("<span class='logo_game'><img border='0' alt='Belote' src='{{ url_for('static', filename='') }}img/ohell.png' width='80'></a> </span>")
   $("#topnav").last().after(html_frag);
   // $("#topnav").last().after("<card_playedspan class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</span>")
   // $("#topnav").last().after("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")

@@ -25,14 +25,14 @@ function make_players_inactive() {
 }
 
 function make_player_inactive(player_name) {
-  $("#"+player_name).addClass("normal_player");
-  $("#"+player_name).removeClass("active_player");
+  $("#name_"+player_name).addClass("normal_player");
+  $("#name_"+player_name).removeClass("active_player");
 }
 
 function make_player_active(player_name) {
   make_players_inactive()
-  $("#"+player_name).removeClass("normal_player");
-  $("#"+player_name).addClass("active_player");
+  $("#name_"+player_name).removeClass("normal_player");
+  $("#name_"+player_name).addClass("active_player");
 }
 
 function initialize(players) {
