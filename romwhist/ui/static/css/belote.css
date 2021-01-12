@@ -1,0 +1,24 @@
+#belote {
+	/* Belote button */
+  cursor: pointer;
+  background-color: #051075;
+  color: white;
+  font-size:medium;
+  border: none;
+  padding: 15px 32px;
+}
+
+#belote_announce {
+  font-weight: bold;
+  font-size: medium;
+  color: black;
+  animation: blinker 1s step-start infinite;
+}
+
+.team_1_player {
+  color: #051075;
+}
+
+.team_2_player {
+  color: #a30202;
+}

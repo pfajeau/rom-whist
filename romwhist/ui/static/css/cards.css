@@ -173,7 +173,7 @@ img.preload {
 
 #card-table-green {
 	background-color:#11520F;
-  float:left;
+  margin-left: 0px;
 	height:250px;
 	width:100%;
   min-width: 800px;
@@ -187,8 +187,10 @@ img.preload {
 }
 #card-table-burgundy {
 	background-color:#295298;
+  margin-left: 0px;
 	height:250px;
-	width:100%;
+	width:50%;
+  min-width: 800px;
 	border:solid 6px #23273D;
 	border-radius:8px;
 	-webkit-border-radius:8px;
