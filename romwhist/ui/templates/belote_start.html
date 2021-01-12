@@ -64,14 +64,18 @@
           </div>
           <!-- <h3>or</h3> -->
           <div class="col-5 data_block">
-            <div id="dealing">
+            <div id="create_div">
               <h2>Create a new game</h2>
               <br/>
+              <div id="create_options">
+                {{ form.points_to_reach.label }}
+                {{ form.points_to_reach }}
+              </div>
             </div>
-          <br>
-          {{ form.start_game(class="btn btn-primary") }}
+            <br>
+            {{ form.start_game(class="btn btn-primary") }}
+          </div>
         </div>
-      </div>
       </div>
     </form>
     <br><br>

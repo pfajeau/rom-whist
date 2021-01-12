@@ -16,7 +16,8 @@ from flask_socketio import emit
 from flask_socketio import join_room, leave_room
 from romwhist import socketio, app
 from romwhist.extensions import db
-from romwhist.forms import LoginForm, OhellForm, GameForm
+from romwhist.forms import LoginForm, GameForm
+from romwhist.ohell.ohell_form import OhellStartForm
 from romwhist.models import User
 from romwhist.ohell.ohell import OhellGame
 from romwhist import common_routes
@@ -51,7 +52,7 @@ def ohell_start():
     # db.session.add(user)
     # db.session.commit()
     # login_user(user)
-    form = OhellForm()
+    form = OhellStartForm()
     if form.validate_on_submit():
         # Sanitize the username (as it isued as IDs in the html)
         username = unidecode.unidecode(form.user_name.data)

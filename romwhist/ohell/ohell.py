@@ -201,6 +201,8 @@ class OhellGame(CardGame):
 
     def is_game_over(self):
         if self.dealing_method == CardGame.AUTOMATED_DEALING:
+            if self._nb_cards_per_hand is None:
+                return False;
             return self._current_hand_nb == len(self._nb_cards_per_hand)
         else:
             return False

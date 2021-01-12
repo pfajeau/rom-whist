@@ -51,6 +51,7 @@ class BeloteGame(CardGame):
         self.__belote_state = BeloteGame.BeloteState.Not_Allowed
         self.__player_with_belote = None
         self.__bonus_litige = 0
+        self.__win_game_points = 1000
         self.init_dict(self.hand_points,0)
 
 
@@ -80,6 +81,14 @@ class BeloteGame(CardGame):
     @player_with_belote.setter
     def player_with_belote(self, value):
         self.__player_with_belote = value
+
+    @property
+    def win_game_points(self):
+        return self.__win_game_points
+
+    @win_game_points.setter
+    def win_game_points(self, value):
+        self.__win_game_points = value
 
     # @property
     # def belote_announced(self):
@@ -126,7 +135,11 @@ class BeloteGame(CardGame):
         self.taker = None
 
     def is_game_over(self):
-        # TODO
+        # Return True if one of the player or team has reached
+        # the number of points required to win
+        for player in self.players:
+            if self.scores[player] > self.win_game_points and self.phase != BeloteGame.GamePhase.PLAY:
+                return True
         return False
 
     def add_player(self, player):

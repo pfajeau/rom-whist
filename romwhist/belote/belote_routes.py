@@ -18,7 +18,8 @@ from romwhist import common_routes
 from romwhist import socketio
 from romwhist.belote.belote import BeloteGame
 from romwhist.extensions import db
-from romwhist.forms import LoginForm, StartForm, GameForm
+from romwhist.forms import LoginForm, GameForm
+from romwhist.belote.belote_form import BeloteStartForm
 from romwhist.models import User
 from romwhist import common_routes
 
@@ -34,7 +35,7 @@ bel_clients = dict()
 
 # @app.route("/belote_start",methods=['GET', 'POST'])
 def belote_start():
-    form = StartForm()
+    form = BeloteStartForm()
     if form.validate_on_submit():
         # Sanitize the username (as it isued as IDs in the html)
         username = unidecode.unidecode(form.user_name.data)
@@ -89,9 +90,13 @@ def belote_start():
                 game_id = str(randint(1, 999))
             print("game_id:", game_id)
 
+            points_to_reach = int(form.points_to_reach.data)
+
             print("creating new game with id: ", game_id)
             # Add game id in session
             game = BeloteGame(game_creator=username, id=game_id)
+            game.win_game_points = points_to_reach
+
             games[game_id] = game
             # players[game_id] = []
             bel_clients[game_id] = dict()
