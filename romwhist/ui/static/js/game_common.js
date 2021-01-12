@@ -117,6 +117,7 @@ function disable_start_game() {
 }
 
 function make_player_play(player_name, allowed_cards) {
+  console.log("In make_player_play")
   make_player_active(player_name);
   if (player_name === username) {
     // play_sound("bicycle_bell.wav")

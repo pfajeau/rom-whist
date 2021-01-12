@@ -96,7 +96,7 @@ figcaption {
 
 .logo_game {
   padding-left:100px;
-  
+
 }
 
 .div_title {
@@ -173,8 +173,10 @@ img.preload {
 
 #card-table-green {
 	background-color:#11520F;
+  float:left;
 	height:250px;
 	width:100%;
+  min-width: 800px;
 	border:solid 6px #072607;
 	border-radius:8px;
 	-webkit-border-radius:8px;

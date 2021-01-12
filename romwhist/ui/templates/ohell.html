@@ -62,6 +62,7 @@ Add footer / contact info
       make_player_active("{{ active_player }}");
     }
 
+    console.log("Game phase: {{ game_phase }}")
     if ("{{ game_phase }}" == "PLAY") {
       make_player_play("{{ active_player }}", "{{ allowed_cards }}");
     }
@@ -255,7 +256,7 @@ Add footer / contact info
     <tr id="players">
       {% for player in players -%}
       <td id="label_{{ player }}" ></td>
-      <td id="{{ player }}" name="player" class="normal_player">{{ player }} </td>
+      <td id="name_{{ player }}" name="player" class="normal_player">{{ player }} </td>
       {% endfor %}
     </tr>
     <tr id="bets">

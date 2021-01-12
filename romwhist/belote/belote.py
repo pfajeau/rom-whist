@@ -15,6 +15,7 @@ class BeloteGame(CardGame):
         BET = "Bet"
         BET2 = "Bet2"
         PLAY = "Play"
+        OVER = "Over"
 
     class BeloteAnnounced(Enum):
         BELOTE = "Belote"
@@ -41,8 +42,8 @@ class BeloteGame(CardGame):
     DIX_DE_DER = 10
     BELOTE_REBELOTE = 20
 
-    def __init__(self, game_creator = ""):
-        CardGame.__init__(self, game_creator, 0)
+    def __init__(self, game_creator = "", id=0):
+        CardGame.__init__(self, game_creator=game_creator, deck_size=0, id=id)
         self.taker = None
         self.teams = []
         self.hand_points=dict()   # The number of points collected while the hand is played
@@ -124,8 +125,9 @@ class BeloteGame(CardGame):
         CardGame.reset(self)
         self.taker = None
 
-    def phase(self):
-        return self.__phase
+    def is_game_over(self):
+        # TODO
+        return False
 
     def add_player(self, player):
         if player in self.players:
@@ -133,7 +135,7 @@ class BeloteGame(CardGame):
             self._player_status[player] = 1
             # Need to re-start hands
             self.active_player = self.dealer
-            self.game_phase = BeloteGame.GamePhase.DEAL
+            self.phase = BeloteGame.GamePhase.DEAL
             self.current_round = None
             # self.trump_card = None
             self.bets = dict()
@@ -158,7 +160,7 @@ class BeloteGame(CardGame):
             if player == self.dealer:
                 self.dealer = self.next_player_to_deal()
             self.active_player = self.dealer
-            self.game_phase = BeloteGame.GamePhase.DEAL
+            self.phase = BeloteGame.GamePhase.DEAL
             self.current_round = None
             # self.trump_card = None
             self.bets = dict()
@@ -168,12 +170,8 @@ class BeloteGame(CardGame):
 
     def start_game(self):
         self._started = True;
-
-        # Set deck size based on number of players
         self.deck_size = 32
-
-        # Create hand progression
-        self._phase = BeloteGame.GamePhase.BET
+        self.phase = BeloteGame.GamePhase.BET
 
     def place_bet(self, player, bet):
         print("place_bet for player {} is {}".format(player, bet))
@@ -532,6 +530,8 @@ class BeloteGame(CardGame):
     def hand_completed(self):
         CardGame.hand_completed(self)
         self.belote_state = BeloteGame.BeloteState.Not_Allowed
+        # TODO: check if score threshold has been reached
+        # and set game state to OVER if it as
 
     def set_cards_rank_and_value(self):
         suit_char = Card.get_suit_initial(self.trump_suit)

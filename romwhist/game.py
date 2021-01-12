@@ -15,8 +15,9 @@ class CardGame():
         DEAL = "Deal"
         BET = "Bet"
         PLAY = "Play"
+        OVER = "Over"
 
-    def __init__(self, game_creator = "", deck_size=0):
+    def __init__(self, game_creator = "", deck_size=0, id=0):
         self.players = []
         self.current_round = None
         self.trump_card = None
@@ -39,6 +40,7 @@ class CardGame():
         self.init_dict(self._player_status, 1)
         self.trump_suit=None
         self.rounds = []   # The rounds for the hand
+        self.__id = id;
 
     def reset(self):
         self.current_round = None
@@ -84,6 +86,10 @@ class CardGame():
     def started(self, value):
         self.__started = value
 
+    @property
+    def id(self):
+        return self.__id;
+
     # Return a list of players with the mazimum score
     def get_highest_score_player(self):
         maximum = max(self.scores.values())
@@ -104,7 +110,7 @@ class CardGame():
             self._player_status[player] = 1
             # Need to re-start hands
             self.active_player = self.dealer
-            self.game_phase = CardGame.GamePhase.DEAL
+            self.phase = CardGame.GamePhase.DEAL
             self.current_round = None
             # self.trump_card = None
             self.bets = dict()
@@ -128,7 +134,7 @@ class CardGame():
             if player == self.dealer:
                 self.dealer = self.next_player_to_deal()
             self.active_player = self.dealer
-            self.game_phase = CardGame.GamePhase.DEAL
+            self.phase = CardGame.GamePhase.DEAL
             self.current_round = None
             self.bets = dict()
             self.wins = dict()
@@ -192,6 +198,9 @@ class CardGame():
 
     def hand_completed(self):
         self.update_scores()
+
+    def is_game_over(self):
+        return False
 
     def is_hand_completed(self):
         for player in self.get_playing_players():

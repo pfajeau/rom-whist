@@ -8,8 +8,8 @@ from romwhist.round import Round
 class OhellGame(CardGame):
 
 
-    def __init__(self, game_creator = "", bonus_win = 1, deck_size=0):
-        CardGame.__init__(self, game_creator, deck_size)
+    def __init__(self, game_creator = "", bonus_win = 1, deck_size=0, id=0):
+        CardGame.__init__(self, game_creator, deck_size, id)
         self.bonus_win = bonus_win
         self._start_of_no_trump = 0
         self._multiple_one_card = False
@@ -71,7 +71,7 @@ class OhellGame(CardGame):
         self.bets[player] = bet
         self.active_player = self.next_player(player)
         if self.next_player_to_bet(player) is None:
-            self._phase = CardGame.GamePhase.PLAY
+            self.phase = CardGame.GamePhase.PLAY
 
     def sum_bets_placed(self):
         bets_placed = 0
@@ -196,7 +196,7 @@ class OhellGame(CardGame):
                 self.trump_suit = None
 
             self._current_hand_nb = self._current_hand_nb+1
-            self._phase = CardGame.GamePhase.BET
+            self.phase = CardGame.GamePhase.BET
             return self.hands
 
     def is_game_over(self):

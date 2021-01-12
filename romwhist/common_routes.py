@@ -45,3 +45,18 @@ def post_msg(msg, sender, room, namespace):
         print("NO GAME_ID IN SESSION!!!!")
     else:
         socketio.emit("msg posted", {'sender': sender, 'msg': msg}, room=room, namespace=namespace)
+
+def restart_hand(game, namespace):
+    # Deal another hand
+    socketio.emit("alert", "Hand to be replayed", room=game.id, namespace=namespace)
+    if game.started:
+      game._current_hand_nb = game._current_hand_nb - 1  # Deal again
+      generate_hands(game.id, game.dealer)
+
+def add_player(user, game, namespace):
+    game.add_player(user)
+    socketio.emit("new player", user, room=game.id, namespace=namespace)
+    if game.started:
+        restart_hand(game, namespace)
+
+
