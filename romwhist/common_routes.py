@@ -15,11 +15,15 @@ from flask_socketio import join_room, leave_room
 from flask_socketio import SocketIO, emit
 from romwhist import controllers,deck,card,hand
 from romwhist import socketio,app
-from romwhist.forms import LoginForm, StartForm, GameForm
+from romwhist.forms import LoginForm
 from romwhist.models import User
 from romwhist.extensions import db
+from romwhist.ohell import ohell_routes
+from romwhist.belote import belote_routes
 
-#def stats():
+def admin():
+    return render_template('admin.html', nb_belote_games = len(belote_routes.games), \
+                           nb_whist_games =len(ohell_routes.games))
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():

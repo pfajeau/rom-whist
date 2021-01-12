@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
+
+<p><h3>Number of belote games in progress: {{ nb_belote_games }}</h3></p>
+<p><h3>Number of whist games in progress: {{ nb_whist_games }}</h3></p>
+<br>
+<br>
+
+{% endblock %}
