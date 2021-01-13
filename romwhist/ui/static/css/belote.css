@@ -1,5 +1,6 @@
 #belote {
 	/* Belote button */
+  font-weight: bold;
   cursor: pointer;
   background-color: #051075;
   color: white;

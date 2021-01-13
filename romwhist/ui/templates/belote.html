@@ -54,7 +54,7 @@ Add footer / contact info
 
     if (username == "{{ player_with_belote }}") {
       // TODO: need to know whether to put belote or rebelote on button
-      add_belote_button(belote_allowed, "belote")
+      add_belote_button(belote_allowed, "Belote")
     }
     else {
       // Remove belote button
@@ -104,6 +104,7 @@ Add footer / contact info
         announced = $("#belote").text()
         socket.emit('belote announced', announced);
         console.log ("Belote announced")
+        // TODO: change allowed cards to only allow queen and king of trump?
       }
       console.log("In add_belote_button enabled is" + enabled)
       if (enabled == false) {
@@ -133,6 +134,7 @@ Add footer / contact info
       $('#cards').html('');
       $('#cards_played').empty()
       $('#trump_card').empty()
+      $('#button').remove()
 
       // Add scoresheet
       $("#scoresheet_div").append("<td>")
@@ -168,8 +170,9 @@ Add footer / contact info
         announce = data['announced']
         if (username != announce_player) {
           show_alert("Player " + announce_player + " annouced " + data['announced'], data['announced'])
-          $("#belote_state_div").append('<p id="belote_announce">'  + announce + " announced by " + announce_player + "</p")
         }
+        $("#belote_state_div").append('<p id="belote_announce">'  + announce + " announced by " + announce_player + "</p")
+
         if (announce == "Rebelote" && announce_player == username) {
           // Disable Belote button
           $("#belote").prop("disabled", true)
@@ -189,8 +192,15 @@ Add footer / contact info
 
     socket.on('rebelote played', function(data) {
       // Disable Belote/Rebelote button
-      $("belote").prop("disabled", true)
+      $("#belote").remove()
     });
+
+    socket.on('belote lost', function(data) {
+      // Disable Belote/Rebelote button
+      $("#belote").remove()
+      show_alert("Belote points lost", "Belote or rebelote not announced!")
+    });
+
 
     socket.on('player to bet', function(data) {
       console.log("player to bet event received")
@@ -301,10 +311,12 @@ Add footer / contact info
         $('#trump_card').html('')
         $("#trump_card").append('<label class="trump_caption">Trump:' + trump_suit + '</label>')
     })
+
     socket.on('round ended', function(data) {
       round_ended(data)
-      $("#belote_announce").text('')
+      $("#belote_announce").remove()
     });
+
     socket.on('clear round', function() { clear_round() });
     socket.on('game over', function(winners) { game_over(winners) })
     socket.on('msg posted', function(data) { msg_posted(data) });

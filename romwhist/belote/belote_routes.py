@@ -335,6 +335,8 @@ def player_played(data):
         game = games[game_id]
         winner = game.card_played(session['username'], card)
 
+        # TODO: this is wrong. What we need to check is wether the belote state has changed to
+        #  belote played or rebelote played,
         check_belote_played(game_id, session['username'])
         nplayer = game.get_active_player()
 
@@ -353,26 +355,27 @@ def player_played(data):
             timer = threading.Timer(4.0, next_round, [game_id, nplayer, allowed_cards])
             timer.start()
 
-        # TODO: set timer - Belote or Rebelote announcement must be within a certain period of the queen or king being played
-        # Otherwise, player does not get the points
-        # timer = threading.Timer(4.0, belote_played, [game_id, session['username']])
-        # timer.start()
+        # Belote/rebelote status
+
         print("Allowed cards: ", allowed_cards)
 
 
 def check_belote_played(game_id, player):
     print("In belote played")
     game = games[game_id]
-    belote_played = game.belote_state
-    if belote_played == BeloteGame.BeloteState.Belote_Played:
+    belote_state = game.belote_state
+    if belote_state == BeloteGame.BeloteState.Belote_Played:
         print("Belote card played")
         socketio.emit("belote played", game.player_with_belote, room=game_id, namespace=NAMESPACE)
-        # emit("msg posted", {'sender': session['username'], 'msg': 'Belote'}, room=game_id, namespace=NAMESPACE)
 
-    elif belote_played == BeloteGame.BeloteState.Rebelote_Played:
+    elif belote_state == BeloteGame.BeloteState.Rebelote_Played:
         print("Belote card played")
         socketio.emit("rebelote played", game.player_with_belote, room=game_id, namespace=NAMESPACE)
-        # socketio.emit("msg posted", {'sender': session['username'], 'msg': 'Rebelote'}, room=game_id, namespace=NAMESPACE)
+
+    elif belote_state == BeloteGame.BeloteState.Lost:
+        print("Belote points lost")
+        socketio.emit("belote lost", game.player_with_belote, room=game_id, namespace=NAMESPACE)
+
     return
 
 

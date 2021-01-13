@@ -28,6 +28,7 @@ class BeloteGame(CardGame):
         Belote_Played = 4
         Rebelote_Announced = 5
         Rebelote_Played = 6
+        Lost = 7
 
 
     # Number of cards to deal depending on number of players
@@ -512,21 +513,24 @@ class BeloteGame(CardGame):
 
         # Check wheter belote / rebelote card played
         # print ("In Belote.card_played, belote_state is: " + self.belote_state.name)
-        if self.belote_state == BeloteGame.BeloteState.Belote_Announced:
-            if card_value == Card.get_suit_initial(self.trump_suit) + "12" or \
-                        card_value== Card.get_suit_initial(self.trump_suit) + "13":
+        belote_card_played = (card_value == Card.get_suit_initial(self.trump_suit) + "12" or \
+                card_value == Card.get_suit_initial(self.trump_suit) + "13")
+
+        if belote_card_played:
+            if self.belote_state == BeloteGame.BeloteState.Belote_Announced:
                 self.belote_state = BeloteGame.BeloteState.Belote_Played
-                #self.player_with_belote = player
                 print ("Player " + player + " played belote card: " + card_value)
 
-        elif self.belote_state == BeloteGame.BeloteState.Rebelote_Announced:
-            if card_value == Card.get_suit_initial(self.trump_suit) + "12" or \
-                card_value == Card.get_suit_initial(self.trump_suit) + "13":
-                print ("Giving belote/rebelote points")
+            elif self.belote_state == BeloteGame.BeloteState.Rebelote_Announced:
                 self.belote_state = BeloteGame.BeloteState.Rebelote_Played
-                #self.hand_points[player] += BeloteGame.BELOTE_REBELOTE
-                #self.player_with_belote = player
                 print("Player " + player + " played re-belote card: " + card_value)
+
+            elif self.belote_state == BeloteGame.BeloteState.Allowed or \
+                 self.belote_state == BeloteGame.BeloteState.Belote_Played:
+                # Player lost the points if it was played but not announced
+                self.belote_state = BeloteGame.BeloteState.Lost
+                print("Player " + player + " lost the belote/rebelote points")
+
 
         return winner
 
