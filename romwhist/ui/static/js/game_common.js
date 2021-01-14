@@ -208,6 +208,9 @@ function round_ended(data) {
   let player_name = data["winner"]
   let last_player = data["last_player"]
   console.log("round ended event received: " + player_name);
+  $("#msg_div").text("Round winner: " + player_name + " with the " + data["card"])
+  fade_msg()
+
   // alertify.alert("Round ended", "Round winner is: " + data["winner"] + " with the " + data["card"])
   // sleep(3000)
   make_player_inactive(last_player);
@@ -225,7 +228,7 @@ function clear_round() {
   $('#cards_played').empty();
 }
 
-function trump_card_received(data) {
+function trump_card_received(data, caption) {
   console.log("trump card event received");
   trump_suit = data["trump_suit"]
   trump_card = data["trump_card"]
@@ -236,7 +239,7 @@ function trump_card_received(data) {
   // image + ' alt=' + trump_card + 'width=80 height=80' + '>');
   $('#trump_card').append("<img src = " + static_folder +
   image + ' alt=' + trump_card + 'width=80 height=80' + '>');
-  $('#trump_card').append("<figcaption><h3 class='trump_caption'>Trump</h3></figcaption>");
+  $('#trump_card').append("<figcaption><h3 class='trump_caption'>" + caption + "</h3></figcaption>");
   $('#trump_card').append("</figure>");
   // $('#trump_card').append("Trump")
 
@@ -330,4 +333,10 @@ function show_dialog_ok(title,text,ok_function, action="") {
 function sleep(miliseconds) {
  var currentTime = new Date().getTime();
  while (currentTime + miliseconds >= new Date().getTime()) {}
+}
+
+function fade_msg() {
+  $('#msg_div').fadeIn('slow', function(){
+            $('#msg_div').delay(7000).fadeOut();
+  });
 }

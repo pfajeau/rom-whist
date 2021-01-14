@@ -99,10 +99,12 @@ class BeloteGame(CardGame):
         # check player can announce (has the right cards and belote_state ha the right value)
         print("In player_announced_belote, value is: " + str(value))
         print (self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "12"))
-        print (self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "12"))
+        print (self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "13"))
         print("Belote state value: " + self.belote_state.name)
         print (self.belote_state.name == self.BeloteState.Allowed.name)
         if value == self.BeloteAnnounced.BELOTE:
+
+
             belote_ok = self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "12") and \
                         self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "13") and \
                         self.belote_state == self.BeloteState.Allowed
@@ -213,23 +215,6 @@ class BeloteGame(CardGame):
             self.taker = player
             self.set_cards_rank_and_value()
             self.active_player = self.next_player(self.dealer)
-
-            # Determine whether Belote / Rebelote enabled for each player
-            for player in self.get_playing_players():
-                queen = False
-                king = False
-                print (Card.get_suit_initial(self.trump_suit) + "12")
-                if self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "12"):
-                    queen = True
-                if self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "13"):
-                    king = True
-                if queen and king:
-                    print ("Player " + player + " can announce belote/re-belote")
-                    self.belote_state = BeloteGame.BeloteState.Allowed
-                    self.player_with_belote = player
-                    return
-            self.belote_state = BeloteGame.BeloteState.Not_Allowed
-            self.player_with_belote = None
 
             # TODO: active player must now be the one after the one that dealt the cards
 
@@ -499,10 +484,30 @@ class BeloteGame(CardGame):
                     self.hands[player].add(self.deck.deal())
                 self.hands[player].sort()
 
+        # Determine whether Belote / Rebelote enabled for each player
+        self.belote_state = BeloteGame.BeloteState.Not_Allowed
+        self.player_with_belote = None
+        for player in self.get_playing_players():
+            queen = False
+            king = False
+            print(Card.get_suit_initial(self.trump_suit) + "12")
+            if self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "12"):
+                queen = True
+            if self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "13"):
+                king = True
+            if queen and king:
+                print("Player " + player + " can announce belote/re-belote")
+                self.belote_state = BeloteGame.BeloteState.Allowed
+                self.player_with_belote = player
+                break
+
         return self.hands
 
     # TODO: change this to be based on score reaching a certain threshold
     def is_game_over(self):
+        for player in self.get_playing_players():
+            if self.scores[player] > self.win_game_points:
+                return True
         return False
 
     def card_played(self, player, card_value):

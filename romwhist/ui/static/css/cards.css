@@ -236,6 +236,12 @@ footer a:hover {
 	color:red;
 	font-size: large;
 }
+
+#msg_div {
+  font-weight: bold;
+  font-size: medium;
+  color: black;
+}
 .data_block {
 	background-color: #f0f0f5;
 	padding-right:10px;

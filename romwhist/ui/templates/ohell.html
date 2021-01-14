@@ -237,7 +237,7 @@ Add footer / contact info
       }
     });
 
-    socket.on('trump card', function(trump_card) { trump_card_received(trump_card) })
+    socket.on('trump card', function(data) { trump_card_received(data, "Trump") })
     socket.on('round ended', function(data) { round_ended(data) });
     socket.on('clear round', function() { clear_round() });
     socket.on('game over', function(winners) { game_over(winners) })
@@ -307,6 +307,13 @@ Add footer / contact info
   </div>
   <br>
   <div id="cards_played">
+  </div>
+</div>
+
+<!-- Mssage sections -->
+<div id="msg_container">
+  <br>
+  <div id="msg_div">
   </div>
 </div>
 

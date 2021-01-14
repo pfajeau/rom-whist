@@ -135,6 +135,7 @@ Add footer / contact info
       $('#cards_played').empty()
       $('#trump_card').empty()
       $('#button').remove()
+      $('#msg_div').empty()
 
       // Add scoresheet
       $("#scoresheet_div").append("<td>")
@@ -147,6 +148,10 @@ Add footer / contact info
       $('#cards').html('');
       $('#cards_played').empty()
       $("#nb_cards").removeClass("highlighted_field");
+      $('#msg_div').empty()
+
+      // Reset the bid selection to "Select"
+      $("#" + username +"_bets").val('select')
 
       // $('#cards').append('<ul>');
       for (var card_index in cards) {
@@ -168,14 +173,14 @@ Add footer / contact info
         console.log("belote announced event received")
         announce_player = data['player']
         announce = data['announced']
-        if (username != announce_player) {
-          show_alert("Player " + announce_player + " annouced " + data['announced'], data['announced'])
-        }
-        $("#belote_state_div").append('<p id="belote_announce">'  + announce + " announced by " + announce_player + "</p")
-
+        // if (username != announce_player) {
+        //   show_alert("Player " + announce_player + " annouced " + data['announced'], data['announced'])
+        // }
+        $("#msg_div").text(announce_player + " announce " + announce)
+        fade_msg()
         if (announce == "Rebelote" && announce_player == username) {
           // Disable Belote button
-          $("#belote").prop("disabled", true)
+          $("#belote").remove()
         }
       });
 
@@ -199,6 +204,8 @@ Add footer / contact info
       // Disable Belote/Rebelote button
       $("#belote").remove()
       show_alert("Belote points lost", "Belote or rebelote not announced!")
+      $("#msg_div").text("Belote points lost", "Belote or rebelote not announced!")
+      fade_msg()
     });
 
 
@@ -303,7 +310,7 @@ Add footer / contact info
       }
     });
 
-    socket.on('trump card', function(trump_card) { trump_card_received(trump_card) })
+    socket.on('trump card', function(data) { trump_card_received(data, "") })
     socket.on('trump suit', function(trump) {
       console.log("trump suit event received");
         // Update trump_suit
@@ -314,7 +321,6 @@ Add footer / contact info
 
     socket.on('round ended', function(data) {
       round_ended(data)
-      $("#belote_announce").remove()
     });
 
     socket.on('clear round', function() { clear_round() });
@@ -401,7 +407,7 @@ Add footer / contact info
     {% if game_phase != "PLAY" and trump != None %}
       <figure>
         <img src="{{ url_for('static', filename='') }}img/{{ trump }}.svg" alt=trump width=80 height=80>
-        <figcaption><h3 class='trump_caption'>Trump</h3></figcaption>
+<!--        - <figcaption><h3 class='trump_caption'>Trump</h3></figcaption> -->
       </figure>
     {% elif game_phase == "PLAY" %}
       <label class="trump_caption">Trump: {{ trump_suit }}<label>
@@ -411,14 +417,12 @@ Add footer / contact info
   </div>
 </div>
 
-<!-- Belote / Rebelote section -->
-<div id="belote_container">
+<!-- Belote / Rebelote and message sections -->
+<div id="msg_container">
   <br>
-  <div id="belote_div">
-    <div id="belote_state_div">
-    </div>
-    <div id="belote_button_div">
-    </div>
+  <div id="belote_button_div">
+  </div>
+  <div id="msg_div">
   </div>
 </div>
 
