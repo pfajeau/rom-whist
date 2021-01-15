@@ -55,7 +55,9 @@ class BeloteGame(CardGame):
         self.__win_game_points = 1000
         self.init_dict(self.hand_points,0)
 
+        self.reset_card_ranks_and_points()
 
+    def reset_card_ranks_and_points(self):
         # Points and ranks will change for the trump suit once it is known
         self.card_points={"c7": 0, "c8":0, "c9":0, "c10":10, "c11":2, "c12":3, "c13":4, "c14":11,
                           "d7": 0, "d8":0, "d9":0, "d10":10, "d11":2, "d12":3, "d13":4, "d14":11,
@@ -556,6 +558,8 @@ class BeloteGame(CardGame):
         # and set game state to OVER if it as
 
     def set_cards_rank_and_value(self):
+        self.reset_card_ranks_and_points()
+
         suit_char = Card.get_suit_initial(self.trump_suit)
         self.card_points[suit_char+"9"] = 14
         self.card_points[suit_char+"11"] = 20

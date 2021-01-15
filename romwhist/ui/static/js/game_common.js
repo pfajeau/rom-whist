@@ -208,19 +208,14 @@ function round_ended(data) {
   let player_name = data["winner"]
   let last_player = data["last_player"]
   console.log("round ended event received: " + player_name);
+
   $("#msg_div").text("Round winner: " + player_name + " with the " + data["card"])
   fade_msg()
 
   // alertify.alert("Round ended", "Round winner is: " + data["winner"] + " with the " + data["card"])
   // sleep(3000)
   make_player_inactive(last_player);
-
-  let id_rounds = "rounds_" + player_name
-  var value = parseInt(document.getElementById(id_rounds).value, 10);
-  value++;
-  document.getElementById(id_rounds).value = value;
   new_round = true;
-  //play_sound("applause2_x.wav")
 }
 
 function clear_round() {

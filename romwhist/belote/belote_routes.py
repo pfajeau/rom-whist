@@ -187,7 +187,7 @@ def belote_play():
             belote_enabled = True
 
         return render_template("belote.html", form=form, players=game.get_playing_players(), scores=game.get_scores(), \
-                               hand=hand, wins=game.get_wins(), bets=game.get_bets(), active_player=active_player, \
+                               hand=hand, wins=game.hand_points, bets=game.get_bets(), active_player=active_player, \
                                cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
                                trump=game.trump_card, trump_suit=game.trump_suit,
                                allowed_bets=game.allowed_bets(player), \
@@ -298,7 +298,7 @@ def hand_completed(game_id, username):
     game.hand_completed()
     scores = game.get_scores()
     print("hand completed, next player to deal:", game.next_player_to_deal())
-    socketio.emit("hand completed", {'scores': scores, 'wins': game.wins,
+    socketio.emit("hand completed", {'scores': scores, 'wins': game.hand_points,
                                      'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal()},
                   room=game_id, namespace=NAMESPACE)
     socketio.emit("player to deal", game.next_player_to_deal(), room=game_id, namespace=NAMESPACE)
@@ -335,8 +335,6 @@ def player_played(data):
         game = games[game_id]
         winner = game.card_played(session['username'], card)
 
-        # TODO: this is wrong. What we need to check is wether the belote state has changed to
-        #  belote played or rebelote played,
         check_belote_played(game_id, session['username'])
         nplayer = game.get_active_player()
 
@@ -350,8 +348,8 @@ def player_played(data):
             # game.round_ended(winner)
             allowed_cards = game.get_hand(nplayer).serialize()
             winnning_card = game.get_current_round().cards_played[winner]
-            emit("round ended", {"winner": winner, "card": winnning_card.desc(), "last_player": session['username']},
-                 room=game_id, namespace=NAMESPACE)
+            emit("round ended", {"winner": winner, "card": winnning_card.desc(), "last_player": session['username'],
+                 "points":game.hand_points}, room=game_id, namespace=NAMESPACE)
             timer = threading.Timer(4.0, next_round, [game_id, nplayer, allowed_cards])
             timer.start()
 

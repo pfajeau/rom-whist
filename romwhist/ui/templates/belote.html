@@ -150,9 +150,6 @@ Add footer / contact info
       $("#nb_cards").removeClass("highlighted_field");
       $('#msg_div').empty()
 
-      // Reset the bid selection to "Select"
-      $("#" + username +"_bets").val('select')
-
       // $('#cards').append('<ul>');
       for (var card_index in cards) {
         // $('#cards').append('<br>' + data[card])
@@ -239,14 +236,9 @@ Add footer / contact info
       console.log("bet is: " + bet)
       let id_bet = "#bets_" + player_name
 
-      // $(id_bet + " [readonly=readonly] option:not(:selected)").prop('disabled', true);
-      // $(id_bet).prop("disabled", false)
       idx = $(id_bet).find('option[value="' + bet + '"]').index()
       console.log("idx: " + idx)
       $(id_bet).get(0).selectedIndex = idx
-      //$(id_bet).find('option[value="' + bet + '"]').attr('selected','selected')
-      // $(id_bet + " > [value=" + bet + "]").attr("selected", "true");
-      // $(id_bet).val(bet);
       make_player_inactive(player_name);
       $(id_bet).removeClass("highlighted_field");
       //$(id_bet).prop('readonly', true);
@@ -265,6 +257,7 @@ Add footer / contact info
       let wins = data['wins']
       let hand_nb=data['hand_nb']
       let score_row_id = "#hand_score_nb" + hand_nb
+      // let points = data['points']
       let html = "<tr>"
       // $("#scoresheet_body").append ("<tr id=" + score_row_id + ">/tr")
 
@@ -277,10 +270,17 @@ Add footer / contact info
         $(id_score).val(score);
         html = html.concat("<td><table class='padding-between-cols'><tr>")
         html = html.concat("<td class='scoresheet_nb'>" + score + "</td></tr></table></td>")
+        // Reset the bid selection list
+        bet_id = "#bets_" + player
+        $(bet_id).empty()
       }
 
       html = html.concat("</tr>")
       $("#scoresheet_body").append(html)
+
+      // TODO: message indicating who won the hand
+      // $("#msg_div").append("<p>announce_player + " announce " + announce)
+      // fade_msg()
 
       let image = 'img/' + trump_card + ".svg"
       $('#trump_card').html('')
@@ -321,6 +321,13 @@ Add footer / contact info
 
     socket.on('round ended', function(data) {
       round_ended(data)
+      let points = data['points']
+      let id_rounds = "rounds_" + player_name
+
+      for (player in points) {
+        let id_rounds = "rounds_" + player
+        document.getElementById(id_rounds).value = points[player]
+      }
     });
 
     socket.on('clear round', function() { clear_round() });
@@ -380,7 +387,7 @@ Add footer / contact info
     <tr id="rounds">
       {% for player in players -%}
       <td class="td_player_info_label" >
-        <label for="rounds_{{ player }}"  id="label_rounds_{{ player }}" class="player_info">Wins</label>
+        <label for="rounds_{{ player }}"  id="label_rounds_{{ player }}" class="player_info">Points</label>
       </td>
       <td class="td_player_info" >
         <input type="number" id="rounds_{{ player }}" name="rounds" class="player_info" min=0 max=18 readonly value={{ wins[player] }}>

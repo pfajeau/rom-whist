@@ -238,7 +238,17 @@ Add footer / contact info
     });
 
     socket.on('trump card', function(data) { trump_card_received(data, "Trump") })
-    socket.on('round ended', function(data) { round_ended(data) });
+
+    socket.on('round ended', function(data) {
+      round_ended(data)
+
+      let player_name = data["winner"]
+      let id_rounds = "rounds_" + player_name
+      var value = parseInt(document.getElementById(id_rounds).value, 10);
+      value++;
+      document.getElementById(id_rounds).value = value;
+    });
+
     socket.on('clear round', function() { clear_round() });
     socket.on('game over', function(winners) { game_over(winners) })
     socket.on('msg posted', function(data) { msg_posted(data) });
