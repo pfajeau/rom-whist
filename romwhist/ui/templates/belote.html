@@ -257,7 +257,7 @@ Add footer / contact info
       let wins = data['wins']
       let hand_nb=data['hand_nb']
       let score_row_id = "#hand_score_nb" + hand_nb
-      // let points = data['points']
+      let winners = data['winners']
       let html = "<tr>"
       // $("#scoresheet_body").append ("<tr id=" + score_row_id + ">/tr")
 
@@ -279,8 +279,23 @@ Add footer / contact info
       $("#scoresheet_body").append(html)
 
       // TODO: message indicating who won the hand
-      // $("#msg_div").append("<p>announce_player + " announce " + announce)
-      // fade_msg()
+      if (winners[0] == "") {
+         msg = "It's a tie! Points of team who took will be given to next hand winner"
+      }
+      else {
+        msg = "Winner(s) of this hand: "
+        for (i in winners) {
+          if (i == 0) {
+            msg = msg + winners[i]
+          }
+          else {
+            msg = msg + ", and " + winners[i]
+          }
+        }
+      }
+
+      $("#msg_div").append("<p>" + msg + "</p>")
+      fade_msg()
 
       let image = 'img/' + trump_card + ".svg"
       $('#trump_card').html('')

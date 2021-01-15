@@ -299,7 +299,8 @@ def hand_completed(game_id, username):
     scores = game.get_scores()
     print("hand completed, next player to deal:", game.next_player_to_deal())
     socketio.emit("hand completed", {'scores': scores, 'wins': game.hand_points,
-                                     'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal()},
+                                     'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal(),\
+                                     'winners': game.hand_winner},
                   room=game_id, namespace=NAMESPACE)
     socketio.emit("player to deal", game.next_player_to_deal(), room=game_id, namespace=NAMESPACE)
     if game.is_game_over():
