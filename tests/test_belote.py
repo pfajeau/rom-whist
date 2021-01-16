@@ -43,8 +43,13 @@ if __name__ == '__main__':
     cards_as_str["Johnny"] = ['h12', 'h14', 'c7', 'c13', 'c14', 'd8', 'd11', 'd12']
 
     test_common.create_hands(belote, cards_as_str)
-    belote.place_bet("Joe", "Spade")
-    # Has to set card values (was overwritten by new cards)
+
+    # Set card values (were overwritten by new cards since they are different objects)
+    belote.set_cards_rank_and_value()
+
+    # Force belote/rebelote to Not Allowed, otherwise tests may fail occasionally
+    belote.belote_state = BeloteGame.BeloteState.Not_Allowed
+    belote.player_with_belote = None
     a_round = belote.create_round()
 
     belote.active_player = "Joe"
@@ -62,7 +67,9 @@ if __name__ == '__main__':
     assert(len(allowed_cards) == 8)
     belote.card_played(belote.active_player, "c7")
 
-    for i in range(7):
+    print("Winner for round 1 is " + belote.current_round.winning_player)
+
+    for i in range(2,9):
         print("Creating new round")
         a_round = belote.create_round()
         winner = test_common.play_round(belote, a_round)
@@ -97,8 +104,8 @@ if __name__ == '__main__':
     cards_as_str = dict()
     cards_as_str["Joe"] = ['s11', 's13', 's12', 's14', 'h7', 'h10', 'c8', 'd9']
     cards_as_str["Jack"] = ['s7', 's8', 'h13', 'h11', 'c9', 'c10', 'd7', 'd13']
-    cards_as_str["Jim"] = ['s10', 'h8', 'h9', 'h12', 'c11', 'c12', 'd10', 'd14']
-    cards_as_str["Johnny"] = ['s9', 'h14', 'c7', 'c13', 'c14', 'd8', 'd11', 'd12']
+    cards_as_str["Jim"] = ['s10', 'c11', 'c12', 'c13', 'd8','d10', 'd11', 'd14']
+    cards_as_str["Johnny"] = ['s9', 'h8', 'h9', 'h12', 'h14', 'c7', 'c14', 'd12']
 
     belote.deal_1("")
     for player in players:
@@ -108,9 +115,10 @@ if __name__ == '__main__':
     test_common.create_hands(belote, cards_as_str)
     belote.place_bet("Joe", "Spade")
     assert (belote.trump_suit == "Spade")
-    assert belote.belote_state == BeloteGame.BeloteState.Allowed, belote.belote_state.name
 
     belote.deal_2(dealer="")
+    assert belote.belote_state == BeloteGame.BeloteState.Allowed, belote.belote_state.name
+    assert belote.player_with_belote == "Joe"
 
     # Override cards with pre-defined set
     test_common.create_hands(belote, cards_as_str)
@@ -150,7 +158,21 @@ if __name__ == '__main__':
     assert (belote.player_with_belote == "Joe")
     # TODO: check that Joe's points have increased by 20
 
-    for i in range(3,9):
+    # Third round: test that player can "piss"
+    a_round = belote.create_round()
+    belote.active_player = "Joe"
+    belote.card_played("Joe", 'h10')
+    belote.card_played("Jack", 'h13')
+    allowed_cards = belote.get_allowed_cards("Jim")
+    print("ALlowed cards for Jim: " + str(allowed_cards))
+    assert len(allowed_cards) == 6, len(allowed_cards)
+    belote.card_played("Jim", 'c12')
+    belote.card_played("Johnny", 'h14')
+    winner = a_round.winning_player
+    print("Winner for round 3" + " is " + winner)
+    assert winner == "Johnny", winner
+
+    for i in range(4,9):
         print("Creating new round")
         a_round = belote.create_round()
         winner = test_common.play_round(belote, a_round)

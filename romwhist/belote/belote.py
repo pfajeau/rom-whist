@@ -105,10 +105,7 @@ class BeloteGame(CardGame):
     def player_announced_belote(self, player, value):
         # check player can announce (has the right cards and belote_state ha the right value)
         print("In player_announced_belote, value is: " + str(value))
-        print (self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "12"))
-        print (self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "13"))
         print("Belote state value: " + self.belote_state.name)
-        print (self.belote_state.name == self.BeloteState.Allowed.name)
         if value == self.BeloteAnnounced.BELOTE:
 
 
@@ -286,7 +283,8 @@ class BeloteGame(CardGame):
             if not higher_trump and len(lower_trumps) > 0:
                 allowed_cards = lower_trumps
 
-            # If player has trump, must play it unless partner has already cut.
+            # If player has trump, must play it unless partner has already cut or
+            # partner played strongest card.
             # Also need to surcouper if applicable
             if len(allowed_cards) == 0:
                 cut = (winning_card.get_suit_name == self.trump_suit)
@@ -294,8 +292,12 @@ class BeloteGame(CardGame):
                     # Check for trump cards
                     if card.get_suit_name() == self.trump_suit:
                         if not cut:
-                            # Then trump card allowed
-                            allowed_cards.append(str(card))
+                            # if partner has highest card, do not have to cut
+                            if len(self.players) == 4 and winning_player == self.next_player(self.next_player(player)):
+                                return self.hands[player].serialize()
+                            else:
+                                # Else has to play trump
+                                allowed_cards.append(str(card))
                         else:
                             # Somebody has cut already
                             if len(self.players) != 4:
@@ -307,7 +309,9 @@ class BeloteGame(CardGame):
                                     lower_trumps.append(str(card))
                             else:
                                 # 4 players
-                                 if winning_player != self.next_player(self.next_player(player)):
+                                if winning_player == self.next_player(self.next_player(player)):
+                                    return self.hands[player].serialize()
+                                else:
                                     if card > winning_card:
                                         # Only allow cards higher than already played trump
                                         allowed_cards.append(str(card))
@@ -317,7 +321,6 @@ class BeloteGame(CardGame):
 
                 if not higher_trump and len(lower_trumps) > 0:
                     allowed_cards = lower_trumps
-
 
             # Any card is allowed if no asked suit and no trump
             if len(allowed_cards) == 0:
@@ -345,8 +348,6 @@ class BeloteGame(CardGame):
             player_points.append(self.hand_points[players[i]])
 
         for i in range(nb_players):
-            if (self.player_with_belote != None):
-                print ("zz self.player_with_belote" + self.player_with_belote)
             if self.belote_state == BeloteGame.BeloteState.Rebelote_Played and \
                self.player_with_belote == players[i]:
                 print("In update_scores, adding belote / rebelote points to " + players[i])
@@ -510,7 +511,6 @@ class BeloteGame(CardGame):
         for player in self.get_playing_players():
             queen = False
             king = False
-            print(Card.get_suit_initial(self.trump_suit) + "12")
             if self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "12"):
                 queen = True
             if self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "13"):
@@ -533,7 +533,7 @@ class BeloteGame(CardGame):
     def card_played(self, player, card_value):
         winner = CardGame.card_played(self, player, card_value)
         if self.is_hand_completed():
-            # Add 10 points to the winnder of the last round
+            # Add 10 points to the winner of the last round
             self.hand_points[winner] += 10
 
         # Check wheter belote / rebelote card played
@@ -541,7 +541,7 @@ class BeloteGame(CardGame):
         belote_card_played = (card_value == Card.get_suit_initial(self.trump_suit) + "12" or \
                 card_value == Card.get_suit_initial(self.trump_suit) + "13")
 
-        if belote_card_played:
+        if belote_card_played and self.belote_state != BeloteGame.BeloteState.Not_Allowed:
             if self.belote_state == BeloteGame.BeloteState.Belote_Announced:
                 self.belote_state = BeloteGame.BeloteState.Belote_Played
                 print ("Player " + player + " played belote card: " + card_value)
