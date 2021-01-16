@@ -1,4 +1,6 @@
 from enum import Enum
+import logging
+
 from random import choice
 from random import randrange
 from romwhist.card import Card
@@ -227,7 +229,7 @@ class CardGame():
 
     # Return round winner if last card played None otherwise
     def card_played(self, player, card_value):
-        print(player + " played: " + card_value)
+        logging.info(player + " played: " + card_value)
         # Find card in hand that matches card played and remove it from hand
         for card in self.hands[player].get_cards():
             if str(card) == card_value:
@@ -243,7 +245,7 @@ class CardGame():
                 self.active_player = winner
 
             self.round_ended(winner)
-            print("Winner of round is: "  + winner)
+            logging.info("Winner of round is: "  + winner)
             return winner
         else:
             self.active_player = self.next_player(player)

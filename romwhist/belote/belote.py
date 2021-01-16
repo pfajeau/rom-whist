@@ -1,6 +1,7 @@
 from enum import Enum
 from random import choice
 from random import randrange
+import logging
 from ..card import Card
 from ..deck import Deck
 from ..hand import Hand
@@ -198,7 +199,7 @@ class BeloteGame(CardGame):
         self.bets[player] = bet
 
         if (bet == "Pass"):
-            print ("Player passed")
+            logging.info ("Player passed")
             # Ask next player
             self.active_player = self.next_player(player)
             if self.next_player_to_bet(player) is None:
@@ -211,7 +212,7 @@ class BeloteGame(CardGame):
                     self.phase = BeloteGame.GamePhase.DEAL
                     self.dealer = self.next_player_to_deal()
         else:
-            print ("Player took")
+            logging.info ("Player took")
             self.phase = BeloteGame.GamePhase.PLAY
             # TODO: this will not work when UI translated to diferent language, as string passed will be diifferent
             # than what is in the enum

@@ -42,10 +42,3 @@ class Hand(object):
             my_cards.append(str(card))
         return my_cards
 
-    def dump(self):
-
-        """ Print out contents of the Hand."""
-
-        print(self.label + "'s Cards:")
-        for c in self.cards:
-            print("   ", c)

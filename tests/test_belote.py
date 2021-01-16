@@ -1,8 +1,12 @@
+import logging
 from romwhist.belote.belote import BeloteGame
 
 from tests import test_common
 
 if __name__ == '__main__':
+
+    logging.basicConfig(filename='test.log', level=logging.DEBUG)
+
     players = ["Joe", "Jack", "Jim", "Johnny"]
     belote = BeloteGame("Joe")
 

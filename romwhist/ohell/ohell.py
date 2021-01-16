@@ -1,3 +1,5 @@
+import logging
+
 from romwhist.game import CardGame
 from romwhist.deck import Deck
 from romwhist.card import Card
@@ -61,13 +63,13 @@ class OhellGame(CardGame):
         for i in range(1,end_of_climb+1):
             self._nb_cards_per_hand.append(self._nb_cards_per_hand[end_of_climb-i])
 
-        print ("Distribution of cards: ", self._nb_cards_per_hand)
-        print ("Index start of no trump: ", self._start_of_no_trump)
-        print ("Index end of no trump: ", self._end_of_no_trump)
+        logging.debug ("Distribution of cards: " + str(self._nb_cards_per_hand))
+        logging.debug ("Index start of no trump: " + str(self._start_of_no_trump))
+        logging.debug ("Index end of no trump: " + str(self._end_of_no_trump))
 
     # TODO: should cehck that the bet value is authorized
     def place_bet(self, player, bet):
-        print("place_bet for player {} is {}".format(player, bet))
+        logging.info("place_bet for player " + player + " is: " + str(bet))
         self.bets[player] = bet
         self.active_player = self.next_player(player)
         if self.next_player_to_bet(player) is None:
@@ -77,7 +79,7 @@ class OhellGame(CardGame):
         bets_placed = 0
         for player in self.bets:
             bets_placed = bets_placed + max(self.bets[player], 0)
-            print("sum bet placed: ", bets_placed)
+            logging.debug("sum bet placed: " + str(bets_placed))
         return bets_placed
 
     def forbidden_bet(self, player):
@@ -92,11 +94,11 @@ class OhellGame(CardGame):
         if self.hands.get(player) is None:
             return []  # No hand yet
         allowed_bets = list(range(len(self.get_hand(player).get_cards()) + 1))
-        print("allowed bets:", allowed_bets)
+        logging.debug("allowed bets:" + str(allowed_bets))
         if self.next_player_to_bet(player) is None:
             forbidden_bet = self.forbidden_bet(player)
             if (forbidden_bet >= 0):
-                print("forbidden bet:", forbidden_bet)
+                logging.debug("forbidden bet:" + str(forbidden_bet))
                 allowed_bets.remove(forbidden_bet)
         return allowed_bets
 
@@ -124,7 +126,8 @@ class OhellGame(CardGame):
         # TODO: may have to change to playing players only?
         for p in range(len(self.players)):
             player = self.players[p]
-            print ("Player bet: {} - PLayer wins: {}".format(self.bets[player], self.wins[player]))
+            logging.debug ("Player bet: " + str(self.bets[player]) + \
+                          " Player wins: " + str(self.wins[player]))
             if self.bets[player] == -1:
                 # Do nothing, means player is not playing
                 self.scores[player] = self.scores[player]
@@ -152,7 +155,7 @@ class OhellGame(CardGame):
 
         # If automated dealing set cards to deal
         if self.dealing_method == CardGame.AUTOMATED_DEALING:
-            print ("current_hand_nb: ", self._current_hand_nb)
+            logging.debug ("current_hand_nb: " + str(self._current_hand_nb))
             cards_to_deal = self._nb_cards_per_hand[self._current_hand_nb]
             if cards_to_deal is None:
                 cards_to_deal = 0
@@ -164,10 +167,10 @@ class OhellGame(CardGame):
         else:
             # Create a hand with nb_cards for each player
             for player in self.get_playing_players():
-                print (player)
+                logging.debug (player)
                 hand = Hand(self.deck, cards_to_deal, player)
                 self.hands[player] = hand.sort()
-                print ("Hand for player ", player, " : ", hand.serialize())
+                logging.debug ("Hand for player " + player + " : " + str(hand.serialize()))
 
             deal_trump = with_trump
 
@@ -178,7 +181,7 @@ class OhellGame(CardGame):
                 else:
                     deal_trump = False
 
-            print ("Trump: ", deal_trump)
+            logging.debug ("Trump: " + str(deal_trump))
             # Pick up trum card
             if deal_trump:
                 trump_card = self.deck.deal()
