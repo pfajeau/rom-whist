@@ -39,8 +39,7 @@ def belote_start():
     form = BeloteStartForm()
     if form.validate_on_submit():
         # Sanitize the username (as it isued as IDs in the html)
-        username = unidecode.unidecode(form.user_name.data)
-        username = username.replace(" ", "")
+        username = common_routes.sanitize_username(form.user_name.data)
         logging.debug("User: " + username)
 
         # Used by client

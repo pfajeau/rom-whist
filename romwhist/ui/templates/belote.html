@@ -365,6 +365,7 @@ Add footer / contact info
       <td id="label_{{ player }}" ></td>
       <td id="name_{{ player }}" name="player" class="normal_player">{{ player }} </td>
       {% endfor %}
+      {% if players|length == 4 %}
       <script>
         i = 0
         {% for player in players -%}
@@ -377,6 +378,7 @@ Add footer / contact info
           i++
         {% endfor %}
       </script>
+      {% endif %}
     </tr>
     <tr id="bets">
       {% for player in players -%}
