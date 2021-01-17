@@ -35,14 +35,14 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        logging.debug("User name from form:", form.username.data)
+        logging.debug("User name from form:" + form.username.data)
         user = User.query.filter_by(username=form.username.data).first()
         if user is None:
             user = User(username=form.username.data)
             db.session.add(user)
             db.session.commit()
         login_user(user, remember=form.remember_me.data)
-        logging.debug ("current user: ", session['username'])
+        logging.debug ("current user: " + session['username'])
         return redirect(url_for('index'))
     return render_template('login.html', title='Sign In', form=form)
 
@@ -118,3 +118,18 @@ def generate_game_id(max_id, games):
     logging.debug("game_id:" + str(game_id))
     return game_id
 
+def stop_game(game_id, games, clients, namespace):
+    game_id = session.get('game_id')
+    if game_id is None:
+        logging.error("NO GAME_ID IN SESSION!!!!")
+        return
+
+    game = games.get(game_id)
+    if game is None:
+        logging.error("Game does not exist")
+        return
+
+    socketio.emit("game over", games.get(game_id).get_highest_score_player(), room=game_id, namespace=namespace)
+    del games[game_id]
+    del clients[game_id]
+    return

@@ -119,7 +119,7 @@ def belote_play():
         if request.form['action_game'] == "remove_player":
             logging.info("Remve Player button pressed")
             rplayer = request.form['player_list']
-            logging.info("Player to remove: ", rplayer)
+            logging.info("Player to remove: " + rplayer)
 
             remove_player(game_id, rplayer)
             return redirect(url_for('belote_play'))
@@ -273,6 +273,7 @@ def hand_completed(game_id, username):
     socketio.emit("player to deal", game.next_player_to_deal(), room=game_id, namespace=NAMESPACE)
     if game.is_game_over():
         socketio.emit("game over", game.get_highest_score_player(), room=game_id, namespace=NAMESPACE)
+        stop_game()
     else:
         generate_hands(game_id, "")
 
@@ -461,22 +462,8 @@ def check_player_left(player, game_id, client_id):
 
 
 def stop_game():
-    game_id = session.get('game_id')
-    if game_id is None:
-        logging.error("NO GAME_ID IN SESSION!!!!")
-        return
-
-    game = games.get(game_id)
-    if game is None:
-        logging.error("Game does not exist")
-        return
-
-    if game.is_game_over():
-        socketio.emit("game over", games.get(game_id).get_highest_score_player(), room=game_id, namespace=NAMESPACE)
-        del games[game_id]
-        del clients[game_id]
-        return
-
+    common_routes.stop_game(session.get('game_id'), games, clients, NAMESPACE)
+    return
 
 def restart_hand(game_id):
     game = games.get(game_id)

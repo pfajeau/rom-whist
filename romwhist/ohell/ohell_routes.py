@@ -441,22 +441,8 @@ def check_player_left(player, game_id, client_id):
 
 
 def stop_game():
-    game_id = session.get('game_id')
-    if game_id is None:
-        logging.error("NO GAME_ID IN SESSION!!!!")
-        return
-
-    game = games.get(game_id)
-    if game is None:
-        logging.error("Game does not exist")
-        return
-
-    if not game.is_game_over():
-        socketio.emit("game over", games.get(game_id).get_highest_score_player(), room=game_id, namespace=NAMESPACE)
-        del games[game_id]
-        del clients[game_id]
-        return
-
+    common_routes.stop_game(session.get('game_id'), games, clients, NAMESPACE)
+    return
 
 # Add player to a game
 def add_player(game_id):

@@ -479,7 +479,7 @@ class BeloteGame(CardGame):
         for player in self.get_playing_players():
             hand = Hand(self.deck, BeloteGame.nb_cards_first_deal[len(self.players)], player)
             self.hands[player] = hand.sort()
-            logging.debug ("Hand for player ", player, " : ", hand.serialize())
+            logging.debug ("Hand for player " + player + " : " + str(hand.serialize()))
 
         # Pick up trump card
         self.trump_card = self.deck.deal()
