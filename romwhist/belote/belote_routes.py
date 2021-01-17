@@ -107,7 +107,7 @@ def belote_play():
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":
-            stop_game()
+            common_routes.stop_game(game_id, games, clients, NAMESPACE)
             return redirect(url_for('belote_start'))
             # return redirect(url_for('game'))
 
@@ -272,8 +272,7 @@ def hand_completed(game_id, username):
                   room=game_id, namespace=NAMESPACE)
     socketio.emit("player to deal", game.next_player_to_deal(), room=game_id, namespace=NAMESPACE)
     if game.is_game_over():
-        socketio.emit("game over", game.get_highest_score_player(), room=game_id, namespace=NAMESPACE)
-        stop_game()
+        common_routes.stop_game(game_id, games, clients, NAMESPACE)
     else:
         generate_hands(game_id, "")
 
@@ -459,11 +458,6 @@ def check_player_left(player, game_id, client_id):
     #     current_client_id = clients[game_id][player]
     #     if current_client_id == client_id:
     # remove_player(game_id, player)
-
-
-def stop_game():
-    common_routes.stop_game(session.get('game_id'), games, clients, NAMESPACE)
-    return
 
 def restart_hand(game_id):
     game = games.get(game_id)
