@@ -264,3 +264,11 @@ footer a:hover {
   bottom: 8px;
   right: 16px;
 }
+
+input[name=rounds] {
+  min-width: 4em;
+}
+
+input[name=score] {
+  min-width: 4em;
+}

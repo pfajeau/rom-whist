@@ -74,15 +74,9 @@ def ohell_start():
 
         elif form.start_game.data:
             logging.info("start game")
-            if len(games) == 999:
-                error = "No more games available!!! Please try again later"
-                logging.error(error)
-                return render_template('ohell_start.html', error=error, form=form)
-
-            game_id = str(randint(1, 999))
-            while game_id in games:
-                game_id = str(randint(1, 999))
-            logging.debug("game_id:" + str(game_id))
+            game_id = common_routes.generate_game_id(999,games)
+            if (game_id is None):
+                return render_template('ohell_start.html', error="No more games available!!! Please try again later", form=form)
 
             logging.debug("creating new game with id: " +str(game_id))
             # Add game id in session
@@ -418,11 +412,11 @@ def on_post(msg):
 
 @socketio.on('disconnect', namespace=NAMESPACE)
 def test_disconnect():
-    logging.debug('Client disconnected. ' + str(session.get('username')))
-    client_id = request.sid
     player = session.get('username')
     game_id = session.get('game_id')
-    if game_id != None:
+    logging.info('Client disconnected. ' + str(player))
+    client_id = request.sid
+    if not game_id is None:
         leave_room(game_id)
         timer = threading.Timer(120.0, check_player_left, [player, game_id, client_id])
         timer.start()

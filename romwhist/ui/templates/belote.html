@@ -219,7 +219,7 @@ Add footer / contact info
 
       $(id_bet).empty();
       let html = ""
-      html = html.concat('<option value="select">Select</option>')
+      html = html.concat('<option value="select" selected>Select</option>')
       for (bet in allowed_bets) {
         html = html.concat('<option value="' + allowed_bets[bet] + '">' + allowed_bets[bet] + '</option>')
       }

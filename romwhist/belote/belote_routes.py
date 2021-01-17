@@ -31,7 +31,7 @@ games = dict()
 
 # Dictionary of session iDs for each game. This is a dictionary of Dictionary
 # Keys are game ids and then player ids. Used for socketio.
-bel_clients = dict()
+clients = dict()
 
 
 # @app.route("/belote_start",methods=['GET', 'POST'])
@@ -55,15 +55,9 @@ def belote_start():
 
         elif form.start_game.data:
             logging.info("start game")
-            if len(games) == 999:
-                error = "No more games available!!! Please try again later"
-                logging.error(error)
-                return render_template('belote_start.html', error=error, form=form)
-
-            game_id = str(randint(1, 999))
-            while game_id in games:
-                game_id = str(randint(1, 999))
-            logging.info("game_id:" + str(game_id))
+            game_id = common_routes.generate_game_id(999,games)
+            if (game_id is None):
+                return render_template('ohell_start.html', error="No more games available!!! Please try again later", form=form)
 
             points_to_reach = int(form.points_to_reach.data)
 
@@ -74,7 +68,7 @@ def belote_start():
 
             games[game_id] = game
             # players[game_id] = []
-            bel_clients[game_id] = dict()
+            clients[game_id] = dict()
 
             # dealing_method = request.form['dealing_method']
             # logging.info ("In route game, dealing method is: ", request.form['dealing_method'])
@@ -247,7 +241,7 @@ def player_bet(bet):
                     for player in game.get_playing_players():
                         cards = hands[player].serialize()
                         logging.debug("Cards for player " + player + " " + str(cards))
-                        socketio.emit("new hand", cards, room=bel_clients[game_id][player], namespace=NAMESPACE)
+                        socketio.emit("new hand", cards, room=clients[game_id][player], namespace=NAMESPACE)
                     next_player_to_play = game.get_active_player()
                     allowed_cards = game.get_hand(next_player_to_play).serialize()
                     logging.debug("Allowed cards: " + str(allowed_cards))
@@ -258,14 +252,14 @@ def player_bet(bet):
                     player_belote = game.player_with_belote
                     if (not player_belote is None):
                         logging.debug("Player with Belote / Rebelote: " + player_belote)
-                        emit("belote rebelote enabled", player_belote, room=bel_clients[game_id][player_belote],
+                        emit("belote rebelote enabled", player_belote, room=clients[game_id][player_belote],
                              namespace=NAMESPACE)
                 return
             except Exception as e:
                 logging.debug("Bet received: " + str(bet))
                 logging.error(e)
                 traceback.print_stack()
-                emit("alert", "Error in place bet", room=bel_clients[game_id][username], namespace=NAMESPACE)
+                emit("alert", "Error in place bet", room=clients[game_id][username], namespace=NAMESPACE)
 
 
 def hand_completed(game_id, username):
@@ -386,7 +380,7 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
     for player in game.get_playing_players():
         cards = hands[player].serialize()
         logging.info("Cards for player " + player + " " + str(cards))
-        socketio.emit("new hand", cards, room=bel_clients[game_id][player], namespace=NAMESPACE)
+        socketio.emit("new hand", cards, room=clients[game_id][player], namespace=NAMESPACE)
 
     socketio.emit("trump card", {"trump_card": str(game.trump_card), "trump_suit": str(game.trump_suit)}, room=game_id,
                   namespace=NAMESPACE)
@@ -423,10 +417,10 @@ def on_join(data):
         if session['game_id'] in games:
             # Add user to room if user is not there already
             player = session.get('username')
-            current_client_room = bel_clients[game_id].get(player)
+            current_client_room = clients[game_id].get(player)
 
             # Adding new client room id (sid) to list of clients
-            bel_clients[game_id][player] = request.sid
+            clients[game_id][player] = request.sid
             session['sid'] = request.sid
             join_room(game_id)
 
@@ -439,13 +433,14 @@ def on_post(msg):
 
 @socketio.on('disconnect', namespace=NAMESPACE)
 def test_disconnect():
-    logging.info('Client disconnected. ' + str(session.get('username')))
+    player = session.get('username')
+    game_id = session.get('game_id')
+    logging.info('Client disconnected. ' + str(player))
     client_id = request.sid
-    player = session['username']
-    game_id = session['game_id']
-    leave_room(game_id)
-    timer = threading.Timer(120.0, check_player_left, [player, game_id, client_id])
-    timer.start()
+    if not game_id is None:
+        leave_room(game_id)
+        timer = threading.Timer(120.0, check_player_left, [player, game_id, client_id])
+        timer.start()
 
 
 def check_player_left(player, game_id, client_id):
@@ -456,7 +451,7 @@ def check_player_left(player, game_id, client_id):
     # a refresh page has happened, so leave the player in the game
 
     # Do nothing, let game owner remove user manually if needed
-    players = bel_clients.get(game_id)
+    players = clients.get(game_id)
     if players is None:
         return
 
@@ -509,8 +504,8 @@ def remove_player(game_id, player):
                 game.disable_player(player)
             else:
                 game.remove_player(player)
-                if player in bel_clients[game_id]:
-                    del bel_clients[game_id][player]
+                if player in clients[game_id]:
+                    del clients[game_id][player]
 
         socketio.emit("player left", player, room=game_id, namespace=NAMESPACE)
         socketio.emit("clear round", room=game_id, namespace=NAMESPACE)

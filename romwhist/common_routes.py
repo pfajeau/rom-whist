@@ -106,3 +106,15 @@ def join_game(games, game_id, username, start_page, play_page, namespace):
     add_player(username, game, namespace)
     return redirect(url_for(play_page))
 
+def generate_game_id(max_id, games):
+    if len(games) == max_id:
+        error = "No more games available!!! Please try again later"
+        logging.error(error)
+        return None
+
+    game_id = str(randint(1, max_id))
+    while game_id in games:
+        game_id = str(randint(1, max_id))
+    logging.debug("game_id:" + str(game_id))
+    return game_id
+
