@@ -49,35 +49,9 @@ def belote_start():
         session['username'] = username
         if form.join_game.data:
             game_id = request.form['game_id']
-            logging.debug("game id: ", game_id)
-            if not game_id in games:
-                error = "This game has not been created yet"
-                logging.error(error)
-                return render_template('belote_start.html', error=error, form=form)
-
-            game = games[game_id]
-            # Not allowed to connect if another player has the same alias
-            # and game has not started. If game has started, assume player
-            # is trying to reconnect after having lost a connection
-            if username in game.get_players() and not game.started:
-                error = "The game already has a user with the same name"
-                logging.error(error)
-                return render_template('belote_start.html', error=error, form=form)
-
-            # Not allowed to connect to a game already started unless the player
-            # is already an existing player (same alias)
-            if game.started and not username in game.get_players():
-                error = "This game has already started! You cannot join a game in progress"
-                logging.error(error)
-                return render_template('belote_start.html', error=error, form=form)
-
-            # Remove player from game if that player was already in the games
-            # if previous_alias in players[game_id]:
-            #     remove_player(game_id, previous_alias)
-
-            session['ownername'] = game.owner
-            add_player(game_id)
-            return redirect(url_for('belote_play'))
+            return common_routes.join_game(games, game_id, username, \
+                                           'belote_start.html', 'belote_play', \
+                                           NAMESPACE)
 
         elif form.start_game.data:
             logging.info("start game")
@@ -465,7 +439,7 @@ def on_post(msg):
 
 @socketio.on('disconnect', namespace=NAMESPACE)
 def test_disconnect():
-    logging.info('Client disconnected. ', session['username'])
+    logging.info('Client disconnected. ' + str(session.get('username')))
     client_id = request.sid
     player = session['username']
     game_id = session['game_id']
@@ -523,7 +497,6 @@ def restart_hand(game_id):
 
 # Add player to a game
 def add_player(game_id):
-    session['game_id'] = game_id
     common_routes.add_player(session['username'], games[game_id], NAMESPACE)
 
 

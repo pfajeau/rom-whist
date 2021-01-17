@@ -57,8 +57,9 @@ def ohell_start():
     form = OhellStartForm()
     if form.validate_on_submit():
         # Sanitize the username (as it isued as IDs in the html)
-        username = unidecode.unidecode(form.user_name.data)
-        username = username.replace(" ", "")
+        # username = unidecode.unidecode(form.user_name.data)
+        # username = username.replace(" ", "")
+        username = common_routes.sanitize_username(form.user_name.data)
         logging.debug("User: " + username)
 
         # Used by client
@@ -67,35 +68,9 @@ def ohell_start():
         session['username'] = username
         if form.join_game.data:
             game_id = request.form['game_id']
-            logging.debug("game id: " + game_id)
-            if not game_id in games:
-                error = "This game has not been created yet"
-                logging.error(error)
-                return render_template('ohell_start.html', error=error, form=form)
-
-            game = games[game_id]
-            # Not allowed to connect if another player has the same alias
-            # and game has not started. If game has started, assume player
-            # is trying to reconnect after having lost a connection
-            if username in game.get_players() and not game.started:
-                error = "The game already has a user with the same name"
-                logging.info(error)
-                return render_template('ohell_start.html', error=error, form=form)
-
-            # Not allowed to connect to a game already started unless the player
-            # is already an existing player (same alias)
-            if game.started and not username in game.get_players():
-                error = "This game has already started! You cannot join a game in progress"
-                logging.info(error)
-                return render_template('ohell_start.html', error=error, form=form)
-
-            # Remove player from game if that player was already in the games
-            # if previous_alias in players[game_id]:
-            #     remove_player(game_id, previous_alias)
-
-            session['ownername'] = game.owner
-            add_player(game_id)
-            return redirect(url_for('ohell_play'))
+            return common_routes.join_game(games, game_id, username, \
+                                           'ohell_start.html', 'ohell_play', \
+                                           NAMESPACE)
 
         elif form.start_game.data:
             logging.info("start game")
@@ -443,13 +418,14 @@ def on_post(msg):
 
 @socketio.on('disconnect', namespace=NAMESPACE)
 def test_disconnect():
-    logging.debug('Client disconnected. ' + session.get('username'))
+    logging.debug('Client disconnected. ' + str(session.get('username')))
     client_id = request.sid
     player = session.get('username')
-    game_id = session['game_id']
-    leave_room(game_id)
-    timer = threading.Timer(120.0, check_player_left, [player, game_id, client_id])
-    timer.start()
+    game_id = session.get('game_id')
+    if game_id != None:
+        leave_room(game_id)
+        timer = threading.Timer(120.0, check_player_left, [player, game_id, client_id])
+        timer.start()
 
 
 def check_player_left(player, game_id, client_id):
@@ -490,7 +466,7 @@ def stop_game():
 
 # Add player to a game
 def add_player(game_id):
-    session['game_id'] = game_id
+    #session['game_id'] = game_id
     common_routes.add_player(session['username'], games[game_id], NAMESPACE)
 
 
