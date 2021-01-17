@@ -73,7 +73,7 @@ def belote_start():
             # logging.info ("In route game, dealing method is: ", request.form['dealing_method'])
             dealing_method = "computer"
             session['ownername'] = username
-            add_player(game_id)
+            add_player(username, game_id)
             return redirect(url_for('belote_play'))
     else:
         return render_template("belote_start.html", form=form, error=form.errors)
@@ -471,8 +471,12 @@ def restart_hand(game_id):
 
 
 # Add player to a game
-def add_player(game_id):
-    common_routes.add_player(session['username'], games[game_id], NAMESPACE)
+def add_player(player, game_id):
+    game = games.get(game_id)
+    if not game is None:
+        common_routes.add_player(player, game, NAMESPACE)
+        if game.started:
+            restart_hand(game_id)
 
 
 def remove_player(game_id, player):

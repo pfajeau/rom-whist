@@ -95,7 +95,7 @@ def ohell_start():
                     int(request.form['increment']))
 
             session['ownername'] = username
-            add_player(game_id)
+            add_player(username, game_id)
             return redirect(url_for('ohell_play'))
     else:
         return render_template("ohell_start.html", form=form, error=form.errors)
@@ -230,6 +230,17 @@ def game_started():
             logging.debug("Dealing method is: " + games[game_id].dealing_method)
             if games[game_id].dealing_method == OhellGame.AUTOMATED_DEALING:
                 generate_hands(game_id, player)
+
+
+            # Test
+            # ai = ai_player.AiPlayer("AI1")
+            # clients[game_id]["AI1"] = 'ai1'
+            # session['sid'] = 'ai1'
+            # join_room(game_id, 'ai1', NAMESPACE)
+            # add_player("AI1", game_id)
+            #
+            # socketio.emit("msg posted", {'sender': session.get('username'), 'msg': "Game is starting"}, room=game_id, namespace=NAMESPACE)
+
 
 
 @socketio.on("player bet", namespace=NAMESPACE)
@@ -440,9 +451,13 @@ def check_player_left(player, game_id, client_id):
     # remove_player(game_id, player)
 
 # Add player to a game
-def add_player(game_id):
+def add_player(player,game_id):
     #session['game_id'] = game_id
-    common_routes.add_player(session['username'], games[game_id], NAMESPACE)
+    game = games.get(game_id)
+    if not game is None:
+        common_routes.add_player(player, game, NAMESPACE)
+        if game.started:
+            restart_hand(game_id)
 
 
 def remove_player(game_id, player):
