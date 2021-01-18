@@ -24,6 +24,8 @@ from romwhist.models import User
 from romwhist.ohell.ohell import OhellGame
 from romwhist import common_routes
 
+from subprocess import Popen, PIPE
+
 NAMESPACE = '/ohell'
 
 # Map of games, key is game id
@@ -233,12 +235,8 @@ def game_started():
 
 
             # Test
-            # ai = ai_player.AiPlayer("AI1")
-            # clients[game_id]["AI1"] = 'ai1'
-            # session['sid'] = 'ai1'
-            # join_room(game_id, 'ai1', NAMESPACE)
+            # process = Popen(['python -m ', 'romwhist.ai_player'], stdout=PIPE, stderr=PIPE)
             # add_player("AI1", game_id)
-            #
             # socketio.emit("msg posted", {'sender': session.get('username'), 'msg': "Game is starting"}, room=game_id, namespace=NAMESPACE)
 
 
@@ -403,11 +401,32 @@ def on_join(data):
         if session['game_id'] in games:
             # Add user to room if user is not there already
             player = session.get('username')
+            logging.debug("Player: " + player)
             current_client_room = clients[game_id].get(player)
 
             # Adding new client room id (sid) to list of clients
             clients[game_id][player] = request.sid
             session['sid'] = request.sid
+            join_room(game_id)
+
+@socketio.on('join game ai', namespace=NAMESPACE)
+def join_ai(data):
+    # Note that a refresh on the client side causes the socketio sid to changed
+    # so need to remove the previous sid from the room
+    logging.info("join_ai")
+    game_id = str(data.get('game_id'))
+    logging.debug("game_id: " + repr(game_id))
+    logging.debug(str(games.keys()))
+    if not game_id is None:
+        if game_id in games:
+            # Add user to room if user is not there already
+            player = data['player']
+            logging.debug("Player: " + player)
+            current_client_room = clients[game_id].get(player)
+
+            # Adding new client room id (sid) to list of clients
+            clients[game_id][player] = "ai"
+            # session['sid'] = "ai"
             join_room(game_id)
 
 

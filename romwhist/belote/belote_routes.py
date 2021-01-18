@@ -302,9 +302,13 @@ def player_played(data):
         emit("card played", new_data, room=game_id, namespace=NAMESPACE)
 
         game = games[game_id]
+        belote_before = game.belote_state
         winner = game.card_played(session['username'], card)
+        belote_after = game.belote_state
 
-        check_belote_played(game_id, session['username'])
+        if (belote_before != belote_after):
+            belote_state_changed(game_id, session['username'])
+
         nplayer = game.get_active_player()
 
         if winner is None:
@@ -319,7 +323,7 @@ def player_played(data):
             winnning_card = game.get_current_round().cards_played[winner]
             emit("round ended", {"winner": winner, "card": winnning_card.desc(), "last_player": session['username'],
                  "points":game.hand_points}, room=game_id, namespace=NAMESPACE)
-            timer = threading.Timer(4.0, next_round, [game_id, nplayer, allowed_cards])
+            timer = threading.Timer(6.0, next_round, [game_id, nplayer, allowed_cards])
             timer.start()
 
         # Belote/rebelote status
@@ -327,7 +331,7 @@ def player_played(data):
         logging.info("Allowed cards: " + str(allowed_cards))
 
 
-def check_belote_played(game_id, player):
+def belote_state_changed(game_id, player):
     logging.info("In belote played")
     game = games[game_id]
     belote_state = game.belote_state
