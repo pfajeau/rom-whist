@@ -136,9 +136,9 @@ def ohell_play():
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":
-            common_routes.stop_game(game_id, games, clients, NAMESPACE)
+            socketio.emit("game over", game.get_highest_score_player(), room=game_id, namespace=NAMESPACE)
+            clean_game_data(game_id)
             return redirect(url_for('ohell_start'))
-            # return redirect(url_for('game'))
 
         # if "leave_game" in request.form:
         if request.form['action_game'] == "leave_game":
@@ -233,12 +233,9 @@ def game_started():
             if games[game_id].dealing_method == OhellGame.AUTOMATED_DEALING:
                 generate_hands(game_id, player)
 
-
-            # Test
+            # Test AI
             # process = Popen(['python -m ', 'romwhist.ai_player'], stdout=PIPE, stderr=PIPE)
             # add_player("AI1", game_id)
-            # socketio.emit("msg posted", {'sender': session.get('username'), 'msg': "Game is starting"}, room=game_id, namespace=NAMESPACE)
-
 
 
 @socketio.on("player bet", namespace=NAMESPACE)
@@ -289,7 +286,10 @@ def hand_completed(game_id, username):
                   room=game_id, namespace=NAMESPACE)
     socketio.emit("player to deal", game.next_player_to_deal(), room=game_id, namespace=NAMESPACE)
     if game.is_game_over():
-        common_routes.stop_game(game_id, games, clients, NAMESPACE)
+        socketio.emit("game over", game.get_highest_score_player(), room=game_id, namespace=NAMESPACE)
+        logging.debug("Game " + str(game_id) + " is over")
+        clean_game_data(game_id)
+
     elif game.dealing_method == OhellGame.AUTOMATED_DEALING:
         generate_hands(game_id, "")
 
@@ -414,6 +414,11 @@ def join_ai(data):
     # Note that a refresh on the client side causes the socketio sid to changed
     # so need to remove the previous sid from the room
     logging.info("join_ai")
+    session['_fresh'] = False
+    session['csrf_token'] = "b7005925b16302affc42642648b2651c2a454b9e"
+    session['username'] = data['player']
+    session['game_id'] = str(data['game_id'])
+
     game_id = str(data.get('game_id'))
     logging.debug("game_id: " + repr(game_id))
     logging.debug(str(games.keys()))
@@ -425,19 +430,23 @@ def join_ai(data):
             current_client_room = clients[game_id].get(player)
 
             # Adding new client room id (sid) to list of clients
-            clients[game_id][player] = "ai"
-            # session['sid'] = "ai"
+            clients[game_id][player] = request.sid
+            session['sid'] = request.sid
             join_room(game_id)
 
+    on_post("Hello there!")
 
 @socketio.on('client post', namespace=NAMESPACE)
 def on_post(msg):
+    session['csrf_token'] = "b7005925b16302affc42642648b2651c2a454b9e"
     # Just distribute to players in room
     game_id = session.get('game_id')
+    logging.debug("In on_post, session: " + repr(session))
+    logging.debug("In on_post, msg: " + msg)
     if game_id is None:
         logging.error("NO GAME_ID IN SESSION!!!!")
     else:
-        emit("msg posted", {'sender': session.get('username'), 'msg': msg}, room=game_id, namespace=NAMESPACE)
+        socketio.emit("msg posted", {'sender': session.get('username'), 'msg': msg}, room=game_id, namespace=NAMESPACE)
 
 
 @socketio.on('disconnect', namespace=NAMESPACE)
@@ -508,6 +517,13 @@ def restart_hand(game_id):
     elif game.started:
         game._current_hand_nb = game._current_hand_nb - 1  # Deal again
         generate_hands(game_id, game.dealer)
+
+def clean_game_data(game_id):
+    game = games.get(game_id)
+    if game is None:
+        return
+    del games[game_id]
+    del clients[game_id]
 
 # e.g blueprint and routes
 # auth_blueprint = Blueprint("auth", "auth", url_prefix="/auth")

@@ -523,7 +523,6 @@ class BeloteGame(CardGame):
 
         return self.hands
 
-    # TODO: change this to be based on score reaching a certain threshold
     def is_game_over(self):
         for player in self.get_playing_players():
             if self.scores[player] > self.win_game_points:

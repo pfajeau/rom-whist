@@ -107,9 +107,9 @@ def belote_play():
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":
-            common_routes.stop_game(game_id, games, clients, NAMESPACE)
+            socketio.emit("game over", game.get_highest_score_player(), room=game_id, namespace=NAMESPACE)
+            clean_game_data(game_id)
             return redirect(url_for('belote_start'))
-            # return redirect(url_for('game'))
 
         # if "leave_game" in request.form:
         if request.form['action_game'] == "leave_game":
@@ -262,17 +262,23 @@ def player_bet(bet):
 
 
 def hand_completed(game_id, username):
-    game = games[game_id]
+    game = games.get(game_id)
+    if game is None:
+        logging.error("Game with id %s does not exist", game_id)
+        return
+
     game.hand_completed()
     scores = game.get_scores()
     logging.info("hand completed, next player to deal:" + game.next_player_to_deal())
     socketio.emit("hand completed", {'scores': scores, 'wins': game.hand_points,
                                      'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal(),\
                                      'winners': game.hand_winner},
-                  room=game_id, namespace=NAMESPACE)
-    socketio.emit("player to deal", game.next_player_to_deal(), room=game_id, namespace=NAMESPACE)
+                room=game_id, namespace=NAMESPACE)
     if game.is_game_over():
-        common_routes.stop_game(game_id, games, clients, NAMESPACE)
+        logging.debug("Game " + str(game_id) + " is over")
+        socketio.emit("game over", game.get_highest_score_player(), room=game_id, namespace=NAMESPACE)
+        clean_game_data(game_id)
+
     else:
         generate_hands(game_id, "")
 
@@ -499,6 +505,12 @@ def remove_player(game_id, player):
         socketio.emit("clear round", room=game_id, namespace=NAMESPACE)
         common_routes.restart_hand(game_id, NAMESPACE)
 
+def clean_game_data(game_id):
+    game = games.get(game_id)
+    if game is None:
+        return
+    del games[game_id]
+    del clients[game_id]
 # e.g blueprint and routes
 # auth_blueprint = Blueprint("auth", "auth", url_prefix="/auth")
 # auth_blueprint.add_url_rule("register", "register", controllers.register)

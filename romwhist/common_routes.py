@@ -115,19 +115,3 @@ def generate_game_id(max_id, games):
         game_id = str(randint(1, max_id))
     logging.debug("game_id:" + str(game_id))
     return game_id
-
-def stop_game(game_id, games, clients, namespace):
-    game_id = session.get('game_id')
-    if game_id is None:
-        logging.error("NO GAME_ID IN SESSION!!!!")
-        return
-
-    game = games.get(game_id)
-    if game is None:
-        logging.error("Game does not exist")
-        return
-
-    socketio.emit("game over", games.get(game_id).get_highest_score_player(), room=game_id, namespace=namespace)
-    del games[game_id]
-    del clients[game_id]
-    return
