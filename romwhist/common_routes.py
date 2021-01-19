@@ -62,7 +62,6 @@ def post_msg(msg, sender, room, namespace):
 #       generate_hands(game.id, game.dealer)
 
 def add_player(user, game, namespace):
-    session['game_id'] = game.id
     game.add_player(user)
     socketio.emit("new player", user, room=game.id, namespace=namespace)
 
@@ -115,3 +114,6 @@ def generate_game_id(max_id, games):
         game_id = str(randint(1, max_id))
     logging.debug("game_id:" + str(game_id))
     return game_id
+
+def add_ai_player(player_name, game_id, namespace):
+    socketio.emit("create_ai_player", {"name": player_name, "game_id": game_id}, namespace=namespace)

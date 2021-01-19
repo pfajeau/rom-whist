@@ -84,6 +84,24 @@ function initialize(players) {
       show_alert("Are you sure you want to remove this player?", "Warning", cancel=true, callback_ok=submit_form, action="remove_player");
     }
   }
+
+  if (username == ownername) {
+    // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
+    $("#game_action_buttons").append('<button id="restart_hand" type="button" class="btn btn-warning" name="restart_hand">Restart Hand</button>');
+    document.getElementById("restart_hand").onclick = function() {
+      show_alert("Are you sure you want to restart the hand", "Warning", cancel=true, callback_ok=submit_form, action="restart_hand");
+    }
+  }
+
+  if (username == ownername) {
+    // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
+    $("#game_action_buttons").append('<button id="add_ai" type="button" class="btn btn-warning" name="add_ai">Add AI</button>');
+    document.getElementById("add_ai").onclick = function() {
+      show_alert("Please confirm you want to add an AI player", "Warning", cancel=true, callback_ok=submit_form, action="add_ai");
+    }
+  }
+
+
   make_players_inactive();
 }
 

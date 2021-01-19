@@ -1,17 +1,23 @@
+import configparser
 from flask_socketio import emit
 import getopt
 import logging
 import socketio
 import sys
-from ronwhist.ai.ai_player import AiPlayer
+from romwhist.ai.ai_player import AiPlayer
 
 NAMESPACE = '/ohell_ai'
 sio = socketio.Client()
 sio.connect('http://localhost:5000', namespaces=[NAMESPACE])
-app.config.from_pyfile("config_ai.py")
-logging.basicConfig(filename=app.config["LOG_FILE"], \
+
+config = configparser.ConfigParser()
+config.read('instance/config_ai.ini')
+log_levels = {"DEBUG": logging.DEBUG, "INFO": logging.INFO, "WARNING": logging.WARNING, "ERROR": logging.ERROR}
+default = config['default']
+log_level = default["LOG_LEVEL"]
+logging.basicConfig(filename=default["LOG_FILE"], \
                     format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s", \
-                    level=app.config["LOG_LEVEL"])
+                    level=log_levels[log_level])
 
 
 @sio.on('msg posted', namespace=NAMESPACE)
@@ -22,15 +28,16 @@ def msg_posted(data):
         print("Sending echo message")
         sio.emit("client post", "Message received by AI", namespace = '/ohell')
 
-@sio.on("new_ai_player", namespace=NAMESPACE)
+@sio.on("create_ai_player", namespace=NAMESPACE)
 def create_ai_player(data):
+    logging.info("In create_ai_player")
     game_id = data.get("game_id")
     name = data.get("name")
     if game_id is None or name is None:
         logging.error("game_id or name are not defined")
         return
 
-    player = AiPlayer(game_id, name)
+    player = AiPlayer(name, game_id)
     join_game(player)
 
 @sio.event
@@ -47,9 +54,9 @@ def disconnect():
 
 def join_game(ai_player):
     print ("Emitting join game")
-    AiPlayer.sio.emit("join game ai", \
-                      {'player': ai_player.name, 'game_id': ai_player.game_id}, \
-                      NAMESPACE)
+    sio.emit("join game ai", \
+            {'player': ai_player.name, 'game_id': ai_player.game_id}, \
+            NAMESPACE)
 
 def main(argv):
     print("In main function")

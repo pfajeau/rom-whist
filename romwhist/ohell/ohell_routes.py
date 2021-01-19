@@ -27,6 +27,7 @@ from romwhist import common_routes
 from subprocess import Popen, PIPE
 
 NAMESPACE = '/ohell'
+NAMESPACE_AI = '/ohell_ai'
 
 # Map of games, key is game id
 games = dict()
@@ -155,7 +156,12 @@ def ohell_play():
 
         if request.form['action_game'] == "restart_hand":
             restart_hand(game_id)
+            return redirect(url_for('ohell_play'))
 
+        if request.form['action_game'] == "add_ai":
+            common_routes.add_ai_player("ai_" + game_id + "_" + str(len(game.players)), \
+                                        game_id, NAMESPACE_AI)
+            return redirect(url_for('ohell_play'))
     else:
         hand = game.get_hands().get(player)
         if hand is None:
@@ -409,32 +415,21 @@ def on_join(data):
             session['sid'] = request.sid
             join_room(game_id)
 
-@socketio.on('join game ai', namespace=NAMESPACE)
+@socketio.on('join game ai', namespace=NAMESPACE_AI)
 def join_ai(data):
     # Note that a refresh on the client side causes the socketio sid to changed
     # so need to remove the previous sid from the room
     logging.info("join_ai")
-    session['_fresh'] = False
-    session['csrf_token'] = "b7005925b16302affc42642648b2651c2a454b9e"
-    session['username'] = data['player']
-    session['game_id'] = str(data['game_id'])
 
     game_id = str(data.get('game_id'))
-    logging.debug("game_id: " + repr(game_id))
-    logging.debug(str(games.keys()))
-    if not game_id is None:
-        if game_id in games:
-            # Add user to room if user is not there already
-            player = data['player']
-            logging.debug("Player: " + player)
-            current_client_room = clients[game_id].get(player)
-
-            # Adding new client room id (sid) to list of clients
-            clients[game_id][player] = request.sid
-            session['sid'] = request.sid
-            join_room(game_id)
-
-    on_post("Hello there!")
+    game = games.get(game_id)
+    if game is None:
+        logging.error("Unknown game: " + repr(game_id))
+        return
+    # Add user to room if user is not there already
+    player = data.get('player')
+    logging.debug("Player: " + player)
+    common_routes.add_player(player, game, NAMESPACE)
 
 @socketio.on('client post', namespace=NAMESPACE)
 def on_post(msg):
@@ -480,9 +475,9 @@ def check_player_left(player, game_id, client_id):
 
 # Add player to a game
 def add_player(player,game_id):
-    #session['game_id'] = game_id
     game = games.get(game_id)
     if not game is None:
+        session['game_id'] = game.id
         common_routes.add_player(player, game, NAMESPACE)
         if game.started:
             restart_hand(game_id)
