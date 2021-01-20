@@ -4,9 +4,13 @@ import getopt
 import logging
 import socketio
 import sys
+import threading
+
 from romwhist.ai.ai_player import AiPlayer
 
 NAMESPACE = '/ohell_ai'
+DEFAULT_DELAY=2
+
 sio = socketio.Client()
 sio.connect('http://localhost:5000', namespaces=[NAMESPACE])
 
@@ -37,7 +41,7 @@ def player_to_bet(data):
 
     if ai_player is not None:
         bet = ai_player.player_to_bet(data.get("allowed_bets"))
-        sio.emit('player bet', {'game_id': game_id, 'player': player, 'bet': bet}, namespace = NAMESPACE)
+        emit_with_delay('player bet', {'game_id': game_id, 'player': player, 'bet': bet})
 
 @sio.on('player to play', namespace=NAMESPACE)
 def player_to_play(data):
@@ -49,7 +53,7 @@ def player_to_play(data):
 
     if ai_player is not None:
         card = ai_player.player_to_play(data.get("allowed_cards"))
-        sio.emit('player played', {'game_id': game_id, 'player': player, 'card': card}, namespace = NAMESPACE)
+        emit_with_delay('player played', {'game_id': game_id, 'player': player, 'card': card})
 
 
 @sio.on('card played', namespace=NAMESPACE)
@@ -97,9 +101,8 @@ def disconnect():
 
 def join_game(ai_player):
     print ("Emitting join game")
-    sio.emit("join game ai", \
-            {'player': ai_player.name, 'game_id': ai_player.game_id},
-            NAMESPACE)
+    emit("join game ai",
+        {'player': ai_player.name, 'game_id': ai_player.game_id})
 
 def get_player(game_id, player_name):
     if game_id is None:
@@ -107,6 +110,13 @@ def get_player(game_id, player_name):
         return None
     ai_player = players.get(game_id).get(player_name)
     return ai_player
+
+def emit_with_delay(event, data, delay=DEFAULT_DELAY):
+    timer = threading.Timer(delay, emit, [event, data])
+    timer.start()
+
+def emit(event, data):
+    sio.emit(event, data, namespace=NAMESPACE)
 
 def main(argv):
     print("In main function")

@@ -288,11 +288,11 @@ def next_round(game_id, nplayer, allowed_cards):
     game.create_round()
 
     socketio.emit("clear round", room=game_id, namespace=NAMESPACE)
-    socketio.emit("player to play", {'player': nplayer, 'allowed_cards': allowed_cards},
-                  room=game_id, namespace=NAMESPACE)
-
     if game.is_hand_completed():
         hand_completed(game_id, nplayer)
+    else:
+        socketio.emit("player to play", {'player': nplayer, 'allowed_cards': allowed_cards},
+                  room=game_id, namespace=NAMESPACE)
 
 
 @socketio.on('player played', namespace=NAMESPACE)

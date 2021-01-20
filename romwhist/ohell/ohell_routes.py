@@ -332,13 +332,14 @@ def next_round(game_id, nplayer, allowed_cards):
     game.create_round()
 
     socketio.emit("clear round", room=game_id, namespace=NAMESPACE)
-    common_routes.emit_to_players(
-        "player to play",
-        {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards},
-        room=game_id, namespace=NAMESPACE)
 
     if game.is_hand_completed():
         hand_completed(game_id, nplayer)
+    else:
+        common_routes.emit_to_players(
+            "player to play",
+            {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards},
+            room=game_id, namespace=NAMESPACE)
 
 
 @socketio.on('player played', namespace=NAMESPACE_AI)

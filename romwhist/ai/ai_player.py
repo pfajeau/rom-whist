@@ -1,3 +1,5 @@
+import logging
+
 from romwhist.card import Card
 
 
@@ -31,9 +33,11 @@ class AiPlayer:
 
     def player_to_play(self, allowed_cards):
         # TOOD
+        logging.debug("AI PLayer to play: %s", self.name)
+        logging.debug("Allowed cards: %s", allowed_cards)
         return allowed_cards[0]
 
     def new_hand(self, cards):
+        self.__cards = []
         for card in cards:
-            self.__cards = []
             self.__cards.append(Card.card_from_value(card))
