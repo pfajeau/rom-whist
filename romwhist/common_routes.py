@@ -123,7 +123,10 @@ def generate_game_id(max_id, games):
 # Utility mothod to emit an event to both real players and the ai players
 # data must contain the game_id
 def emit_to_players(event, data, game_id=None, room=None, namespace=None):
-    socketio.emit(event, data, game_id = None, room=room, namespace=namespace)
+    # If no room speified assumes it is not for any web clients
+    if room is not None:
+        socketio.emit(event, data, game_id = None, room=room, namespace=namespace)
+
     if game_id is None:
         # In this case, teh game_id has to be part of the data being passed
         game_id = data.get("game_id")

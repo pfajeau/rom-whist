@@ -126,13 +126,14 @@ Add footer / contact info
       $("#scoresheet_div").append("<td>")
     });
 
-    socket.on('new hand', function(cards) {
+    socket.on('new hand', function(data) {
       console.log("new hand event received");
       make_players_inactive();
       $('#trump_card').html('')
       $('#cards').html('');
       $('#cards_played').empty()
       $("#nb_cards").removeClass("highlighted_field");
+      cards = data['cards']
 
       // $('#cards').append('<ul>');
       for (var card_index in cards) {

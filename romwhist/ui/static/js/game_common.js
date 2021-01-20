@@ -181,7 +181,7 @@ function card_played (card) {
   document.getElementById(card).remove();
 
   // Emit an event indicating a card has been card_played
-  socket.emit('player played', {data:card});
+  socket.emit('player played', card);
 
   // Prevent player from playing again until round is finished
   RecursiveUnbind($('#cards'));

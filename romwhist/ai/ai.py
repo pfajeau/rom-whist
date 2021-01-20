@@ -33,6 +33,7 @@ def player_to_bet(data):
     game_id = data.get('game_id')
     player = data.get('player')
     ai_player = get_player(game_id, player)
+    logging.debug("PLayer to bet: %s - game_id: %s", player, game_id)
 
     if ai_player is not None:
         bet = ai_player.player_to_bet(data.get("allowed_bets"))
@@ -44,6 +45,7 @@ def player_to_play(data):
     game_id = data.get('game_id')
     player = data.get('player')
     ai_player = get_player(game_id, player)
+    logging.debug("PLayer to play: %s - game_id: %s", player, game_id)
 
     if ai_player is not None:
         card = ai_player.player_to_play(data.get("allowed_cards"))
@@ -96,7 +98,7 @@ def disconnect():
 def join_game(ai_player):
     print ("Emitting join game")
     sio.emit("join game ai", \
-            {'player': ai_player.name, 'game_id': ai_player.game_id}, \
+            {'player': ai_player.name, 'game_id': ai_player.game_id},
             NAMESPACE)
 
 def get_player(game_id, player_name):
