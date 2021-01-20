@@ -65,6 +65,11 @@ def add_player(user, game, namespace):
     game.add_player(user)
     socketio.emit("new player", user, room=game.id, namespace=namespace)
 
+# To create an ai player
+def add_ai_player(player_name, game_id, namespace):
+    socketio.emit("create_ai_player", {"name": player_name, "game_id": game_id}, namespace=namespace)
+
+
 def sanitize_username(username1):
     # Sanitize the username (as it isued as IDs in the html)
     username = unidecode.unidecode(username1)
@@ -115,5 +120,30 @@ def generate_game_id(max_id, games):
     logging.debug("game_id:" + str(game_id))
     return game_id
 
-def add_ai_player(player_name, game_id, namespace):
-    socketio.emit("create_ai_player", {"name": player_name, "game_id": game_id}, namespace=namespace)
+# Utility mothod to emit an event to both real players and the ai players
+# data must contain the game_id
+def emit_to_players(event, data, game_id=None, room=None, namespace=None):
+    socketio.emit(event, data, game_id = None, room=room, namespace=namespace)
+    if game_id is None:
+        # In this case, teh game_id has to be part of the data being passed
+        game_id = data.get("game_id")
+        if game_id is None:
+            logging.error("game_id not specified")
+            return
+        else:
+            socketio.emit(event, data, namespace=namespace + "_ai")
+            return
+
+    else:
+        # game_id is passed to this function
+        data2 = dict()
+        # Add game_id to the parameters for the event
+        # TODO refactor so that all calls include the game id in the
+        # data being passed
+        if isinstance(data, dict):
+            data2 = data
+            data2["game_id"] = game_id
+        else:
+            data2["game_id"] = game_id
+            data2['param'] = data
+        socketio.emit(event, data2, namespace=namespace+"_ai")

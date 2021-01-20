@@ -19,6 +19,41 @@ logging.basicConfig(filename=default["LOG_FILE"], \
                     format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s", \
                     level=log_levels[log_level])
 
+# List of ai players for each game. it is a list of lists
+players = dict()
+
+@sio.on('trump card', namespace=NAMESPACE)
+def trump_card(data):
+    logging.info("trump card event received")
+
+
+@sio.on('player to bet', namespace=NAMESPACE)
+def player_to_bet(data):
+    logging.info("player to bet event received")
+    game_id = data.get('game_id')
+    player = data.get('player')
+    ai_player = get_player(game_id, player)
+
+    if ai_player is not None:
+        bet = ai_player.player_to_bet(data.get("allowed_bets"))
+        sio.emit('player bet', {'game_id': game_id, 'player': player, 'bet': bet}, namespace = NAMESPACE)
+
+@sio.on('player to play', namespace=NAMESPACE)
+def player_to_play(data):
+    logging.info("player to play event received")
+    game_id = data.get('game_id')
+    player = data.get('player')
+    ai_player = get_player(game_id, player)
+
+    if ai_player is not None:
+        card = ai_player.player_to_play(data.get("allowed_cards"))
+        sio.emit('player played', {'game_id': game_id, 'player': player, 'card': card}, namespace = NAMESPACE)
+
+
+@sio.on('card played', namespace=NAMESPACE)
+def card_played(data):
+    logging.info("card played event received")
+
 
 @sio.on('msg posted', namespace=NAMESPACE)
 def msg_posted(data):
@@ -26,7 +61,8 @@ def msg_posted(data):
     print ("XXXX ai msg is: " + msg)
     if "echo" in msg:
         print("Sending echo message")
-        sio.emit("client post", "Message received by AI", namespace = '/ohell')
+        sio.emit("client post", "Message received by AI", namespace = NAMESPACE)
+
 
 @sio.on("create_ai_player", namespace=NAMESPACE)
 def create_ai_player(data):
@@ -38,6 +74,11 @@ def create_ai_player(data):
         return
 
     player = AiPlayer(name, game_id)
+    if players.get(game_id) is None:
+        players[game_id] = dict()
+
+    # TODO: handle case where player already exists in set
+    players[game_id][name] = player
     join_game(player)
 
 @sio.event
@@ -57,6 +98,13 @@ def join_game(ai_player):
     sio.emit("join game ai", \
             {'player': ai_player.name, 'game_id': ai_player.game_id}, \
             NAMESPACE)
+
+def get_player(game_id, player_name):
+    if game_id is None:
+        logging.error("game_id misssing")
+        return None
+    ai_player = players.get(game_id).get(player_name)
+    return ai_player
 
 def main(argv):
     print("In main function")
