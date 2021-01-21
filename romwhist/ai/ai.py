@@ -7,6 +7,7 @@ import sys
 import threading
 
 from romwhist.ai.ai_player import AiPlayer
+from romwhist.ohell.ohell_ai import OhellAiPlayer
 
 NAMESPACE = '/ohell_ai'
 DEFAULT_DELAY=2
@@ -29,6 +30,29 @@ players = dict()
 @sio.on('trump card', namespace=NAMESPACE)
 def trump_card(data):
     logging.info("trump card event received")
+
+@sio.on('sc game started', namespace=NAMESPACE)
+def game_started(data):
+    logging.info("sc game started event received")
+    game_id = data.get('game_id')
+    deck_size = data.get('deck_size')
+    ai_players = get_players(game_id)
+    for ai_player_name in ai_players:
+        ai_player = get_player(game_id, ai_player_name)
+        ai_player.game_started(deck_size)
+
+
+@sio.on('new hand', namespace=NAMESPACE)
+def new_hand(data):
+    logging.info("new hand event received")
+    game_id = data.get('game_id')
+    player = data.get('player')
+    cards = data.get('cards')
+    ai_players = get_players(game_id)
+    for ai_player_name in ai_players:
+        if ai_player_name == player:
+            ai_player = get_player(game_id, player)
+            ai_player.new_hand(cards)
 
 
 @sio.on('player to bet', namespace=NAMESPACE)
@@ -79,7 +103,7 @@ def create_ai_player(data):
         logging.error("game_id or name are not defined")
         return
 
-    player = AiPlayer(name, game_id)
+    player = OhellAiPlayer(name, game_id)
     if players.get(game_id) is None:
         players[game_id] = dict()
 
@@ -110,6 +134,13 @@ def get_player(game_id, player_name):
         return None
     ai_player = players.get(game_id).get(player_name)
     return ai_player
+
+def get_players(game_id):
+    if game_id is None:
+        logging.error("game_id misssing")
+        return None
+    ai_players = players.get(game_id)
+    return ai_players
 
 def emit_with_delay(event, data, delay=DEFAULT_DELAY):
     timer = threading.Timer(delay, emit, [event, data])

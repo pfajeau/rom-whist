@@ -237,16 +237,13 @@ def game_started():
             player = game.get_playing_players()[randint(0, len(game.get_playing_players()) - 1)]
             common_routes.emit_to_players(
                 "sc game started",
-                {'game_id': game_id, 'player_to_deal': player, 'nb_cards': 0},
+                {'game_id': game_id, 'player_to_deal': player, 'nb_cards': 0, 'deck_size': game.deck_size},
                 room=game_id, namespace=NAMESPACE)
 
             logging.debug("Dealing method is: " + games[game_id].dealing_method)
             if games[game_id].dealing_method == OhellGame.AUTOMATED_DEALING:
                 generate_hands(game_id, player)
 
-            # Test AI
-            # process = Popen(['python -m ', 'romwhist.ai_player'], stdout=PIPE, stderr=PIPE)
-            # add_player("AI1", game_id)
 
 @socketio.on("player bet", namespace=NAMESPACE_AI)
 def player_bet_ai(data):
