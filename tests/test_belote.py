@@ -200,4 +200,20 @@ if __name__ == '__main__':
     print("Scores: ")
     for player in players:
         print(player + ": " + format(scores[player]))
+
+    test_players_pass_twice()
+
+    belote.deal_1("")
+    for player in players:
+        assert (len(belote.get_hand(player).cards) == 5)
+
+    belote.active_player = "Joe"
+    for player in players:
+        belote.place_bet("player", "Pass")
+
+    for player in players:
+        belote.place_bet("player", "Pass")
+
+    # New hands should have been distributed
+    print("Active player is: " + belote.active_player)
     # TODO: add tests for 2 and 3 player

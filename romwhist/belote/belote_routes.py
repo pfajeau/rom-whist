@@ -226,7 +226,7 @@ def player_bet(bet):
                 emit("player bet", {'player': session['username'], 'bet': bet}, room=game_id, namespace=NAMESPACE)
                 nplayer = game.get_active_player()
                 if game.phase == BeloteGame.GamePhase.DEAL:
-                    common_routes.restart_hand(game_id, NAMESPACE)
+                    restart_hand(game_id)
 
                 elif game.phase == BeloteGame.GamePhase.BET or game.phase == BeloteGame.GamePhase.BET2:
                     emit("player to bet", {'player': nplayer, 'allowed_bets': game.allowed_bets(nplayer)}, room=game_id,
@@ -503,7 +503,7 @@ def remove_player(game_id, player):
 
         socketio.emit("player left", player, room=game_id, namespace=NAMESPACE)
         socketio.emit("clear round", room=game_id, namespace=NAMESPACE)
-        common_routes.restart_hand(game_id, NAMESPACE)
+        restart_hand(game_id)
 
 def clean_game_data(game_id):
     game = games.get(game_id)
