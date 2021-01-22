@@ -1,5 +1,6 @@
 import logging
 
+from romwhist.ai.game_state import GameState
 from romwhist.card import Card
 from romwhist.deck import Deck
 
@@ -8,13 +9,17 @@ class AiPlayer:
 
     def __init__(self, name, game_id):
         self.__name = name
-        self.__game_id = game_id
         self.__cards = []
         self.suit=""
         self.__deck_size = 0
         self.__cards_as_str = ""
 
+        self.__state = GameState(game_id)
         print("Hello World!")
+
+    @property
+    def state(self):
+        return self.__state
 
     @property
     def cards_as_str(self):
@@ -23,10 +28,6 @@ class AiPlayer:
     @property
     def cards(self):
         return self.__cards
-
-    @property
-    def deck_size(self):
-        return self.__deck_size
 
     @property
     def name(self):
@@ -45,7 +46,8 @@ class AiPlayer:
         self.__game_id = value
 
     def game_started(self, deck_size):
-        self.__deck_size=deck_size
+        self.state.deck_size = deck_size
+        #self.__deck_size=deck_size
         self.compute_deck_value()
 
     def player_to_bet(self, allowed_bets):
@@ -58,15 +60,15 @@ class AiPlayer:
         return allowed_cards[0]
 
     def new_hand(self, cards):
-        self.__cards = []
+        self.state.hand_cards = []
         for card in cards:
-            self.__cards.append(Card.card_from_value(card))
+            self.state.hand_cards.append(Card.card_from_value(card))
 
-        self.__cards_as_str = cards
+        self.state.hand_cards_as_str = cards
 
     def compute_deck_value(self):
         # Calculate average value of hand
-        deck = Deck(self.deck_size)
+        deck = Deck(self.state.deck_size)
         cards = deck.all_cards
         self.vd = 0
         for card in cards:
@@ -74,7 +76,7 @@ class AiPlayer:
 
     def compute_card_value(self, card):
         r = 15 - card.rank
-        nr = self.deck_size / 4
+        nr = self.state.deck_size / 4
         cv = (nr - r) * 50
         if card.get_suit() == self.suit:
             cv += 50

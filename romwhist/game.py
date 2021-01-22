@@ -7,6 +7,7 @@ from romwhist.card import Card
 from romwhist.deck import Deck
 from romwhist.hand import Hand
 from romwhist.round import Round
+from romwhist.game_state import GameState
 
 class CardGame():
 
@@ -43,6 +44,9 @@ class CardGame():
         self.trump_suit=None
         self.rounds = []   # The rounds for the hand
         self.__id = id;
+
+        # TODO: move many of the data above to the game state below
+        state = GameState(id)
 
     def reset(self):
         self.current_round = None
