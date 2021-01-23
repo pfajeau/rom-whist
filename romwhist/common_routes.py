@@ -29,6 +29,10 @@ def admin():
     return render_template('admin.html', nb_belote_games = len(belote_routes.games), \
                            nb_whist_games =len(ohell_routes.games))
 
+def home():
+    return render_template("home.html")
+
+
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:

@@ -9,7 +9,7 @@ import threading
 from romwhist.ai.ai_player import AiPlayer
 from romwhist.ohell.ohell_ai import OhellAiPlayer
 
-NAMESPACE = '/ohell_ai'
+NAMESPACES= {'ohell': '/ohell_ai', 'belote':'/belote_ai'}
 DEFAULT_DELAY=2
 
 sio = socketio.Client()
@@ -103,7 +103,11 @@ def create_ai_player(data):
         logging.error("game_id or name are not defined")
         return
 
-    player = OhellAiPlayer(name, game_id)
+    if game_type == "belote":
+        player = AiPlayer(name, game_id)
+    elif game_type == "ohell":
+        player = OhellAiPlayer(name, game_id)
+
     if players.get(game_id) is None:
         players[game_id] = dict()
 
@@ -151,20 +155,23 @@ def emit(event, data):
 
 def main(argv):
     print("In main function")
-    # try:
-    #     opts, args = getopt.getopt(argv, "hn:g:")
-    # except getopt.GetoptError:
-    #     print ('romwhist.aiplayer -n player_name -g game_id:')
-    #     sys.exit(2)
-    # for opt, arg in opts:
-    #     print(opt)
-    #     if opt == '-h':
-    #         print ('romwhist.aiplayer -n player_name -g game_id:')
-    #         sys.exit()
-    #     elif opt == "-n":
-    #         name = arg
-    #     elif opt == "-g":
-    #         game_id = arg
+    try:
+        opts, args = getopt.getopt(argv, "hg:")
+    except getopt.GetoptError:
+        print ('romwhist.aiplayer -g game')
+        sys.exit(2)
+    for opt, arg in opts:
+        print(opt)
+        if opt == '-h':
+            print ('ai -g game. E.g. ai -g belote or ai -g ohell')
+            sys.exit()
+        elif opt == "-n":
+            name = arg
+        elif opt == "-g":
+            game_type = arg
+            NAMESPACE = NAMESPACES[game_type]
+
+
     # print (name + " " + str(game_id))
     # ai_player = AiPlayer(name, game_id)
     # ai_player.join_game()
