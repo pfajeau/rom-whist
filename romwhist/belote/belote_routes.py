@@ -87,20 +87,24 @@ def belote_play():
     form = GameForm()
     player = session.get('username')
     if player is None:
+        logging.error("Unknow player in session")
         flash("Session has expired")
         return redirect(url_for('belote_start'))
 
     game_id = session.get('game_id')
     if game_id is None:
+        logging.error("Unknow game id: %s", game_id)
         flash("Game does not exist")
         return redirect(url_for('belote_start'))
 
     game = games.get(game_id);
     if game is None:
+        logging.error("Unknow game: %s", game_id)
         flash("Game does not exist")
         return redirect(url_for('belote_start'))
 
     if request.method == 'POST':
+
         # logging.info (request.form)
         if game_id is None:
             error = "Could not find game_id in session"
@@ -219,7 +223,7 @@ def game_started():
             generate_hands(game_id, player)
 
 
-socketio.on("player bet", namespace=NAMESPACE_AI)
+@socketio.on("player bet", namespace=NAMESPACE_AI)
 def player_bet_ai(data):
     logging.debug("player bet event received for ai")
     logging.debug("Player bet: " + str(data.get('bet')))
@@ -247,7 +251,7 @@ def player_bet_process(player, game_id, bet):
         try:
             game.place_bet(player, bet)
 
-            emit("player bet", {'player': username, 'bet': bet}, room=game_id, namespace=NAMESPACE)
+            emit("player bet", {'player': player, 'bet': bet}, room=game_id, namespace=NAMESPACE)
             common_routes.emit_to_players(
                 "player bet",
                 {'game_id': game_id, 'player': player, 'bet': bet},
@@ -255,7 +259,7 @@ def player_bet_process(player, game_id, bet):
 
             nplayer = game.get_active_player()
             if game.phase == BeloteGame.GamePhase.DEAL:
-                common_routes.restart_hand(game_id, NAMESPACE)
+                restart_hand(game_id)
 
             elif game.phase == BeloteGame.GamePhase.BET or game.phase == BeloteGame.GamePhase.BET2:
                 common_routes.emit_to_players(
@@ -271,13 +275,15 @@ def player_bet_process(player, game_id, bet):
                 for player in game.get_playing_players():
                     cards = hands[player].serialize()
                     logging.debug("Cards for player " + player + " " + str(cards))
-                    socketio.emit("new hand", cards, room=clients[game_id][player], namespace=NAMESPACE)
+                    common_routes.emit_to_players(
+                        "new hand",
+                        {'game_id': game_id, 'player': player, 'cards': cards},
+                        room=clients[game_id].get(player), namespace=NAMESPACE)
                 next_player_to_play = game.get_active_player()
                 allowed_cards = game.get_hand(next_player_to_play).serialize()
                 logging.debug("Allowed cards: " + str(allowed_cards))
                 logging.debug("Player to play: " + next_player_to_play)
 
-                emit("trump suit", game.trump_suit, room=game_id, namespace=NAMESPACE)
                 common_routes.emit_to_players(
                     "trump suit",
                     game.trump_suit, game_id=game_id, room=game_id, namespace=NAMESPACE)
@@ -291,15 +297,15 @@ def player_bet_process(player, game_id, bet):
                 if (not player_belote is None):
                     logging.debug("Player with Belote / Rebelote: " + player_belote)
                     common_routes.emit_to_players(
-                        "player to play",
+                        "belote rebelote enabled",
                         player_belote, game_id=game_id,
-                        room=clients[game_id][player_belote], namespace=NAMESPACE)
+                        room=clients[game_id].get(player_belote), namespace=NAMESPACE)
             return
         except Exception as e:
             logging.debug("Bet received: " + str(bet))
             logging.error(e)
             traceback.print_stack()
-            emit("alert", "Error in place bet", room=clients[game_id][username], namespace=NAMESPACE)
+            emit("alert", "Error in place bet", room=clients[game_id].get(player), namespace=NAMESPACE)
 
 # TODO: this could be factorized in common routes.
 def hand_completed(game_id, username):
@@ -373,11 +379,11 @@ def player_played_process(game_id, player, card):
 
     game = games.get(game_id)
     belote_before = game.belote_state
-    winner = game.card_played(session['username'], card)
+    winner = game.card_played(player, card)
     belote_after = game.belote_state
 
     if (belote_before != belote_after):
-        belote_state_changed(game_id, session['username'])
+        belote_state_changed(game_id, player)
 
     nplayer = game.get_active_player()
 
@@ -551,7 +557,7 @@ def restart_hand(game_id):
     game = games.get(game_id)
     if game is None:
         return
-    socketio.emit("alert", "Hand to be replayed", room=game_id, namespace=namespace)
+    socketio.emit("alert", "Hand to be replayed", room=game_id, namespace=NAMESPACE)
     if game.started:
         # Deal another hand
         game._current_hand_nb = game._current_hand_nb - 1
@@ -562,6 +568,7 @@ def restart_hand(game_id):
 def add_player(player, game_id):
     game = games.get(game_id)
     if not game is None:
+        session['game_id'] = game.id
         common_routes.add_player(player, game, NAMESPACE)
         if game.started:
             restart_hand(game_id)

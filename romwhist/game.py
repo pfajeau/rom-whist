@@ -36,7 +36,7 @@ class CardGame():
         self.active_player = self.owner
         self.deck_size = deck_size
         self._current_hand_nb = 0
-        self.started = False;
+        self._started = False;
         self.phase = CardGame.GamePhase.DEAL
         self.scoresheet=[]
         self._player_status=dict()
@@ -85,12 +85,12 @@ class CardGame():
 
     @property
     def started(self):
-        return self.__started;
+        return self._started;
 
     # Set to true or false
     @started.setter
     def started(self, value):
-        self.__started = value
+        self._started = value
 
     @property
     def id(self):
@@ -163,7 +163,7 @@ class CardGame():
         return playing_players
 
     def start_game(self):
-        self.started = True;
+        self.started(True)
         self._current_hand_nb = 0
 
         # Set deck size based on number of players

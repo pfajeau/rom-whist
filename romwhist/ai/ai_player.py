@@ -1,6 +1,6 @@
 import logging
 
-from romwhist.ai.game_state import GameState
+from romwhist.game_state import GameState
 from romwhist.card import Card
 from romwhist.deck import Deck
 
@@ -39,11 +39,11 @@ class AiPlayer:
 
     @property
     def game_id(self):
-        return self.__game_id
+        return self.__state.game_id
 
     @game_id.setter
     def game_id(self, value):
-        self.__game_id = value
+        self.state.game_id = value
 
     def game_started(self, deck_size):
         self.state.deck_size = deck_size

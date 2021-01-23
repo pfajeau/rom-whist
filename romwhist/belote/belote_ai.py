@@ -9,7 +9,8 @@ class BeloteAiPlayer(AiPlayer):
         AiPlayer.__init__(self, name, game_id)
 
     def player_to_bet(self, allowed_bets):
-        return AiPlayer.player_to_play(self, allowed_cards)
+        return allowed_bets[0]   # Pass option
+        #return AiPlayer.player_to_play(self, allowed_cards)
 
     def player_to_play(self, allowed_cards):
         return AiPlayer.player_to_play(self, allowed_cards)

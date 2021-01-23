@@ -8,12 +8,17 @@ import threading
 
 from romwhist.ai.ai_player import AiPlayer
 from romwhist.ohell.ohell_ai import OhellAiPlayer
+from romwhist.belote.belote_ai import BeloteAiPlayer
 
 NAMESPACES= {'ohell': '/ohell_ai', 'belote':'/belote_ai'}
 DEFAULT_DELAY=2
 
+# TODO: needs to be configurable!
+this = sys.modules[__name__]
+this.NAMESPACE = "/belote_ai"
+this.game_type = ""
+
 sio = socketio.Client()
-sio.connect('http://localhost:5000', namespaces=[NAMESPACE])
 
 config = configparser.ConfigParser()
 config.read('instance/config_ai.ini')
@@ -104,7 +109,7 @@ def create_ai_player(data):
         return
 
     if game_type == "belote":
-        player = AiPlayer(name, game_id)
+        player = BeloteAiPlayer(name, game_id)
     elif game_type == "ohell":
         player = OhellAiPlayer(name, game_id)
 
@@ -168,9 +173,10 @@ def main(argv):
         elif opt == "-n":
             name = arg
         elif opt == "-g":
-            game_type = arg
-            NAMESPACE = NAMESPACES[game_type]
+            this.game_type = arg
+            this.NAMESPACE = NAMESPACES[this.game_type]
 
+    sio.connect('http://localhost:5000', namespaces=[NAMESPACE])
 
     # print (name + " " + str(game_id))
     # ai_player = AiPlayer(name, game_id)
