@@ -25,10 +25,8 @@ socketio = SocketIO(app, logger=True)
 
 #from .routes import *
 from .ohell import ohell_routes
-app.add_url_rule('/', view_func=ohell_routes.home, methods=["GET", "POST"])
 app.add_url_rule('/ohell_start', view_func=ohell_routes.ohell_start, methods=["GET", "POST"])
 app.add_url_rule('/ohell_play', view_func=ohell_routes.ohell_play, methods=["GET", "POST"])
-app.add_url_rule('/home', view_func=ohell_routes.home, methods=["GET", "POST"])
 
 # When adding those, events are not received by the client anymre
 from .belote import belote_routes
@@ -36,7 +34,9 @@ app.add_url_rule('/belote_start', view_func=belote_routes.belote_start, methods=
 app.add_url_rule('/belote_play', view_func=belote_routes.belote_play, methods=["GET", "POST"])
 
 from romwhist import common_routes
+app.add_url_rule('/', view_func=common_routes.home, methods=["GET", "POST"])
 app.add_url_rule('/admin', view_func=common_routes.admin, methods=["GET", "POST"])
+app.add_url_rule('/home', view_func=common_routes.home, methods=["GET", "POST"])
 
 def create_app():
     login_manager = LoginManager()
