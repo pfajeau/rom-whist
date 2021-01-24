@@ -32,11 +32,11 @@ logging.basicConfig(filename=default["LOG_FILE"], \
 # List of ai players for each game. it is a list of lists
 players = dict()
 
-@sio.on('trump card', namespace=NAMESPACE)
+#@sio.on('trump card', namespace=NAMESPACE)
 def trump_card(data):
     logging.info("trump card event received")
 
-@sio.on('sc game started', namespace=NAMESPACE)
+#@sio.on('sc game started', namespace=NAMESPACE)
 def game_started(data):
     logging.info("sc game started event received")
     game_id = data.get('game_id')
@@ -47,7 +47,7 @@ def game_started(data):
         ai_player.game_started(deck_size)
 
 
-@sio.on('new hand', namespace=NAMESPACE)
+#@sio.on('new hand', namespace=NAMESPACE)
 def new_hand(data):
     logging.info("new hand event received")
     game_id = data.get('game_id')
@@ -60,7 +60,7 @@ def new_hand(data):
             ai_player.new_hand(cards)
 
 
-@sio.on('player to bet', namespace=NAMESPACE)
+#@sio.on('player to bet', namespace=NAMESPACE)
 def player_to_bet(data):
     logging.info("player to bet event received")
     game_id = data.get('game_id')
@@ -72,7 +72,7 @@ def player_to_bet(data):
         bet = ai_player.player_to_bet(data.get("allowed_bets"))
         emit_with_delay('player bet', {'game_id': game_id, 'player': player, 'bet': bet})
 
-@sio.on('player to play', namespace=NAMESPACE)
+#@sio.on('player to play', namespace=NAMESPACE)
 def player_to_play(data):
     logging.info("player to play event received")
     game_id = data.get('game_id')
@@ -85,12 +85,18 @@ def player_to_play(data):
         emit_with_delay('player played', {'game_id': game_id, 'player': player, 'card': card})
 
 
-@sio.on('card played', namespace=NAMESPACE)
+#@sio.on('card played', namespace=NAMESPACE)
 def card_played(data):
+    # TODO
     logging.info("card played event received")
 
+def game_over(datq):
+    # TODO
+    logging.info("game over event received")
 
-@sio.on('msg posted', namespace=NAMESPACE)
+
+
+#@sio.on('msg posted', namespace=NAMESPACE)
 def msg_posted(data):
     msg = data['msg']
     print ("XXXX ai msg is: " + msg)
@@ -99,7 +105,7 @@ def msg_posted(data):
         sio.emit("client post", "Message received by AI", namespace = NAMESPACE)
 
 
-@sio.on("create_ai_player", namespace=NAMESPACE)
+#@sio.on("create_ai_player", namespace=NAMESPACE)
 def create_ai_player(data):
     logging.info("In create_ai_player")
     game_id = data.get("game_id")
@@ -177,6 +183,14 @@ def main(argv):
             this.NAMESPACE = NAMESPACES[this.game_type]
 
     sio.connect('http://localhost:5000', namespaces=[NAMESPACE])
+    sio.on("create_ai_player", create_ai_player, NAMESPACE)
+    sio.on("sc game started", game_started, NAMESPACE)
+    sio.on("trump card", trump_card, NAMESPACE)
+    sio.on("new hand", new_hand, NAMESPACE)
+    sio.on("player to bet", player_to_bet, NAMESPACE)
+    sio.on("player to play", player_to_play, NAMESPACE)
+    sio.on("card played", card_played, NAMESPACE)
+    sio.on("game over", game_over, NAMESPACE)
 
     # print (name + " " + str(game_id))
     # ai_player = AiPlayer(name, game_id)

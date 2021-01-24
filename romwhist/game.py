@@ -163,7 +163,7 @@ class CardGame():
         return playing_players
 
     def start_game(self):
-        self.started(True)
+        self._started = True
         self._current_hand_nb = 0
 
         # Set deck size based on number of players
