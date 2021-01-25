@@ -10,6 +10,14 @@ if __name__ == '__main__':
     ohell_ai.game_started(32)
     cards = ["s14", "s10", "d7", "d10", "c9", "c13"]
     ohell_ai.new_hand(cards)
+
+    ohell_ai.state.trump = "s"
     bet = ohell_ai.player_to_bet([0,1,2,3,4,5,6])
     logging.info("bet = %s", bet)
+    assert bet == 3, bet
+
+    ohell_ai.state.trump = ""
+    bet = ohell_ai.player_to_bet([0,1,2,3,4,5,6])
+    logging.info("bet = %s", bet)
+    assert bet == 2, bet
 

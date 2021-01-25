@@ -75,10 +75,13 @@ class AiPlayer:
             self.vd += self.compute_card_value(card)
 
     def compute_card_value(self, card):
-        r = 15 - card.rank
+        # Returns card value between 0 and 100
+        r = 14 - card.rank
         nr = self.state.deck_size / 4
-        cv = (nr - r) * 50
-        if card.get_suit() == self.suit:
+        cv = ((nr - r) * 50) / 8
+
+        # Trump card: add 50 points
+        if card.get_suit() == self.__state.trump:
             cv += 50
         logging.debug("Card value for %s is: %s", card, cv)
         return cv

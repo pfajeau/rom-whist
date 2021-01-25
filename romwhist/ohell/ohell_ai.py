@@ -26,7 +26,7 @@ class OhellAiPlayer(AiPlayer):
         np = self.state.deck_size / 8
         ab = len(self.state.hand_cards) / np
         bet = ab * vh / avh
-        logging.debug("Calculaed bet: %s", bet)
+        logging.debug("Calculated bet: %s", bet)
 
         # Round and adjust to make it valid
         bet_int = int(round(bet))
