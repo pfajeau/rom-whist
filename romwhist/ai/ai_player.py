@@ -46,8 +46,9 @@ class AiPlayer:
     def game_id(self, value):
         self.state.game_id = value
 
-    def game_started(self, deck_size):
+    def game_started(self, deck_size, players):
         self.state.deck_size = deck_size
+        self.state.players = players
         #self.__deck_size=deck_size
 
     def player_to_bet(self, allowed_bets):

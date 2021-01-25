@@ -23,9 +23,7 @@ class OhellAiPlayer(AiPlayer):
         avh = len(self.state.hand_cards) * self.vd / self.state.deck_size
         logging.debug("Average value of hand: %s", avh)
 
-        # TODO: nb of players should be given in game started event
-        # For now assume 8 cards per player
-        np = self.state.deck_size / 8
+        np = len(self.state.players)
         ab = len(self.state.hand_cards) / np
         bet = ab * vh / avh
         logging.debug("Calculated bet: %s", bet)

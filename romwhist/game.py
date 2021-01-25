@@ -45,9 +45,6 @@ class CardGame():
         self.rounds = []   # The rounds for the hand
         self.__id = id;
 
-        # TODO: move many of the data above to the game state below
-        state = GameState(id)
-
     def reset(self):
         self.current_round = None
         self.trump_card = None

@@ -4,25 +4,24 @@ This module implements routes.
 author: Philippe Fajeau
 
 """
+import logging
 import threading
 import traceback
-from random import randint
-
 import unidecode
 from flask import render_template, request, flash, session, url_for, redirect
 # from flask import Blueprint
 from flask_login import current_user, login_user
 from flask_socketio import emit
 from flask_socketio import join_room, leave_room
-import logging
+from random import randint
 
+from romwhist import common_routes
 from romwhist import socketio, app
 from romwhist.extensions import db
 from romwhist.forms import LoginForm, GameForm
-from romwhist.ohell.ohell_form import OhellStartForm
 from romwhist.models import User
 from romwhist.ohell.ohell import OhellGame
-from romwhist import common_routes
+from romwhist.ohell.ohell_form import OhellStartForm
 
 NAMESPACE = '/ohell'
 NAMESPACE_AI = '/ohell_ai'
@@ -33,7 +32,6 @@ games = dict()
 # Dictionary of session iDs for each game. This is a dictionary of Dictionary
 # Keys are game ids and then player ids. Used for socketio.
 clients = dict()
-
 
 
 def ohell_start():
@@ -71,11 +69,12 @@ def ohell_start():
 
         elif form.start_game.data:
             logging.info("start game")
-            game_id = common_routes.generate_game_id(999,games)
+            game_id = common_routes.generate_game_id(999, games)
             if (game_id is None):
-                return render_template('ohell_start.html', error="No more games available!!! Please try again later", form=form)
+                return render_template('ohell_start.html', error="No more games available!!! Please try again later",
+                                       form=form)
 
-            logging.debug("creating new game with id: " +str(game_id))
+            logging.debug("creating new game with id: " + str(game_id))
             # Add game id in session
             game = OhellGame(game_creator=username, deck_size=0, id=game_id)
             games[game_id] = game
@@ -169,11 +168,11 @@ def ohell_play():
 
         cards_played = game.get_cards_played()
 
-        logging.debug("Player: "+ player)
+        logging.debug("Player: " + player)
         logging.debug("Active Player: " + game.get_active_player())
         logging.debug("Game Phase: " + game.phase.name)
         active_player = game.get_active_player()
-        logging.debug ("Allowed cards: " + str(game.get_allowed_cards(player)))
+        logging.debug("Allowed cards: " + str(game.get_allowed_cards(player)))
         # logging.debug("Scoresheet:")
         # for i in range(game._current_hand_nb - 1):
         #     logging.debug(i, " ", game.scoresheet[i][0])
@@ -231,7 +230,8 @@ def game_started():
             player = game.get_playing_players()[randint(0, len(game.get_playing_players()) - 1)]
             common_routes.emit_to_players(
                 "sc game started",
-                {'game_id': game_id, 'player_to_deal': player, 'nb_cards': 0, 'deck_size': game.deck_size},
+                {'game_id': game_id, 'player_to_deal': player, 'nb_cards': 0, 'deck_size': game.deck_size,
+                 'players': game.players},
                 room=game_id, namespace=NAMESPACE)
 
             logging.debug("Dealing method is: " + games[game_id].dealing_method)
@@ -269,7 +269,7 @@ def player_bet_process(player, game_id, bet):
         game.place_bet(player, bet_int)
         common_routes.emit_to_players(
             "player bet",
-            {'game_id': game_id,'player': player, 'bet': bet},
+            {'game_id': game_id, 'player': player, 'bet': bet},
             room=game_id, namespace=NAMESPACE)
         nplayer = game.next_player_to_bet(player)
 
@@ -282,8 +282,8 @@ def player_bet_process(player, game_id, bet):
             logging.debug("Player to play: " + next_player_to_play)
             common_routes.emit_to_players(
                 "player to play",
-                {'game_id': game_id,'player': next_player_to_play, 'allowed_cards': allowed_cards},
-                 room=game_id, namespace=NAMESPACE)
+                {'game_id': game_id, 'player': next_player_to_play, 'allowed_cards': allowed_cards},
+                room=game_id, namespace=NAMESPACE)
             return
 
         else:
@@ -316,7 +316,7 @@ def hand_completed(game_id, username):
         common_routes.emit_to_players(
             "game over",
             game.get_highest_score_player(), game_id=game_id,
-             room=game_id, namespace=NAMESPACE)
+            room=game_id, namespace=NAMESPACE)
         logging.debug("Game " + str(game_id) + " is over")
         clean_game_data(game_id)
 
@@ -347,6 +347,7 @@ def player_played_ai(data):
     game_id = data.get('game_id')
     player_played_process(game_id, player, data.get('card'))
 
+
 @socketio.on('player played', namespace=NAMESPACE)
 def player_played(card):
     logging.info("card played event received")
@@ -376,8 +377,8 @@ def player_played_process(game_id, player, card):
         allowed_cards = game.get_allowed_cards(nplayer)
         common_routes.emit_to_players(
             "player to play",
-             {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
-             room=game_id, namespace=NAMESPACE)
+            {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
+            room=game_id, namespace=NAMESPACE)
     else:
         # There is a winner, so round is ended
         allowed_cards = game.get_hand(nplayer).serialize()
@@ -437,7 +438,7 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
         if trump and not game.trump_card is None:
             common_routes.emit_to_players(
                 "trump card",
-                {"game_id": game_id, "trump_card": str(game.trump_card),"trump_suit": str(game.trump_suit)},
+                {"game_id": game_id, "trump_card": str(game.trump_card), "trump_suit": str(game.trump_suit)},
                 room=game_id, namespace=NAMESPACE)
 
         common_routes.emit_to_players(
@@ -465,6 +466,7 @@ def on_join(data):
             session['sid'] = request.sid
             join_room(game_id)
 
+
 @socketio.on('join game ai', namespace=NAMESPACE_AI)
 def join_ai(data):
     # Note that a refresh on the client side causes the socketio sid to changed
@@ -480,6 +482,7 @@ def join_ai(data):
     player = data.get('player')
     logging.debug("Player: " + player)
     common_routes.add_player(player, game, NAMESPACE)
+
 
 @socketio.on('client post', namespace=NAMESPACE)
 def on_post(msg):
@@ -531,7 +534,7 @@ def restart_hand(game_id):
 
 
 # Add player to a game
-def add_player(player,game_id):
+def add_player(player, game_id):
     game = games.get(game_id)
     if not game is None:
         session['game_id'] = game.id

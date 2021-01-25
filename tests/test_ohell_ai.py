@@ -7,7 +7,7 @@ if __name__ == '__main__':
     logging.basicConfig(filename='test.log', level=logging.DEBUG)
 
     ohell_ai = OhellAiPlayer('AI1', '1')
-    ohell_ai.game_started(32)
+    ohell_ai.game_started(32, ["joe", "jack", "AI_1_1", "jim"])
     cards = ["s14", "s10", "d7", "d10", "c9", "c13"]
     ohell_ai.new_hand(cards)
 

@@ -1,17 +1,17 @@
 import configparser
-from flask_socketio import emit
 import getopt
 import logging
 import socketio
 import sys
 import threading
+from flask_socketio import emit
 
 from romwhist.ai.ai_player import AiPlayer
-from romwhist.ohell.ohell_ai import OhellAiPlayer
 from romwhist.belote.belote_ai import BeloteAiPlayer
+from romwhist.ohell.ohell_ai import OhellAiPlayer
 
-NAMESPACES= {'ohell': '/ohell_ai', 'belote':'/belote_ai'}
-DEFAULT_DELAY=2
+NAMESPACES = {'ohell': '/ohell_ai', 'belote': '/belote_ai'}
+DEFAULT_DELAY = 2
 
 # TODO: needs to be configurable!
 this = sys.modules[__name__]
@@ -32,22 +32,25 @@ logging.basicConfig(filename=default["LOG_FILE"], \
 # List of ai players for each game. it is a list of lists
 players = dict()
 
-#@sio.on('trump card', namespace=NAMESPACE)
+
+# @sio.on('trump card', namespace=NAMESPACE)
 def trump_card(data):
     logging.info("trump card event received")
 
-#@sio.on('sc game started', namespace=NAMESPACE)
+
+# @sio.on('sc game started', namespace=NAMESPACE)
 def game_started(data):
     logging.info("sc game started event received")
     game_id = data.get('game_id')
     deck_size = data.get('deck_size')
+    players = data.get('players')
     ai_players = get_players(game_id)
     for ai_player_name in ai_players:
         ai_player = get_player(game_id, ai_player_name)
-        ai_player.game_started(deck_size)
+        ai_player.game_started(deck_size, players)
 
 
-#@sio.on('new hand', namespace=NAMESPACE)
+# @sio.on('new hand', namespace=NAMESPACE)
 def new_hand(data):
     logging.info("new hand event received")
     game_id = data.get('game_id')
@@ -60,7 +63,7 @@ def new_hand(data):
             ai_player.new_hand(cards)
 
 
-#@sio.on('player to bet', namespace=NAMESPACE)
+# @sio.on('player to bet', namespace=NAMESPACE)
 def player_to_bet(data):
     logging.info("player to bet event received")
     game_id = data.get('game_id')
@@ -72,7 +75,8 @@ def player_to_bet(data):
         bet = ai_player.player_to_bet(data.get("allowed_bets"))
         emit_with_delay('player bet', {'game_id': game_id, 'player': player, 'bet': bet})
 
-#@sio.on('player to play', namespace=NAMESPACE)
+
+# @sio.on('player to play', namespace=NAMESPACE)
 def player_to_play(data):
     logging.info("player to play event received")
     game_id = data.get('game_id')
@@ -85,27 +89,27 @@ def player_to_play(data):
         emit_with_delay('player played', {'game_id': game_id, 'player': player, 'card': card})
 
 
-#@sio.on('card played', namespace=NAMESPACE)
+# @sio.on('card played', namespace=NAMESPACE)
 def card_played(data):
     # TODO
     logging.info("card played event received")
+
 
 def game_over(datq):
     # TODO
     logging.info("game over event received")
 
 
-
-#@sio.on('msg posted', namespace=NAMESPACE)
+# @sio.on('msg posted', namespace=NAMESPACE)
 def msg_posted(data):
     msg = data['msg']
-    print ("XXXX ai msg is: " + msg)
+    print("XXXX ai msg is: " + msg)
     if "echo" in msg:
         print("Sending echo message")
-        sio.emit("client post", "Message received by AI", namespace = NAMESPACE)
+        sio.emit("client post", "Message received by AI", namespace=NAMESPACE)
 
 
-#@sio.on("create_ai_player", namespace=NAMESPACE)
+# @sio.on("create_ai_player", namespace=NAMESPACE)
 def create_ai_player(data):
     logging.info("In create_ai_player")
     game_id = data.get("game_id")
@@ -126,22 +130,27 @@ def create_ai_player(data):
     players[game_id][name] = player
     join_game(player)
 
+
 @sio.event
 def connect():
     print("I'm connected!")
+
 
 @sio.event
 def connect_error():
     print("The connection failed!")
 
+
 @sio.event
 def disconnect():
     print("I'm disconnected!")
 
+
 def join_game(ai_player):
-    print ("Emitting join game")
+    print("Emitting join game")
     emit("join game ai",
-        {'player': ai_player.name, 'game_id': ai_player.game_id})
+         {'player': ai_player.name, 'game_id': ai_player.game_id})
+
 
 def get_player(game_id, player_name):
     if game_id is None:
@@ -150,6 +159,7 @@ def get_player(game_id, player_name):
     ai_player = players.get(game_id).get(player_name)
     return ai_player
 
+
 def get_players(game_id):
     if game_id is None:
         logging.error("game_id misssing")
@@ -157,24 +167,27 @@ def get_players(game_id):
     ai_players = players.get(game_id)
     return ai_players
 
+
 def emit_with_delay(event, data, delay=DEFAULT_DELAY):
     timer = threading.Timer(delay, emit, [event, data])
     timer.start()
 
+
 def emit(event, data):
     sio.emit(event, data, namespace=NAMESPACE)
+
 
 def main(argv):
     print("In main function")
     try:
         opts, args = getopt.getopt(argv, "hg:")
     except getopt.GetoptError:
-        print ('romwhist.aiplayer -g game')
+        print('romwhist.aiplayer -g game')
         sys.exit(2)
     for opt, arg in opts:
         print(opt)
         if opt == '-h':
-            print ('ai -g game. E.g. ai -g belote or ai -g ohell')
+            print('ai -g game. E.g. ai -g belote or ai -g ohell')
             sys.exit()
         elif opt == "-n":
             name = arg
@@ -195,6 +208,7 @@ def main(argv):
     # print (name + " " + str(game_id))
     # ai_player = AiPlayer(name, game_id)
     # ai_player.join_game()
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
