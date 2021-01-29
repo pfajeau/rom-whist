@@ -586,9 +586,7 @@ class BeloteGame(CardGame):
             card.rank = self.card_ranks[str(card)]
             card.points = self.card_points[str(card)]
 
-    def init_dict(self, a_dict, value):
-        for player in self.players:
-            a_dict[player] = value
-
     def init_bets(self):
         self.init_dict(self.bets, "")
+
+

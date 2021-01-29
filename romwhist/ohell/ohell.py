@@ -26,11 +26,14 @@ class OhellGame(CardGame):
         state = CardGame.get_state(self, state)
         state.bets = self.bets
         state.nb_rounds_won = self.wins
+        return state
 
     def set_state(self, state):
         CardGame.set_state(self, state)
         self.bets = state.bets
         self.wins = state.nb_rounds_won
+        self.soft_init_dict(self.wins, 0)
+        self.soft_init_dict(self.bets, -1)
 
     # Define the card distribution pattern
     def set_hand_prgression(self, multiple_one_card=False, multiple_no_trump=True, increment=1):

@@ -10,6 +10,29 @@ from romwhist.game_state import GameState
 from romwhist.ohell.ohell_sim import OhellSim
 
 
+def lookup(name, namespace):
+    """
+    Get a method or class from any imported module from its name.
+    Usage: lookup(functionName, globals())
+    :returns: method/class reference
+    :raises Exception: If the number of classes/methods existing in namespace with name is != 1
+    """
+
+    dots = name.count('.')
+    if dots > 0:
+        module_name, obj_name = '.'.join(name.split('.')[:-1]), name.split('.')[-1]
+        module = __import__(module_name)
+        return getattr(module, obj_name)
+    else:
+        modules = [obj for obj in namespace.values() if str(type(obj)) == "<type 'module'>"]
+        options = [getattr(module, name) for module in modules if name in dir(module)]
+        options += [obj[1] for obj in namespace.items() if obj[0] == name]
+        if len(options) == 1:
+            return options[0]
+        if len(options) > 1:
+            raise Exception('Name conflict for %s')
+        raise Exception('%s not found as a method or class' % name)
+
 class IAgent(ABC):
     """ Interface for bridge-playing agents."""
 
@@ -35,8 +58,10 @@ class SimpleAgent(IAgent):
             Function should map State -> Card
         :param target: See comment in IAgent's constructor
         """
-
-        self.action_chooser_function = action_chooser_function
+        if isinstance(action_chooser_function, str):
+            self.action_chooser_function = lookup(action_chooser_function, globals())
+        else:
+            self.action_chooser_function = action_chooser_function
         super().__init__()
 
     def get_action(self, state):

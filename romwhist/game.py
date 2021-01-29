@@ -44,7 +44,6 @@ class CardGame:
         self.trump_suit = None
         self.rounds = []  # The rounds for the hand
         self.__id = id
-        self._state = None
         self.deck = None
 
     def reset(self):
@@ -69,11 +68,13 @@ class CardGame:
         state.trump =  self.trump_suit
         state.cards_played_per_player = self.get_cards_played_per_player()
         state.deck_size = self.deck_size
-
+        state.scores = self.scores
+        state.owner = self.owner
         state.hand_cards = dict()
         for player in self.get_playing_players():
             state.hand_cards[player] = self.hands[player].serialize()
         state.active_player = self.active_player
+        state.dealer = self.dealer
 
         i = 0
         state.cards_played_per_round = dict()
@@ -86,6 +87,9 @@ class CardGame:
         state.hand_cards = dict()
         for player in self.hands:
             state.hand_cards[player] = self.hands[player].serialize()
+
+        if self.current_round is None:
+            self.create_round()
 
         state.allowed_cards = self.get_allowed_cards(state.active_player)
         return state
@@ -100,6 +104,10 @@ class CardGame:
         self.trump_suit = state.trump
         self.deck_size = state.deck_size
         self.deck = Deck(state.deck_size)
+        self.scores = state.scores
+        self.soft_init_dict(self.scores, 0)
+        self.owner = state.owner
+        self.dealer = state.dealer
 
         # Create hands
         for player in state.hand_cards:
@@ -112,10 +120,12 @@ class CardGame:
             round = Round(state.players, state.trump)
             for player in state.cards_played_per_round[round_nb]:
                 card_str = state.cards_played_per_round[round_nb].get(player)
-                print (card_str)
+
                 round.card_played(player,
                                   Card.card_from_value(card_str))
             self.current_round = round
+        if self.current_round is None:
+            self.current_round = self.create_round()
 
         self.active_player = state.active_player
 
@@ -218,7 +228,7 @@ class CardGame:
         return playing_players
 
     def start_game(self):
-        self._started = True
+        self.started = True
         self._current_hand_nb = 0
 
         # Set deck size based on number of players
@@ -358,3 +368,9 @@ class CardGame:
 
     def init_bets(self):
         self.init_dict(self.bets, -1)
+
+    def soft_init_dict(self, a_dict, default_value):
+        for player in self.players:
+            if a_dict.get(player) is None:
+                a_dict[player] = default_value
+

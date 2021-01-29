@@ -1,8 +1,23 @@
 import logging
 from romwhist.ohell.ohell import OhellGame
 from romwhist.ohell.ohell_state import OhellState
+from romwhist.ohell.ohell_sim import OhellSim
+from romwhist.ai.ai_agents import SimpleAgent, SmartSearchAgent
 
 from tests import test_common
+
+
+def init_game(players, game_id):
+    ohell_game = OhellGame("Joe", deck_size=32, id=game_id)
+    for player in players:
+        ohell_game.add_player(player)
+
+    ohell_game.start_game()
+    ohell_game.set_hand_prgression(False, True, 2)
+    ohell_game.create_hand_progression()
+    ohell_game.active_player = "Joe"
+
+    return ohell_game
 
 
 if __name__ == '__main__':
@@ -96,11 +111,8 @@ if __name__ == '__main__':
 
     # Test Game state
     logging.debug("Testing Game State")
-    ohell = OhellGame("Joe", deck_size=32, id="8")
-    for player in players:
-        ohell.add_player(player)
+    ohell = init_game(players, "game_state_test")
 
-    ohell.start_game()
     ohell.deal(dealer="")
     ohell.deal(dealer="")
     ohell.deal(dealer="")
@@ -143,5 +155,24 @@ if __name__ == '__main__':
 
     ohell.hand_completed()
     scores = ohell.get_scores()
+
+    # Test Sim Game
+    logging.debug("Testing Sim Game")
+    game_id = "sim_game"
+    ohell = init_game(players, game_id)
+
+    ohell.deal(dealer="")
+    ohell.deal(dealer="")
+    ohell.deal(dealer="")
+    for player in players:
+        ohell.place_bet(player, 1)
+
+
+    state = OhellState("game_id", "Joe")
+    ohell.get_state(state)
+    sim_game = OhellSim(SimpleAgent(), SimpleAgent(), "Joe", state=state)
+    sim_game.run()
+
+
 
 

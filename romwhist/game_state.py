@@ -8,17 +8,20 @@ class GameState(ABC):
 
     def __init__(self, game_id, sim_player, players=[], trump="", cards_played_per_player=None,
                  cards_played_per_round=None, deck_size=0,
-                 hand_cards=None, allowed_cards=[], active_player=""):
+                 hand_cards=None, allowed_cards=[], active_player="", scores=None,
+                 owner=None, dealer = None):
         self.game_id = game_id
         self.players = players
         self.trump = trump
         self.cards_played_per_player = cards_played_per_player
-        #self.cards_played_per_round = cards_played_per_round
         self.deck_size = deck_size
         self.hand_cards = hand_cards
         self.allowed_cards = allowed_cards
         self.active_player = active_player
         self.cards_played_per_round = cards_played_per_round
+        self.scores = scores
+        self.owner = owner
+        self.dealer = dealer
 
         self.sim_player = sim_player
         self.deck = None
