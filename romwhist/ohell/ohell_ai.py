@@ -1,12 +1,25 @@
 import logging
 
 from romwhist.ai.ai_player import AiPlayer
+from romwhist.ai.ai_agents import SimpleAgent, random_action
+from romwhist.ohell.ohell_state import OhellState
 
 
 class OhellAiPlayer(AiPlayer):
 
     def __init__(self, name, game_id):
         AiPlayer.__init__(self, name, game_id)
+        self.__agent = SimpleAgent(random_action)
+        self.state = OhellState(game_id, self.name)
+
+
+    def new_hand(self, cards):
+        super().new_hand(cards)
+        self.state.nb_rounds_won = 0
+        self.bets = dict()
+
+        for player in self.state.players:
+            self.bets[player] = ""
 
     def player_to_bet(self, allowed_bets):
         logging.debug("Ohell AI PLayer to bet: %s", self.name)
@@ -41,9 +54,27 @@ class OhellAiPlayer(AiPlayer):
         logging.error("Could not compute bet")
         return allowed_bets[0]
 
+
     def player_to_play(self, allowed_cards):
-        # TOOD
-        return AiPlayer.player_to_play(self, allowed_cards)
+        self.state.allowed_cards = allowed_cards
+        return self.__agent.get_action(self.state)
+
+#        play_to_win = False
+
+        # If number of tricks made is less than bets, play to win, otherwise play to loose
+        # if self.state.nb_rounds_won[self.name] < self.state.bets[self.name]:
+        #     play_to_win = True
+
+        # First to play
+        # if len(self.state.cards_played_round) == 0:
+        #     # For each card in hand, chek whether one is highest among cards that have
+        #     # not been played yet.
+        #     for card in allowed_cards:
+        #         break
+        # else:
+
+
+        # return AiPlayer.player_to_play(self, allowed_cards)
 
     def compute_card_value(self, card):
        # No trump.

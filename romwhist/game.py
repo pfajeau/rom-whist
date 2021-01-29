@@ -1,16 +1,16 @@
-from enum import Enum
 import logging
-
+from enum import Enum
 from random import choice
 from random import randrange
+
 from romwhist.card import Card
 from romwhist.deck import Deck
+from romwhist.game_state import GameState
 from romwhist.hand import Hand
 from romwhist.round import Round
-from romwhist.game_state import GameState
 
-class CardGame():
 
+class CardGame:
     MANUAL_DEALING = "manual"
     AUTOMATED_DEALING = "automated"
 
@@ -20,45 +20,98 @@ class CardGame():
         PLAY = "Play"
         OVER = "Over"
 
-    def __init__(self, game_creator = "", deck_size=0, id=0):
+    def __init__(self, game_creator="", deck_size=0, id=0):
         self.players = []
         self.current_round = None
         self.trump_card = None
-        self.hands=dict()
-        self.scores=dict()
-        self.bets=dict()
-        self.wins=dict()
-        self.points=dict()
+        self.hands = dict()
+        self.scores = dict()
+        self.bets = dict()
+        self.wins = dict()
+        self.points = dict()
         self.dealer = None
-        self.init_dict(self.scores,0)
+        self.init_dict(self.scores, 0)
         self.dealing_method = CardGame.AUTOMATED_DEALING
         self.__owner = game_creator
         self.active_player = self.owner
         self.deck_size = deck_size
         self._current_hand_nb = 0
-        self._started = False;
+        self._started = False
         self.phase = CardGame.GamePhase.DEAL
-        self.scoresheet=[]
-        self._player_status=dict()
+        self.scoresheet = []
+        self._player_status = dict()
         self.init_dict(self._player_status, 1)
-        self.trump_suit=None
-        self.rounds = []   # The rounds for the hand
-        self.__id = id;
+        self.trump_suit = None
+        self.rounds = []  # The rounds for the hand
+        self.__id = id
+        self._state = None
 
     def reset(self):
         self.current_round = None
         self.trump_card = None
-        self.hands=dict()
-        self.scores=dict()
-        self.bets=dict()
-        self.wins=dict()
+        self.hands = dict()
+        self.scores = dict()
+        self.bets = dict()
+        self.wins = dict()
         self.points = dict()
         self.dealer = None
-        self.init_dict(self.scores,0)
+        self.init_dict(self.scores, 0)
         self.active_player = self.owner
         self.init_bets()
         self.init_dict(self.wins, 0)
         self._current_hand_nb = 0
+
+    def get_state(self, state:GameState):
+        # Populate state
+        state.game_id = self.game_id
+        state.players = self.get_playing_players()
+        state.trump =  self.trump_suit
+        state.card_played_per_player = self.get_cards_played_per_player()
+        state.deck_size = self.deck_size
+
+        for player in self.get_playing_players():
+            state.hand_cards[player] = self.hands[player].serialize()
+        state.active_player = self.active_player
+
+        i = 0
+        for round in self.rounds:
+            state.cards_played_per_round[i] = dict()
+            for player in state.players:
+                state.cards_played_per_round[i][player] = str(round.cards_played[player])
+            i += 1
+
+        state.allowed_cards = self.get_allowed_cards(state.active_player)
+        return state
+
+    def set_state(self, state:GameState):
+        self._state = state   # Should do a copy?
+
+        self.game_id = state.game_id
+        self.players = state.players
+        for player in state.players:
+            self._player_status[player] = 1
+        self.trump_suit = state.trump
+
+        self._state.card_played_per_player = self.get_cards_played_per_player()
+
+        self.deck_size = self._state.deck_size
+        self._deck = Deck(state.deck_size)
+
+        # Create hands
+        for player in state.hand_cards:
+            self.hands[player] = Hand(deck)
+            for card in state.hand_cards[player]:
+                self.hands[player].append(Card.card_from_value(card))
+
+        # Create rounds
+        for round_nb in state.cards_played_per_round:
+            round = Round(state.players, state.trump)
+            for player in state.cards_played_per_round[round_nb]:
+                round.cards_played(player,
+                                   Card.card_from_value(state.cards_played_per_round[round_nb][player]))
+            self.current_round = round
+
+        self.active_player = state.active_player
 
     @property
     def phase(self):
@@ -69,20 +122,19 @@ class CardGame():
         self.__phase = value
 
     def get_active_player(self):
-        return self.active_player;
+        return self.active_player
 
     @property
     def owner(self):
         return self.__owner
 
     @owner.setter
-    def set_owner(self, player):
+    def owner(self, player):
         self.__owner = player
-
 
     @property
     def started(self):
-        return self._started;
+        return self._started
 
     # Set to true or false
     @started.setter
@@ -91,9 +143,9 @@ class CardGame():
 
     @property
     def id(self):
-        return self.__id;
+        return self.__id
 
-    # Return a list of players with the mazimum score
+    # Return a list of players with the maximum score
     def get_highest_score_player(self):
         maximum = max(self.scores.values())
         winners = []
@@ -109,7 +161,7 @@ class CardGame():
 
     def add_player(self, player):
         if player in self.players:
-            print ("player already exits - re-enabling")
+            print("player already exits - re-enabling")
             self._player_status[player] = 1
             # Need to re-start hands
             self.active_player = self.dealer
@@ -130,7 +182,7 @@ class CardGame():
             self.points[player] = 0
 
     def disable_player(self, player):
-        print("In Game.disable_player, disabloing playerL " + player)
+        print("In Game.disable_player, disabling player " + player)
         if player in self.players:
             self._player_status[player] = 0
             print(self._player_status)
@@ -183,13 +235,13 @@ class CardGame():
         return self.bets
 
     def get_wins(self):
-        return self.wins;
+        return self.wins
 
     def round_ended(self, winner):
         return
 
     # Return a dictionary of cards played per player for the current round
-    def get_cards_played(self):
+    def get_cards_played_current_round(self):
         if len(self.rounds) > 0:
             cards = self.rounds[-1].cards_played
             card_played_as_str = dict()
@@ -199,7 +251,18 @@ class CardGame():
         else:
             return None
 
-    def hand_completed(self):
+    def get_cards_played_per_player(self) -> dict:
+        cards = dict()
+        if len(self.rounds) > 0:
+            for round in self.rounds:
+                cards_round = round.play_card
+                for player in cards_round:
+                    if cards[player] is None:
+                        cards[player] = []
+                    cards[player].extend(str(cards_round[player]))
+        return cards
+
+    def hand_completed(self) -> None:
         self.update_scores()
 
     def is_game_over(self):
@@ -229,7 +292,7 @@ class CardGame():
         return nplayer
 
     # Return round winner if last card played None otherwise
-    def card_played(self, player, card_value):
+    def play_card(self, player, card_value):
         logging.info(player + " played: " + card_value)
         # Find card in hand that matches card played and remove it from hand
         for card in self.hands[player].get_cards():
@@ -246,7 +309,7 @@ class CardGame():
                 self.active_player = winner
 
             self.round_ended(winner)
-            logging.info("Winner of round is: "  + winner)
+            logging.info("Winner of round is: " + winner)
             return winner
         else:
             self.active_player = self.next_player(player)
@@ -260,7 +323,7 @@ class CardGame():
     def get_current_round(self):
         return self.current_round
 
-    # Default behavoir does nothing
+    # Default behavior does nothing
     def update_scores(self):
         return self.scores
 
@@ -272,12 +335,12 @@ class CardGame():
 
     def next_player(self, player):
         pos = self.players.index(player)
-        if pos == len(self.players)-1:
+        if pos == len(self.players) - 1:
             next_player = self.players[0]
         else:
-            next_player = self.players[pos+1]
+            next_player = self.players[pos + 1]
 
-        if  self._player_status[next_player] == 1:
+        if self._player_status[next_player] == 1:
             return next_player
         else:
             return self.next_player(next_player)
@@ -285,7 +348,6 @@ class CardGame():
     def init_dict(self, a_dict, value):
         for player in self.players:
             a_dict[player] = value
-
 
     def init_bets(self):
         self.init_dict(self.bets, -1)

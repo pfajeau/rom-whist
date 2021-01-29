@@ -166,7 +166,7 @@ def ohell_play():
             hand = hand.serialize()
         round = game.get_current_round()
 
-        cards_played = game.get_cards_played()
+        cards_played = game.get_cards_played_current_round()
 
         logging.debug("Player: " + player)
         logging.debug("Active Player: " + game.get_active_player())
@@ -369,7 +369,7 @@ def player_played_process(game_id, player, card):
         room=game_id, namespace=NAMESPACE)
 
     game = games.get(game_id)
-    winner = game.card_played(player, card)
+    winner = game.play_card(player, card)
 
     nplayer = game.get_active_player()
     if winner is None:

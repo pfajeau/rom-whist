@@ -76,6 +76,18 @@ def player_to_bet(data):
         emit_with_delay('player bet', {'game_id': game_id, 'player': player, 'bet': bet})
 
 
+def player_bet(data):
+    logging.info("player bet event received")
+    game_id = data.get('game_id')
+    player = data.get('player')
+    bet = data.get('bet')
+    ai_players = get_players(game_id)
+    for ai_player_name in ai_players:
+        ai_player = get_player(game_id, ai_player_name)
+        ai_player.player_bet(player, bet)
+
+
+
 # @sio.on('player to play', namespace=NAMESPACE)
 def player_to_play(data):
     logging.info("player to play event received")
@@ -91,8 +103,14 @@ def player_to_play(data):
 
 # @sio.on('card played', namespace=NAMESPACE)
 def card_played(data):
-    # TODO
     logging.info("card played event received")
+    game_id = data.get('game_id')
+    card = data.get('card')
+    player = data.get('player')
+    ai_players = get_players(game_id)
+    for ai_player_name in ai_players:
+        ai_player = get_player(game_id, ai_player_name)
+        ai_player.card_played(player, card)
 
 
 def game_over(datq):
@@ -201,6 +219,7 @@ def main(argv):
     sio.on("trump card", trump_card, NAMESPACE)
     sio.on("new hand", new_hand, NAMESPACE)
     sio.on("player to bet", player_to_bet, NAMESPACE)
+    sio.on("player bet", player_bet, NAMESPACE)
     sio.on("player to play", player_to_play, NAMESPACE)
     sio.on("card played", card_played, NAMESPACE)
     sio.on("game over", game_over, NAMESPACE)

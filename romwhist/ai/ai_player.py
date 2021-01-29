@@ -14,13 +14,17 @@ class AiPlayer:
         self.__deck_size = 0
         self._cards_as_str = ""
         self.vd = 0
+        self.__state = None
 
-        self.__state = GameState(game_id)
         print("Hello World!")
 
     @property
     def state(self):
         return self.__state
+
+    @state.setter
+    def state(self, value):
+        self.__state = value
 
     @property
     def cards_as_str(self):
@@ -54,14 +58,33 @@ class AiPlayer:
     def player_to_bet(self, allowed_bets):
         return allowed_bets[0]
 
+    def player_bet(self, player, bet):
+        self.state.bets[player] = bet
+
     def player_to_play(self, allowed_cards):
         # TOOD
         logging.debug("AI PLayer to play: %s", self.name)
         logging.debug("Allowed cards: %s", allowed_cards)
+        # Retrieve state from data (as JASON)
+        # self.state = OhellState()
         return allowed_cards[0]
+
+    def card_played(self, player, card):
+        self.state.cards_played_per_player[player].append(card)
+        self.state.cards_played.append(card)
+        #self.state.cards_played_per_round.append(card)
+        self.state.deck.remove_card(card)
+        suit = Card.card_from_value(card).get_suit()
+        self.state.cards_played_by_suit[suit].append(card)
 
     def new_hand(self, cards):
         self.state.hand_cards = []
+        self.state.cards_played_per_player = dict()
+
+        for player in self.state.players:
+            self.state.cards_played_per_player[player] = []
+
+        self.state.deck = Deck(self.state.deck_size)
         for card in cards:
             self.state.hand_cards.append(Card.card_from_value(card))
         logging.debug("In new hand, cards: %s", len(self.state.hand_cards))

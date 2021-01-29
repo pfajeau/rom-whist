@@ -147,7 +147,7 @@ def belote_play():
             hand = hand.serialize()
         round = game.get_current_round()
 
-        cards_played = game.get_cards_played()
+        cards_played = game.get_cards_played_current_round()
 
         logging.debug("Active Player: " + game.get_active_player())
         logging.debug("Game Phase: " + game.phase.name)
@@ -379,7 +379,7 @@ def player_played_process(game_id, player, card):
 
     game = games.get(game_id)
     belote_before = game.belote_state
-    winner = game.card_played(player, card)
+    winner = game.play_card(player, card)
     belote_after = game.belote_state
 
     if (belote_before != belote_after):

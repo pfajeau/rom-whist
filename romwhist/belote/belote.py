@@ -523,8 +523,8 @@ class BeloteGame(CardGame):
 
         return self.hands
 
-    def card_played(self, player, card_value):
-        winner = CardGame.card_played(self, player, card_value)
+    def play_card(self, player, card_value):
+        winner = CardGame.play_card(self, player, card_value)
         if self.is_hand_completed():
             # Add 10 points to the winner of the last round
             self.hand_points[winner] += 10

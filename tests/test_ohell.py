@@ -38,7 +38,7 @@ if __name__ == '__main__':
     for player in players:
         ohell.place_bet(player, 1)
 
-    cards_played = ohell.get_cards_played()
+    cards_played = ohell.get_cards_played_current_round()
     assert (cards_played is None)
 
     # Simulate a game and check scoring works
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         winner = test_common.play_round(ohell, round)
         print("Winner for round " + str(i) + " is " + ohell.current_round.winning_player)
 
-        cards_played = ohell.get_cards_played()
+        cards_played = ohell.get_cards_played_current_round()
         print("Displaying last round cards")
         for player in cards_played:
                 print(player + " played: " + str(cards_played[player]))

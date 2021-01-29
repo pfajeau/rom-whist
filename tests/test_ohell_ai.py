@@ -7,7 +7,7 @@ if __name__ == '__main__':
     logging.basicConfig(filename='test.log', level=logging.DEBUG)
 
     ohell_ai = OhellAiPlayer('AI1', '1')
-    ohell_ai.game_started(32, ["joe", "jack", "AI_1_1", "jim"])
+    ohell_ai.game_started(32, ["joe", "jack", "AI1", "jim"])
     cards = ["s14", "s10", "d7", "d10", "c9", "c13"]
     ohell_ai.new_hand(cards)
 
@@ -42,3 +42,14 @@ if __name__ == '__main__':
     bet = ohell_ai.player_to_bet([0,1,2,3,4,5,6])
     logging.info("bet = %s", bet)
     assert bet == 0, bet
+
+    ohell_ai.card_played("joe", "s7")
+    assert len(ohell_ai.state.deck.cards)== 31, len(ohell_ai.state.deck.cards)
+    assert ohell_ai.state.cards_played_per_player["joe"][0] == "s7"
+    assert ohell_ai.state.cards_played_by_suit["s"][0] == "s7"
+    assert len(ohell_ai.state.cards_played) == 1
+
+    for i in range(1,5):
+        card = ohell_ai.player_to_play(["s7", "s10", "d7", "d10", "c9"])
+        logging.debug("AI played card: " + card)
+        assert card in ["s7", "s10", "d7", "d10", "c9"], card
