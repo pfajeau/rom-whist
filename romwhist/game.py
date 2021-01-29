@@ -45,6 +45,7 @@ class CardGame:
         self.rounds = []  # The rounds for the hand
         self.__id = id
         self._state = None
+        self.deck = None
 
     def reset(self):
         self.current_round = None
@@ -63,52 +64,57 @@ class CardGame:
 
     def get_state(self, state:GameState):
         # Populate state
-        state.game_id = self.game_id
+        state.game_id = self.__id
         state.players = self.get_playing_players()
         state.trump =  self.trump_suit
-        state.card_played_per_player = self.get_cards_played_per_player()
+        state.cards_played_per_player = self.get_cards_played_per_player()
         state.deck_size = self.deck_size
 
+        state.hand_cards = dict()
         for player in self.get_playing_players():
             state.hand_cards[player] = self.hands[player].serialize()
         state.active_player = self.active_player
 
         i = 0
+        state.cards_played_per_round = dict()
         for round in self.rounds:
             state.cards_played_per_round[i] = dict()
-            for player in state.players:
+            for player in self.get_playing_players():
                 state.cards_played_per_round[i][player] = str(round.cards_played[player])
             i += 1
+
+        state.hand_cards = dict()
+        for player in self.hands:
+            state.hand_cards[player] = self.hands[player].serialize()
 
         state.allowed_cards = self.get_allowed_cards(state.active_player)
         return state
 
-    def set_state(self, state:GameState):
-        self._state = state   # Should do a copy?
+    def set_state(self, state: GameState):
+        self.reset()
 
         self.game_id = state.game_id
         self.players = state.players
         for player in state.players:
             self._player_status[player] = 1
         self.trump_suit = state.trump
-
-        self._state.card_played_per_player = self.get_cards_played_per_player()
-
-        self.deck_size = self._state.deck_size
-        self._deck = Deck(state.deck_size)
+        self.deck_size = state.deck_size
+        self.deck = Deck(state.deck_size)
 
         # Create hands
         for player in state.hand_cards:
-            self.hands[player] = Hand(deck)
+            self.hands[player] = Hand(self.deck)
             for card in state.hand_cards[player]:
-                self.hands[player].append(Card.card_from_value(card))
+                self.hands[player].cards.append(Card.card_from_value(card))
 
         # Create rounds
         for round_nb in state.cards_played_per_round:
             round = Round(state.players, state.trump)
             for player in state.cards_played_per_round[round_nb]:
-                round.cards_played(player,
-                                   Card.card_from_value(state.cards_played_per_round[round_nb][player]))
+                card_str = state.cards_played_per_round[round_nb][player]
+                print (card_str)
+                round.card_played(player,
+                                  Card.card_from_value(card_str))
             self.current_round = round
 
         self.active_player = state.active_player
@@ -255,9 +261,10 @@ class CardGame:
         cards = dict()
         if len(self.rounds) > 0:
             for round in self.rounds:
-                cards_round = round.play_card
+                cards_round = round.cards_played
+                print ("cards played in round:" + str(cards_round))
                 for player in cards_round:
-                    if cards[player] is None:
+                    if cards.get(player) is None:
                         cards[player] = []
                     cards[player].extend(str(cards_round[player]))
         return cards
