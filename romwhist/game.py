@@ -80,7 +80,7 @@ class CardGame:
         for round in self.rounds:
             state.cards_played_per_round[i] = dict()
             for player in self.get_playing_players():
-                state.cards_played_per_round[i][player] = str(round.cards_played[player])
+                state.cards_played_per_round[i][player] = str(round.cards_played.get(player))
             i += 1
 
         state.hand_cards = dict()
@@ -111,7 +111,7 @@ class CardGame:
         for round_nb in state.cards_played_per_round:
             round = Round(state.players, state.trump)
             for player in state.cards_played_per_round[round_nb]:
-                card_str = state.cards_played_per_round[round_nb][player]
+                card_str = state.cards_played_per_round[round_nb].get(player)
                 print (card_str)
                 round.card_played(player,
                                   Card.card_from_value(card_str))

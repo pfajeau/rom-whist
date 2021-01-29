@@ -16,28 +16,30 @@ class OhellAiPlayer(AiPlayer):
     def new_hand(self, cards):
         super().new_hand(cards)
         self.state.nb_rounds_won = 0
-        self.bets = dict()
+        self.state.bets = dict()
 
         for player in self.state.players:
-            self.bets[player] = ""
+            self.state.bets[player] = ""
 
     def player_to_bet(self, allowed_bets):
         logging.debug("Ohell AI PLayer to bet: %s", self.name)
-        logging.debug("Ohell Player hand: %s", self.state.hand_cards_as_str)
+        logging.debug("Ohell Player hand: %s", self._cards_as_str)
+
+        self.compute_deck_value()
         nr = self.state.deck_size / 4
         cv = dict()
         vh = 0
-        for card in self.state.hand_cards:
+        for card in self.my_hand:
             cv[str(card)] = self.compute_card_value(str(card))
             vh += cv[str(card)]
         logging.debug("Hand value: %s", vh)
 
         # Calculate average value of hand
-        avh = len(self.state.hand_cards) * self.vd / self.state.deck_size
+        avh = len(self.my_hand) * self.vd / self.deck_size
         logging.debug("Average value of hand: %s", avh)
 
         np = len(self.state.players)
-        ab = len(self.state.hand_cards) / np
+        ab = len(self.my_hand) / np
         bet = ab * vh / avh
         logging.debug("Calculated bet: %s", bet)
 
@@ -53,7 +55,6 @@ class OhellAiPlayer(AiPlayer):
 
         logging.error("Could not compute bet")
         return allowed_bets[0]
-
 
     def player_to_play(self, allowed_cards):
         self.state.allowed_cards = allowed_cards
@@ -79,7 +80,7 @@ class OhellAiPlayer(AiPlayer):
     def compute_card_value(self, card):
        # No trump.
        if self.state.trump == "":
-           rank_win = round(len(self.state.hand_cards_as_str) / 4)
+           rank_win = round(len(self._cards_as_str) / 4)
            cv = 0
            for i in range(0,rank_win):
                for suit in ['c', 'h', 'd', 's']:

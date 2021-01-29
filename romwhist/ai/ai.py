@@ -36,6 +36,13 @@ players = dict()
 # @sio.on('trump card', namespace=NAMESPACE)
 def trump_card(data):
     logging.info("trump card event received")
+    game_id = data.get('game_id')
+    trump_card = data.get('trump_card')
+    trump_suit = data.get("trump_suit")
+    ai_players = get_players(game_id)
+    for ai_player_name in ai_players:
+        ai_player = get_player(game_id, ai_player_name)
+        ai_player.set_trump(trump_card, trump_suit)
 
 
 # @sio.on('sc game started', namespace=NAMESPACE)
@@ -116,6 +123,18 @@ def card_played(data):
 def game_over(datq):
     # TODO
     logging.info("game over event received")
+
+
+def game_state(data):
+    logging.info("game_state event received")
+    game_id = data.get('game_id')
+    player = data.get('player')
+    state = data.get('state')
+    ai_player = get_player(game_id, player)
+    logging.debug("PLayer to play: %s - game_id: %s", player, game_id)
+
+    if ai_player is not None:
+        ai_player.state = state
 
 
 # @sio.on('msg posted', namespace=NAMESPACE)

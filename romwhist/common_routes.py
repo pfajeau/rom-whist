@@ -153,4 +153,11 @@ def emit_to_players(event, data, game_id=None, room=None, namespace=None):
         else:
             data2["game_id"] = game_id
             data2['param'] = data
+
         socketio.emit(event, data2, namespace=namespace+"_ai")
+
+
+def emit_game_state(game_id, player, game_state, namespace):
+    socketio.emit('game_state',
+                  {'game_id': game_id, 'player': player, 'state': game_state},
+                  namespace=namespace)

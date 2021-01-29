@@ -22,6 +22,7 @@ from romwhist.forms import LoginForm, GameForm
 from romwhist.models import User
 from romwhist.ohell.ohell import OhellGame
 from romwhist.ohell.ohell_form import OhellStartForm
+from romwhist.ohell.ohell_state import OhellState
 
 NAMESPACE = '/ohell'
 NAMESPACE_AI = '/ohell_ai'
@@ -280,6 +281,11 @@ def player_bet_process(player, game_id, bet):
             allowed_cards = game.get_hand(next_player_to_play).serialize()
             logging.debug("Allowed cards: " + str(allowed_cards))
             logging.debug("Player to play: " + next_player_to_play)
+
+            common_routes.emit_game_state(
+                game_id,next_player_to_play, game.get_state(OhellState(game.id, next_player_to_play)),\
+                NAMESPACE_AI)
+
             common_routes.emit_to_players(
                 "player to play",
                 {'game_id': game_id, 'player': next_player_to_play, 'allowed_cards': allowed_cards},
@@ -333,6 +339,10 @@ def next_round(game_id, nplayer, allowed_cards):
     if game.is_hand_completed():
         hand_completed(game_id, nplayer)
     else:
+        common_routes.emit_game_state(
+            game_id, nplayer, game.get_state(OhellState(game.id, nplayer)), \
+            NAMESPACE_AI)
+
         common_routes.emit_to_players(
             "player to play",
             {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards},
@@ -375,6 +385,10 @@ def player_played_process(game_id, player, card):
     if winner is None:
         # Round continues
         allowed_cards = game.get_allowed_cards(nplayer)
+        common_routes.emit_game_state(
+            game_id, nplayer, game.get_state(OhellState(game.id, nplayer)), \
+            NAMESPACE_AI)
+
         common_routes.emit_to_players(
             "player to play",
             {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},

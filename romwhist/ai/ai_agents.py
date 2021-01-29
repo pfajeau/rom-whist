@@ -7,6 +7,8 @@ from typing import Dict, List, Set
 
 from romwhist.card import Card
 from romwhist.game_state import GameState
+from romwhist.ohell.ohell_sim import OhellSim
+
 
 class IAgent(ABC):
     """ Interface for bridge-playing agents."""
@@ -74,7 +76,8 @@ class SimpleMCTSAgent(IAgent):
         Our agent's local decision rule is decided by `action_chooser_function`, while
         the opponent's local decisions are chosen randomly."""
 
-    def __init__(self, action_chooser_function='random_action', num_simulations=100):
+    def __init__(self, sim_game_class_name, action_chooser_function='random_action',
+                 num_simulations=100):
         """
         :param str action_chooser_function: See `super().__init__()` docstring
         :param int num_simulations: How many simulations for rollout
@@ -86,6 +89,7 @@ class SimpleMCTSAgent(IAgent):
         self.action_value = defaultdict(lambda: 0)  # type: Dict[Card, int]  # Maps values of playable actions
         self.num_simulations = num_simulations
         self.executor = ThreadPoolExecutor()
+        self.sim_game_class_name = sim_game_class_name
         super().__init__(None)
 
     def get_action(self, state):
@@ -108,9 +112,15 @@ class SimpleMCTSAgent(IAgent):
         best_action = np.random.choice(legal_actions)
 
         # Simulate games on separate threads
-        games = [SimulatedGame(SimpleAgent(self.action_chooser_function),
-                               SimpleAgent('random_action'), False,
-                               state, action) for action in rollout_actions]
+        games = []
+        for action in rollout_actions:
+            sim_game_class = globals()[self.sim_game_class_name]
+            games.append(sim_game_class(SimpleAgent(self.action_chooser_function),
+                                         SimpleAgent(random_action), False,
+                                         state, action))
+        # games = [SimulatedGame(SimpleAgent(self.action_chooser_function),
+        #                        SimpleAgent(random_action), False,
+        #                        state, action) for action in rollout_actions]
         futures = [self.executor.submit(game.run) for game in games]
         futures_queue = Queue(num_simulations)
         for future in futures:
@@ -127,9 +137,7 @@ class SimpleMCTSAgent(IAgent):
 
         # Collect results
         for game in games:
-            assert game.winning_team != -1
-            winning_team = game.teams[game.winning_team]
-            if winning_team.has_player(state.curr_player):
+            if game.sim_player_won():
                 self.action_value[game.starting_action] += 1
 
             self.num_simulations_total += 1
