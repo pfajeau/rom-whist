@@ -32,7 +32,10 @@ class Card(object):
 
     @classmethod
     def card_from_value (cls, card_value):
-        return cls(int(card_value[1:len(card_value)]), card_value[0])
+        if (card_value == 'None'):
+            return None
+        else:
+            return cls(int(card_value[1:len(card_value)]), card_value[0])
 
     @classmethod
     def get_suit_initial (cls, suit_name):

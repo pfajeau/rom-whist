@@ -5,6 +5,7 @@ author: Philippe Fajeau
 
 """
 from random import randint
+import json
 import unidecode
 import threading
 import traceback
@@ -126,7 +127,7 @@ def generate_game_id(max_id, games):
 
 # Utility mothod to emit an event to both real players and the ai players
 # data must contain the game_id
-def emit_to_players(event, data, game_id=None, room=None, namespace=None):
+def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_state=False):
     # If no room speified assumes it is not for any web clients
     if room is not None:
         socketio.emit(event, data, game_id = None, room=room, namespace=namespace)
@@ -138,26 +139,37 @@ def emit_to_players(event, data, game_id=None, room=None, namespace=None):
             logging.error("game_id not specified")
             return
         else:
+            if game_state:
+                data['state'] = game.get_state().toJson()
             socketio.emit(event, data, namespace=namespace + "_ai")
             return
 
     else:
         # game_id is passed to this function
-        data2 = dict()
         # Add game_id to the parameters for the event
         # TODO refactor so that all calls include the game id in the
         # data being passed
         if isinstance(data, dict):
-            data2 = data
-            data2["game_id"] = game_id
+            data["game_id"] = game_id
+            if game_state:
+                data['state'] = game.get_state().toJson()
         else:
+            data2 = dict()
             data2["game_id"] = game_id
             data2['param'] = data
+            if game_state:
+                data['state'] = game.get_state().toJson()
 
         socketio.emit(event, data2, namespace=namespace+"_ai")
 
 
 def emit_game_state(game_id, player, game_state, namespace):
+    # Serialize game_state
+    state_dict = game_state.__dict__()
+    logging.debug("Game state as dict: %s", state_dict)
+    state_json = jason.dumps(state_dict)
+    logging.debug("Game state as JSON: %s", state_json)
     socketio.emit('game_state',
-                  {'game_id': game_id, 'player': player, 'state': game_state},
+                  {'game_id': game_id, 'player': player, 'state': state_json},
                   namespace=namespace)
+

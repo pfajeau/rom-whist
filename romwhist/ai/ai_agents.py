@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import defaultdict
 import numpy as np
 from concurrent.futures.thread import ThreadPoolExecutor
 from queue import Queue
@@ -36,8 +37,8 @@ def lookup(name, namespace):
 class IAgent(ABC):
     """ Interface for bridge-playing agents."""
 
-    @abstractmethod
-    def __init__(self):
+    def __init__(self, ai_player):
+        self.ai_player = ai_player
         return
 
     @abstractmethod
@@ -52,7 +53,7 @@ class IAgent(ABC):
 class SimpleAgent(IAgent):
     """ Deterministic agent that plays according to input action."""
 
-    def __init__(self, action_chooser_function='random_action'):
+    def __init__(self, ai_player, action_chooser_function='random_action'):
         """
         :param str action_chooser_function: name of action to take, or a function.
             Function should map State -> Card
@@ -62,7 +63,8 @@ class SimpleAgent(IAgent):
             self.action_chooser_function = lookup(action_chooser_function, globals())
         else:
             self.action_chooser_function = action_chooser_function
-        super().__init__()
+        super().__init__(ai_player)
+
 
     def get_action(self, state):
         return self.action_chooser_function(state)
@@ -88,7 +90,7 @@ class SmartSearchAgent(IAgent):
         :param int depth: -1 for full tree, any other number > 1 for depth bounded tree
         :param target:
         """
-        self.evaluation_function = lookup(evaluation_function, globals())
+        #self.evaluation_function = lookup(evaluation_function, globals())
         self.depth = depth
         super().__init__()
 
@@ -101,8 +103,8 @@ class SimpleMCTSAgent(IAgent):
         Our agent's local decision rule is decided by `action_chooser_function`, while
         the opponent's local decisions are chosen randomly."""
 
-    def __init__(self, sim_game_class_name, action_chooser_function='random_action',
-                 num_simulations=100):
+    def __init__(self, sim_game_class_name, ai_player, action_chooser_function='random_action',
+                 num_simulations=10):
         """
         :param str action_chooser_function: See `super().__init__()` docstring
         :param int num_simulations: How many simulations for rollout
@@ -115,7 +117,7 @@ class SimpleMCTSAgent(IAgent):
         self.num_simulations = num_simulations
         self.executor = ThreadPoolExecutor()
         self.sim_game_class_name = sim_game_class_name
-        super().__init__(None)
+        super().__init__(ai_player)
 
     def get_action(self, state):
         action = self.rollout(state, self.num_simulations)
@@ -141,7 +143,7 @@ class SimpleMCTSAgent(IAgent):
         for action in rollout_actions:
             sim_game_class = globals()[self.sim_game_class_name]
             games.append(sim_game_class(SimpleAgent(self.action_chooser_function),
-                                         SimpleAgent(random_action), False,
+                                         SimpleAgent(random_action), self.ai_player,
                                          state, action))
         # games = [SimulatedGame(SimpleAgent(self.action_chooser_function),
         #                        SimpleAgent(random_action), False,

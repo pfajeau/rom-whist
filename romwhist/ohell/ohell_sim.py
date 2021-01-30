@@ -1,3 +1,4 @@
+import copy
 import logging
 
 #from romwhist.ai.sim_game import SimGame
@@ -16,8 +17,11 @@ class OhellSim(OhellGame):
         self.agent = agent  # type: IAgent
         self.other_agent = other_agent  # type: IAgent
         self.games_counter = [0, 0]
-        self.initial_state = state
-        self.set_state(state)
+        self.initial_state = copy.deepcopy(state)
+
+        if state is not None:
+            state_copy = copy.deepcopy(state)
+            self.set_state(state_copy)
 
     def play_single_move(self):
         logging.debug("Playing single move")
@@ -66,7 +70,9 @@ class OhellSim(OhellGame):
 
 
     def sim_player_won(self):
-        logging.debug("sim_player_won: %s",  self.bets[self.sim_player] == self.wins[self.sim_player])
+        logging.debug("Bets for %s: %s", self.sim_player, self.bets[self.sim_player])
+        logging.debug("Wins: %s", self.wins[self.sim_player])
+
         return self.bets[self.sim_player] == self.wins[self.sim_player]
 
     def state(self):

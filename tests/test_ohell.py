@@ -1,8 +1,10 @@
+import difflib
+import json
 import logging
 from romwhist.ohell.ohell import OhellGame
 from romwhist.ohell.ohell_state import OhellState
 from romwhist.ohell.ohell_sim import OhellSim
-from romwhist.ai.ai_agents import SimpleAgent, SmartSearchAgent
+from romwhist.ai.ai_agents import SimpleAgent, SimpleMCTSAgent
 
 from tests import test_common
 
@@ -170,8 +172,21 @@ if __name__ == '__main__':
 
     state = OhellState("game_id", "Joe")
     ohell.get_state(state)
-    sim_game = OhellSim(SimpleAgent(), SimpleAgent(), "Joe", state=state)
-    sim_game.run()
+    logging.debug("Game state is: %s", state)
+
+    #Test serialization
+    state_dict = state.__dict__
+    logging.debug("Game state as dict: %s", state_dict)
+    state_json = json.dumps(state_dict)
+    logging.debug("Game state as JSON: %s", state_json)
+    game_state = OhellState(**json.loads(state_json))
+    logging.debug("Game state from JSON as dict: %s", game_state.__dict__)
+
+
+    # ai_agent = SimpleMCTSAgent("OhellSim", ai_player="Joe")
+    # #sim_game = OhellSim(SimpleAgent(), SimpleAgent(), "Joe", state=state)
+    # sim_game = OhellSim(ai_agent, SimpleAgent("Joe"), "Joe", state=state)
+    # sim_game.run()
 
 
 

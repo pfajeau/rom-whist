@@ -120,9 +120,8 @@ class CardGame:
             round = Round(state.players, state.trump)
             for player in state.cards_played_per_round[round_nb]:
                 card_str = state.cards_played_per_round[round_nb].get(player)
-
                 round.card_played(player,
-                                  Card.card_from_value(card_str))
+                              Card.card_from_value(card_str))
             self.current_round = round
         if self.current_round is None:
             self.current_round = self.create_round()

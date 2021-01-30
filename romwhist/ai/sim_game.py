@@ -33,7 +33,8 @@ class SimGame(CardGame):
         self.agent = agent  # type: IAgent
         self.other_agent = other_agent  # type: IAgent
         self.games_counter = [0, 0]
-        self.initial_state = state
+        self.initial_state = copy(state)
+
 
     def play_single_move(self):
         logging.debug("Playing single move")

@@ -10,36 +10,37 @@ class OhellAiPlayer(AiPlayer):
     def __init__(self, name, game_id):
         AiPlayer.__init__(self, name, game_id)
         self.__agent = SimpleAgent(random_action)
-        self.state = OhellState(game_id, self.name)
+        self.game_state = OhellState(game_id, self.name)
 
 
     def new_hand(self, cards):
         super().new_hand(cards)
-        self.state.nb_rounds_won = 0
-        self.state.bets = dict()
-
-        for player in self.state.players:
-            self.state.bets[player] = ""
+        # self.state.nb_rounds_won = 0
+        # self.state.bets = dict()
+        #
+        # for player in self.state.players:
+        #     self.state.bets[player] = ""
 
     def player_to_bet(self, allowed_bets):
         logging.debug("Ohell AI PLayer to bet: %s", self.name)
         logging.debug("Ohell Player hand: %s", self._cards_as_str)
 
+        my_hand = self.game_state.hand_cards[self.name]
         self.compute_deck_value()
-        nr = self.state.deck_size / 4
+        nr = self.game_state.deck_size / 4
         cv = dict()
         vh = 0
-        for card in self.my_hand:
+        for card in my_hand:
             cv[str(card)] = self.compute_card_value(str(card))
             vh += cv[str(card)]
         logging.debug("Hand value: %s", vh)
 
         # Calculate average value of hand
-        avh = len(self.my_hand) * self.vd / self.deck_size
+        avh = len(my_hand) * self.vd / self.game_state.deck_size
         logging.debug("Average value of hand: %s", avh)
 
-        np = len(self.state.players)
-        ab = len(self.my_hand) / np
+        np = len(self.game_state.players)
+        ab = len(my_hand) / np
         bet = ab * vh / avh
         logging.debug("Calculated bet: %s", bet)
 
@@ -57,17 +58,17 @@ class OhellAiPlayer(AiPlayer):
         return allowed_bets[0]
 
     def player_to_play(self, allowed_cards):
-        self.state.allowed_cards = allowed_cards
-        return self.__agent.get_action(self.state)
+        self.game_state.allowed_cards = allowed_cards
+        return self.__agent.get_action(self.game_state)
 
 #        play_to_win = False
 
         # If number of tricks made is less than bets, play to win, otherwise play to loose
-        # if self.state.nb_rounds_won[self.name] < self.state.bets[self.name]:
+        # if self.game_state.nb_rounds_won[self.name] < self.game_state.bets[self.name]:
         #     play_to_win = True
 
         # First to play
-        # if len(self.state.cards_played_round) == 0:
+        # if len(self.game_state.cards_played_round) == 0:
         #     # For each card in hand, chek whether one is highest among cards that have
         #     # not been played yet.
         #     for card in allowed_cards:
@@ -77,9 +78,15 @@ class OhellAiPlayer(AiPlayer):
 
         # return AiPlayer.player_to_play(self, allowed_cards)
 
+    def set_game_state_from_json(self, state_as_json):
+
+       self.game_state =  OhellState(**json.loads(state_as_json))
+
+
+
     def compute_card_value(self, card):
        # No trump.
-       if self.state.trump == "":
+       if self.game_state.trump == "":
            rank_win = round(len(self._cards_as_str) / 4)
            cv = 0
            for i in range(0,rank_win):

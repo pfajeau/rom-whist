@@ -12,6 +12,8 @@ class Round():
 
         # The cards played during the round
         self.cards_played = dict()
+        for player in players:
+            self.cards_played[player] = None
         self.winning_player = ""
         self.first_card_played=None
         self.round_started = False
@@ -41,7 +43,10 @@ class Round():
         return str_cards
 
     def last_card_played(self):
-        return len(self.cards_played) == len (self.players)
+        for player in self.players:
+            if self.cards_played[player] is None:
+                return False
+        return True
 
     # Override for a particular game
     def compute_winner(self):

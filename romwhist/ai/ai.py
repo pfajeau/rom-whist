@@ -75,10 +75,13 @@ def player_to_bet(data):
     logging.info("player to bet event received")
     game_id = data.get('game_id')
     player = data.get('player')
+    game_state = data['state']
     ai_player = get_player(game_id, player)
+
     logging.debug("PLayer to bet: %s - game_id: %s", player, game_id)
 
     if ai_player is not None:
+        ai_player.game_state = game_state
         bet = ai_player.player_to_bet(data.get("allowed_bets"))
         emit_with_delay('player bet', {'game_id': game_id, 'player': player, 'bet': bet})
 
@@ -100,10 +103,13 @@ def player_to_play(data):
     logging.info("player to play event received")
     game_id = data.get('game_id')
     player = data.get('player')
+    game_state = data['state']
+
     ai_player = get_player(game_id, player)
     logging.debug("PLayer to play: %s - game_id: %s", player, game_id)
 
     if ai_player is not None:
+        ai_player.game_state = game_state
         card = ai_player.player_to_play(data.get("allowed_cards"))
         emit_with_delay('player played', {'game_id': game_id, 'player': player, 'card': card})
 
@@ -129,12 +135,12 @@ def game_state(data):
     logging.info("game_state event received")
     game_id = data.get('game_id')
     player = data.get('player')
-    state = data.get('state')
+    state_as_json = data.get('state')
+
     ai_player = get_player(game_id, player)
-    logging.debug("PLayer to play: %s - game_id: %s", player, game_id)
 
     if ai_player is not None:
-        ai_player.state = state
+        ai_player.set_game_state_from_json(state_as_json)
 
 
 # @sio.on('msg posted', namespace=NAMESPACE)
@@ -242,6 +248,7 @@ def main(argv):
     sio.on("player to play", player_to_play, NAMESPACE)
     sio.on("card played", card_played, NAMESPACE)
     sio.on("game over", game_over, NAMESPACE)
+    sio.on("game_state", game_state, NAMESPACE)
 
     # print (name + " " + str(game_id))
     # ai_player = AiPlayer(name, game_id)
