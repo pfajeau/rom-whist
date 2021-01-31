@@ -28,6 +28,7 @@ log_level = default["LOG_LEVEL"]
 logging.basicConfig(filename=default["LOG_FILE"], \
                     format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s", \
                     level=log_levels[log_level])
+host = default["host"]
 
 # List of ai players for each game. it is a list of lists
 players = dict()
@@ -237,7 +238,7 @@ def main(argv):
             this.game_type = arg
             this.NAMESPACE = NAMESPACES[this.game_type]
 
-    sio.connect('http://localhost:5000', namespaces=[NAMESPACE])
+    sio.connect(host, namespaces=[NAMESPACE])
     sio.on("create_ai_player", create_ai_player, NAMESPACE)
     sio.on("sc game started", game_started, NAMESPACE)
     sio.on("trump card", trump_card, NAMESPACE)
