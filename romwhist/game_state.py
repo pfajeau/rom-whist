@@ -6,7 +6,7 @@ from romwhist.card import Card
 
 class GameState(ABC):
 
-    def __init__(self, game_id, sim_player, players=[], trump="", cards_played_per_player=None,
+    def __init__(self, game_id, sim_player=None, players=[], trump="", cards_played_per_player=None,
                  cards_played_per_round=None, deck_size=0,
                  hand_cards=None, allowed_cards=[], active_player="", scores=None,
                  owner=None, dealer=None):
@@ -34,5 +34,5 @@ class GameState(ABC):
         return self.allowed_cards
 
     def toJson(self):
-        return json(self.__dcit__)
+        return json.dumps(self.__dict__)
 

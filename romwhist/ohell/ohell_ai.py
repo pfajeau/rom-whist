@@ -1,4 +1,5 @@
 import logging
+import json
 
 from romwhist.ai.ai_player import AiPlayer
 from romwhist.ai.ai_agents import SimpleAgent, random_action
@@ -21,9 +22,12 @@ class OhellAiPlayer(AiPlayer):
         # for player in self.state.players:
         #     self.state.bets[player] = ""
 
-    def player_to_bet(self, allowed_bets):
+    def player_to_bet(self, allowed_bets, game_state_json):
         logging.debug("Ohell AI PLayer to bet: %s", self.name)
-        logging.debug("Ohell Player hand: %s", self._cards_as_str)
+        logging.debug("Ohell Player hand: %s", self.game_state.hand_cards[self.name])
+        logging.debug("Game state: %s", game_state_json)
+        game_state = OhellState(**json.loads(game_state_json))
+        self.game_state = game_state
 
         my_hand = self.game_state.hand_cards[self.name]
         self.compute_deck_value()
@@ -57,7 +61,9 @@ class OhellAiPlayer(AiPlayer):
         logging.error("Could not compute bet")
         return allowed_bets[0]
 
-    def player_to_play(self, allowed_cards):
+    def player_to_play(self, allowed_cards, game_state_json):
+        game_state = OhellState(**json.loads(game_state_json))
+        self.game_state = game_state
         self.game_state.allowed_cards = allowed_cards
         return self.__agent.get_action(self.game_state)
 
@@ -87,7 +93,7 @@ class OhellAiPlayer(AiPlayer):
     def compute_card_value(self, card):
        # No trump.
        if self.game_state.trump == "":
-           rank_win = round(len(self._cards_as_str) / 4)
+           rank_win = round(len(self.game_state.hand_cards[self.name]) / 4)
            cv = 0
            for i in range(0,rank_win):
                for suit in ['c', 'h', 'd', 's']:

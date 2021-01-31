@@ -9,15 +9,9 @@ class AiPlayer:
 
     def __init__(self, name, game_id):
         self.__name = name
-        self.__cards = []
-        self.suit=""
-        self.__deck_size = 0
-        self._cards_as_str = []
         self.vd = 0
-        self.__game_state = None
-        self.trump_card = ""
         self.game_id = game_id
-        self.game_state = None
+        self.__game_state = None
 
         print("Hello World!")
 
@@ -29,13 +23,6 @@ class AiPlayer:
     def game_state(self, value):
         self.__game_state = value
 
-    @property
-    def cards_as_str(self):
-        return self._cards_as_str
-
-    @property
-    def cards(self):
-        return self.__cards
 
     @property
     def name(self):
@@ -44,11 +31,6 @@ class AiPlayer:
     @name.setter
     def name(self, value):
         self.__name = value
-
-
-    @property
-    def deck_size(self):
-        return self.__deck_size
 
 
     def game_started(self, deck_size, players):
@@ -103,7 +85,7 @@ class AiPlayer:
 
     def compute_deck_value(self):
         # Calculate average value of hand
-        deck = Deck(self.__deck_size)
+        deck = Deck(self.game_state.deck_size)
         cards = deck.all_cards
         self.vd = 0
         for card in cards:
@@ -114,10 +96,10 @@ class AiPlayer:
         # Returns card value between 0 and 100
         my_card = Card.card_from_value(card)
         r = 14 - my_card.rank
-        nr = self.__deck_size / 4
+        nr = self.game_state.deck_size / 4
         cv = ((nr - r) * 50) / 8
 
-        logging.debug ("r: %s, nr: %s, deck_size: %s, cv: %s", r, nr, self.deck_size, cv)
+        logging.debug ("r: %s, nr: %s, deck_size: %s, cv: %s", r, nr, self.game_state.deck_size, cv)
         # Trump card: add 50 points
         if my_card.get_suit() == self.__game_state.trump:
             cv += 50

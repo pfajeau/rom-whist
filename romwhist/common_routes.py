@@ -127,7 +127,7 @@ def generate_game_id(max_id, games):
 
 # Utility mothod to emit an event to both real players and the ai players
 # data must contain the game_id
-def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_state=False):
+def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_state=None):
     # If no room speified assumes it is not for any web clients
     if room is not None:
         socketio.emit(event, data, game_id = None, room=room, namespace=namespace)
@@ -139,8 +139,8 @@ def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_s
             logging.error("game_id not specified")
             return
         else:
-            if game_state:
-                data['state'] = game.get_state().toJson()
+            if game_state is not None:
+                data['state'] = game_state.toJson()
             socketio.emit(event, data, namespace=namespace + "_ai")
             return
 
@@ -151,14 +151,14 @@ def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_s
         # data being passed
         if isinstance(data, dict):
             data["game_id"] = game_id
-            if game_state:
-                data['state'] = game.get_state().toJson()
+            if game_state is not None:
+                data['state'] = game_state.toJson()
         else:
             data2 = dict()
             data2["game_id"] = game_id
             data2['param'] = data
-            if game_state:
-                data['state'] = game.get_state().toJson()
+            if game_state is not None:
+                data['state'] = game_state.toJson()
 
         socketio.emit(event, data2, namespace=namespace+"_ai")
 
