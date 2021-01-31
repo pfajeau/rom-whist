@@ -104,7 +104,7 @@ class SimpleMCTSAgent(IAgent):
         the opponent's local decisions are chosen randomly."""
 
     def __init__(self, sim_game_class_name, ai_player, action_chooser_function='random_action',
-                 num_simulations=10):
+                 num_simulations=100):
         """
         :param str action_chooser_function: See `super().__init__()` docstring
         :param int num_simulations: How many simulations for rollout

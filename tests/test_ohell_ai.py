@@ -17,12 +17,12 @@ if __name__ == '__main__':
     game_state = OhellState("test", "AI1", trump="s", deck_size=32, players=["joe", "jack", "AI1", "jim"])
     ohell_ai.game_state = game_state
     ohell_ai.game_state.hand_cards = all_cards
-    bet = ohell_ai.player_to_bet([0,1,2,3,4,5,6])
+    bet = ohell_ai.player_to_bet([0,1,2,3,4,5,6], game_state.toJson())
     logging.info("bet = %s", bet)
     #assert bet == 3, bet
 
     ohell_ai.game_state.trump = ""
-    bet = ohell_ai.player_to_bet([0,1,2,3,4,5,6])
+    bet = ohell_ai.player_to_bet([0,1,2,3,4,5,6], game_state.toJson())
     logging.info("bet = %s", bet)
     #assert bet == 2, bet
 
@@ -32,14 +32,14 @@ if __name__ == '__main__':
     ohell_ai.game_state.trump = ""
     all_cards = {'joe': [], 'jack': [], 'AI1':["s14", "s10", "d7", "d10", "c9", "c12", "h8", "h13"], 'jim':[]}
     ohell_ai.game_state.hand_cards = all_cards
-    bet = ohell_ai.player_to_bet([0,1,2,3,4,5,6])
+    bet = ohell_ai.player_to_bet([0,1,2,3,4,5,6], game_state.toJson())
     logging.info("bet = %s", bet)
     #assert bet == 2, bet
 
     ohell_ai.game_state.trump = ""
     all_cards = {'joe': [], 'jack': [], 'AI1':["s7", "s10", "d7", "d10", "c9", "c12", "h8", "h12"], 'jim':[]}
     ohell_ai.game_state.hand_cards = all_cards
-    bet = ohell_ai.player_to_bet([0,1,2,3,4,5,6])
+    bet = ohell_ai.player_to_bet([0,1,2,3,4,5,6], game_state.toJson())
     logging.info("bet = %s", bet)
     #assert bet == 0, bet
 
@@ -50,6 +50,6 @@ if __name__ == '__main__':
     # assert len(ohell_ai.game_state.cards_played) == 1
 
     for i in range(1,5):
-        card = ohell_ai.player_to_play(["s7", "s10", "d7", "d10", "c9"])
+        card = ohell_ai.player_to_play(["s7", "s10", "d7", "d10", "c9"], game_state.toJson())
         logging.debug("AI played card: " + card)
         assert card in ["s7", "s10", "d7", "d10", "c9"], card

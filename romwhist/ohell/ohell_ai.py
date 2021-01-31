@@ -2,7 +2,7 @@ import logging
 import json
 
 from romwhist.ai.ai_player import AiPlayer
-from romwhist.ai.ai_agents import SimpleAgent, random_action
+from romwhist.ai.ai_agents import SimpleAgent, SimpleMCTSAgent, random_action
 from romwhist.ohell.ohell_state import OhellState
 
 
@@ -11,6 +11,9 @@ class OhellAiPlayer(AiPlayer):
     def __init__(self, name, game_id):
         AiPlayer.__init__(self, name, game_id)
         self.__agent = SimpleAgent(random_action)
+        self.__agent = SimpleMCTSAgent('OhellSim', name,
+                                       action_chooser_function='random_action',
+                                       num_simulations=100)
         self.game_state = OhellState(game_id, self.name)
 
 
@@ -24,12 +27,13 @@ class OhellAiPlayer(AiPlayer):
 
     def player_to_bet(self, allowed_bets, game_state_json):
         logging.debug("Ohell AI PLayer to bet: %s", self.name)
-        logging.debug("Ohell Player hand: %s", self.game_state.hand_cards[self.name])
         logging.debug("Game state: %s", game_state_json)
         game_state = OhellState(**json.loads(game_state_json))
         self.game_state = game_state
 
         my_hand = self.game_state.hand_cards[self.name]
+        logging.debug("Ohell Player hand: %s", self.game_state.hand_cards[self.name])
+
         self.compute_deck_value()
         nr = self.game_state.deck_size / 4
         cv = dict()
