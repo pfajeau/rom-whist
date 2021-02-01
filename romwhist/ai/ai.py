@@ -11,24 +11,30 @@ from romwhist.belote.belote_ai import BeloteAiPlayer
 from romwhist.ohell.ohell_ai import OhellAiPlayer
 
 NAMESPACES = {'ohell': '/ohell_ai', 'belote': '/belote_ai'}
-DEFAULT_DELAY = 2
 
-# TODO: needs to be configurable!
 this = sys.modules[__name__]
-this.NAMESPACE = "/belote_ai"
-this.game_type = ""
-
 sio = socketio.Client()
 
 config = configparser.ConfigParser()
 config.read('instance/config_ai.ini')
 log_levels = {"DEBUG": logging.DEBUG, "INFO": logging.INFO, "WARNING": logging.WARNING, "ERROR": logging.ERROR}
-default = config['default']
-log_level = default["LOG_LEVEL"]
-logging.basicConfig(filename=default["LOG_FILE"], \
+logging_config = config['logging']
+log_level = logging_config["LOG_LEVEL"]
+logging.basicConfig(filename=logging_config["LOG_FILE"], \
                     format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s", \
                     level=log_levels[log_level])
-host = default["host"]
+
+network_config = config['network']
+HOST = network_config["host"]
+
+if config.has_section('ai'):
+    ai_config = config['ai']
+    if config.has_option('ai','default_delay'):
+        DEFAULT_DELAY = int(ai_config['default_delay'])
+    else:
+        DEFAULT_DELAY = 1  # 1 second
+
+
 
 # List of ai players for each game. it is a list of lists
 players = dict()
@@ -238,7 +244,7 @@ def main(argv):
             this.game_type = arg
             this.NAMESPACE = NAMESPACES[this.game_type]
 
-    sio.connect(host, namespaces=[NAMESPACE])
+    sio.connect(HOST, namespaces=[NAMESPACE])
     sio.on("create_ai_player", create_ai_player, NAMESPACE)
     sio.on("sc game started", game_started, NAMESPACE)
     sio.on("trump card", trump_card, NAMESPACE)

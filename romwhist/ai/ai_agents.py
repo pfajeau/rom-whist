@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
+import configparser
 import numpy as np
 from concurrent.futures.thread import ThreadPoolExecutor
 from queue import Queue
@@ -97,6 +98,7 @@ class SmartSearchAgent(IAgent):
     def get_action(self, state):
         return NotImplementedError
 
+
 class SimpleMCTSAgent(IAgent):
     """ Agent implementing simplified version of MCTS -
         only looks at end-results of simulation, without backpropogation.
@@ -109,13 +111,25 @@ class SimpleMCTSAgent(IAgent):
         :param str action_chooser_function: See `super().__init__()` docstring
         :param int num_simulations: How many simulations for rollout
         """
+        max_threads = None
+
+        # Read nb simulation from config file
+        config = configparser.ConfigParser()
+        config.read('instance/config_ai.ini')
+        if config.has_section('ai'):
+            ai_config = config['ai']
+            if config.has_option('ai', 'number_of_simulations'):
+                num_simulations = int(ai_config['number_of_simulations'])
+
+            if config.has_option('ai', 'max_thread_number_for_simulation'):
+                max_threads = int(ai_config['max_thread_number_for_simulation'])
 
         self.action_chooser_function = lookup(action_chooser_function,
                                               globals())
         self.num_simulations_total = 0
         self.action_value = defaultdict(lambda: 0)  # type: Dict[Card, int]  # Maps values of playable actions
         self.num_simulations = num_simulations
-        self.executor = ThreadPoolExecutor()
+        self.executor = ThreadPoolExecutor(max_workers=max_threads)
         self.sim_game_class_name = sim_game_class_name
         super().__init__(ai_player)
 
@@ -134,6 +148,11 @@ class SimpleMCTSAgent(IAgent):
         """
 
         legal_actions = state.get_legal_actions()
+
+        # If only one choice, return it right away
+        if len(legal_actions) == 1:
+            return legal_actions[0]
+
         rollout_actions = np.random.choice(legal_actions,  # Pre-select initial actions
                                            size=num_simulations, replace=True)
         best_action = np.random.choice(legal_actions)

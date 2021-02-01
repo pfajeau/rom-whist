@@ -10,6 +10,9 @@ class OhellAiPlayer(AiPlayer):
 
     def __init__(self, name, game_id):
         AiPlayer.__init__(self, name, game_id)
+
+        # TODO: make the agent a parameter so it can be configured
+        # or passed as a command line argument to the AI
         self.__agent = SimpleAgent(random_action)
         self.__agent = SimpleMCTSAgent('OhellSim', name,
                                        action_chooser_function='random_action',
@@ -32,7 +35,7 @@ class OhellAiPlayer(AiPlayer):
         self.game_state = game_state
 
         my_hand = self.game_state.hand_cards[self.name]
-        logging.debug("Ohell Player hand: %s", self.game_state.hand_cards[self.name])
+        logging.info("Ohell Player %s hand: %s", self.name, self.game_state.hand_cards[self.name])
 
         self.compute_deck_value()
         nr = self.game_state.deck_size / 4
@@ -50,7 +53,7 @@ class OhellAiPlayer(AiPlayer):
         np = len(self.game_state.players)
         ab = len(my_hand) / np
         bet = ab * vh / avh
-        logging.debug("Calculated bet: %s", bet)
+        logging.info("Calculated bet: %s", bet)
 
         # Round and adjust to make it valid
         bet_int = int(round(bet))

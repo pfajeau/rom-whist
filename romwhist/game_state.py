@@ -7,9 +7,9 @@ from romwhist.card import Card
 class GameState(ABC):
 
     def __init__(self, game_id, sim_player=None, players=[], trump="", cards_played_per_player=None,
-                 cards_played_per_round=None, deck_size=0,
-                 hand_cards=None, allowed_cards=[], active_player="", scores=None,
-                 owner=None, dealer=None):
+                 cards_played_per_round=dict(), deck_size=0,
+                 hand_cards=dict(), allowed_cards=[], active_player="", scores=dict(),
+                 owner="", dealer=""):
         self.game_id = game_id
         self.players = players
         self.trump = trump

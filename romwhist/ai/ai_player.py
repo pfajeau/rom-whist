@@ -101,7 +101,7 @@ class AiPlayer:
 
         logging.debug ("r: %s, nr: %s, deck_size: %s, cv: %s", r, nr, self.game_state.deck_size, cv)
         # Trump card: add 50 points
-        if my_card.get_suit() == self.__game_state.trump:
+        if my_card.get_suit_name() == self.game_state.trump:
             cv += 50
         logging.debug("Card value for %s is: %s", card, cv)
         return cv

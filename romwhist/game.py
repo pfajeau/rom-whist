@@ -41,7 +41,7 @@ class CardGame:
         self.scoresheet = []
         self._player_status = dict()
         self.init_dict(self._player_status, 1)
-        self.trump_suit = None
+        self.trump_suit = None  # E.g. "Spade", or "Heart"
         self.rounds = []  # The rounds for the hand
         self.__id = id
         self.deck = None
@@ -271,7 +271,6 @@ class CardGame:
         if len(self.rounds) > 0:
             for round in self.rounds:
                 cards_round = round.cards_played
-                print ("cards played in round:" + str(cards_round))
                 for player in cards_round:
                     if cards.get(player) is None:
                         cards[player] = []
