@@ -66,7 +66,7 @@ def ohell_start():
             game_id = request.form['game_id']
             return common_routes.join_game(games, game_id, username, \
                                            'ohell_start.html', 'ohell_play', \
-                                           NAMESPACE)
+                                           NAMESPACE, form)
 
         elif form.start_game.data:
             logging.info("start game")

@@ -82,7 +82,7 @@ def sanitize_username(username1):
     return username
 
 
-def join_game(games, game_id, username, start_page, play_page, namespace):
+def join_game(games, game_id, username, start_page, play_page, namespace, form):
     logging.debug("game id: " + game_id)
     if not game_id in games:
         error = "This game has not been created yet"
