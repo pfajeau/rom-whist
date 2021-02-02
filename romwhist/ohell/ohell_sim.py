@@ -39,11 +39,6 @@ class OhellSim(OhellGame):
         return winner
 
     def game_loop(self) -> None:
-        # Active player plays
-        # until end of round
-        # Then while there is still a card in hand
-        # Play each round
-        # Determine whether AI player won or not (game dependant)
         winner = None
         while winner is None:
             winner = self.play_single_move()
@@ -52,6 +47,7 @@ class OhellSim(OhellGame):
         while not self.is_hand_completed():
             round = self.create_round()
             self.play_round(round)
+        logging.info("Hand completed")
         return
 
 
@@ -62,6 +58,7 @@ class OhellSim(OhellGame):
         for i in range(len(self.get_playing_players())):
             winner = self.play_single_move()
 
+        logging.debug("Round completed. Winner is %s, winner")
         return winner
 
     def run(self) -> bool:
@@ -72,8 +69,9 @@ class OhellSim(OhellGame):
     def sim_player_won(self):
         logging.debug("Bets for %s: %s", self.sim_player, self.bets[self.sim_player])
         logging.debug("Wins: %s", self.wins[self.sim_player])
-
-        return self.bets[self.sim_player] == self.wins[self.sim_player]
+        sim_player_wins = (self.bets[self.sim_player] == self.wins[self.sim_player])
+        logging.info("Sim player won: %s", sim_player_wins)
+        return sim_player_wins
 
     def state(self):
         return self.get_state(OhellState(self.id, self.sim_player))

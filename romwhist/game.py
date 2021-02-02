@@ -308,7 +308,7 @@ class CardGame:
 
     # Return round winner if last card played None otherwise
     def play_card(self, player, card_value):
-        logging.info(player + " played: " + card_value)
+        logging.debug(player + " played: " + card_value)
         # Find card in hand that matches card played and remove it from hand
         for card in self.hands[player].get_cards():
             if str(card) == card_value:
@@ -324,7 +324,7 @@ class CardGame:
                 self.active_player = winner
 
             self.round_ended(winner)
-            logging.info("Winner of round is: " + winner)
+            logging.debug("Winner of round is: " + winner)
             return winner
         else:
             self.active_player = self.next_player(player)

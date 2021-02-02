@@ -99,7 +99,7 @@ class OhellAiPlayer(AiPlayer):
 
     def compute_card_value(self, card):
        # No trump.
-       if self.game_state.trump == "":
+       if self.game_state.trump == "" or self.game_state.trump is None:
            rank_win = round(len(self.game_state.hand_cards[self.name]) / 4)
            cv = 0
            for i in range(0,rank_win):
@@ -109,8 +109,9 @@ class OhellAiPlayer(AiPlayer):
                    if a_card == str(card):
                        cv = 100/(i+1)
                        break
+           logging.debug("Card value for %s is: %s", card, cv)
+
        else:
            cv = AiPlayer.compute_card_value(self, card)
 
-       logging.debug("Card value for %s is: %s", card, cv)
        return cv

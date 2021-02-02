@@ -82,7 +82,7 @@ class OhellGame(CardGame):
 
     # TODO: should cehck that the bet value is authorized
     def place_bet(self, player, bet):
-        logging.info("place_bet for player " + player + " is: " + str(bet))
+        logging.debug("place_bet for player " + player + " is: " + str(bet))
         self.bets[player] = bet
         self.active_player = self.next_player(player)
         if self.next_player_to_bet(player) is None:

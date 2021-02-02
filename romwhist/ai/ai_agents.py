@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
 import configparser
+import logging
 import numpy as np
 from concurrent.futures.thread import ThreadPoolExecutor
 from queue import Queue
@@ -190,6 +191,7 @@ class SimpleMCTSAgent(IAgent):
 
         # Choose best action
         for action in legal_actions:
+            logging.info("action: %s, action has value %s", action, self.action_value[action])
             best_action = action if self.action_value[action] > self.action_value[best_action] \
                 else best_action
 
