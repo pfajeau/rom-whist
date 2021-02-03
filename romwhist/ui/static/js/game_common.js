@@ -106,6 +106,8 @@ function initialize(players) {
 }
 
 function add_card_to_table(player, card) {
+  if (card == 'None') return
+    
   let image = "img/" + card + ".svg"
   let html = '<figure class="figures">'
   console.log("PLayer: " + player)
@@ -114,6 +116,7 @@ function add_card_to_table(player, card) {
   html = html.concat("<figcaption class='trump_caption'>" + player + "</figcaption>")
   html = html.concat("</figure>")
   $('#cards_played').append(html)
+
 }
 
 function start_game() {

@@ -90,7 +90,7 @@ def player_to_bet(data):
 
     if ai_player is not None:
         bet = ai_player.player_to_bet(data.get("allowed_bets"), game_state_json)
-        emit_with_delay('player bet', {'game_id': game_id, 'player': player, 'bet': bet})
+        emit_with_delay('player bet', {'game_id': game_id, 'player': player, 'bet': str(bet)})
 
 
 def player_bet(data):

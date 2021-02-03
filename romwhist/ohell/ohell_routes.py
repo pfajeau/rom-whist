@@ -64,6 +64,7 @@ def ohell_start():
         session['username'] = username
         if form.join_game.data:
             game_id = request.form['game_id']
+            session['game_id'] = game_id
             return common_routes.join_game(games, game_id, username, \
                                            'ohell_start.html', 'ohell_play', \
                                            NAMESPACE, form)
@@ -184,7 +185,7 @@ def ohell_play():
                                hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player, \
                                cards_played=cards_played, allowed_cards=game.get_allowed_cards(player), \
                                trump=game.trump_card, dealing_method=game.dealing_method, \
-                               allowed_bets=game.allowed_bets(player), game_phase=game.phase.name, \
+                               allowed_bets=game.get_allowed_bets(player), game_phase=game.phase.name, \
                                hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet)
 
 
@@ -295,7 +296,7 @@ def player_bet_process(player, game_id, bet):
         else:
             common_routes.emit_to_players(
                 "player to bet",
-                {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.allowed_bets(nplayer)},
+                {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(nplayer)},
                 room=game_id, namespace=NAMESPACE, game_state=game.get_state(OhellState(game_id)))
             return
     except Exception as e:
@@ -457,7 +458,7 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
 
         common_routes.emit_to_players(
             "player to bet",
-            {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.allowed_bets(player)},
+            {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(player)},
             room=game_id, namespace=NAMESPACE, game_state=game.get_state(OhellState(game_id)))
         return
 

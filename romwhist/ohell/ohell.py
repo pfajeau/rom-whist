@@ -24,13 +24,27 @@ class OhellGame(CardGame):
 
     def get_state(self, state: OhellState):
         state = CardGame.get_state(self, state)
-        state.bets = self.bets
+        for player in self.get_playing_players():
+            if not self.bets.get(player) is None:
+                state.bets[player] = str(self.bets.get(player))
+            state.bets[player] = str(self.bets.get(player))
         state.nb_rounds_won = self.wins
+        allowed_bets = self.get_allowed_bets(self.active_player)
+        state.allowed_bets=[]
+        for i in range(0, len(allowed_bets)):
+            state.allowed_bets.append(str(allowed_bets[i]))
+
         return state
 
     def set_state(self, state):
         CardGame.set_state(self, state)
-        self.bets = state.bets
+        for player in state.players:
+            if not state.bets.get(player) is None:
+                self.bets[player] = int(state.bets.get(player))
+
+        # for i in range(0, len(state.allowed_bets)):
+        #     self.allowed_bets[i] = int(state.allowed_bets[i])
+
         self.wins = state.nb_rounds_won
         self.soft_init_dict(self.wins, 0)
         self.soft_init_dict(self.bets, -1)
@@ -103,7 +117,7 @@ class OhellGame(CardGame):
         else:
             return -1
 
-    def allowed_bets(self, player):
+    def get_allowed_bets(self, player):
         if self.hands.get(player) is None:
             return []  # No hand yet
         allowed_bets = list(range(len(self.get_hand(player).get_cards()) + 1))

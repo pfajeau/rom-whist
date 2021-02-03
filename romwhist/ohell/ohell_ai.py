@@ -11,10 +11,10 @@ class OhellAiPlayer(AiPlayer):
     def __init__(self, name, game_id):
         AiPlayer.__init__(self, name, game_id)
 
-        # TODO: make the agent a parameter so it can be configured
-        # or passed as a command line argument to the AI
-        self.__agent = SimpleAgent(random_action)
         self.__agent = SimpleMCTSAgent('OhellSim', name,
+                                       action_chooser_function='random_action',
+                                       num_simulations=100)
+        self.__agent2 = SimpleMCTSAgent('OhellSim', name,
                                        action_chooser_function='random_action',
                                        num_simulations=100)
         self.game_state = OhellState(game_id, self.name)
@@ -34,8 +34,26 @@ class OhellAiPlayer(AiPlayer):
         game_state = OhellState(**json.loads(game_state_json))
         self.game_state = game_state
 
+        # this is here because easier for testing.
+        # allowed_bets shoud really come from the game state
+        for bet in allowed_bets:
+            self.game_state.allowed_bets.append(str(bet))
+
+        bet1 = self.compute_bet_heuristics()
+        bet2 = self.compute_bet_agent()
+        logging.info("Agent calculated bet: %s", bet2)
+        return bet2
+
+    def compute_bet_heuristics(self):
         my_hand = self.game_state.hand_cards[self.name]
         logging.info("Ohell Player %s hand: %s", self.name, self.game_state.hand_cards[self.name])
+        allowed_bets = []
+
+        # Convert bets to ints
+        for i in range(0, len(self.game_state.allowed_bets)):
+            allowed_bets.append(int(self.game_state.allowed_bets[i]))
+
+        logging.info("Ohell Player %s allowed bets: %s", self.name, self.game_state.allowed_bets)
 
         self.compute_deck_value()
         nr = self.game_state.deck_size / 4
@@ -66,7 +84,12 @@ class OhellAiPlayer(AiPlayer):
                     return abet
 
         logging.error("Could not compute bet")
-        return allowed_bets[0]
+        return -1
+
+    def compute_bet_agent(self):
+        return self.__agent2.get_bet(self.game_state)
+
+
 
     def player_to_play(self, allowed_cards, game_state_json):
         game_state = OhellState(**json.loads(game_state_json))

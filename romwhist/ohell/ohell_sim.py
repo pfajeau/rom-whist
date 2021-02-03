@@ -25,15 +25,15 @@ class OhellSim(OhellGame):
 
     def play_single_move(self):
         logging.debug("Playing single move")
-        state = self.state()
+        the_state = self.get_state(self.initial_state)
 
         if self.first_play and self.starting_action is not None:
             card = self.starting_action
             self.first_play = False
         elif self.active_player == self.sim_player:
-            card = self.agent.get_action(state)
+            card = self.agent.get_action(the_state)
         else:
-            card = self.other_agent.get_action(state)
+            card = self.other_agent.get_action(the_state)
 
         winner = self.play_card(self.active_player, card)
         return winner
@@ -47,7 +47,7 @@ class OhellSim(OhellGame):
         while not self.is_hand_completed():
             round = self.create_round()
             self.play_round(round)
-        logging.info("Hand completed")
+        logging.debug("Hand completed")
         return
 
 
@@ -70,7 +70,6 @@ class OhellSim(OhellGame):
         logging.debug("Bets for %s: %s", self.sim_player, self.bets[self.sim_player])
         logging.debug("Wins: %s", self.wins[self.sim_player])
         sim_player_wins = (self.bets[self.sim_player] == self.wins[self.sim_player])
-        logging.info("Sim player won: %s", sim_player_wins)
         return sim_player_wins
 
     def state(self):

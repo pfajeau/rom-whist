@@ -68,8 +68,6 @@ def post_msg(msg, sender, room, namespace):
 
 def add_player(user, game, namespace):
     game.add_player(user)
-    session['username'] = user
-    session['game_id'] = game.id
     socketio.emit("new player", user, room=game.id, namespace=namespace)
 
 # To create an ai player
