@@ -3,11 +3,12 @@ from enum import Enum
 from random import choice
 from random import randrange
 
-from ..card import Card
-from ..deck import Deck
-from ..game import CardGame
-from ..hand import Hand
-from ..round import Round
+from romwhist.card import Card
+from romwhist.deck import Deck
+from romwhist.game import CardGame
+from romwhist.hand import Hand
+from romwhist.round import Round
+from romwhist.belote.belote_state import BeloteState
 
 
 class BeloteGame(CardGame):
@@ -100,6 +101,16 @@ class BeloteGame(CardGame):
     @win_game_points.setter
     def win_game_points(self, value):
         self.__win_game_points = value
+
+    def get_state(self, state: BeloteState):
+        state = CardGame.get_state(self, state)
+        state.allowed_bets = self.get_allowed_bets(self.active_player)
+        return state
+
+    def set_state(self, state):
+        CardGame.set_state(self, state)
+        self.soft_init_dict(self.wins, 0)
+        self.soft_init_dict(self.bets, "")
 
     # @property
     # def belote_announced(self):
@@ -235,7 +246,7 @@ class BeloteGame(CardGame):
             logging.debug("Next player to bet after " + player + " is: " + next_player)
             return next_player
 
-    def allowed_bets(self, player):
+    def get_allowed_bets(self, player):
         allowed_bets = []
         # if self.hands.get(player) is None:
         #     allowed_bets = []  # No hand yet

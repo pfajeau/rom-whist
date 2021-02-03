@@ -23,11 +23,11 @@ if __name__ == '__main__':
     for player in players:
         assert (len(belote.get_hand(player).cards) == 5)
 
-    assert(len(belote.allowed_bets("Joe")) == 2)
+    assert(len(belote.get_allowed_bets("Joe")) == 2)
     for player in players:
         belote.place_bet(player, "Pass")
 
-    assert (len(belote.allowed_bets("Joe")) == 4)
+    assert (len(belote.get_allowed_bets("Joe")) == 4)
     belote.place_bet("Joe", "Spade")
     assert (belote.trump_suit == "Spade")
 

@@ -27,7 +27,6 @@ class OhellGame(CardGame):
         for player in self.get_playing_players():
             if not self.bets.get(player) is None:
                 state.bets[player] = str(self.bets.get(player))
-            state.bets[player] = str(self.bets.get(player))
         state.nb_rounds_won = self.wins
         allowed_bets = self.get_allowed_bets(self.active_player)
         state.allowed_bets=[]

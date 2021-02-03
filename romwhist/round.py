@@ -65,14 +65,15 @@ class Round():
         #print ("Winning suit: " + winning_suit)
         trump_played = False
         for player in self.cards_played:
-            # print ("player - suit - rank: ", player, self.cards_played[player].get_suit(), self.cards_played[player].rank)
-            if self.cards_played[player].get_suit_name() == self.trump_suit and not trump_played:
-                trump_played = True
-                winning_suit = self.trump_suit
-                self.winning_player = player
-            else:
-                if self.cards_played[player].get_suit_name() == winning_suit and \
-                self.cards_played[player] > self.cards_played[self.winning_player]:
+            if not self.cards_played.get(player) is None:
+                # print ("player - suit - rank: ", player, self.cards_played[player].get_suit(), self.cards_played[player].rank)
+                if self.cards_played[player].get_suit_name() == self.trump_suit and not trump_played:
+                    trump_played = True
+                    winning_suit = self.trump_suit
                     self.winning_player = player
+                else:
+                    if self.cards_played[player].get_suit_name() == winning_suit and \
+                    self.cards_played[player] > self.cards_played[self.winning_player]:
+                        self.winning_player = player
 
         return self.winning_player

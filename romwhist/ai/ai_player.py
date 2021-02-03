@@ -31,6 +31,7 @@ class AiPlayer:
     @name.setter
     def name(self, value):
         self.__name = value
+        return
 
 
     def game_started(self, deck_size, players):
@@ -38,20 +39,21 @@ class AiPlayer:
         # self.__deck_size = deck_size
         # self.game_state.players = players
         # #self.__deck_size=deck_size
+        return
 
     def set_trump(self, trump_card, trump_suit):
-        self.trump_card = trump_card
-        self.game_state.trump = trump_suit
+        # self.trump_card = trump_card
+        # self.game_state.trump = trump_suit
+        return
 
-    def player_to_bet(self, allowed_bets):
+    def player_to_bet(self, allowed_bets, game_state_json):
         return allowed_bets[0]
 
     def player_bet(self, player, bet):
         #self.game_state.bets[player] = bet
         return
 
-    def player_to_play(self, allowed_cards):
-        # TOOD
+    def player_to_play(self, allowed_cards, game_state_json):
         logging.debug("AI PLayer to play: %s", self.name)
         logging.debug("Allowed cards: %s", allowed_cards)
         # Retrieve state from data (as JASON)
@@ -91,6 +93,8 @@ class AiPlayer:
         for card in cards:
             self.vd += self.compute_card_value(str(card))
         logging.info("Deck value: %s", self.vd)
+        return self.vd
+
 
     def compute_card_value(self, card):
         # Returns card value between 0 and 100

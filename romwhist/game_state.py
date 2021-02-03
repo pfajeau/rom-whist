@@ -8,7 +8,7 @@ class GameState():
     def __init__(self, game_id, sim_player=None, players=[], trump="", cards_played_per_player=None,
                  cards_played_per_round=dict(), deck_size=0,
                  hand_cards=dict(), allowed_cards=[], active_player="", scores=dict(),
-                 owner="", dealer="", allowed_bets=[]):
+                 owner="", dealer="", bets=dict(), allowed_bets=[]):
         self.game_id = game_id
         self.players = players
         self.trump = trump
@@ -23,6 +23,7 @@ class GameState():
         self.dealer = dealer
         self.allowed_bets = allowed_bets
         self.sim_player = sim_player
+        self.bets = bets
 
         # Can be calculated
         # self.cards_played = []

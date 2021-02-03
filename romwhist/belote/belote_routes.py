@@ -18,6 +18,7 @@ import unidecode
 from romwhist import common_routes
 from romwhist import socketio
 from romwhist.belote.belote import BeloteGame
+from romwhist.belote.belote_state import BeloteState
 from romwhist.extensions import db
 from romwhist.forms import LoginForm, GameForm
 from romwhist.belote.belote_form import BeloteStartForm
@@ -50,9 +51,10 @@ def belote_start():
         session['username'] = username
         if form.join_game.data:
             game_id = request.form['game_id']
+            session['game_id'] = game_id
             return common_routes.join_game(games, game_id, username, \
                                            'belote_start.html', 'belote_play', \
-                                           NAMESPACE)
+                                           NAMESPACE, form)
 
         elif form.start_game.data:
             logging.info("start game")
@@ -166,11 +168,13 @@ def belote_play():
         if game.belote_state == BeloteGame.BeloteState.Belote_Played or game.belote_state == BeloteGame.BeloteState.Allowed:
             belote_enabled = True
 
+        # TODO: could pass the game state instead of all the parameters
+        # individually
         return render_template("belote.html", form=form, players=game.get_playing_players(), scores=game.get_scores(), \
                                hand=hand, wins=game.hand_points, bets=game.get_bets(), active_player=active_player, \
                                cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
                                trump=game.trump_card, trump_suit=game.trump_suit,
-                               allowed_bets=game.allowed_bets(player), \
+                               allowed_bets=game.get_allowed_bets(player), \
                                game_phase=game.phase.name, scoresheet=game.scoresheet, \
                                belote_allowed=belote_enabled, player_with_belote=game.player_with_belote)
 
@@ -237,14 +241,17 @@ def player_bet_ai(data):
 def player_bet(bet):
     logging.info("player bet event received")
     logging.info("Player bet: " + bet)
-    player = session['username']
+    player = session.get('username')
     game_id = session.get('game_id')
+
     player_bet_process(player, game_id, bet)
+    return
 
 def player_bet_process(player, game_id, bet):
     if game_id is None:
         logging.error("ERROR: Game not found!!!")
-    return
+        return
+
     logging.debug("Player bet: " + bet)
     game = games.get(game_id)
     if game.phase == BeloteGame.GamePhase.BET or game.phase == BeloteGame.GamePhase.BET2:
@@ -265,7 +272,7 @@ def player_bet_process(player, game_id, bet):
                 common_routes.emit_to_players(
                     "player to bet",
                     {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.allowed_bets(nplayer)},
-                    room=game_id, namespace=NAMESPACE)
+                    room=game_id, namespace=NAMESPACE, game_state=game.get_state(BeloteState(game_id)))
 
             elif game.phase == BeloteGame.GamePhase.PLAY:
                 hands = game.deal_2(game.dealer)
@@ -291,7 +298,7 @@ def player_bet_process(player, game_id, bet):
                 common_routes.emit_to_players(
                     "player to play",
                     {'game_id': game_id, 'player': next_player_to_play, 'allowed_cards': allowed_cards},
-                    room=game_id, namespace=NAMESPACE)
+                    room=game_id, namespace=NAMESPACE, game_state=game.get_state(BeloteState(game_id)))
 
                 player_belote = game.player_with_belote
                 if (not player_belote is None):
@@ -347,7 +354,7 @@ def next_round(game_id, nplayer, allowed_cards):
         common_routes.emit_to_players(
             "player to play",
             {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards},
-            room=game_id, namespace=NAMESPACE)
+            room=game_id, namespace=NAMESPACE, game_state=game.get_state(BeloteState(game_id)))
 
 @socketio.on('player played', namespace=NAMESPACE_AI)
 def player_played_ai(data):
@@ -393,7 +400,7 @@ def player_played_process(game_id, player, card):
         common_routes.emit_to_players(
             "player to play",
              {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
-             room=game_id, namespace=NAMESPACE)
+             room=game_id, namespace=NAMESPACE, game_state=game.get_state(BeloteState(game_id)))
     else:
         # There is a winnder, so round is ended
         # game.round_ended(winner)
@@ -458,8 +465,8 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
 
     common_routes.emit_to_players(
         "player to bet",
-        {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.allowed_bets(player)},
-        room=game_id, namespace=NAMESPACE)
+        {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(player)},
+        room=game_id, namespace=NAMESPACE, game_state=game.get_state(BeloteState(game_id)))
     return
 
 

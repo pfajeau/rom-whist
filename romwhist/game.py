@@ -1,3 +1,4 @@
+import copy
 import logging
 from enum import Enum
 from random import choice
@@ -92,7 +93,8 @@ class CardGame:
             self.create_round()
 
         state.allowed_cards = self.get_allowed_cards(state.active_player)
-        return state
+        state.bets = self.bets
+        return copy.deepcopy(state)
 
     def set_state(self, state: GameState):
         self.reset()
@@ -127,6 +129,7 @@ class CardGame:
             self.current_round = self.create_round()
 
         self.active_player = state.active_player
+        self.bets = state.bets
 
     @property
     def phase(self):
