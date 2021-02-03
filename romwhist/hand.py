@@ -9,7 +9,6 @@ class Hand(object):
             self.cards.append(card)
             #self._hands[players[p]].sort()
 
-
     def add(self, card):
         self.cards.append(card)
 

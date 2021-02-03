@@ -4,7 +4,6 @@ from romwhist.card import Card
 class Deck(object):
 
     def __init__(self, deck_size=52):
-
         cards = []
         nb_ranks = int(deck_size / 4)
         remainder = deck_size % 4
@@ -46,3 +45,6 @@ class Deck(object):
     def addBottom(self,card):
         self.cards.insert(0,card) # put the card to the bottom of the deck
         self._size += 1 # increment size of the deck
+
+    def remove_card(self, card):
+        self.cards.remove(card)

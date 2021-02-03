@@ -15,8 +15,8 @@ def play_round(game, game_round, fc=""):
     for i in range(len(game.players)):
         print("Allowed cards for " + active_player + " : {}".format(game.get_allowed_cards(active_player)))
         if i == 0 and fc != "":
-            game.card_played(active_player, fc)
+            game.play_card(active_player, fc)
         else:
-            game.card_played(active_player, game.get_allowed_cards(active_player)[0])
+            game.play_card(active_player, game.get_allowed_cards(active_player)[0])
         active_player = game.get_active_player()
     return game_round.winning_player

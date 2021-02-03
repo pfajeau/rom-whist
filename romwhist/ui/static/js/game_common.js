@@ -84,10 +84,30 @@ function initialize(players) {
       show_alert("Are you sure you want to remove this player?", "Warning", cancel=true, callback_ok=submit_form, action="remove_player");
     }
   }
+
+  if (username == ownername) {
+    // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
+    $("#game_action_buttons").append('<button id="restart_hand" type="button" class="btn btn-warning" name="restart_hand">Restart Hand</button>');
+    document.getElementById("restart_hand").onclick = function() {
+      show_alert("Are you sure you want to restart the hand", "Warning", cancel=true, callback_ok=submit_form, action="restart_hand");
+    }
+  }
+
+  if (username == ownername) {
+    // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
+    $("#game_action_buttons").append('<button id="add_ai" type="button" class="btn btn-warning" name="add_ai">Add AI</button>');
+    document.getElementById("add_ai").onclick = function() {
+      show_alert("Please confirm you want to add an AI player", "Warning", cancel=true, callback_ok=submit_form, action="add_ai");
+    }
+  }
+
+
   make_players_inactive();
 }
 
 function add_card_to_table(player, card) {
+  if (card == 'None') return
+    
   let image = "img/" + card + ".svg"
   let html = '<figure class="figures">'
   console.log("PLayer: " + player)
@@ -96,6 +116,7 @@ function add_card_to_table(player, card) {
   html = html.concat("<figcaption class='trump_caption'>" + player + "</figcaption>")
   html = html.concat("</figure>")
   $('#cards_played').append(html)
+
 }
 
 function start_game() {
@@ -163,7 +184,7 @@ function card_played (card) {
   document.getElementById(card).remove();
 
   // Emit an event indicating a card has been card_played
-  socket.emit('player played', {data:card});
+  socket.emit('player played', card);
 
   // Prevent player from playing again until round is finished
   RecursiveUnbind($('#cards'));

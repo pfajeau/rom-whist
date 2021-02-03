@@ -1,9 +1,32 @@
-print('__file__={0:<35} | __name__={1:<20} | __package__={2:<20}'.format(__file__, __name__, str(__package__)))
-
+import difflib
+import json
+import logging
 from romwhist.ohell.ohell import OhellGame
+from romwhist.ohell.ohell_state import OhellState
+from romwhist.ohell.ohell_sim import OhellSim
+from romwhist.ai.ai_agents import SimpleAgent, SimpleMCTSAgent
+
 from tests import test_common
 
+
+def init_game(players, game_id):
+    ohell_game = OhellGame("Joe", deck_size=32, id=game_id)
+    for player in players:
+        ohell_game.add_player(player)
+
+    ohell_game.start_game()
+    ohell_game.set_hand_prgression(False, True, 2)
+    ohell_game.create_hand_progression()
+    ohell_game.active_player = "Joe"
+
+    return ohell_game
+
+
 if __name__ == '__main__':
+    logging.basicConfig(filename="Tests_ohell.log",
+                        format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
+                        level=logging.DEBUG)
+
     players = ["Joe", "Jack", "Jim", "Johnny"]
     ohell = OhellGame("Joe")
 
@@ -38,7 +61,7 @@ if __name__ == '__main__':
     for player in players:
         ohell.place_bet(player, 1)
 
-    cards_played = ohell.get_cards_played()
+    cards_played = ohell.get_cards_played_current_round()
     assert (cards_played is None)
 
     # Simulate a game and check scoring works
@@ -52,23 +75,23 @@ if __name__ == '__main__':
     test_common.create_hands(ohell, cards_as_str)
     ohell.active_player = "Joe"
 
-    print("Playing Hand...")
+    logging.debug("Playing Hand...")
     for i in range(8):
-        print("    Playing round: " + str(i))
+        logging.debug("    Playing round: " + str(i))
         round = ohell.create_round()
         winner = test_common.play_round(ohell, round)
-        print("Winner for round " + str(i) + " is " + ohell.current_round.winning_player)
+        logging.debug("Winner for round " + str(i) + " is " + ohell.current_round.winning_player)
 
-        cards_played = ohell.get_cards_played()
-        print("Displaying last round cards")
+        cards_played = ohell.get_cards_played_current_round()
+        logging.debug("Displaying last round cards")
         for player in cards_played:
-                print(player + " played: " + str(cards_played[player]))
+                logging.debug(player + " played: " + str(cards_played[player]))
 
     ohell.hand_completed()
     scores = ohell.get_scores()
-    print("Scores: ")
+    logging.debug("Scores: ")
     for player in players:
-        print(player + ": " + format(scores[player]))
+        logging.debug(player + ": " + format(scores[player]))
 
     # Test scores
     ohell = OhellGame("Joe", 1, 32)
@@ -79,11 +102,92 @@ if __name__ == '__main__':
     winners = ohell.get_highest_score_player()
     assert (len(winners) == 1)
     assert (winners[0] == "Jack")
-    print(winners)
+    logging.debug(winners)
 
     ohell.scores = {"Joe": 1, "Jack": 2, "Jim": 0, "Johnny": 2}
     winners = ohell.get_highest_score_player()
     assert (len(winners) == 2)
     assert (winners[0] == "Jack")
     assert (winners[1] == "Johnny")
-    print(winners)
+    logging.debug("Winners: " + str(winners))
+
+    # Test Game state
+    logging.debug("Testing Game State")
+    ohell = init_game(players, "game_state_test")
+
+    ohell.deal(dealer="")
+    ohell.deal(dealer="")
+    ohell.deal(dealer="")
+    ohell.deal(dealer="")
+    ohell.deal(dealer="")
+
+    test_common.create_hands(ohell, cards_as_str)
+    ohell.active_player = "Joe"
+    for player in players:
+        ohell.place_bet(player, 1)
+
+    logging.debug("Starting Hand...")
+    for i in range(4):
+        logging.debug("    Playing round: " + str(i))
+        round = ohell.create_round()
+        winner = test_common.play_round(ohell, round)
+        logging.debug("Winner for round " + str(i) + " is " + ohell.current_round.winning_player)
+
+        cards_played = ohell.get_cards_played_current_round()
+        logging.debug("Displaying last round cards")
+        for player in cards_played:
+            logging.debug(player + " played: " + str(cards_played[player]))
+
+    state = OhellState("8", "Joe")
+    ohell.get_state(state)
+    logging.debug("State: " + repr(state))
+    ohell.set_state(state)
+
+    # Check that game can resume
+    for i in range(5,8):
+        logging.debug("    Playing round: " + str(i))
+        round = ohell.create_round()
+        winner = test_common.play_round(ohell, round)
+        logging.debug("Winner for round " + str(i) + " is " + ohell.current_round.winning_player)
+
+        cards_played = ohell.get_cards_played_current_round()
+        logging.debug("Displaying last round cards")
+        for player in cards_played:
+            logging.debug(player + " played: " + str(cards_played[player]))
+
+    ohell.hand_completed()
+    scores = ohell.get_scores()
+
+    # Test Sim Game
+    logging.debug("Testing Sim Game")
+    game_id = "sim_game"
+    ohell = init_game(players, game_id)
+
+    ohell.deal(dealer="")
+    ohell.deal(dealer="")
+    ohell.deal(dealer="")
+    for player in players:
+        ohell.place_bet(player, 1)
+
+
+    state = OhellState("game_id", "Joe")
+    ohell.get_state(state)
+    logging.debug("Game state is: %s", state)
+
+    #Test serialization
+    state_dict = state.__dict__
+    logging.debug("Game state as dict: %s", state_dict)
+    state_json = json.dumps(state_dict)
+    logging.debug("Game state as JSON: %s", state_json)
+    game_state = OhellState(**json.loads(state_json))
+    logging.debug("Game state from JSON as dict: %s", game_state.__dict__)
+
+
+    # ai_agent = SimpleMCTSAgent("OhellSim", ai_player="Joe")
+    # #sim_game = OhellSim(SimpleAgent(), SimpleAgent(), "Joe", state=state)
+    # sim_game = OhellSim(ai_agent, SimpleAgent("Joe"), "Joe", state=state)
+    # sim_game.run()
+
+
+
+

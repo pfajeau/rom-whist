@@ -25,6 +25,8 @@ from romwhist.models import User
 from romwhist import common_routes
 
 NAMESPACE = '/belote'
+NAMESPACE_AI = '/belote_ai'
+
 
 # Map of games, key is game id
 games = dict()
@@ -85,20 +87,24 @@ def belote_play():
     form = GameForm()
     player = session.get('username')
     if player is None:
+        logging.error("Unknow player in session")
         flash("Session has expired")
         return redirect(url_for('belote_start'))
 
     game_id = session.get('game_id')
     if game_id is None:
+        logging.error("Unknow game id: %s", game_id)
         flash("Game does not exist")
         return redirect(url_for('belote_start'))
 
     game = games.get(game_id);
     if game is None:
+        logging.error("Unknow game: %s", game_id)
         flash("Game does not exist")
         return redirect(url_for('belote_start'))
 
     if request.method == 'POST':
+
         # logging.info (request.form)
         if game_id is None:
             error = "Could not find game_id in session"
@@ -123,9 +129,15 @@ def belote_play():
 
             remove_player(game_id, rplayer)
             return redirect(url_for('belote_play'))
-            # get user that needs to be removed
-            # remove user
-            # re-distribute and display game page
+
+        if request.form['action_game'] == "restart_hand":
+            restart_hand(game_id)
+            return redirect(url_for('belote_play'))
+
+        if request.form['action_game'] == "add_ai":
+            common_routes.add_ai_player("ai_" + game_id + "_" + str(len(game.players)), \
+                                        game_id, NAMESPACE_AI)
+            return redirect(url_for('belote_play'))
 
     else:
         hand = game.get_hands().get(player)
@@ -135,7 +147,7 @@ def belote_play():
             hand = hand.serialize()
         round = game.get_current_round()
 
-        cards_played = game.get_cards_played()
+        cards_played = game.get_cards_played_current_round()
 
         logging.debug("Active Player: " + game.get_active_player())
         logging.debug("Game Phase: " + game.phase.name)
@@ -203,70 +215,106 @@ def game_started():
             game.reset()
             game.start_game()
             player = game.get_playing_players()[randint(0, len(game.get_playing_players()) - 1)]
-            socketio.emit("sc game started", {'player_to_deal': player, 'nb_cards': 5}, room=game_id,
-                          namespace=NAMESPACE)
+            common_routes.emit_to_players(
+                "sc game started",
+                {'game_id': game_id, 'player_to_deal': player, 'deck_size': game.deck_size},
+                room=game_id, namespace=NAMESPACE)
 
             generate_hands(game_id, player)
+
+
+@socketio.on("player bet", namespace=NAMESPACE_AI)
+def player_bet_ai(data):
+    logging.debug("player bet event received for ai")
+    logging.debug("Player bet: " + str(data.get('bet')))
+    player = data.get('player')
+    game_id = data.get('game_id')
+    bet = str(data.get('bet'))
+    player_bet_process(player, game_id, bet)
 
 
 @socketio.on("player bet", namespace=NAMESPACE)
 def player_bet(bet):
     logging.info("player bet event received")
     logging.info("Player bet: " + bet)
-    username = session['username']
+    player = session['username']
     game_id = session.get('game_id')
+    player_bet_process(player, game_id, bet)
+
+def player_bet_process(player, game_id, bet):
     if game_id is None:
         logging.error("ERROR: Game not found!!!")
-    else:
-        game = games[game_id]
-        if game.phase == BeloteGame.GamePhase.BET or game.phase == BeloteGame.GamePhase.BET2:
-            game = games[game_id]
-            try:
-                game.place_bet(session['username'], bet)
-                emit("player bet", {'player': session['username'], 'bet': bet}, room=game_id, namespace=NAMESPACE)
-                nplayer = game.get_active_player()
-                if game.phase == BeloteGame.GamePhase.DEAL:
-                    restart_hand(game_id)
+    return
+    logging.debug("Player bet: " + bet)
+    game = games.get(game_id)
+    if game.phase == BeloteGame.GamePhase.BET or game.phase == BeloteGame.GamePhase.BET2:
+        try:
+            game.place_bet(player, bet)
 
-                elif game.phase == BeloteGame.GamePhase.BET or game.phase == BeloteGame.GamePhase.BET2:
-                    emit("player to bet", {'player': nplayer, 'allowed_bets': game.allowed_bets(nplayer)}, room=game_id,
-                         namespace=NAMESPACE)
+            emit("player bet", {'player': player, 'bet': bet}, room=game_id, namespace=NAMESPACE)
+            common_routes.emit_to_players(
+                "player bet",
+                {'game_id': game_id, 'player': player, 'bet': bet},
+                room=game_id, namespace=NAMESPACE)
 
-                elif game.phase == BeloteGame.GamePhase.PLAY:
-                    hands = game.deal_2(game.dealer)
-                    logging.debug("After deal_2")
-                    round = game.create_round()
-                    # Distribute cards to each players
-                    for player in game.get_playing_players():
-                        cards = hands[player].serialize()
-                        logging.debug("Cards for player " + player + " " + str(cards))
-                        socketio.emit("new hand", cards, room=clients[game_id][player], namespace=NAMESPACE)
-                    next_player_to_play = game.get_active_player()
-                    allowed_cards = game.get_hand(next_player_to_play).serialize()
-                    logging.debug("Allowed cards: " + str(allowed_cards))
-                    logging.debug("Player to play: " + next_player_to_play)
-                    emit("trump suit", game.trump_suit, room=game_id, namespace=NAMESPACE)
-                    emit("player to play", {'player': next_player_to_play, 'allowed_cards': allowed_cards},
-                         room=game_id, namespace=NAMESPACE)
-                    player_belote = game.player_with_belote
-                    if (not player_belote is None):
-                        logging.debug("Player with Belote / Rebelote: " + player_belote)
-                        emit("belote rebelote enabled", player_belote, room=clients[game_id][player_belote],
-                             namespace=NAMESPACE)
-                return
-            except Exception as e:
-                logging.debug("Bet received: " + str(bet))
-                logging.error(e)
-                traceback.print_stack()
-                emit("alert", "Error in place bet", room=clients[game_id][username], namespace=NAMESPACE)
+            nplayer = game.get_active_player()
+            if game.phase == BeloteGame.GamePhase.DEAL:
+                restart_hand(game_id)
 
+            elif game.phase == BeloteGame.GamePhase.BET or game.phase == BeloteGame.GamePhase.BET2:
+                common_routes.emit_to_players(
+                    "player to bet",
+                    {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.allowed_bets(nplayer)},
+                    room=game_id, namespace=NAMESPACE)
 
+            elif game.phase == BeloteGame.GamePhase.PLAY:
+                hands = game.deal_2(game.dealer)
+                logging.debug("After deal_2")
+                round = game.create_round()
+                # Distribute cards to each players
+                for player in game.get_playing_players():
+                    cards = hands[player].serialize()
+                    logging.debug("Cards for player " + player + " " + str(cards))
+                    common_routes.emit_to_players(
+                        "new hand",
+                        {'game_id': game_id, 'player': player, 'cards': cards},
+                        room=clients[game_id].get(player), namespace=NAMESPACE)
+                next_player_to_play = game.get_active_player()
+                allowed_cards = game.get_hand(next_player_to_play).serialize()
+                logging.debug("Allowed cards: " + str(allowed_cards))
+                logging.debug("Player to play: " + next_player_to_play)
+
+                common_routes.emit_to_players(
+                    "trump suit",
+                    game.trump_suit, game_id=game_id, room=game_id, namespace=NAMESPACE)
+
+                common_routes.emit_to_players(
+                    "player to play",
+                    {'game_id': game_id, 'player': next_player_to_play, 'allowed_cards': allowed_cards},
+                    room=game_id, namespace=NAMESPACE)
+
+                player_belote = game.player_with_belote
+                if (not player_belote is None):
+                    logging.debug("Player with Belote / Rebelote: " + player_belote)
+                    common_routes.emit_to_players(
+                        "belote rebelote enabled",
+                        player_belote, game_id=game_id,
+                        room=clients[game_id].get(player_belote), namespace=NAMESPACE)
+            return
+        except Exception as e:
+            logging.debug("Bet received: " + str(bet))
+            logging.error(e)
+            traceback.print_stack()
+            emit("alert", "Error in place bet", room=clients[game_id].get(player), namespace=NAMESPACE)
+
+# TODO: this could be factorized in common routes.
 def hand_completed(game_id, username):
     game = games.get(game_id)
     if game is None:
         logging.error("Game with id %s does not exist", game_id)
         return
 
+    # TODO: Is this call needed?
     game.hand_completed()
     scores = game.get_scores()
     logging.info("hand completed, next player to deal:" + game.next_player_to_deal())
@@ -274,9 +322,14 @@ def hand_completed(game_id, username):
                                      'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal(),\
                                      'winners': game.hand_winner},
                 room=game_id, namespace=NAMESPACE)
+
     if game.is_game_over():
         logging.debug("Game " + str(game_id) + " is over")
-        socketio.emit("game over", game.get_highest_score_player(), room=game_id, namespace=NAMESPACE)
+        common_routes.emit_to_players(
+            "game over",
+            game.get_highest_score_player(), game_id=game_id,
+             room=game_id, namespace=NAMESPACE)
+        logging.debug("Game " + str(game_id) + " is over")
         clean_game_data(game_id)
 
     else:
@@ -288,53 +341,74 @@ def next_round(game_id, nplayer, allowed_cards):
     game.create_round()
 
     socketio.emit("clear round", room=game_id, namespace=NAMESPACE)
-    socketio.emit("player to play", {'player': nplayer, 'allowed_cards': allowed_cards},
-                  room=game_id, namespace=NAMESPACE)
-
     if game.is_hand_completed():
         hand_completed(game_id, nplayer)
+    else:
+        common_routes.emit_to_players(
+            "player to play",
+            {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards},
+            room=game_id, namespace=NAMESPACE)
 
+@socketio.on('player played', namespace=NAMESPACE_AI)
+def player_played_ai(data):
+    logging.debug("player played event received for ai")
+    logging.debug("Player card: " + data.get('card'))
+    player = data.get('player')
+    game_id = data.get('game_id')
+    player_played_process(game_id, player, data.get('card'))
 
 @socketio.on('player played', namespace=NAMESPACE)
-def player_played(data):
+def player_played(card):
     logging.info("card played event received")
+    logging.info("Card played: " + card)
     game_id = session.get('game_id')
+    player = session.get('username')
+    player_played_process(game_id, player, card)
+
+
+def player_played_process(game_id, player, card):
     # Emit event to players so they can see the card that was played
     if game_id is None:
-        logging.error("ERROR: Game not found!!!")
+        logging.error("Game id not specified")
+        return
+
+    common_routes.emit_to_players(
+        "card played",
+        {'game_id': game_id, 'player': player, 'card': card},
+        room=game_id, namespace=NAMESPACE)
+
+    game = games.get(game_id)
+    belote_before = game.belote_state
+    winner = game.play_card(player, card)
+    belote_after = game.belote_state
+
+    if (belote_before != belote_after):
+        belote_state_changed(game_id, player)
+
+    nplayer = game.get_active_player()
+
+    if winner is None:
+        # Round continues
+        allowed_cards = game.get_allowed_cards(nplayer)
+        common_routes.emit_to_players(
+            "player to play",
+             {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
+             room=game_id, namespace=NAMESPACE)
     else:
-        card = data['data']
-        new_data = {'player': session['username'], 'card': card}
-        emit("card played", new_data, room=game_id, namespace=NAMESPACE)
+        # There is a winnder, so round is ended
+        # game.round_ended(winner)
+        allowed_cards = game.get_hand(nplayer).serialize()
+        winnning_card = game.get_current_round().cards_played[winner]
+        common_routes.emit_to_players(
+            "round ended",
+            {"game_id": game_id, "winner": winner, "card": winnning_card.desc(), "last_player": player, "points":game.hand_points},
+            room=game_id, namespace=NAMESPACE)
 
-        game = games[game_id]
-        belote_before = game.belote_state
-        winner = game.card_played(session['username'], card)
-        belote_after = game.belote_state
+        timer = threading.Timer(6.0, next_round, [game_id, nplayer, allowed_cards])
+        timer.start()
 
-        if (belote_before != belote_after):
-            belote_state_changed(game_id, session['username'])
-
-        nplayer = game.get_active_player()
-
-        if winner is None:
-            # Round continues
-            allowed_cards = game.get_allowed_cards(nplayer)
-            emit("player to play", {'player': nplayer, 'allowed_cards': allowed_cards}, room=game_id,
-                 namespace=NAMESPACE)
-        else:
-            # There is a winnder, so round is ended
-            # game.round_ended(winner)
-            allowed_cards = game.get_hand(nplayer).serialize()
-            winnning_card = game.get_current_round().cards_played[winner]
-            emit("round ended", {"winner": winner, "card": winnning_card.desc(), "last_player": session['username'],
-                 "points":game.hand_points}, room=game_id, namespace=NAMESPACE)
-            timer = threading.Timer(6.0, next_round, [game_id, nplayer, allowed_cards])
-            timer.start()
-
-        # Belote/rebelote status
-
-        logging.info("Allowed cards: " + str(allowed_cards))
+    logging.info("Allowed cards: " + str(allowed_cards))
+    return
 
 
 def belote_state_changed(game_id, player):
@@ -356,29 +430,12 @@ def belote_state_changed(game_id, player):
     return
 
 
-@socketio.on('start hand', namespace=NAMESPACE)
-def start_hand(nbcards, trump):
-    # selection = data["selection"]
-    # votes[selection] += 1
-    logging.info("start hand event received")
-    game_id = session.get('game_id')
-    username = session.get('username')
-
-    if game_id is None or username is None:
-        logging.error("Error in start_hand. username or game_id not in session")
-        return
-
-    generate_hands(game_id, "", int(nbcards), trump)
-
-
 # TODO factorize with ohell
 def generate_hands(game_id, username, nbcards=5, trump=True):
-    if not game_id in games:
-        # Should never happen
-        game = BeloteGame();
-        games[game_id] = game
-    else:
-        game = games[game_id]
+    game = games.get(game_id)
+    if game is None:
+        logging.error("Unknown game: " + str(game_id))
+        return
 
     hands = game.deal_1(username)
 
@@ -389,12 +446,20 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
     for player in game.get_playing_players():
         cards = hands[player].serialize()
         logging.info("Cards for player " + player + " " + str(cards))
-        socketio.emit("new hand", cards, room=clients[game_id][player], namespace=NAMESPACE)
+        common_routes.emit_to_players(
+            "new hand",
+            {'game_id': game_id, 'player': player, 'cards': cards},
+            room=clients[game_id].get(player), namespace=NAMESPACE)
 
-    socketio.emit("trump card", {"trump_card": str(game.trump_card), "trump_suit": str(game.trump_suit)}, room=game_id,
-                  namespace=NAMESPACE)
-    socketio.emit("player to bet", {'player': nplayer, 'allowed_bets': game.allowed_bets(nplayer)}, room=game_id,
-                  namespace=NAMESPACE)
+    common_routes.emit_to_players(
+        "trump card",
+        {"game_id": game_id, "trump_card": str(game.trump_card), "trump_suit": str(game.trump_suit)},
+        room=game_id, namespace=NAMESPACE)
+
+    common_routes.emit_to_players(
+        "player to bet",
+        {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.allowed_bets(player)},
+        room=game_id, namespace=NAMESPACE)
     return
 
 
@@ -412,7 +477,10 @@ def belote_announced(announce):
             game.player_announced_belote(player, BeloteGame.BeloteAnnounced.REBELOTE)
 
         # emit("alert", announce + " announced by " + player, room=game_id, namespace=NAMESPACE)
-        emit("belote announced", {'player': player, 'announced': announce}, room=game_id, namespace=NAMESPACE)
+        common_routes.emit_to_players(
+            "belote announced",
+            {'game_id': game_id, 'player': player, 'announced': announce},
+            room=game_id, namespace=NAMESPACE)
         emit("msg posted", {'sender': session['username'], 'msg': announce}, room=game_id, namespace=NAMESPACE)
 
 
@@ -433,6 +501,22 @@ def on_join(data):
             session['sid'] = request.sid
             join_room(game_id)
 
+# TODO: factorize
+@socketio.on('join game ai', namespace=NAMESPACE_AI)
+def join_ai(data):
+    # Note that a refresh on the client side causes the socketio sid to changed
+    # so need to remove the previous sid from the room
+    logging.info("join_ai")
+
+    game_id = str(data.get('game_id'))
+    game = games.get(game_id)
+    if game is None:
+        logging.error("Unknown game: " + repr(game_id))
+        return
+    # Add user to room if user is not there already
+    player = data.get('player')
+    logging.debug("Player: " + player)
+    common_routes.add_player(player, game, NAMESPACE)
 
 @socketio.on('client post', namespace=NAMESPACE)
 def on_post(msg):
@@ -473,7 +557,7 @@ def restart_hand(game_id):
     game = games.get(game_id)
     if game is None:
         return
-    socketio.emit("alert", "Hand to be replayed", room=game_id, namespace=namespace)
+    socketio.emit("alert", "Hand to be replayed", room=game_id, namespace=NAMESPACE)
     if game.started:
         # Deal another hand
         game._current_hand_nb = game._current_hand_nb - 1
@@ -484,11 +568,12 @@ def restart_hand(game_id):
 def add_player(player, game_id):
     game = games.get(game_id)
     if not game is None:
+        session['game_id'] = game.id
         common_routes.add_player(player, game, NAMESPACE)
         if game.started:
             restart_hand(game_id)
 
-
+# TODO: factorize
 def remove_player(game_id, player):
     # game_id = session.get('game_id')
     if not game_id is None:

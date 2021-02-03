@@ -141,7 +141,7 @@ Add footer / contact info
       $("#scoresheet_div").append("<td>")
     });
 
-    socket.on('new hand', function(cards) {
+    socket.on('new hand', function(data) {
       console.log("new hand event received");
       make_players_inactive();
       $('#trump_card').html('')
@@ -149,6 +149,7 @@ Add footer / contact info
       $('#cards_played').empty()
       $("#nb_cards").removeClass("highlighted_field");
       $('#msg_div').empty()
+      cards = data['cards']
 
       // $('#cards').append('<ul>');
       for (var card_index in cards) {

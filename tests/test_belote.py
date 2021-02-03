@@ -35,7 +35,7 @@ if __name__ == '__main__':
     for player in players:
         assert (len(belote.get_hand(player).cards) == 8)
 
-    cards_played = belote.get_cards_played()
+    cards_played = belote.get_cards_played_current_round()
     assert (cards_played is None)
 
     # Simulate a game and check scoring works
@@ -57,19 +57,19 @@ if __name__ == '__main__':
     a_round = belote.create_round()
 
     belote.active_player = "Joe"
-    belote.card_played(belote.active_player, "s10")
+    belote.play_card(belote.active_player, "s10")
     allowed_cards = belote.get_allowed_cards("Jack")
     print ("Allowed card for Jack: " + str(allowed_cards))
     assert(allowed_cards.index("s14") != -1)
     assert(len(allowed_cards) == 1)
 
-    belote.card_played(belote.active_player, "s14")
+    belote.play_card(belote.active_player, "s14")
     allowed_cards = belote.get_allowed_cards("Jim")
 
-    belote.card_played(belote.active_player, "s8")
+    belote.play_card(belote.active_player, "s8")
     allowed_cards = belote.get_allowed_cards("Johnny")
     assert(len(allowed_cards) == 8)
-    belote.card_played(belote.active_player, "c7")
+    belote.play_card(belote.active_player, "c7")
 
     print("Winner for round 1 is " + belote.current_round.winning_player)
 
@@ -82,7 +82,7 @@ if __name__ == '__main__':
         assert (belote.player_with_belote is None)
         print("Winner for round " + str(i) + " is " + belote.current_round.winning_player)
 
-        cards_played = belote.get_cards_played()
+        cards_played = belote.get_cards_played_current_round()
         print("Displaying last round cards")
         for player in cards_played:
             print(player + " played: " + str(cards_played[player]))
@@ -165,13 +165,13 @@ if __name__ == '__main__':
     # Third round: test that player can "piss"
     a_round = belote.create_round()
     belote.active_player = "Joe"
-    belote.card_played("Joe", 'h10')
-    belote.card_played("Jack", 'h13')
+    belote.play_card("Joe", 'h10')
+    belote.play_card("Jack", 'h13')
     allowed_cards = belote.get_allowed_cards("Jim")
     print("ALlowed cards for Jim: " + str(allowed_cards))
     assert len(allowed_cards) == 6, len(allowed_cards)
-    belote.card_played("Jim", 'c12')
-    belote.card_played("Johnny", 'h14')
+    belote.play_card("Jim", 'c12')
+    belote.play_card("Johnny", 'h14')
     winner = a_round.winning_player
     print("Winner for round 3" + " is " + winner)
     assert winner == "Johnny", winner
@@ -182,7 +182,7 @@ if __name__ == '__main__':
         winner = test_common.play_round(belote, a_round)
         print("Winner for round " + str(i) + " is " + belote.current_round.winning_player)
 
-        cards_played = belote.get_cards_played()
+        cards_played = belote.get_cards_played_current_round()
         print("Displaying last round cards")
         for player in cards_played:
             print(player + " played: " + str(cards_played[player]))

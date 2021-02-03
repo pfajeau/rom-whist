@@ -5,6 +5,7 @@ author: Philippe Fajeau
 
 """
 from random import randint
+import json
 import unidecode
 import threading
 import traceback
@@ -28,6 +29,10 @@ from romwhist.belote import belote_routes
 def admin():
     return render_template('admin.html', nb_belote_games = len(belote_routes.games), \
                            nb_whist_games =len(ohell_routes.games))
+
+def home():
+    return render_template("home.html")
+
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
@@ -62,9 +67,13 @@ def post_msg(msg, sender, room, namespace):
 #       generate_hands(game.id, game.dealer)
 
 def add_player(user, game, namespace):
-    session['game_id'] = game.id
     game.add_player(user)
     socketio.emit("new player", user, room=game.id, namespace=namespace)
+
+# To create an ai player
+def add_ai_player(player_name, game_id, namespace):
+    socketio.emit("create_ai_player", {"name": player_name, "game_id": game_id}, namespace=namespace)
+
 
 def sanitize_username(username1):
     # Sanitize the username (as it isued as IDs in the html)
@@ -73,7 +82,7 @@ def sanitize_username(username1):
     return username
 
 
-def join_game(games, game_id, username, start_page, play_page, namespace):
+def join_game(games, game_id, username, start_page, play_page, namespace, form):
     logging.debug("game id: " + game_id)
     if not game_id in games:
         error = "This game has not been created yet"
@@ -115,3 +124,52 @@ def generate_game_id(max_id, games):
         game_id = str(randint(1, max_id))
     logging.debug("game_id:" + str(game_id))
     return game_id
+
+# Utility mothod to emit an event to both real players and the ai players
+# data must contain the game_id
+def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_state=None):
+    # If no room speified assumes it is not for any web clients
+    if room is not None:
+        socketio.emit(event, data, game_id = None, room=room, namespace=namespace)
+
+    if game_id is None:
+        # In this case, teh game_id has to be part of the data being passed
+        game_id = data.get("game_id")
+        if game_id is None:
+            logging.error("game_id not specified")
+            return
+        else:
+            if game_state is not None:
+                data['state'] = game_state.toJson()
+            socketio.emit(event, data, namespace=namespace + "_ai")
+            return
+
+    else:
+        # game_id is passed to this function
+        # Add game_id to the parameters for the event
+        # TODO refactor so that all calls include the game id in the
+        # data being passed
+        if isinstance(data, dict):
+            data["game_id"] = game_id
+            if game_state is not None:
+                data['state'] = game_state.toJson()
+        else:
+            data2 = dict()
+            data2["game_id"] = game_id
+            data2['param'] = data
+            if game_state is not None:
+                data['state'] = game_state.toJson()
+
+        socketio.emit(event, data2, namespace=namespace+"_ai")
+
+
+def emit_game_state(game_id, player, game_state, namespace):
+    # Serialize game_state
+    state_dict = game_state.__dict__()
+    logging.debug("Game state as dict: %s", state_dict)
+    state_json = jason.dumps(state_dict)
+    logging.debug("Game state as JSON: %s", state_json)
+    socketio.emit('game_state',
+                  {'game_id': game_id, 'player': player, 'state': state_json},
+                  namespace=namespace)
+
