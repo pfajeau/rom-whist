@@ -1,3 +1,4 @@
+import copy
 import logging
 from enum import Enum
 from random import choice
@@ -105,12 +106,20 @@ class BeloteGame(CardGame):
     def get_state(self, state: BeloteState):
         state = CardGame.get_state(self, state)
         state.allowed_bets = self.get_allowed_bets(self.active_player)
+        state.phase = self.phase
+        state.hand_points = copy.deepcopy(self.hand_points)
+        state.hand_winner = copy.deepcopy(self.hand_winner)
+        state.taker = self.taker
         return state
 
     def set_state(self, state):
         CardGame.set_state(self, state)
         self.soft_init_dict(self.wins, 0)
         self.soft_init_dict(self.bets, "")
+        self.phase = state.phase
+        self.hand_points = copy.deepcopy(state.hand_points)
+        self.hand_winner = copy.deepcopy(state.hand_winner)
+        self.taker = state.taker
 
     # @property
     # def belote_announced(self):

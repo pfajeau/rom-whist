@@ -263,7 +263,7 @@ class SimpleMCTSAgent(IAgent):
         # Collect results
         for game in games:
             if game.sim_player_won():
-                self.action_value[str(game.bets[self.ai_player])] += 1
+                self.action_value[game.bets[self.ai_player]] += 1
 
             self.num_simulations_total += 1
 
@@ -275,4 +275,4 @@ class SimpleMCTSAgent(IAgent):
             best_action = action if self.action_value[action] > self.action_value[best_action] \
                 else best_action
 
-        return best_action
+        return int(best_action)

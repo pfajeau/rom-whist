@@ -99,37 +99,38 @@ class CardGame:
     def set_state(self, state: GameState):
         self.reset()
 
-        self.game_id = state.game_id
-        self.players = state.players
-        for player in state.players:
+        state_copy = copy.deepcopy(state)
+        self.game_id = state_copy.game_id
+        self.players = state_copy.players
+        for player in state_copy.players:
             self._player_status[player] = 1
-        self.trump_suit = state.trump
-        self.deck_size = state.deck_size
-        self.deck = Deck(state.deck_size)
-        self.scores = state.scores
+        self.trump_suit = state_copy.trump
+        self.deck_size = state_copy.deck_size
+        self.deck = Deck(state_copy.deck_size)
+        self.scores = state_copy.scores
         self.soft_init_dict(self.scores, 0)
-        self.owner = state.owner
-        self.dealer = state.dealer
+        self.owner = state_copy.owner
+        self.dealer = state_copy.dealer
 
         # Create hands
-        for player in state.hand_cards:
+        for player in state_copy.hand_cards:
             self.hands[player] = Hand(self.deck)
-            for card in state.hand_cards[player]:
+            for card in state_copy.hand_cards[player]:
                 self.hands[player].cards.append(Card.card_from_value(card))
 
         # Create rounds
-        for round_nb in state.cards_played_per_round:
-            round = Round(state.players, state.trump)
-            for player in state.cards_played_per_round[round_nb]:
-                card_str = state.cards_played_per_round[round_nb].get(player)
+        for round_nb in state_copy.cards_played_per_round:
+            round = Round(state_copy.players, state_copy.trump)
+            for player in state_copy.cards_played_per_round[round_nb]:
+                card_str = state_copy.cards_played_per_round[round_nb].get(player)
                 round.card_played(player,
                               Card.card_from_value(card_str))
             self.current_round = round
         if self.current_round is None:
             self.current_round = self.create_round()
 
-        self.active_player = state.active_player
-        self.bets = state.bets
+        self.active_player = state_copy.active_player
+        self.bets = state_copy.bets
 
     @property
     def phase(self):

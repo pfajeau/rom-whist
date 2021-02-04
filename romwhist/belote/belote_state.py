@@ -7,9 +7,14 @@ class BeloteState(GameState):
                  cards_played_per_round=dict(), deck_size=0,
                  hand_cards=dict(), allowed_cards=[], active_player="", scores=dict(),
                  owner="", dealer = "",
-                 bets=dict(), allowed_bets=[]):
+                 bets=dict(), allowed_bets=[],
+                 phase = None, hand_points=dict(), hand_winner=[], taker=None):
 
         super().__init__(game_id, sim_player=sim_player, players=players, trump=trump, cards_played_per_player=cards_played_per_player,
                  cards_played_per_round=cards_played_per_round, deck_size=deck_size,
                  hand_cards=hand_cards, allowed_cards=allowed_cards, active_player=active_player, scores=scores,
                  owner=owner, dealer=dealer, bets=bets, allowed_bets=allowed_bets)
+        self.phase = phase
+        self.hand_points = hand_points
+        self.hand_winner = hand_winner
+        self.taker = taker

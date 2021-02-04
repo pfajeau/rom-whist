@@ -1,9 +1,17 @@
 import json
-import logging
+import numpy as np
 
-from romwhist.card import Card
 
-class GameState():
+def my_converter(obj):
+    print ("Object: %s - Type: %s", str(obj), type(obj))
+    if isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+
+class GameState:
 
     def __init__(self, game_id, sim_player=None, players=[], trump="", cards_played_per_player=None,
                  cards_played_per_round=dict(), deck_size=0,
@@ -45,5 +53,6 @@ class GameState():
             return self.players[0]
         else:
             return self.players[pos + 1]
+
 
 

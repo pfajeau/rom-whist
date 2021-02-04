@@ -36,13 +36,13 @@ class OhellAiPlayer(AiPlayer):
 
         # this is here because easier for testing.
         # allowed_bets shoud really come from the game state
-        for bet in allowed_bets:
-            self.game_state.allowed_bets.append(str(bet))
+        # for bet in allowed_bets:
+        #     self.game_state.allowed_bets.append(bet))
 
         bet1 = self.compute_bet_heuristics()
         bet2 = self.compute_bet_agent()
         logging.info("Agent calculated bet: %s", bet2)
-        return bet2
+        return int(bet2)
 
     def compute_bet_heuristics(self):
         my_hand = self.game_state.hand_cards[self.name]
