@@ -11,6 +11,7 @@ from typing import Dict, List, Set
 from romwhist.card import Card
 from romwhist.game_state import GameState
 from romwhist.ohell.ohell_sim import OhellSim
+from romwhist.belote.belote_sim import BeloteSim
 
 
 def lookup(name, namespace):
@@ -127,9 +128,11 @@ class SimpleMCTSAgent(IAgent):
         config = configparser.ConfigParser()
         config.read('instance/config_ai.ini')
         if config.has_section('ai'):
+            logging.info("ai config found")
             ai_config = config['ai']
             if config.has_option('ai', 'number_of_simulations'):
                 num_simulations = int(ai_config['number_of_simulations'])
+                logging.info("Number of simulations: %s", num_simulations)
 
             if config.has_option('ai', 'max_thread_number_for_simulation'):
                 max_threads = int(ai_config['max_thread_number_for_simulation'])
@@ -138,6 +141,7 @@ class SimpleMCTSAgent(IAgent):
                                               globals())
         self.num_simulations_total = 0
         self.action_value = dict()
+        self.num_simulations_per_action = dict()  # Number of simulations for an action
         self.num_simulations = num_simulations
         self.executor = ThreadPoolExecutor(max_workers=max_threads)
         self.sim_game_class_name = sim_game_class_name
@@ -225,10 +229,9 @@ class SimpleMCTSAgent(IAgent):
         """
 
         legal_actions = state.get_legal_bets()
-
-        # If only one choice, return it right away
-        if len(legal_actions) == 1:
-            return legal_actions[0]
+        for action in legal_actions:
+            self.action_value[action] = 0
+            self.num_simulations_per_action[action] = 0
 
         rollout_actions = np.random.choice(legal_actions,  # Pre-select initial actions
                                            size=num_simulations, replace=True)
@@ -237,7 +240,7 @@ class SimpleMCTSAgent(IAgent):
         # Simulate games on separate threads
         games = []
         for action in rollout_actions:
-            self.action_value[action] = 0
+            self.num_simulations_per_action[action] += 1
             state.bets[self.ai_player] = action
             state.active_player = state.next_player(state.dealer)
             sim_game_class = globals()[self.sim_game_class_name]
@@ -275,4 +278,4 @@ class SimpleMCTSAgent(IAgent):
             best_action = action if self.action_value[action] > self.action_value[best_action] \
                 else best_action
 
-        return int(best_action)
+        return best_action

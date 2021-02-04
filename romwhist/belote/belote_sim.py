@@ -1,9 +1,8 @@
 import copy
 import logging
 
-#from romwhist.ai.sim_game import SimGame
-from romwhist.ohell.ohell_state import OhellState
-from romwhist.ohell.ohell import OhellGame
+from romwhist.belote.belote_state import BeloteState
+from romwhist.belote.belote import BeloteGame
 
 class BeloteSim(BeloteGame):
 
@@ -25,20 +24,27 @@ class BeloteSim(BeloteGame):
 
     def play_single_move(self):
         logging.debug("Playing single move")
-        the_state = self.get_state(self.initial_state)
+        current_state = BeloteState(self.id, self.sim_player)
+        current_state = self.get_state(current_state)
+        #the_state = self.get_state(self.initial_state)
 
         if self.first_play and self.starting_action is not None:
             card = self.starting_action
             self.first_play = False
         elif self.active_player == self.sim_player:
-            card = self.agent.get_action(the_state)
+            card = self.agent.get_action(current_state)
         else:
-            card = self.other_agent.get_action(the_state)
+            card = self.other_agent.get_action(current_state)
 
         winner = self.play_card(self.active_player, card)
         return winner
 
     def game_loop(self) -> None:
+        logging.info("Game phase is %s", self.phase)
+        if self.phase == BeloteGame.GamePhase.BET or self.phase == BeloteGame.GamePhase.BET2:
+            self.place_bet(self.sim_player, self.bets[self.sim_player])
+            self.deal_2()
+
         winner = None
         while winner is None:
             winner = self.play_single_move()
@@ -47,6 +53,7 @@ class BeloteSim(BeloteGame):
         while not self.is_hand_completed():
             round = self.create_round()
             self.play_round(round)
+        self.hand_completed()
         logging.debug("Hand completed")
         return
 
@@ -58,7 +65,7 @@ class BeloteSim(BeloteGame):
         for i in range(len(self.get_playing_players())):
             winner = self.play_single_move()
 
-        logging.debug("Round completed. Winner is %s, winner")
+        logging.debug("Round completed. Winner is %s", winner)
         return winner
 
     def run(self) -> bool:

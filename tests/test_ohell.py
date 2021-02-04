@@ -23,7 +23,7 @@ def init_game(players, game_id):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename="Tests_ohell.log",
+    logging.basicConfig(filename="tests_ohell.log",
                         format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
                         level=logging.DEBUG)
 
@@ -139,7 +139,7 @@ if __name__ == '__main__':
             logging.debug(player + " played: " + str(cards_played[player]))
 
     state = OhellState("8", "Joe")
-    ohell.get_state(state)
+    state = ohell.get_state(state)
     logging.debug("State: " + repr(state))
     ohell.set_state(state)
 

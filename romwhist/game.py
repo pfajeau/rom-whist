@@ -66,7 +66,7 @@ class CardGame:
         # Populate state
         state.game_id = self.__id
         state.players = self.get_playing_players()
-        state.trump =  self.trump_suit
+        state.trump = self.trump_suit
         state.cards_played_per_player = self.get_cards_played_per_player()
         state.deck_size = self.deck_size
         state.scores = self.scores
@@ -94,6 +94,7 @@ class CardGame:
 
         state.allowed_cards = self.get_allowed_cards(state.active_player)
         state.bets = self.bets
+        state.trump_card = str(self.trump_card)
         return copy.deepcopy(state)
 
     def set_state(self, state: GameState):
@@ -131,6 +132,8 @@ class CardGame:
 
         self.active_player = state_copy.active_player
         self.bets = state_copy.bets
+        if not state.trump_card is None and not state.trump_card == "":
+            self.trump_card = Card.card_from_value(state.trump_card)
 
     @property
     def phase(self):
@@ -201,7 +204,6 @@ class CardGame:
             self.points[player] = 0
 
     def disable_player(self, player):
-        print("In Game.disable_player, disabling player " + player)
         if player in self.players:
             self._player_status[player] = 0
             print(self._player_status)

@@ -6,7 +6,9 @@ from tests import test_common
 
 if __name__ == '__main__':
 
-    logging.basicConfig(filename='test.log', level=logging.DEBUG)
+    logging.basicConfig(filename='test_belote.log',
+                        format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
+                        level=logging.DEBUG)
 
     players = ["Joe", "Jack", "Jim", "Johnny"]
     belote = BeloteGame("Joe")
@@ -189,7 +191,7 @@ if __name__ == '__main__':
             print(player + " played: " + str(cards_played[player]))
 
     state = BeloteState("8", "Joe")
-    belote.get_state(state)
+    state = belote.get_state(state)
     logging.debug("State: " + repr(state))
     belote.set_state(state)
 

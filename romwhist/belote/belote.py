@@ -13,7 +13,7 @@ from romwhist.belote.belote_state import BeloteState
 
 
 class BeloteGame(CardGame):
-    class GamePhase(Enum):
+    class GamePhase(str, Enum):
         DEAL = "Deal"
         DEAL2 = "Deal2"
         BET = "Bet"
@@ -118,7 +118,9 @@ class BeloteGame(CardGame):
         self.soft_init_dict(self.bets, "")
         self.phase = state.phase
         self.hand_points = copy.deepcopy(state.hand_points)
-        self.hand_winner = copy.deepcopy(state.hand_winner)
+        self.soft_init_dict(self.hand_points, 0)
+
+        # self.hand_winner = copy.deepcopy(state.hand_winner)
         self.taker = state.taker
 
     # @property
@@ -471,6 +473,7 @@ class BeloteGame(CardGame):
                 self.scores[players[1]] += points_capot
                 self.scores[players[3]] = self.scores[players[1]]
 
+        logging.debug("Player points: %s", player_points)
         self.scoresheet.append(self.scores.copy())
         return self.scores
 
