@@ -88,6 +88,7 @@ def random_action(state):
     :param State state:
     :returns Card: action to take
     """
+    logging.info("In random_action, legal actions are: %s", state.get_legal_actions())
     return np.random.choice(state.get_legal_actions())
 
 class SmartSearchAgent(IAgent):
@@ -145,7 +146,13 @@ class SimpleMCTSAgent(IAgent):
         self.num_simulations = num_simulations
         self.executor = ThreadPoolExecutor(max_workers=max_threads)
         self.sim_game_class_name = sim_game_class_name
+        self.action_points = dict()
         super().__init__(ai_player)
+
+    def reset_data(self):
+        self.action_value = dict()
+        self.num_simulations_per_action = dict()
+        self.action_points = dict()
 
     def get_action(self, state):
         action = self.rollout(state, self.num_simulations)
@@ -166,10 +173,17 @@ class SimpleMCTSAgent(IAgent):
         """
 
         legal_actions = state.get_legal_actions()
+        logging.info("Legal actions: %s", legal_actions)
+        self.reset_data()
 
         # If only one choice, return it right away
         if len(legal_actions) == 1:
             return legal_actions[0]
+
+        for action in legal_actions:
+            self.action_value[action] = 0
+            self.action_points[action] = 0
+            self.num_simulations_per_action[action] = 0
 
         rollout_actions = np.random.choice(legal_actions,  # Pre-select initial actions
                                            size=num_simulations, replace=True)
@@ -178,7 +192,7 @@ class SimpleMCTSAgent(IAgent):
         # Simulate games on separate threads
         games = []
         for action in rollout_actions:
-            self.action_value[action] = 0
+            self.num_simulations_per_action[action] += 1
             sim_game_class = globals()[self.sim_game_class_name]
             games.append(sim_game_class(SimpleAgent(self.action_chooser_function),
                                          SimpleAgent(random_action), self.ai_player,
@@ -204,7 +218,7 @@ class SimpleMCTSAgent(IAgent):
         for game in games:
             if game.sim_player_won():
                 self.action_value[game.starting_action] += 1
-
+            self.action_points[game.starting_action] += game.hand_points[self.ai_player]
             self.num_simulations_total += 1
 
         logging.info("action_value: %s", self.action_value)
@@ -212,6 +226,7 @@ class SimpleMCTSAgent(IAgent):
         # Choose best action
         for action in legal_actions:
             logging.info("action: %s, action has value %s", action, self.action_value[action])
+            logging.info("action: %s, action has points %s", action, self.action_points[action])
             best_action = action if self.action_value[action] > self.action_value[best_action] \
                 else best_action
 
@@ -229,9 +244,13 @@ class SimpleMCTSAgent(IAgent):
         """
 
         legal_actions = state.get_legal_bets()
+        logging.info("Legal actions: %s", legal_actions)
+        self.reset_data()
+
         for action in legal_actions:
             self.action_value[action] = 0
             self.num_simulations_per_action[action] = 0
+            self.action_points[action] = 0
 
         rollout_actions = np.random.choice(legal_actions,  # Pre-select initial actions
                                            size=num_simulations, replace=True)
@@ -267,14 +286,17 @@ class SimpleMCTSAgent(IAgent):
         for game in games:
             if game.sim_player_won():
                 self.action_value[game.bets[self.ai_player]] += 1
+            self.action_points[game.bets[self.ai_player]] += game.hand_points[self.ai_player]
 
             self.num_simulations_total += 1
 
         logging.info("action_value: %s", self.action_value)
+        logging.info("action_points: %s", self.action_points)
 
         # Choose best action
         for action in legal_actions:
             logging.info("bet: %s, bet has value %s", action, self.action_value[action])
+            logging.info("action: %s, action has points %s", action, self.action_points[action])
             best_action = action if self.action_value[action] > self.action_value[best_action] \
                 else best_action
 

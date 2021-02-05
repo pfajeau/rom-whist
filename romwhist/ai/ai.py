@@ -32,7 +32,7 @@ if config.has_section('ai'):
     if config.has_option('ai','default_delay'):
         DEFAULT_DELAY = int(ai_config['default_delay'])
     else:
-        DEFAULT_DELAY = 1  # 1 second
+        DEFAULT_DELAY = 2  # 1 second
 
 
 
@@ -167,9 +167,9 @@ def create_ai_player(data):
         logging.error("game_id or name are not defined")
         return
 
-    if game_type == "belote":
+    if this.game_type == "belote":
         player = BeloteAiPlayer(name, game_id)
-    elif game_type == "ohell":
+    elif this.game_type == "ohell":
         player = OhellAiPlayer(name, game_id)
 
     if players.get(game_id) is None:
@@ -244,17 +244,17 @@ def main(argv):
             this.game_type = arg
             this.NAMESPACE = NAMESPACES[this.game_type]
 
-    sio.connect(HOST, namespaces=[NAMESPACE])
-    sio.on("create_ai_player", create_ai_player, NAMESPACE)
-    sio.on("sc game started", game_started, NAMESPACE)
-    sio.on("trump card", trump_card, NAMESPACE)
-    sio.on("new hand", new_hand, NAMESPACE)
-    sio.on("player to bet", player_to_bet, NAMESPACE)
-    sio.on("player bet", player_bet, NAMESPACE)
-    sio.on("player to play", player_to_play, NAMESPACE)
-    sio.on("card played", card_played, NAMESPACE)
-    sio.on("game over", game_over, NAMESPACE)
-    sio.on("game_state", game_state, NAMESPACE)
+    sio.connect(HOST, namespaces=[this.NAMESPACE])
+    sio.on("create_ai_player", create_ai_player, this.NAMESPACE)
+    sio.on("sc game started", game_started, this.NAMESPACE)
+    sio.on("trump card", trump_card, this.NAMESPACE)
+    sio.on("new hand", new_hand, this.NAMESPACE)
+    sio.on("player to bet", player_to_bet, this.NAMESPACE)
+    sio.on("player bet", player_bet, this.NAMESPACE)
+    sio.on("player to play", player_to_play, this.NAMESPACE)
+    sio.on("card played", card_played, this.NAMESPACE)
+    sio.on("game over", game_over, this.NAMESPACE)
+    sio.on("game_state", game_state, this.NAMESPACE)
 
     # print (name + " " + str(game_id))
     # ai_player = AiPlayer(name, game_id)

@@ -4,8 +4,8 @@ from romwhist.belote.belote_state import BeloteState
 
 from tests import test_common
 
-if __name__ == '__main__':
 
+def main():
     logging.basicConfig(filename='test_belote.log',
                         format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
                         level=logging.DEBUG)
@@ -224,3 +224,7 @@ if __name__ == '__main__':
     # New hands should have been distributed
     print("Active player is: " + belote.active_player)
     # TODO: add tests for 2 and 3 player
+
+
+if __name__ == '__main__':
+    main()

@@ -13,8 +13,6 @@ class AiPlayer:
         self.game_id = game_id
         self.__game_state = None
 
-        print("Hello World!")
-
     @property
     def game_state(self):
         return self.__game_state

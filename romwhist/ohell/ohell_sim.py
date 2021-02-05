@@ -19,21 +19,23 @@ class OhellSim(OhellGame):
         self.games_counter = [0, 0]
         self.initial_state = copy.deepcopy(state)
 
+
         if state is not None:
             state_copy = copy.deepcopy(state)
             self.set_state(state_copy)
 
     def play_single_move(self):
         logging.debug("Playing single move")
-        the_state = self.get_state(self.initial_state)
+        current_state = OhellState(self.id, self.sim_player)
+        current_state = self.get_state(current_state)
 
         if self.first_play and self.starting_action is not None:
             card = self.starting_action
             self.first_play = False
         elif self.active_player == self.sim_player:
-            card = self.agent.get_action(the_state)
+            card = self.agent.get_action(current_state)
         else:
-            card = self.other_agent.get_action(the_state)
+            card = self.other_agent.get_action(current_state)
 
         winner = self.play_card(self.active_player, card)
         return winner
@@ -47,6 +49,7 @@ class OhellSim(OhellGame):
         while not self.is_hand_completed():
             round = self.create_round()
             self.play_round(round)
+        self.hand_completed()
         logging.debug("Hand completed")
         return
 

@@ -1,10 +1,8 @@
-import difflib
 import json
 import logging
 from romwhist.ohell.ohell import OhellGame
 from romwhist.ohell.ohell_state import OhellState
-from romwhist.ohell.ohell_sim import OhellSim
-from romwhist.ai.ai_agents import SimpleAgent, SimpleMCTSAgent
+from romwhist.card import Card
 
 from tests import test_common
 
@@ -21,9 +19,8 @@ def init_game(players, game_id):
 
     return ohell_game
 
-
-if __name__ == '__main__':
-    logging.basicConfig(filename="tests_ohell.log",
+def main():
+    logging.basicConfig(filename="test_ohell.log",
                         format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
                         level=logging.DEBUG)
 
@@ -121,10 +118,19 @@ if __name__ == '__main__':
     ohell.deal(dealer="")
     ohell.deal(dealer="")
 
+    cards_as_str = dict()
+    cards_as_str["Joe"] = ['s9', 's10', 's11', 's14', 'h7', 'c8', 'd9']
+    cards_as_str["Jack"] = ['s7', 's8', 'h13', 'h11', 'c10', 'd7', 'd13']
+    cards_as_str["Jim"] = ['s12', 's13', 'h8', 'h9', 'c12', 'd10', 'd14']
+    cards_as_str["Johnny"] = ['h12', 'h14', 'c7', 'c13', 'd8', 'd11', 'd12']
+
     test_common.create_hands(ohell, cards_as_str)
     ohell.active_player = "Joe"
     for player in players:
         ohell.place_bet(player, 1)
+
+    ohell.trump_suit = 'Heart'
+    ohell.trump_card = Card.card_from_value('h10')
 
     logging.debug("Starting Hand...")
     for i in range(4):
@@ -187,6 +193,11 @@ if __name__ == '__main__':
     # #sim_game = OhellSim(SimpleAgent(), SimpleAgent(), "Joe", state=state)
     # sim_game = OhellSim(ai_agent, SimpleAgent("Joe"), "Joe", state=state)
     # sim_game.run()
+
+
+if __name__ == '__main__':
+    main()
+
 
 
 

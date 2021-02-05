@@ -49,7 +49,6 @@ class BeloteGame(CardGame):
         CardGame.__init__(self, game_creator=game_creator, deck_size=0, id=id)
         self.taker = None
         self.teams = []
-        self.hand_points = dict()  # The number of points collected while the hand is played
         # self.__belote_announced = BeloteGame.BeloteAnnounced.No
         self.__belote_state = BeloteGame.BeloteState.Not_Allowed
         self.__player_with_belote = None
@@ -107,7 +106,6 @@ class BeloteGame(CardGame):
         state = CardGame.get_state(self, state)
         state.allowed_bets = self.get_allowed_bets(self.active_player)
         state.phase = self.phase
-        state.hand_points = copy.deepcopy(self.hand_points)
         state.hand_winner = copy.deepcopy(self.hand_winner)
         state.taker = self.taker
         return state
@@ -117,7 +115,6 @@ class BeloteGame(CardGame):
         self.soft_init_dict(self.wins, 0)
         self.soft_init_dict(self.bets, "")
         self.phase = state.phase
-        self.hand_points = copy.deepcopy(state.hand_points)
         self.soft_init_dict(self.hand_points, 0)
 
         # self.hand_winner = copy.deepcopy(state.hand_winner)

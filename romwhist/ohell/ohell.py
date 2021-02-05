@@ -156,12 +156,12 @@ class OhellGame(CardGame):
                           " Player wins: " + str(self.wins[player]))
             if self.bets[player] == -1:
                 # Do nothing, means player is not playing
-                self.scores[player] = self.scores[player]
+                self.hand_points[player] = 0
             elif self.bets[player] == self.wins[player]:
-                self.scores[player] = self.scores[player] + self.bonus_win + self.wins[player]
+                self.hand_points[player] = self.bonus_win + self.wins[player]
             else:
-                self.scores[player] = self.scores[player] - \
-                                      abs(self.wins[player] - self.bets[player])
+                self.hand_points[player] = -abs(self.wins[player] - self.bets[player])
+            self.scores[player] = self.scores[player] + self.hand_points[player]
         self.scoresheet.append([self.bets.copy(), self.wins.copy(), self.scores.copy()])
 
         return self.scores

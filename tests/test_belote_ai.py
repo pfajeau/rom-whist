@@ -6,8 +6,8 @@ from romwhist.belote.belote_ai import BeloteAiPlayer
 from romwhist.belote.belote_state import BeloteState
 from romwhist.belote.belote import BeloteGame
 
-if __name__ == '__main__':
 
+def main():
     logging.basicConfig(filename='test_belote_ai.log',
                         format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
                         level=logging.DEBUG)
@@ -47,6 +47,11 @@ if __name__ == '__main__':
     belote_ai.game_state.trump = "Heart"
     belote_ai.game_state.active_player = "AI1"
     belote_ai.game_state.taker = "AI1"
-    card = belote_ai.player_to_play(["s9", "s11", "d13", "h12"], belote_ai.game_state.toJson())
+    belote_ai.game_state.allowed_cards = ["s9", "s11", "d13", "h12"]
+    card = belote_ai.player_to_play("", belote_ai.game_state.toJson())
     logging.debug("AI played card: " + card)
     assert card in ["s9", "s11", "d13", "h12"], card
+
+
+if __name__ == '__main__':
+    main()

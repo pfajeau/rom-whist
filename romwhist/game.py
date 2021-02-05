@@ -46,6 +46,8 @@ class CardGame:
         self.rounds = []  # The rounds for the hand
         self.__id = id
         self.deck = None
+        self.hand_points = dict()
+        self.init_dict(self.points, 0)
 
     def reset(self):
         self.current_round = None
@@ -76,6 +78,7 @@ class CardGame:
             state.hand_cards[player] = self.hands[player].serialize()
         state.active_player = self.active_player
         state.dealer = self.dealer
+        state.hand_points = copy.deepcopy(self.hand_points)
 
         i = 0
         state.cards_played_per_round = dict()
@@ -112,6 +115,9 @@ class CardGame:
         self.soft_init_dict(self.scores, 0)
         self.owner = state_copy.owner
         self.dealer = state_copy.dealer
+        self.hand_points = copy.deepcopy(state.hand_points)
+        self.soft_init_dict(self.hand_points,0)
+
 
         # Create hands
         for player in state_copy.hand_cards:
@@ -183,7 +189,7 @@ class CardGame:
 
     def add_player(self, player):
         if player in self.players:
-            print("player already exits - re-enabling")
+            logging.info("player already exits - re-enabling")
             self._player_status[player] = 1
             # Need to re-start hands
             self.active_player = self.dealer
@@ -206,7 +212,6 @@ class CardGame:
     def disable_player(self, player):
         if player in self.players:
             self._player_status[player] = 0
-            print(self._player_status)
             if player == self.dealer:
                 self.dealer = self.next_player_to_deal()
             self.active_player = self.dealer

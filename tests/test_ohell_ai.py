@@ -6,9 +6,10 @@ from romwhist.ohell.ohell_ai import OhellAiPlayer
 from romwhist.ohell.ohell_state import OhellState
 from tests import test_common
 
-if __name__ == '__main__':
-
-    logging.basicConfig(filename='test_ohell_ai.log', level=logging.INFO)
+def main():
+    logging.basicConfig(filename="test_ohell_ai.log",
+                        format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
+                        level=logging.INFO)
 
     ohell_ai = OhellAiPlayer('AI1', '1')
     ohell_ai.game_started(32, ["joe", "jack", "AI1", "jim"])
@@ -76,11 +77,15 @@ if __name__ == '__main__':
         ohell_ai.game_state.bets['jack'] = int(0)
         ohell_ai.game_state.allowed_bets = [0, 1, 2, 3, 4, 5, 6]
         bet = ohell_ai.player_to_bet(allowed_bets, ohell_ai.game_state.toJson())
-        ohell_ai.game_state.bets['AI1'] = bet
+
+        ohell_ai.game_state.bets = {'joe':1, 'jack':1, 'AI1':bet, 'jim':0}
         ohell_ai.game_state.active_player = "AI1"
         ohell_ai.game_state.dealer = "jack"
+        ohell_ai.game_state.allowed_cards = ["s9", "s11", "d8", "d9", "c7"]
 
-
-        card = ohell_ai.player_to_play(["s9", "s11", "d8", "d9", "c7"], ohell_ai.game_state.toJson())
+        card = ohell_ai.player_to_play("", ohell_ai.game_state.toJson())
         logging.debug("AI played card: " + card)
-        assert card in ["s9", "s11", "d8", "d9", "c7"], card
+        assert card in ["s9", "s11", "d8", "d9", "c7"]
+
+if __name__ == '__main__':
+    main()

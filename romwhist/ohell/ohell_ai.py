@@ -31,18 +31,35 @@ class OhellAiPlayer(AiPlayer):
     def player_to_bet(self, allowed_bets, game_state_json):
         logging.debug("Ohell AI PLayer to bet: %s", self.name)
         logging.debug("Game state: %s", game_state_json)
+
+        # If only one bet allowed, can return it right away
+        # TODO
+
         game_state = OhellState(**json.loads(game_state_json))
         self.game_state = game_state
 
-        # this is here because easier for testing.
-        # allowed_bets shoud really come from the game state
-        # for bet in allowed_bets:
-        #     self.game_state.allowed_bets.append(bet))
+        # Make active player the one that will start playing
+        # for the simulated game
+        self.game_state.active_player = self.game_state.next_player(self.game_state.dealer)
 
-        bet1 = self.compute_bet_heuristics()
-        bet2 = self.compute_bet_agent()
-        logging.info("Agent calculated bet: %s", bet2)
-        return int(bet2)
+        # bet1 = self.compute_bet_heuristics()
+        best_bet = self.compute_bet_agent()
+
+        # Select the bet which result in the most points
+        # as there could be cases where no card leads to a win
+        best_avg_points = 0
+        for bet in game_state.allowed_bets:
+            points_for_bet = self.__agent2.action_points.get(bet)
+            avg_points_for_bet = 0
+            if self.__agent2.num_simulations_per_action.get(bet) > 0:
+                avg_points_for_bet = points_for_bet / self.__agent2.num_simulations_per_action.get(bet)
+            logging.info("Avg points for card %s: %s", bet, avg_points_for_bet)
+            if avg_points_for_bet > best_avg_points:
+                best_avg_points = max(best_avg_points, avg_points_for_bet)
+                best_bet = bet
+
+        logging.info("Agent calculated bet: %s", best_bet)
+        return int(best_bet)
 
     def compute_bet_heuristics(self):
         my_hand = self.game_state.hand_cards[self.name]
@@ -94,25 +111,28 @@ class OhellAiPlayer(AiPlayer):
     def player_to_play(self, allowed_cards, game_state_json):
         game_state = OhellState(**json.loads(game_state_json))
         self.game_state = game_state
-        self.game_state.allowed_cards = allowed_cards
-        return self.__agent.get_action(self.game_state)
 
-#        play_to_win = False
+        # If only one action possible return it right away
+        if len(self.game_state.allowed_cards) == 1:
+            return self.game_state.allowed_cards[0]
 
-        # If number of tricks made is less than bets, play to win, otherwise play to loose
-        # if self.game_state.nb_rounds_won[self.name] < self.game_state.bets[self.name]:
-        #     play_to_win = True
+        best_card = self.__agent.get_action(self.game_state)
 
-        # First to play
-        # if len(self.game_state.cards_played_round) == 0:
-        #     # For each card in hand, chek whether one is highest among cards that have
-        #     # not been played yet.
-        #     for card in allowed_cards:
-        #         break
-        # else:
+        # Select the card which result in the most points
+        # as there could be cases where no card leads to a win
+        best_avg_points = 0
+        for card in allowed_cards:
+            points_for_card = self.__agent.action_points[card]
+            avg_points_for_card = 0
+            if self.__agent.num_simulations_per_action[card] > 0:
+                avg_points_for_card = points_for_card / self.__agent.num_simulations_per_action[card]
+            logging.info("Avg points for card %s: %s", card, avg_points_for_card)
+            if avg_points_for_card > best_avg_points:
+                best_avg_points = max(best_avg_points, avg_points_for_card)
+                best_card = card
+        logging.info("Agent calculated card: %s", best_card)
+        return best_card
 
-
-        # return AiPlayer.player_to_play(self, allowed_cards)
 
     def set_game_state_from_json(self, state_as_json):
 

@@ -271,7 +271,7 @@ def player_bet_process(player, game_id, bet):
             elif game.phase == BeloteGame.GamePhase.BET or game.phase == BeloteGame.GamePhase.BET2:
                 common_routes.emit_to_players(
                     "player to bet",
-                    {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.allowed_bets(nplayer)},
+                    {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(nplayer)},
                     room=game_id, namespace=NAMESPACE, game_state=game.get_state(BeloteState(game_id)))
 
             elif game.phase == BeloteGame.GamePhase.PLAY:

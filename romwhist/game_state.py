@@ -2,21 +2,12 @@ import json
 import numpy as np
 
 
-def my_converter(obj):
-    print ("Object: %s - Type: %s", str(obj), type(obj))
-    if isinstance(obj, np.integer):
-        return int(obj)
-    elif isinstance(obj, np.floating):
-        return float(obj)
-    elif isinstance(obj, np.ndarray):
-        return obj.tolist()
-
 class GameState:
 
     def __init__(self, game_id, sim_player=None, players=[], trump="", cards_played_per_player=None,
                  cards_played_per_round=dict(), deck_size=0,
                  hand_cards=dict(), allowed_cards=[], active_player="", scores=dict(),
-                 owner="", dealer="", bets=dict(), allowed_bets=[], trump_card=""):
+                 owner="", dealer="", bets=dict(), allowed_bets=[], trump_card="", hand_points=dict()):
         self.game_id = game_id
         self.players = players
         self.trump = trump
@@ -33,6 +24,7 @@ class GameState:
         self.sim_player = sim_player
         self.bets = bets
         self.trump_card = trump_card
+        self.hand_points = hand_points
 
         # Can be calculated
         # self.cards_played = []
