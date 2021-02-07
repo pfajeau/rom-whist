@@ -1,6 +1,7 @@
 import copy
 import logging
 
+from romwhist.deck import Deck
 from romwhist.belote.belote_state import BeloteState
 from romwhist.belote.belote import BeloteGame
 
@@ -43,6 +44,13 @@ class BeloteSim(BeloteGame):
         logging.info("Game phase is %s", self.phase)
         if self.phase == BeloteGame.GamePhase.BET or self.phase == BeloteGame.GamePhase.BET2:
             self.place_bet(self.sim_player, self.bets[self.sim_player])
+
+            # Must re-create deck and remove cards that have been distributed
+            # prior to distributing the remaining cards for the simulation
+            self.deck = Deck(self.deck_size)
+            for player in self.players:
+                for card in self.hands.get(player).cards:
+                    self.deck.remove_card(card)
             self.deal_2()
 
         winner = None

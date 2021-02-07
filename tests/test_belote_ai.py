@@ -10,7 +10,7 @@ from romwhist.belote.belote import BeloteGame
 def main():
     logging.basicConfig(filename='test_belote_ai.log',
                         format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
-                        level=logging.DEBUG)
+                        level=logging.INFO)
 
     # Test betting
     belote_ai = BeloteAiPlayer('AI1', '1')

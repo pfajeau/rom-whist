@@ -9,7 +9,7 @@ from tests import test_common
 def main():
     logging.basicConfig(filename="test_ohell_ai.log",
                         format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
-                        level=logging.INFO)
+                        level=logging.DEBUG)
 
     ohell_ai = OhellAiPlayer('AI1', '1')
     ohell_ai.game_started(32, ["joe", "jack", "AI1", "jim"])

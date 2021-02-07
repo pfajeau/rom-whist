@@ -61,7 +61,7 @@ class OhellSim(OhellGame):
         for i in range(len(self.get_playing_players())):
             winner = self.play_single_move()
 
-        logging.debug("Round completed. Winner is %s, winner")
+        logging.debug("Round completed. Winner is %s", winner)
         return winner
 
     def run(self) -> bool:

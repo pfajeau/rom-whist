@@ -88,7 +88,7 @@ def random_action(state):
     :param State state:
     :returns Card: action to take
     """
-    logging.info("In random_action, legal actions are: %s", state.get_legal_actions())
+    logging.debug("In random_action, legal actions are: %s", state.get_legal_actions())
     return np.random.choice(state.get_legal_actions())
 
 class SmartSearchAgent(IAgent):
@@ -155,14 +155,14 @@ class SimpleMCTSAgent(IAgent):
         self.action_points = dict()
 
     def get_action(self, state):
-        action = self.rollout(state, self.num_simulations)
+        action = self.rollout_action(state, self.num_simulations)
         return action
 
     def get_bet(self, state):
-        action = self.rollout2(state, self.num_simulations)
+        action = self.rollout_bet(state, self.num_simulations)
         return action
 
-    def rollout(self, state, num_simulations):
+    def rollout_action(self, state, num_simulations):
         """
         Performs `num_simulations` rollouts - i.e. stochastically simulate `num_simlations` games.
 
@@ -171,23 +171,13 @@ class SimpleMCTSAgent(IAgent):
             while the opoonent's are chosen randomly.
         :returns Card: Best action
         """
-
         legal_actions = state.get_legal_actions()
-        logging.info("Legal actions: %s", legal_actions)
-        self.reset_data()
 
         # If only one choice, return it right away
         if len(legal_actions) == 1:
             return legal_actions[0]
 
-        for action in legal_actions:
-            self.action_value[action] = 0
-            self.action_points[action] = 0
-            self.num_simulations_per_action[action] = 0
-
-        rollout_actions = np.random.choice(legal_actions,  # Pre-select initial actions
-                                           size=num_simulations, replace=True)
-        best_action = np.random.choice(legal_actions)
+        rollout_actions = self.generate_rollout_data(legal_actions, num_simulations)
 
         # Simulate games on separate threads
         games = []
@@ -197,53 +187,51 @@ class SimpleMCTSAgent(IAgent):
             games.append(sim_game_class(SimpleAgent(self.action_chooser_function),
                                          SimpleAgent(random_action), self.ai_player,
                                          state, action))
-        # games = [SimulatedGame(SimpleAgent(self.action_chooser_function),
-        #                        SimpleAgent(random_action), False,
-        #                        state, action) for action in rollout_actions]
-        futures = [self.executor.submit(game.run) for game in games]
-        futures_queue = Queue(num_simulations)
-        for future in futures:
-            futures_queue.put(future)
 
-        # Poll threads for termination. Each future's return value is a boolean.
-        while not futures_queue.empty():
-            future = futures_queue.get()
-            futures_queue.task_done()
-            if future.running():
-                futures_queue.put(future)
-            else:
-                assert future.result()
-
-        # Collect results
+        self.run_simulation(games, num_simulations)
         for game in games:
             if game.sim_player_won():
                 self.action_value[game.starting_action] += 1
             self.action_points[game.starting_action] += game.hand_points[self.ai_player]
             self.num_simulations_total += 1
 
-        logging.info("action_value: %s", self.action_value)
-
-        # Choose best action
-        for action in legal_actions:
-            logging.info("action: %s, action has value %s", action, self.action_value[action])
-            logging.info("action: %s, action has points %s", action, self.action_points[action])
-            best_action = action if self.action_value[action] > self.action_value[best_action] \
-                else best_action
-
+        best_action = self.compute_best_action(legal_actions)
         return best_action
 
-
-    def rollout2(self, state, num_simulations):
+    def rollout_bet(self, state, num_simulations):
         """
         Performs `num_simulations` rollouts - i.e. stochastically simulate `num_simlations` games.
 
         :param State state: Current state of the game
         :param int num_simulations: How many games to simulate. Our agent's choices are made according to `action_chooser_function`
             while the opoonent's are chosen randomly.
-        :returns Card: Best action
+        :returns Best bet
         """
+        legal_bets = state.get_legal_bets()
+        rollout_bets = self.generate_rollout_data(legal_bets, num_simulations)
 
-        legal_actions = state.get_legal_bets()
+        # Simulate games on separate threads
+        games = []
+        for bet in rollout_bets:
+            self.num_simulations_per_action[bet] += 1
+            state.bets[self.ai_player] = bet
+            state.active_player = state.next_player(state.dealer)
+            sim_game_class = globals()[self.sim_game_class_name]
+            games.append(sim_game_class(SimpleAgent(self.action_chooser_function),
+                                        SimpleAgent(random_action), self.ai_player,
+                                        state, None))
+
+        self.run_simulation(games, num_simulations)
+        for game in games:
+            if game.sim_player_won():
+                self.action_value[game.bets[self.ai_player]] += 1
+            self.action_points[game.bets[self.ai_player]] += game.scores[self.ai_player]
+            self.num_simulations_total += 1
+
+        best_bet = self.compute_best_action(legal_bets)
+        return best_bet
+
+    def generate_rollout_data(self, legal_actions, num_simulations):
         logging.info("Legal actions: %s", legal_actions)
         self.reset_data()
 
@@ -254,19 +242,10 @@ class SimpleMCTSAgent(IAgent):
 
         rollout_actions = np.random.choice(legal_actions,  # Pre-select initial actions
                                            size=num_simulations, replace=True)
-        best_action = np.random.choice(legal_actions)
 
-        # Simulate games on separate threads
-        games = []
-        for action in rollout_actions:
-            self.num_simulations_per_action[action] += 1
-            state.bets[self.ai_player] = action
-            state.active_player = state.next_player(state.dealer)
-            sim_game_class = globals()[self.sim_game_class_name]
-            games.append(sim_game_class(SimpleAgent(self.action_chooser_function),
-                                         SimpleAgent(random_action), self.ai_player,
-                                         state, None))
+        return rollout_actions
 
+    def run_simulation(self, games, num_simulations):
         futures = [self.executor.submit(game.run) for game in games]
         futures_queue = Queue(num_simulations)
         for future in futures:
@@ -281,23 +260,18 @@ class SimpleMCTSAgent(IAgent):
             else:
                 assert future.result()
 
-        logging.info("action value before popualating: %s", self.action_value)
-        # Collect results
-        for game in games:
-            if game.sim_player_won():
-                self.action_value[game.bets[self.ai_player]] += 1
-            self.action_points[game.bets[self.ai_player]] += game.hand_points[self.ai_player]
 
-            self.num_simulations_total += 1
-
+    def compute_best_action(self, legal_actions):
         logging.info("action_value: %s", self.action_value)
         logging.info("action_points: %s", self.action_points)
 
         # Choose best action
+        best_action = np.random.choice(legal_actions)
         for action in legal_actions:
-            logging.info("bet: %s, bet has value %s", action, self.action_value[action])
+            logging.info("action: %s, action has value %s", action, self.action_value[action])
             logging.info("action: %s, action has points %s", action, self.action_points[action])
             best_action = action if self.action_value[action] > self.action_value[best_action] \
                 else best_action
 
         return best_action
+

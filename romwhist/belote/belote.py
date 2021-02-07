@@ -577,7 +577,7 @@ class BeloteGame(CardGame):
         for player in player_cards:
             card = str(player_cards[player])
             points = points + self.card_points[card]
-        logging.info("Points in round:" + str(points))
+        logging.debug("Points in round:" + str(points))
         self.hand_points[winner] += points
         return
 
