@@ -2,6 +2,8 @@ import copy
 import logging
 
 from romwhist.deck import Deck
+from romwhist.hand import Hand
+from romwhist.card import Card
 from romwhist.belote.belote_state import BeloteState
 from romwhist.belote.belote import BeloteGame
 
@@ -42,18 +44,47 @@ class BeloteSim(BeloteGame):
 
     def game_loop(self) -> None:
         logging.info("Game phase is %s", self.phase)
+        current_state = self.get_state(BeloteState(self.id, self.sim_player))
+        self.deck = Deck(self.deck_size)
+        self.deck.shuffle()
+
+        for card in self.hands.get(self.sim_player).cards:
+            self.deck.remove_card(card)
+
         if self.phase == BeloteGame.GamePhase.BET or self.phase == BeloteGame.GamePhase.BET2:
             self.place_bet(self.sim_player, self.bets[self.sim_player])
 
             # Must re-create deck and remove cards that have been distributed
-            # prior to distributing the remaining cards for the simulation
-            self.deck = Deck(self.deck_size)
+            # to the sim player. Other hands are re-generated randomly
+            self.deck.remove_card(self.trump_card)
             for player in self.players:
-                for card in self.hands.get(player).cards:
-                    self.deck.remove_card(card)
+                if player != self.sim_player:
+                    self.hands[player] = Hand(self.deck, BeloteGame.nb_cards_first_deal[len(self.players)])
+
             self.deal_2()
+        else:
+            # Remove from deck all cards that have been played
+            cards_played_per_player = current_state.cards_played_per_player
+            for player in self.players:
+                if player != self.sim_player:
+                    cards_played = cards_played_per_player.get(player)
+                    if cards_played is None:
+                        num_cards_played = 0
+                    else:
+                        num_cards_played = len(cards_played)
+                        for card in cards_played:
+                            self.deck.remove_card(Card.card_from_value(card))
+
+                    self.hands[player] = Hand(self.deck,
+                                          BeloteGame.nb_cards_first_deal[len(self.players)] +
+                                          BeloteGame.nb_cards_second_deal[len(self.players)] -
+                                          num_cards_played)
+                logging.debug("In sim, Hand for player %s: %s", player, self.hands[player].serialize())
 
         winner = None
+        if self.current_round is None:
+            self.create_round()
+
         while winner is None:
             winner = self.play_single_move()
 

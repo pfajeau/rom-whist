@@ -166,7 +166,7 @@ class BeloteGame(CardGame):
         # Return True if one of the player or team has reached
         # the number of points required to win
         for player in self.players:
-            if self.scores[player] > self.win_game_points and self.phase != BeloteGame.GamePhase.PLAY:
+            if self.scores[player] > self.win_game_points:
                 return True
         return False
 
@@ -277,6 +277,7 @@ class BeloteGame(CardGame):
         # any card is allowed
         allowed_cards = []
         if self.current_round is None:
+            logging.error("Current round is None")
             return allowed_cards
         if self.current_round.get_first_card_played() is None:
             # Round is just starting, all cards are allowed
@@ -288,6 +289,8 @@ class BeloteGame(CardGame):
             trump_asked = (asked_suit == self.trump_suit)
             lower_trumps = []
             higher_trump = False
+            logging.debug("Player %s hand is: %s ", player, self.hands[player].serialize())
+            logging.debug("Asked suit is %s", asked_suit)
             for card in self.hands[player].get_cards():
                 if card.get_suit_name() == asked_suit:
                     if trump_asked:
@@ -482,6 +485,7 @@ class BeloteGame(CardGame):
         self.init_dict(self.wins, 0)
         self.init_dict(self.hand_points, 0)
         self.trump_suit = None
+        self.rounds = []
 
         # Reset belote/rebelote states
         self.belote_state = BeloteGame.BeloteState.Not_Allowed

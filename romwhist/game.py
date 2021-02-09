@@ -73,7 +73,6 @@ class CardGame:
         state.deck_size = self.deck_size
         state.scores = self.scores
         state.owner = self.owner
-        state.hand_cards = dict()
         for player in self.get_playing_players():
             state.hand_cards[player] = self.hands[player].serialize()
         state.active_player = self.active_player
@@ -132,6 +131,7 @@ class CardGame:
                 card_str = state_copy.cards_played_per_round[round_nb].get(player)
                 round.card_played(player,
                               Card.card_from_value(card_str))
+            self.rounds.append(round)
             self.current_round = round
         if self.current_round is None:
             self.current_round = self.create_round()
@@ -285,7 +285,11 @@ class CardGame:
                 for player in cards_round:
                     if cards.get(player) is None:
                         cards[player] = []
-                    cards[player].extend(str(cards_round[player]))
+                    if not cards_round.get(player) is None:
+                        cards[player].append(str(cards_round[player]))
+
+            for player in self.players:
+                logging.debug("Cards played by %s: %s", player,  cards[player])
         return cards
 
     def hand_completed(self) -> None:

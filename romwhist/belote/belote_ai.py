@@ -29,6 +29,9 @@ class BeloteAiPlayer(AiPlayer):
         if len(self.game_state.allowed_cards) == 1:
             return self.game_state.allowed_cards[0]
 
+        if len(self.game_state.allowed_cards) == 0:
+            raise RuntimeError("Allowed cards is empty!")
+
         best_card = self.__agent.get_action(self.game_state)
 
         # Select the card which result in the most points

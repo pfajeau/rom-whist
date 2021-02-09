@@ -379,14 +379,15 @@ def player_played_process(game_id, player, card):
         logging.error("Game id not specified")
         return
 
+    game = games.get(game_id)
+    belote_before = game.belote_state
+    winner = game.play_card(player, card)
+
     common_routes.emit_to_players(
         "card played",
         {'game_id': game_id, 'player': player, 'card': card},
         room=game_id, namespace=NAMESPACE)
 
-    game = games.get(game_id)
-    belote_before = game.belote_state
-    winner = game.play_card(player, card)
     belote_after = game.belote_state
 
     if (belote_before != belote_after):
@@ -402,13 +403,13 @@ def player_played_process(game_id, player, card):
              {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
              room=game_id, namespace=NAMESPACE, game_state=game.get_state(BeloteState(game_id)))
     else:
-        # There is a winnder, so round is ended
+        # There is a winner, so round is ended
         # game.round_ended(winner)
         allowed_cards = game.get_hand(nplayer).serialize()
-        winnning_card = game.get_current_round().cards_played[winner]
+        winning_card = game.get_current_round().cards_played[winner]
         common_routes.emit_to_players(
             "round ended",
-            {"game_id": game_id, "winner": winner, "card": winnning_card.desc(), "last_player": player, "points":game.hand_points},
+            {"game_id": game_id, "winner": winner, "card": winning_card.desc(), "last_player": player, "points":game.hand_points},
             room=game_id, namespace=NAMESPACE)
 
         timer = threading.Timer(6.0, next_round, [game_id, nplayer, allowed_cards])
