@@ -237,6 +237,11 @@ footer a:hover {
 	font-size: large;
 }
 
+#game_list {
+  border-spacing: 50px;
+  border-collapse: separate;
+}
+
 #msg_div {
   font-weight: bold;
   font-size: medium;

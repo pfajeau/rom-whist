@@ -67,11 +67,6 @@ Add footer / contact info
       {% endfor %}
     {% endif %}
 
-    // TODO: allow start button when numbe of players is between 2 and 4
-    // if (len(players != 4) {
-    //   $("#start_game").prop('disabled', true);
-    // }
-
     if ("{{ game_phase }}" == "BET" || "{{ game_phase }}" == "BET2") {
       make_player_the_better("{{ active_player }}");
       make_player_active("{{ active_player }}");
@@ -97,6 +92,10 @@ Add footer / contact info
     });
 
     enable_start_game();
+    // Allow start button when numbe of players is between 2 and 4
+    if (the_players.length < 2 || the_players.length > 4) {
+      $("#start_game").prop('disabled', true);
+    }
 
     function add_belote_button(enabled, text) {
       $("#belote_button_div").append('<button id="belote" type="button" class="btn-primary" name="belote">' + text + '</button>');
