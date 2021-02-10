@@ -4,8 +4,6 @@ This module implements flask-cli commands.
 @author: Philippe Fajeau
 """
 
-
-import click
 from flask.cli import AppGroup
 
 romwhist_cli = AppGroup("romwhist")

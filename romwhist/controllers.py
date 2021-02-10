@@ -4,8 +4,7 @@ This module implements webapp controllers.
 @author: Philippe Fajeau
 """
 
-from flask import request, render_template, jsonify, flash
-from .models import *
+from flask import flash
 
 
 def flash_errors(form):

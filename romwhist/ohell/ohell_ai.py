@@ -1,8 +1,8 @@
-import logging
 import json
+import logging
 
+from romwhist.ai.ai_agents import SimpleMCTSAgent
 from romwhist.ai.ai_player import AiPlayer
-from romwhist.ai.ai_agents import SimpleAgent, SimpleMCTSAgent, random_action
 from romwhist.ohell.ohell_state import OhellState
 
 

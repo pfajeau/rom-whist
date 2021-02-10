@@ -1,4 +1,3 @@
-from romwhist.card import Card
 class Hand(object):
 
     def __init__(self, deck, nb_cards=0, label=""):

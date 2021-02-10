@@ -6,15 +6,13 @@ author: Philippe Fajeau
 """
 import logging
 import threading
-import traceback
-import unidecode
+from random import randint
+
 from flask import render_template, request, flash, session, url_for, redirect
 # from flask import Blueprint
 from flask_login import current_user, login_user
 from flask_socketio import emit
 from flask_socketio import join_room, leave_room
-from random import randint
-
 from romwhist import common_routes
 from romwhist import socketio, app
 from romwhist.extensions import db
@@ -65,14 +63,14 @@ def ohell_start():
         if form.join_game.data:
             game_id = request.form['game_id']
             session['game_id'] = game_id
-            return common_routes.join_game(games, game_id, username, \
-                                           'ohell_start.html', 'ohell_play', \
+            return common_routes.join_game(games, game_id, username,
+                                           'ohell_start.html', 'ohell_play',
                                            NAMESPACE, form)
 
         elif form.start_game.data:
             logging.info("start game")
             game_id = common_routes.generate_game_id(999, games)
-            if (game_id is None):
+            if game_id is None:
                 return render_template('ohell_start.html', error="No more games available!!! Please try again later",
                                        form=form)
 
@@ -118,7 +116,7 @@ def ohell_play():
         flash("Game does not exist")
         return redirect(url_for('ohell_start'))
 
-    game = games.get(game_id);
+    game = games.get(game_id)
     if game is None:
         flash("Game does not exist")
         return redirect(url_for('ohell_start'))
@@ -157,7 +155,7 @@ def ohell_play():
             return redirect(url_for('ohell_play'))
 
         if request.form['action_game'] == "add_ai":
-            common_routes.add_ai_player("ai_" + game_id + "_" + str(len(game.players)), \
+            common_routes.add_ai_player("ai_" + game_id + "_" + str(len(game.players)),
                                         game_id, NAMESPACE_AI)
             return redirect(url_for('ohell_play'))
     else:
@@ -181,11 +179,11 @@ def ohell_play():
         #     logging.debug(i, " ", game.scoresheet[i][1])
         #     logging.debug(i, " ", game.scoresheet[i][2])
 
-        return render_template("ohell.html", form=form, players=game.get_playing_players(), scores=game.get_scores(), \
-                               hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player, \
-                               cards_played=cards_played, allowed_cards=game.get_allowed_cards(player), \
-                               trump=game.trump_card, dealing_method=game.dealing_method, \
-                               allowed_bets=game.get_allowed_bets(player), game_phase=game.phase.name, \
+        return render_template("ohell.html", form=form, players=game.get_playing_players(), scores=game.get_scores(),
+                               hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player,
+                               cards_played=cards_played, allowed_cards=game.get_allowed_cards(player),
+                               trump=game.trump_card, dealing_method=game.dealing_method,
+                               allowed_bets=game.get_allowed_bets(player), game_phase=game.phase.name,
                                hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet)
 
 
@@ -215,7 +213,7 @@ def login():
 
 @socketio.on('message', namespace=NAMESPACE)
 def message(data):
-    logging.info("message received");
+    logging.info("message received")
 
 
 @socketio.on("cs game started", namespace=NAMESPACE)

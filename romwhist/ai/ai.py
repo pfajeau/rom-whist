@@ -1,12 +1,11 @@
 import configparser
 import getopt
 import logging
-import socketio
 import sys
 import threading
-from flask_socketio import emit
 
-from romwhist.ai.ai_player import AiPlayer
+import socketio
+from flask_socketio import emit
 from romwhist.belote.belote_ai import BeloteAiPlayer
 from romwhist.ohell.ohell_ai import OhellAiPlayer
 
@@ -20,8 +19,8 @@ config.read('instance/config_ai.ini')
 log_levels = {"DEBUG": logging.DEBUG, "INFO": logging.INFO, "WARNING": logging.WARNING, "ERROR": logging.ERROR}
 logging_config = config['logging']
 log_level = logging_config["LOG_LEVEL"]
-logging.basicConfig(filename=logging_config["LOG_FILE"], \
-                    format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s", \
+logging.basicConfig(filename=logging_config["LOG_FILE"],
+                    format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
                     level=log_levels[log_level])
 
 network_config = config['network']

@@ -1,5 +1,3 @@
-import logging
-
 from romwhist.game_state import GameState
 
 class OhellState(GameState):

@@ -1,5 +1,5 @@
-from abc import ABC, abstractmethod
 import logging
+from abc import abstractmethod
 
 from romwhist.game import CardGame
 from romwhist.game_state import GameState

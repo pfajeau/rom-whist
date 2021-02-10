@@ -1,6 +1,5 @@
 import logging
 
-from romwhist.game_state import GameState
 from romwhist.card import Card
 from romwhist.deck import Deck
 

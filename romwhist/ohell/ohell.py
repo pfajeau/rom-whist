@@ -1,10 +1,8 @@
 import logging
 
-from romwhist.game import CardGame
 from romwhist.deck import Deck
-from romwhist.card import Card
+from romwhist.game import CardGame
 from romwhist.hand import Hand
-from romwhist.round import Round
 from romwhist.ohell.ohell_state import OhellState
 
 

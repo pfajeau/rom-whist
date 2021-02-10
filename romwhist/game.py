@@ -1,8 +1,6 @@
 import copy
 import logging
 from enum import Enum
-from random import choice
-from random import randrange
 
 from romwhist.card import Card
 from romwhist.deck import Deck

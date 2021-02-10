@@ -1,18 +1,14 @@
-from abc import ABC, abstractmethod
-from collections import defaultdict
 import configparser
 import logging
-import numpy as np
+from abc import ABC, abstractmethod
 from concurrent.futures.thread import ThreadPoolExecutor
 from queue import Queue
-from typing import Dict, List, Set
 
-
+import numpy as np
 from romwhist.card import Card
 from romwhist.game_state import GameState
-from romwhist.ohell.ohell_sim import OhellSim
 from romwhist.belote.belote_sim import BeloteSim
-
+from romwhist.ohell.ohell_sim import OhellSim
 
 def lookup(name, namespace):
     """

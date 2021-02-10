@@ -1,9 +1,10 @@
-import logging
 import json
+import logging
 
+from romwhist.ai.ai_agents import SimpleMCTSAgent
 from romwhist.ai.ai_player import AiPlayer
-from romwhist.ai.ai_agents import SimpleAgent, SimpleMCTSAgent, random_action
 from romwhist.belote.belote_state import BeloteState
+
 
 # TODO: factorize with OhellAIPlayer
 class BeloteAiPlayer(AiPlayer):

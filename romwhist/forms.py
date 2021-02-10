@@ -8,8 +8,8 @@ author: Philippe Fajeau
 
 # Optionally import flask-wtf and wtforms
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField, SelectField
-from wtforms.validators import Length, InputRequired, ValidationError, Regexp, NumberRange
+from wtforms import StringField, SubmitField, BooleanField, IntegerField
+from wtforms.validators import Length, InputRequired, Regexp, NumberRange
 
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[InputRequired(), Length(max=32)])
@@ -31,7 +31,7 @@ class GameForm(FlaskForm):
     #leave_game = SubmitField('Leave game')
     #stop_game = SubmitField('Stop game')
     #user_name = HiddenField("user_name")
-    i=1; # dummy, need a form for hidden field
+    i=1  # dummy, need a form for hidden field
 
 class StartForm(FlaskForm):
     game_id = StringField("Game id: ", validators=[Length(max=6)])
@@ -45,4 +45,3 @@ class OhellForm(StartForm):
     multiple_no_trump = BooleanField("Multiple no trump deals: ", default=True)
     increment = IntegerField("Increment between deals: ", default=1, validators=[InputRequired(), NumberRange(min=1, max=5, message="Enter an increment between 1 and 5")])
 
-from .models import *

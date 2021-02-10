@@ -4,26 +4,24 @@ This module implements routes.
 author: Philippe Fajeau
 
 """
+import logging
 import threading
 import traceback
 from random import randint
+
 from flask import render_template, request, flash, session, url_for, redirect
 # from flask import Blueprint
 from flask_login import current_user, login_user
 from flask_socketio import emit
 from flask_socketio import join_room, leave_room
-import logging
-import unidecode
-
 from romwhist import common_routes
 from romwhist import socketio
 from romwhist.belote.belote import BeloteGame
+from romwhist.belote.belote_form import BeloteStartForm
 from romwhist.belote.belote_state import BeloteState
 from romwhist.extensions import db
 from romwhist.forms import LoginForm, GameForm
-from romwhist.belote.belote_form import BeloteStartForm
 from romwhist.models import User
-from romwhist import common_routes
 
 NAMESPACE = '/belote'
 NAMESPACE_AI = '/belote_ai'
@@ -52,14 +50,14 @@ def belote_start():
         if form.join_game.data:
             game_id = request.form['game_id']
             session['game_id'] = game_id
-            return common_routes.join_game(games, game_id, username, \
-                                           'belote_start.html', 'belote_play', \
+            return common_routes.join_game(games, game_id, username,
+                                           'belote_start.html', 'belote_play',
                                            NAMESPACE, form)
 
         elif form.start_game.data:
             logging.info("start game")
             game_id = common_routes.generate_game_id(999,games)
-            if (game_id is None):
+            if game_id is None:
                 return render_template('ohell_start.html', error="No more games available!!! Please try again later", form=form)
 
             points_to_reach = int(form.points_to_reach.data)
@@ -99,7 +97,7 @@ def belote_play():
         flash("Game does not exist")
         return redirect(url_for('belote_start'))
 
-    game = games.get(game_id);
+    game = games.get(game_id)
     if game is None:
         logging.error("Unknow game: %s", game_id)
         flash("Game does not exist")
@@ -137,7 +135,7 @@ def belote_play():
             return redirect(url_for('belote_play'))
 
         if request.form['action_game'] == "add_ai":
-            common_routes.add_ai_player("ai_" + game_id + "_" + str(len(game.players)), \
+            common_routes.add_ai_player("ai_" + game_id + "_" + str(len(game.players)),
                                         game_id, NAMESPACE_AI)
             return redirect(url_for('belote_play'))
 
@@ -170,12 +168,12 @@ def belote_play():
 
         # TODO: could pass the game state instead of all the parameters
         # individually
-        return render_template("belote.html", form=form, players=game.get_playing_players(), scores=game.get_scores(), \
-                               hand=hand, wins=game.hand_points, bets=game.get_bets(), active_player=active_player, \
-                               cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player), \
+        return render_template("belote.html", form=form, players=game.get_playing_players(), scores=game.get_scores(),
+                               hand=hand, wins=game.hand_points, bets=game.get_bets(), active_player=active_player,
+                               cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player),
                                trump=game.trump_card, trump_suit=game.trump_suit,
-                               allowed_bets=game.get_allowed_bets(player), \
-                               game_phase=game.phase.name, scoresheet=game.scoresheet, \
+                               allowed_bets=game.get_allowed_bets(player),
+                               game_phase=game.phase.name, scoresheet=game.scoresheet,
                                belote_allowed=belote_enabled, player_with_belote=game.player_with_belote)
 
 
@@ -205,7 +203,7 @@ def login():
 
 @socketio.on('message', namespace=NAMESPACE)
 def message(data):
-    logging.debug("message received");
+    logging.debug("message received")
 
 
 @socketio.on("cs game started", namespace=NAMESPACE)
@@ -301,7 +299,7 @@ def player_bet_process(player, game_id, bet):
                     room=game_id, namespace=NAMESPACE, game_state=game.get_state(BeloteState(game_id)))
 
                 player_belote = game.player_with_belote
-                if (not player_belote is None):
+                if not player_belote is None:
                     logging.debug("Player with Belote / Rebelote: " + player_belote)
                     common_routes.emit_to_players(
                         "belote rebelote enabled",
@@ -326,7 +324,7 @@ def hand_completed(game_id, username):
     scores = game.get_scores()
     logging.info("hand completed, next player to deal:" + game.next_player_to_deal())
     socketio.emit("hand completed", {'scores': scores, 'wins': game.hand_points,
-                                     'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal(),\
+                                     'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal(),
                                      'winners': game.hand_winner},
                 room=game_id, namespace=NAMESPACE)
 
@@ -390,7 +388,7 @@ def player_played_process(game_id, player, card):
 
     belote_after = game.belote_state
 
-    if (belote_before != belote_after):
+    if belote_before != belote_after:
         belote_state_changed(game_id, player)
 
     nplayer = game.get_active_player()

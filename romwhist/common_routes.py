@@ -4,30 +4,25 @@ This module implements common code betwenn routes.
 author: Philippe Fajeau
 
 """
-from random import randint
-import json
-import unidecode
-import threading
-import traceback
-from flask import render_template, request, flash, session, url_for, redirect
-#from flask import Blueprint
-from flask_login import current_user, login_user, logout_user, AnonymousUserMixin
-from flask_socketio import join_room, leave_room
-from flask_socketio import SocketIO, emit
 import logging
+from random import randint
 
-from romwhist import controllers,deck,card,hand
-from romwhist import socketio,app
+import unidecode
+from flask import render_template, session, url_for, redirect
+# from flask import Blueprint
+from flask_login import current_user, login_user
+from romwhist import socketio
+from romwhist.belote import belote_routes
+from romwhist.extensions import db
 from romwhist.forms import LoginForm
 from romwhist.models import User
-from romwhist.extensions import db
 from romwhist.ohell import ohell_routes
-from romwhist.belote import belote_routes
+
 
 # TODO: separate from this file to remove circular dependency between
 #  game specific routes modules and this module
 def admin():
-    return render_template('admin.html', nb_belote_games = len(belote_routes.games), \
+    return render_template('admin.html', nb_belote_games = len(belote_routes.games),
                            nb_whist_games =len(ohell_routes.games))
 
 def home():
@@ -163,13 +158,4 @@ def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_s
         socketio.emit(event, data2, namespace=namespace+"_ai")
 
 
-def emit_game_state(game_id, player, game_state, namespace):
-    # Serialize game_state
-    state_dict = game_state.__dict__()
-    logging.debug("Game state as dict: %s", state_dict)
-    state_json = jason.dumps(state_dict)
-    logging.debug("Game state as JSON: %s", state_json)
-    socketio.emit('game_state',
-                  {'game_id': game_id, 'player': player, 'state': state_json},
-                  namespace=namespace)
 

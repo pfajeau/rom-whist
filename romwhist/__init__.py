@@ -50,8 +50,8 @@ def create_app():
     handler.setLevel(app.config["LOG_LEVEL"])
     handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s [%(pathname)s at %(lineno)s]: %(message)s", "%Y-%m-%d %H:%M:%S"))
     app.logger.addHandler(handler)
-    logging.basicConfig(filename=app.config["LOG_FILE"], \
-                        format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",\
+    logging.basicConfig(filename=app.config["LOG_FILE"],
+                        format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
                         level=app.config["LOG_LEVEL"])
 
     # init extensions

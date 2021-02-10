@@ -1,10 +1,8 @@
-from romwhist.card import Card
 # from .deck import Deck
 # from random import choice
 # from random import randrange
-from romwhist.hand import Hand
 
-class Round():
+class Round:
 
     def __init__(self, players, trump_suit):
         self.trump_suit = trump_suit
@@ -32,7 +30,7 @@ class Round():
         return len (self.players) - len(self.cards_played)
 
     def get_first_card_played(self):
-        return self.first_card_played;
+        return self.first_card_played
 
     # REturn a list of cards as strings
     def get_cards_played(self):

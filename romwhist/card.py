@@ -1,5 +1,3 @@
-from enum import Enum
-
 class Card(object):
 
     # class SuitName(Enum):
@@ -32,7 +30,7 @@ class Card(object):
 
     @classmethod
     def card_from_value (cls, card_value):
-        if (card_value == 'None'):
+        if card_value == 'None':
             return None
         else:
             return cls(int(card_value[1:len(card_value)]), card_value[0])

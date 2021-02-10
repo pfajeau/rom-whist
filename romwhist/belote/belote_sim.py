@@ -1,11 +1,12 @@
 import copy
 import logging
 
+from romwhist.belote.belote import BeloteGame
+from romwhist.belote.belote_state import BeloteState
+from romwhist.card import Card
 from romwhist.deck import Deck
 from romwhist.hand import Hand
-from romwhist.card import Card
-from romwhist.belote.belote_state import BeloteState
-from romwhist.belote.belote import BeloteGame
+
 
 class BeloteSim(BeloteGame):
 
