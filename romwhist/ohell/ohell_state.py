@@ -2,7 +2,7 @@ from romwhist.game_state import GameState
 
 class OhellState(GameState):
     def __init__(self, game_id, sim_player=None, players=[], trump="", cards_played_per_player=dict(),
-                 cards_played_per_round=dict(), deck_size=0,
+                 cards_played_per_round=dict(), deck_size=0, phase=None,
                  hand_cards=dict(), allowed_cards=[], active_player="", scores=dict(),
                  owner="", dealer = "", trump_card = "", hand_points=dict(),
                  bets=dict(), nb_rounds_won=dict(), allowed_bets=[]):
@@ -13,5 +13,6 @@ class OhellState(GameState):
                  owner=owner, dealer=dealer,
                  bets=bets, allowed_bets=allowed_bets, trump_card=trump_card, hand_points=hand_points)
         self.nb_rounds_won = nb_rounds_won
+        self.phase = phase
 
 

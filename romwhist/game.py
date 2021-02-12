@@ -13,7 +13,7 @@ class CardGame:
     MANUAL_DEALING = "manual"
     AUTOMATED_DEALING = "automated"
 
-    class GamePhase(Enum):
+    class GamePhase(str, Enum):
         DEAL = "Deal"
         BET = "Bet"
         PLAY = "Play"
@@ -91,8 +91,9 @@ class CardGame:
 
         if self.current_round is None:
             self.create_round()
-
         state.allowed_cards = self.get_allowed_cards(state.active_player)
+        logging.debug("state.allowed_cards: %s", state.allowed_cards)
+
         state.bets = self.bets
         state.trump_card = str(self.trump_card)
         return copy.deepcopy(state)

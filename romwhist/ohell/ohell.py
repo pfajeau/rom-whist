@@ -22,27 +22,20 @@ class OhellGame(CardGame):
 
     def get_state(self, state: OhellState):
         state = CardGame.get_state(self, state)
-        # for player in self.get_playing_players():
-        #     if not self.bets.get(player) is None:
-        #         state.bets[player] = str(self.bets.get(player)
+        state.phase = self.phase
         state.nb_rounds_won = self.wins
+        state.phase = self.phase
         state.allowed_bets = self.get_allowed_bets(self.active_player)
-        # state.allowed_bets=[]
-        # for i in range(0, len(allowed_bets)):
-        #     state.allowed_bets.append(str(allowed_bets[i]))
 
+        # Required because AI agent sets a bet of type int64 which
+        # is not serializable
+        for player in self.players:
+            state.bets[player] = int(self.bets.get(player))
         return state
 
     def set_state(self, state):
         CardGame.set_state(self, state)
-        # for player in state.players:
-        #     if not state.bets.get(player) is None:
-        #         self.bets[player] = int(state.bets.get(player))
-
-
-        # for i in range(0, len(state.allowed_bets)):
-        #     self.allowed_bets[i] = int(state.allowed_bets[i])
-
+        self.phase = state.phase
         self.wins = state.nb_rounds_won
         self.soft_init_dict(self.wins, 0)
         self.soft_init_dict(self.bets, -1)
@@ -104,7 +97,6 @@ class OhellGame(CardGame):
         bets_placed = 0
         for player in self.bets:
             bets_placed = bets_placed + max(self.bets[player], 0)
-            logging.debug("sum bet placed: " + str(bets_placed))
         return bets_placed
 
     def forbidden_bet(self, player):
@@ -134,6 +126,7 @@ class OhellGame(CardGame):
         # If no cards are of the same suit, any card is allowed_cards
         allowed_cards = []
         if self.current_round is None:
+            logging.error("Current round is None")
             return allowed_cards
         if self.current_round.get_first_card_played() is None:
             # Round is just starting, all cards are allowed
@@ -169,6 +162,7 @@ class OhellGame(CardGame):
         self.deck.shuffle()
         self.init_dict(self.bets, -1)
         self.init_dict(self.wins, 0)
+        self.rounds = []
 
         if dealer == "":
             self.dealer = self.active_player

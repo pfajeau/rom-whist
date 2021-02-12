@@ -37,7 +37,7 @@ class OhellAiPlayer(AiPlayer):
 
         game_state = OhellState(**json.loads(game_state_json))
         self.game_state = game_state
-
+        logging.debug("In player_to_bet, state is %s", game_state.toJson())
         # Make active player the one that will start playing
         # for the simulated game
         self.game_state.active_player = self.game_state.next_player(self.game_state.dealer)
@@ -106,8 +106,6 @@ class OhellAiPlayer(AiPlayer):
     def compute_bet_agent(self):
         return self.__agent2.get_bet(self.game_state)
 
-
-
     def player_to_play(self, allowed_cards, game_state_json):
         game_state = OhellState(**json.loads(game_state_json))
         self.game_state = game_state
@@ -120,6 +118,9 @@ class OhellAiPlayer(AiPlayer):
 
         # Select the card which result in the most points
         # as there could be cases where no card leads to a win
+        # TODO: criteria should be to optimize the number of points between
+        # the AI player and the other players.
+        # I.e max(score(ai_player) - score (second best score)
         best_avg_points = 0
         for card in allowed_cards:
             points_for_card = self.__agent.action_points[card]

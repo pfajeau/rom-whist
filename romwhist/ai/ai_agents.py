@@ -155,6 +155,8 @@ class SimpleMCTSAgent(IAgent):
         return action
 
     def get_bet(self, state):
+        logging.debug("In get_bet, state is %s:", state.toJson())
+
         action = self.rollout_bet(state, self.num_simulations)
         return action
 
@@ -168,10 +170,6 @@ class SimpleMCTSAgent(IAgent):
         :returns Card: Best action
         """
         legal_actions = state.get_legal_actions()
-
-        # If only one choice, return it right away
-        if len(legal_actions) == 1:
-            return legal_actions[0]
 
         rollout_actions = self.generate_rollout_data(legal_actions, num_simulations)
 
@@ -188,7 +186,7 @@ class SimpleMCTSAgent(IAgent):
         for game in games:
             if game.sim_player_won():
                 self.action_value[game.starting_action] += 1
-            self.action_points[game.starting_action] += game.hand_points[self.ai_player]
+            self.action_points[game.starting_action] += game.scores[self.ai_player]
             self.num_simulations_total += 1
 
         best_action = self.compute_best_action(legal_actions)
@@ -215,7 +213,7 @@ class SimpleMCTSAgent(IAgent):
             sim_game_class = globals()[self.sim_game_class_name]
             games.append(sim_game_class(SimpleAgent(self.action_chooser_function),
                                         SimpleAgent(random_action), self.ai_player,
-                                        state, None))
+                                        state=state, starting_action=None))
 
         self.run_simulation(games, num_simulations)
         for game in games:

@@ -12,19 +12,19 @@ class BeloteSim(BeloteGame):
 
     def __init__(self, agent, other_agent, sim_player,
                  state: BeloteState = None, starting_action=None):
-        super().__init__(state.owner, id=state.game_id)
+        BeloteGame.__init__(self, state.owner, id=state.game_id)
         self.sim_player = sim_player
 
         self.starting_action = starting_action
         self.first_play = True
-        self.agent = agent  # type: IAgent
-        self.other_agent = other_agent  # type: IAgent
+        self.agent = agent
+        self.other_agent = other_agent
         self.games_counter = [0, 0]
-        self.initial_state = copy.deepcopy(state)
 
         if state is not None:
             state_copy = copy.deepcopy(state)
             self.set_state(state_copy)
+            logging.debug("In OhellSim, state is %s:", state_copy.toJson())
 
     def play_single_move(self):
         logging.debug("Playing single move")
@@ -44,19 +44,19 @@ class BeloteSim(BeloteGame):
         return winner
 
     def game_loop(self) -> None:
-        logging.info("Game phase is %s", self.phase)
+        logging.debug("Game phase is %s", self.phase)
         current_state = self.get_state(BeloteState(self.id, self.sim_player))
         self.deck = Deck(self.deck_size)
         self.deck.shuffle()
 
+        # Remove sim players cards from deck
         for card in self.hands.get(self.sim_player).cards:
             self.deck.remove_card(card)
 
         if self.phase == BeloteGame.GamePhase.BET or self.phase == BeloteGame.GamePhase.BET2:
             self.place_bet(self.sim_player, self.bets[self.sim_player])
 
-            # Must re-create deck and remove cards that have been distributed
-            # to the sim player. Other hands are re-generated randomly
+            # Re-create hands from deck fo rother players for the simulation
             self.deck.remove_card(self.trump_card)
             for player in self.players:
                 if player != self.sim_player:
@@ -69,17 +69,11 @@ class BeloteSim(BeloteGame):
             for player in self.players:
                 if player != self.sim_player:
                     cards_played = cards_played_per_player.get(player)
-                    if cards_played is None:
-                        num_cards_played = 0
-                    else:
-                        num_cards_played = len(cards_played)
+                    if cards_played is not None:
                         for card in cards_played:
                             self.deck.remove_card(Card.card_from_value(card))
 
-                    self.hands[player] = Hand(self.deck,
-                                          BeloteGame.nb_cards_first_deal[len(self.players)] +
-                                          BeloteGame.nb_cards_second_deal[len(self.players)] -
-                                          num_cards_played)
+                    self.hands[player] = Hand(self.deck, len(self.hands[player].cards))
                 logging.debug("In sim, Hand for player %s: %s", player, self.hands[player].serialize())
 
         winner = None
@@ -97,10 +91,8 @@ class BeloteSim(BeloteGame):
         logging.debug("Hand completed")
         return
 
-
     def play_round(self, round):
         logging.debug("Playing round")
-        active_player = self.get_active_player()
         winner = ""
         for i in range(len(self.get_playing_players())):
             winner = self.play_single_move()
@@ -111,7 +103,6 @@ class BeloteSim(BeloteGame):
     def run(self) -> bool:
         self.game_loop()
         return True
-
 
     def sim_player_won(self):
         logging.debug("Bet for %s: %s", self.sim_player, self.bets[self.sim_player])
