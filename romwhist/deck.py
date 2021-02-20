@@ -1,4 +1,6 @@
+import logging
 import random
+
 from romwhist.card import Card
 
 class Deck(object):
@@ -47,4 +49,7 @@ class Deck(object):
         self._size += 1 # increment size of the deck
 
     def remove_card(self, card):
-        self.cards.remove(card)
+        if card in self.cards:
+            self.cards.remove(card)
+        else:
+            logging.warning("Asked to remove card that does not exist in deck: %s", str(card))

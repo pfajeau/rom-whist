@@ -56,10 +56,11 @@ class OhellSim(OhellGame):
         for card in self.hands.get(self.sim_player).cards:
             self.deck.remove_card(card)
 
+        if self.trump_card is not None:
+                self.deck.remove_card(self.trump_card)
+
         if self.phase == OhellGame.GamePhase.BET:
             # Re-create hands from deck for other players for the simulation
-            if self.trump_card is not None:
-                self.deck.remove_card(self.trump_card)
 
             for player in self.players:
                 if player != self.sim_player:
@@ -71,12 +72,13 @@ class OhellSim(OhellGame):
             # Remove from deck all cards that have been played
             cards_played_per_player = current_state.cards_played_per_player
             for player in self.players:
-                if player != self.sim_player:
-                    cards_played = cards_played_per_player.get(player)
-                    if cards_played is not None:
-                        for card in cards_played:
-                            self.deck.remove_card(Card.card_from_value(card))
+                 cards_played = cards_played_per_player.get(player)
+                 if cards_played is not None:
+                    for card in cards_played:
+                        self.deck.remove_card(Card.card_from_value(card))
 
+            for player in self.players:
+                if player != self.sim_player:
                     self.hands[player] = Hand(self.deck, len(self.hands[player].cards))
                 logging.debug("In sim, Hand for player %s: %s", player, self.hands[player].serialize())
 
@@ -91,6 +93,7 @@ class OhellSim(OhellGame):
         while not self.is_hand_completed():
             round = self.create_round()
             self.play_round(round)
+
         self.hand_completed()
         logging.debug("Hand completed")
         return
