@@ -120,6 +120,20 @@ def generate_game_id(max_id, games):
     logging.debug("game_id:" + str(game_id))
     return game_id
 
+
+def next_round(game, nplayer, allowed_cards, hand_completed_cb, namespace):
+    game.create_round()
+    game_id = game.id
+
+    socketio.emit("clear round", room=game.id, namespace=namespace)
+    if game.is_hand_completed():
+        hand_completed_cb(game_id, nplayer)
+    else:
+        emit_to_players(
+            "player to play",
+            {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards},
+            room=game_id, namespace=namespace, game_state=game.get_state())
+
 # Utility mothod to emit an event to both real players and the ai players
 # data must contain the game_id
 def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_state=None):

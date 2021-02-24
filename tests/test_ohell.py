@@ -144,8 +144,8 @@ def main():
         for player in cards_played:
             logging.debug(player + " played: " + str(cards_played[player]))
 
-    state = OhellState("8", "Joe")
-    state = ohell.get_state(state)
+    # state = OhellState("8", "Joe")
+    state = ohell.get_state()
     logging.debug("State: " + repr(state))
     ohell.set_state(state)
 
@@ -176,8 +176,8 @@ def main():
         ohell.place_bet(player, 1)
 
 
-    state = OhellState("game_id", "Joe")
-    ohell.get_state(state)
+    # state = OhellState("game_id", "Joe")
+    ohell.get_state()
     logging.debug("Game state is: %s", state)
 
     #Test serialization

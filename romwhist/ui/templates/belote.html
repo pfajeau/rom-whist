@@ -84,10 +84,12 @@ Add footer / contact info
     id_bet = "#bets_" + username
     $(id_bet).change(function() {
       bet = $(id_bet + " option:selected").text();
-      console.log("Bet:" + bet)
-      socket.emit("player bet", bet);
-      //$(id_bet + " [readonly=readonly] option:not(:selected)").prop('disabled', true);
-      $(id_bet).prop("disabled", true)
+      if (bet != "Select") {
+        console.log("Bet:" + bet)
+        socket.emit("player bet", bet);
+        //$(id_bet + " [readonly=readonly] option:not(:selected)").prop('disabled', true);
+        $(id_bet).prop("disabled", true)
+      }
       return
     });
 

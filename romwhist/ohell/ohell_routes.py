@@ -288,14 +288,14 @@ def player_bet_process(player, game_id, bet):
             common_routes.emit_to_players(
                 "player to play",
                 {'game_id': game_id, 'player': next_player_to_play, 'allowed_cards': allowed_cards},
-                room=game_id, namespace=NAMESPACE, game_state=game.get_state(OhellState(game_id)))
+                room=game_id, namespace=NAMESPACE, game_state=game.get_state())
             return
 
         else:
             common_routes.emit_to_players(
                 "player to bet",
                 {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(nplayer)},
-                room=game_id, namespace=NAMESPACE, game_state=game.get_state(OhellState(game_id)))
+                room=game_id, namespace=NAMESPACE, game_state=game.get_state())
             return
     except Exception as e:
         logging.debug("Bet received: " + bet)
@@ -331,21 +331,7 @@ def hand_completed(game_id, username):
 
 def next_round(game_id, nplayer, allowed_cards):
     game = games[game_id]
-    game.create_round()
-
-    socketio.emit("clear round", room=game_id, namespace=NAMESPACE)
-
-    if game.is_hand_completed():
-        hand_completed(game_id, nplayer)
-    else:
-        # common_routes.emit_game_state(
-        #     game_id, nplayer, game.get_state(OhellState(game.id, nplayer)), \
-        #     NAMESPACE_AI)
-
-        common_routes.emit_to_players(
-            "player to play",
-            {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards},
-            room=game_id, namespace=NAMESPACE, game_state=game.get_state(OhellState(game_id)))
+    common_routes.next_round(game, nplayer,allowed_cards, hand_completed, NAMESPACE)
 
 
 @socketio.on('player played', namespace=NAMESPACE_AI)
@@ -391,7 +377,7 @@ def player_played_process(game_id, player, card):
         common_routes.emit_to_players(
             "player to play",
             {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
-            room=game_id, namespace=NAMESPACE, game_state=game.get_state(OhellState(game_id)))
+            room=game_id, namespace=NAMESPACE, game_state=game.get_state())
     else:
         # There is a winner, so round is ended
         allowed_cards = game.get_hand(nplayer).serialize()
@@ -457,7 +443,7 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
         common_routes.emit_to_players(
             "player to bet",
             {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(player)},
-            room=game_id, namespace=NAMESPACE, game_state=game.get_state(OhellState(game_id)))
+            room=game_id, namespace=NAMESPACE, game_state=game.get_state())
         return
 
 

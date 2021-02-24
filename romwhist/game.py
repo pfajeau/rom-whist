@@ -62,7 +62,7 @@ class CardGame:
         self.init_dict(self.wins, 0)
         self._current_hand_nb = 0
 
-    def get_state(self, state:GameState):
+    def populate_state(self, state:GameState):
         # Populate state
         state.game_id = self.__id
         state.players = self.get_playing_players()

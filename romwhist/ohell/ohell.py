@@ -20,8 +20,9 @@ class OhellGame(CardGame):
     def reset(self):
         CardGame.reset(self)
 
-    def get_state(self, state: OhellState):
-        state = CardGame.get_state(self, state)
+    def get_state(self):
+        state = OhellState(self.id)
+        state = CardGame.populate_state(self, state)
         state.phase = self.phase
         state.nb_rounds_won = self.wins
         state.phase = self.phase

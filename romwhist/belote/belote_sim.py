@@ -28,8 +28,8 @@ class BeloteSim(BeloteGame):
 
     def play_single_move(self):
         logging.debug("Playing single move")
-        current_state = BeloteState(self.id, self.sim_player)
-        current_state = self.get_state(current_state)
+        #current_state = BeloteState(self.id, self.sim_player)
+        current_state = self.get_state()
         #the_state = self.get_state(self.initial_state)
 
         if self.first_play and self.starting_action is not None:
@@ -45,7 +45,7 @@ class BeloteSim(BeloteGame):
 
     def game_loop(self) -> None:
         logging.debug("Game phase is %s", self.phase)
-        current_state = self.get_state(BeloteState(self.id, self.sim_player))
+        current_state = self.get_state()
         self.deck = Deck(self.deck_size)
         self.deck.shuffle()
 
@@ -113,4 +113,4 @@ class BeloteSim(BeloteGame):
         return sim_player_wins
 
     def state(self):
-        return self.get_state(BeloteState(self.id, self.sim_player))
+        return self.get_state()

@@ -6,6 +6,7 @@ from romwhist.card import Card
 from romwhist.deck import Deck
 from romwhist.game import CardGame
 from romwhist.hand import Hand
+from romwhist.belote.belote_state import BeloteState
 
 
 class BeloteGame(CardGame):
@@ -98,8 +99,9 @@ class BeloteGame(CardGame):
     def win_game_points(self, value):
         self.__win_game_points = value
 
-    def get_state(self, state: BeloteState):
-        state = CardGame.get_state(self, state)
+    def get_state(self):
+        state = BeloteState(self.id)
+        state = CardGame.populate_state(self, state)
         state.allowed_bets = self.get_allowed_bets(self.active_player)
         state.phase = self.phase
         state.hand_winner = copy.deepcopy(self.hand_winner)
@@ -474,7 +476,7 @@ class BeloteGame(CardGame):
         return self.scores
 
     # Initial deal
-    def deal_1(self, dealer=""):
+    def deal(self, dealer=""):
         self.deck = Deck(self.deck_size)
         self.deck.shuffle()
         self.init_bets()

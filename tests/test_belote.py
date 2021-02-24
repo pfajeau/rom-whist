@@ -18,7 +18,7 @@ def main():
     assert(len(belote.get_playing_players()) == 4)
     belote.start_game()
 
-    belote.deal_1(dealer="Johnny")
+    belote.deal(dealer="Johnny")
     assert (belote.trump_card is not None)
     assert (belote.trump_suit is None)
     assert (belote.active_player is "Joe")
@@ -114,7 +114,7 @@ def main():
     cards_as_str["Jim"] = ['s10', 'c11', 'c12', 'c13', 'd8','d10', 'd11', 'd14']
     cards_as_str["Johnny"] = ['s9', 'h8', 'h9', 'h12', 'h14', 'c7', 'c14', 'd12']
 
-    belote.deal_1("")
+    belote.deal("")
     for player in players:
         assert (len(belote.get_hand(player).cards) == 5)
 
@@ -190,8 +190,8 @@ def main():
         for player in cards_played:
             print(player + " played: " + str(cards_played[player]))
 
-    state = BeloteState("8", "Joe")
-    state = belote.get_state(state)
+#    state = BeloteState("8")
+    state = belote.get_state()
     logging.debug("State: " + repr(state))
     belote.set_state(state)
 
@@ -210,7 +210,7 @@ def main():
         print(player + ": " + format(scores[player]))
 
     print("Testing all players passing twice")
-    belote.deal_1("")
+    belote.deal("")
     for player in players:
         assert (len(belote.get_hand(player).cards) == 5)
 

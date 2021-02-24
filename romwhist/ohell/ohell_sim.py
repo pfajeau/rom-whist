@@ -30,8 +30,8 @@ class OhellSim(OhellGame):
 
     def play_single_move(self):
         logging.debug("Playing single move")
-        current_state = OhellState(self.id, self.sim_player)
-        current_state = self.get_state(current_state)
+        #current_state = OhellState(self.id, self.sim_player)
+        current_state = self.get_state()
         logging.debug("In play_single_move, current_state: %s", current_state.toJson())
 
         if self.first_play and self.starting_action is not None:
@@ -46,7 +46,7 @@ class OhellSim(OhellGame):
         return winner
 
     def game_loop(self) -> None:
-        current_state = self.get_state(OhellState(self.id, self.sim_player))
+        current_state = self.get_state()
         logging.debug("In game_loop, current_state: %s", current_state.toJson())
 
         self.deck = Deck(self.deck_size)
@@ -118,4 +118,4 @@ class OhellSim(OhellGame):
         return sim_player_wins
 
     def state(self):
-        return self.get_state(OhellState(self.id, self.sim_player))
+        return self.get_state()

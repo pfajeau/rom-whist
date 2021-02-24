@@ -270,7 +270,7 @@ def player_bet_process(player, game_id, bet):
                 common_routes.emit_to_players(
                     "player to bet",
                     {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(nplayer)},
-                    room=game_id, namespace=NAMESPACE, game_state=game.get_state(BeloteState(game_id)))
+                    room=game_id, namespace=NAMESPACE, game_state=game.get_state())
 
             elif game.phase == BeloteGame.GamePhase.PLAY:
                 hands = game.deal_2(game.dealer)
@@ -296,7 +296,7 @@ def player_bet_process(player, game_id, bet):
                 common_routes.emit_to_players(
                     "player to play",
                     {'game_id': game_id, 'player': next_player_to_play, 'allowed_cards': allowed_cards},
-                    room=game_id, namespace=NAMESPACE, game_state=game.get_state(BeloteState(game_id)))
+                    room=game_id, namespace=NAMESPACE, game_state=game.get_state())
 
                 player_belote = game.player_with_belote
                 if not player_belote is None:
@@ -307,9 +307,14 @@ def player_bet_process(player, game_id, bet):
                         room=clients[game_id].get(player_belote), namespace=NAMESPACE)
             return
         except Exception as e:
-            logging.debug("Bet received: " + str(bet))
+            logging.warning("Bet received: " + str(bet))
             logging.error(e)
-            traceback.print_stack()
+            common_routes.emit_to_players(
+                "player to bet",
+                {'game_id': game_id, 'player': game.get_active_player(),
+                 'allowed_bets': game.get_allowed_bets(game.get_active_player())},
+                room=game_id, namespace=NAMESPACE, game_state=game.get_state())
+
             emit("alert", "Error in place bet", room=clients[game_id].get(player), namespace=NAMESPACE)
 
 # TODO: this could be factorized in common routes.
@@ -343,16 +348,7 @@ def hand_completed(game_id, username):
 
 def next_round(game_id, nplayer, allowed_cards):
     game = games[game_id]
-    game.create_round()
-
-    socketio.emit("clear round", room=game_id, namespace=NAMESPACE)
-    if game.is_hand_completed():
-        hand_completed(game_id, nplayer)
-    else:
-        common_routes.emit_to_players(
-            "player to play",
-            {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards},
-            room=game_id, namespace=NAMESPACE, game_state=game.get_state(BeloteState(game_id)))
+    common_routes.next_round(game, nplayer,allowed_cards, hand_completed, NAMESPACE)
 
 @socketio.on('player played', namespace=NAMESPACE_AI)
 def player_played_ai(data):
@@ -399,7 +395,7 @@ def player_played_process(game_id, player, card):
         common_routes.emit_to_players(
             "player to play",
              {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
-             room=game_id, namespace=NAMESPACE, game_state=game.get_state(BeloteState(game_id)))
+             room=game_id, namespace=NAMESPACE, game_state=game.get_state())
     else:
         # There is a winner, so round is ended
         # game.round_ended(winner)
@@ -465,7 +461,7 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
     common_routes.emit_to_players(
         "player to bet",
         {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(player)},
-        room=game_id, namespace=NAMESPACE, game_state=game.get_state(BeloteState(game_id)))
+        room=game_id, namespace=NAMESPACE, game_state=game.get_state())
     return
 
 

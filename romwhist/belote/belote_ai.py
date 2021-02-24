@@ -73,7 +73,7 @@ class BeloteAiPlayer(AiPlayer):
         ratio_win = 0
         if nb_simulations != 0:
             ratio_win = nb_wins_for_best_bet/nb_simulations
-            
+
         logging.info("Agent calculated bet: %s", bet)
         logging.info("Ratio of wins for that bet: %s", ratio_win)
 
