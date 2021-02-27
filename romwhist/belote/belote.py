@@ -32,7 +32,6 @@ class BeloteGame(CardGame):
         Lost = 7
 
     # Number of cards to deal depending on number of players
-    # TODO: change for 2 players
     nb_cards_first_deal = {1: 6, 2: 6, 3: 6, 4: 5}
     nb_cards_second_deal = {1: 3, 2: 3, 3: 3, 4: 3}
 
@@ -225,7 +224,6 @@ class BeloteGame(CardGame):
                     self.phase = BeloteGame.GamePhase.BET2
                     self.init_dict(self.bets, "")
                 else:
-                    # TODO: redistribute cards and reset game
                     self.init_bets()
                     self.phase = BeloteGame.GamePhase.DEAL
                     self.dealer = self.next_player_to_deal()
