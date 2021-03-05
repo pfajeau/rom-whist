@@ -12,23 +12,26 @@ from romwhist.belote.belote import BeloteGame
 
 class ContreeGame(BeloteGame):
 
-
+    all_bet_points = [80, 90, 100, 110, 120, 130, 140, 150, "Capot"]
 
     class Announce(str):
         def __init__(self, suit, points):
             self.suit = suit
             self.points = points
 
+
         def __str__(self):
             return self.suit + "_" + str(self.points)
 
         def __gt__(self, other):
+            if other.points == "Capot" and self.points != "Capot":
+                return False
             return self.points > other.points
 
         @classmethod
         def from_str(cls, announce_as_string):
             suit, points = announce_as_string.split("_", 1)
-            return ContreeGame.Announce(suit, points)
+            return cls(suit, points)
 
     def __init__(self, game_creator="", id=0):
         BeloteGame.__init__(self, game_creator, id)
@@ -39,32 +42,7 @@ class ContreeGame(BeloteGame):
         logging.info("Player " + player + "bid: " + bet)
         self.bets[player] = bet
 
-        if bet == "Pass":
-            logging.info("Player passed")
-            # Ask next player
-            self.active_player = self.next_player(player)
-            if self.next_player_to_bet(player) is None:
-                if self.phase == BeloteGame.GamePhase.BET:
-                    self.init_dict(self.bets, "")
-                else:
-                    # Redistribute cards and reset game
-                    self.init_bets()
-                    self.phase = BeloteGame.GamePhase.DEAL
-                    self.dealer = self.next_player_to_deal()
-        else:
-            logging.info("Player took")
-            if self.current_bet is None:
-                self.current_bet = bet
-            elif bet > self.current_bet:
-                self.current_bet = bet
-            else:
-                logging.error("Invalid Bet: %s", bet)
-
-    def place_bet(self, player, bet):
-        logging.info("Player " + player + "bid: " + bet)
-        self.bets[player] = bet
-
-        if bet == "Pass":
+        if bet.suit == "Pass":
             logging.info("Player passed")
             # Ask next player
             next_player = self.next_player(player)
@@ -79,7 +57,7 @@ class ContreeGame(BeloteGame):
                     self.active_player = self.next_player(self.dealer)
             return
 
-        if bet.points == BeloteGame.TOTAL_POINTS or self.next_player_to_bet(player) is None:
+        if bet.points == "Capot" or self.next_player_to_bet(player) is None:
             # Move to PLAY phase
             self.phase = BeloteGame.GamePhase.PLAY
             self.trump_suit = bet.suit
@@ -126,18 +104,49 @@ class ContreeGame(BeloteGame):
 
     def get_allowed_bets(self, player):
         allowed_bets = []
-        # if self.hands.get(player) is None:
-        #     allowed_bets = []  # No hand yet
         if self.phase == self.GamePhase.BET:
-            allowed_bets = ['Pass', str(self.trump_card.get_suit_name())]
-        elif self.phase == self.GamePhase.BET2:
-            allowed_bets = ['Pass']
-            for suit in Card.SUIT_NAMES:
-                if suit != self.trump_card.get_suit_name():
-                    allowed_bets.append(suit)
+            if self.current_bet is None:
+                allowed_bets = copy.deepcopy(ContreeGame.all_bet_points)
+            else:
+                for bet in ContreeGame.all_bet_points:
+                    if bet != "Capot":
+                        if bet > self.current_bet.points:
+                            allowed_bets.append(bet)
+                allowed_bets.append("Capot")
 
         logging.debug("allowed bets:" + str(allowed_bets))
         return allowed_bets
+
+    def deal(self, dealer=""):
+        self.deck = Deck(self.deck_size)
+        self.deck.shuffle()
+        self.init_bets()
+        self.init_dict(self.wins, 0)
+        self.init_dict(self.hand_points, 0)
+        self.trump_suit = None
+        self.rounds = []
+
+        # Reset belote/rebelote states
+        self.belote_state = BeloteGame.BeloteState.Not_Allowed
+        # self.BeloteAnnounced = BeloteGame.BeloteAnnounced.No
+        self.__player_with_belote = None
+
+        if dealer == "":
+            self.dealer = self.active_player
+        else:
+            self.dealer = dealer
+
+        self.active_player = self.next_player(self.dealer)
+
+        # Create a hand with nb_cards for each player
+        for player in self.get_playing_players():
+            hand = Hand(self.deck, self.deck_size / len(self.players), player)
+            self.hands[player] = hand.sort()
+            logging.debug("Hand for player " + player + " : " + str(hand.serialize()))
+
+        # Pick up trump card
+        self.phase = BeloteGame.GamePhase.BET
+        return self.hands
 
     def init_bets(self):
         for player in self.players:
