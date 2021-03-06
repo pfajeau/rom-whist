@@ -1,24 +1,16 @@
 import copy
 import logging
-from enum import Enum
-
-from romwhist.card import Card
-from romwhist.deck import Deck
-from romwhist.game import CardGame
-from romwhist.hand import Hand
-from romwhist.belote.belote_state import BeloteState
 from romwhist.belote.belote import BeloteGame
+from romwhist.belote.belote_state import BeloteState
 
 
 class ContreeGame(BeloteGame):
-
     all_bet_points = [80, 90, 100, 110, 120, 130, 140, 150, "Capot"]
 
-    class Announce(str):
+    class Announce:
         def __init__(self, suit, points):
             self.suit = suit
             self.points = points
-
 
         def __str__(self):
             return self.suit + "_" + str(self.points)
@@ -39,7 +31,7 @@ class ContreeGame(BeloteGame):
         self.current_bet = None
 
     def place_bet(self, player, bet):
-        logging.info("Player " + player + "bid: " + bet)
+        logging.info("Player " + player + "bid: " + str(bet))
         self.bets[player] = bet
 
         if bet.suit == "Pass":
@@ -89,8 +81,8 @@ class ContreeGame(BeloteGame):
 
         players = []
         players[0] = player
-        for i in range(1, len(self.players) - 1 ):
-            players[i] = self.next_player(players[i-1])
+        for i in range(1, len(self.players) - 1):
+            players[i] = self.next_player(players[i - 1])
             if players[i] != next_player and self.bets[players[i]] != "Pass":
                 return next_player
 
@@ -118,37 +110,8 @@ class ContreeGame(BeloteGame):
         return allowed_bets
 
     def deal(self, dealer=""):
-        self.deck = Deck(self.deck_size)
-        self.deck.shuffle()
-        self.init_bets()
-        self.init_dict(self.wins, 0)
-        self.init_dict(self.hand_points, 0)
-        self.trump_suit = None
-        self.rounds = []
-
-        # Reset belote/rebelote states
-        self.belote_state = BeloteGame.BeloteState.Not_Allowed
-        # self.BeloteAnnounced = BeloteGame.BeloteAnnounced.No
-        self.__player_with_belote = None
-
-        if dealer == "":
-            self.dealer = self.active_player
-        else:
-            self.dealer = dealer
-
-        self.active_player = self.next_player(self.dealer)
-
-        # Create a hand with nb_cards for each player
-        for player in self.get_playing_players():
-            hand = Hand(self.deck, self.deck_size / len(self.players), player)
-            self.hands[player] = hand.sort()
-            logging.debug("Hand for player " + player + " : " + str(hand.serialize()))
-
-        # Pick up trump card
-        self.phase = BeloteGame.GamePhase.BET
-        return self.hands
+        return self.deal_cards(int(self.deck_size / len(self.players)), dealer)
 
     def init_bets(self):
         for player in self.players:
             self.bets[player] = None
-
