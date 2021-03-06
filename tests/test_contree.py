@@ -1,5 +1,8 @@
 import logging
 from romwhist.contree.contree import ContreeGame
+from romwhist.belote.belote import BeloteGame
+
+from tests import test_common
 
 
 def main():
@@ -24,6 +27,29 @@ def main():
     contree.place_bet("Joe", bet)
     assert contree.active_player == "Jack", contree.active_player
 
+    assert (len(contree.get_allowed_bets("Jack")) == len(ContreeGame.all_bet_points) - 1)
+    bet = ContreeGame.Announce("Heart", 90)
+    contree.place_bet("Jack", bet)
+    assert contree.active_player == "Jim", contree.active_player
+
+    assert (len(contree.get_allowed_bets("Jim")) == len(ContreeGame.all_bet_points) - 2)
+    bet = ContreeGame.Announce("Diamond", "Capot")
+    contree.place_bet("Jim", bet)
+    assert contree.active_player == "Joe", contree.active_player
+    assert contree.phase == BeloteGame.GamePhase.PLAY, contree.active_player
+
+    # Simulate a game and check scoring works
+    # First use a pre-defined set of cards for each player
+    cards_as_str = dict()
+    cards_as_str["Joe"] = ['s9', 's10', 's11', 's13', 'h7', 'h10', 'c8', 'd9']
+    cards_as_str["Jack"] = ['s7', 's14', 'h13', 'h11', 'c9', 'c10', 'd7', 'd13']
+    cards_as_str["Jim"] = ['s12', 's8', 'h8', 'h9', 'c11', 'c12', 'd10', 'd14']
+    cards_as_str["Johnny"] = ['h12', 'h14', 'c7', 'c13', 'c14', 'd8', 'd11', 'd12']
+
+    test_common.create_hands(contree, cards_as_str)
+
+    # Set card values (were overwritten by new cards since they are different objects)
+    contree.set_cards_rank_and_value()
 
 
 if __name__ == '__main__':

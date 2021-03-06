@@ -58,7 +58,7 @@ def belote_start():
             logging.info("start game")
             game_id = common_routes.generate_game_id(999,games)
             if game_id is None:
-                return render_template('ohell_start.html', error="No more games available!!! Please try again later", form=form)
+                return render_template('belote_start.html', error="No more games available!!! Please try again later", form=form)
 
             points_to_reach = int(form.points_to_reach.data)
 
