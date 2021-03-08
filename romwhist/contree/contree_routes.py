@@ -150,17 +150,23 @@ def contree_play():
         logging.debug("Game Phase: " + game.phase.name)
         active_player = game.get_active_player()
 
-        # TODO Determine status of belote button
+        # Determine status of belote button
         # if game phase = play and user has both queen and king then enabled. If user has already play belote, then
         # enable.
         belote_enabled = False
         if game.belote_state == BeloteGame.BeloteState.Belote_Played or game.belote_state == BeloteGame.BeloteState.Allowed:
             belote_enabled = True
 
+        bets_suit = dict()
+        bets_points = dict()
+        for player in game.get_playing_players():
+            bets_suit[player] = game.bets[player].suit
+            bets_points[player] = game.bets[player].points
+
         # TODO: could pass the game state instead of all the parameters
         # individually
         return render_template("contree.html", form=form, players=game.get_playing_players(), scores=game.get_scores(),
-                               hand=hand, wins=game.hand_points, bets=game.get_bets(), active_player=active_player,
+                               hand=hand, wins=game.hand_points, bets_suit=bets_suit, bets_points=bets_points, active_player=active_player,
                                cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player),
                                trump=game.trump_card, trump_suit=game.trump_suit,
                                allowed_bets=game.get_allowed_bets(player),
@@ -211,7 +217,9 @@ def player_bet_ai(data):
     logging.debug("Player bet: " + str(data.get('bet')))
     player = data.get('player')
     game_id = data.get('game_id')
-    bet = str(data.get('bet'))
+    bet_suit = data.get('bet_suit')
+    bet_points = data.get('bet_points')
+    bet = ContreeGame.Announce(bet_suit, bet_points)
     player_bet_process(player, game_id, bet)
 
 
@@ -238,10 +246,10 @@ def player_bet_process(player, game_id, bet):
         try:
             game.place_bet(player, bet)
 
-            emit("player bet", {'player': player, 'bet': bet}, room=game_id, namespace=NAMESPACE)
+            #emit("player bet", {'player': player, 'bet': bet}, room=game_id, namespace=NAMESPACE)
             common_routes.emit_to_players(
                 "player bet",
-                {'game_id': game_id, 'player': player, 'bet': bet},
+                {'game_id': game_id, 'player': player, 'bet_suit': bet.suit, 'bet_points': bet.points},
                 room=game_id, namespace=NAMESPACE)
 
             nplayer = game.get_active_player()

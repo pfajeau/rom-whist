@@ -23,15 +23,17 @@ socketio = SocketIO(app, logger=True)
 #app = Flask(__name__, instance_relative_config=True, template_folder="ui/templates", static_folder="ui/static")
 #socketio = SocketIO(app)
 
-#from .routes import *
 from .ohell import ohell_routes
 app.add_url_rule('/ohell_start', view_func=ohell_routes.ohell_start, methods=["GET", "POST"])
 app.add_url_rule('/ohell_play', view_func=ohell_routes.ohell_play, methods=["GET", "POST"])
 
-# When adding those, events are not received by the client anymre
 from .belote import belote_routes
 app.add_url_rule('/belote_start', view_func=belote_routes.belote_start, methods=["GET", "POST"])
 app.add_url_rule('/belote_play', view_func=belote_routes.belote_play, methods=["GET", "POST"])
+
+from .contree import contree_routes
+app.add_url_rule('/contree_start', view_func=contree_routes.contree_start, methods=["GET", "POST"])
+app.add_url_rule('/contree_play', view_func=contree_routes.contree_play, methods=["GET", "POST"])
 
 from romwhist import common_routes
 app.add_url_rule('/', view_func=common_routes.home, methods=["GET", "POST"])

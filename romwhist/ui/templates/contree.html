@@ -1,0 +1,523 @@
+// TODO: Need to add the buttons to CONTRER ou RECONTRER
+
+{% extends "base.html" %}
+
+{% block content %}
+<script type="text/javascript" src="https://cdn.socket.io/3.1.1/socket.io.min.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/game_common.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/belote.css') }}"/>
+<script type="text/javascript">
+
+  // Note that js cannot be separated from html as JINJA2 expressions are not
+  // processed then during rendering
+
+  var socket;
+  var username = "{{ session['username'] }}";
+  var ownername = "{{ session['ownername'] }}";
+  var new_round = true;
+  var first_card;
+  var last_dealer;
+  var static_folder={{ url_for('static', filename='') }}
+  var trump_suit = ""
+  var the_players
+  var bool = {"True": true, "False": false}
+
+  // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
+  let html_frag = ''
+  html_frag = html_frag.concat("<span class='game_page_title'>")
+  html_frag = html_frag.concat(" Game ID: {{ session['game_id'] }}")
+  html_frag = html_frag.concat(" - {{ session['username'] }}</span>")
+  html_frag = html_frag.concat("<span class='game_page_title'><a href='#scoresheet_div'>Scoresheet</a></span>")
+  html_frag = html_frag.concat("<span class='logo_game'><img border='0' alt='Belote' src='{{ url_for('static', filename='') }}img/belote.png' width='80'></a> </span>")
+  $("#topnav").last().after(html_frag);
+  // $("#topnav").last().after("<card_playedspan class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</span>")
+  // $("#topnav").last().after("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
+
+  document.addEventListener('DOMContentLoaded', () => {
+
+    the_players = []
+    {% for the_player in players -%}
+       the_players.push("{{ the_player }}")
+    {% endfor %}
+    initialize(the_players)
+
+    console.log("player_with_belote: " + "{{ player_with_belote }}")
+    console.log("belote_allowed: " + "{{ belote_allowed }}")
+    belote_allowed = bool["{{ belote_allowed }}"]
+
+    if (username == "{{ player_with_belote }}") {
+      // TODO: need to know whether to put belote or rebelote on button
+      add_belote_button(belote_allowed, "Belote")
+    }
+    else {
+      // Remove belote button
+      $("#belote").remove()
+    }
+
+    {% if cards_played != None %}
+      {% for key, value in cards_played.items() %}
+      add_card_to_table("{{ key }}", "{{ value }}")
+      {% endfor %}
+    {% endif %}
+
+    if ("{{ game_phase }}" == "BET" || "{{ game_phase }}" == "BET2") {
+      make_player_the_better("{{ active_player }}");
+      make_player_active("{{ active_player }}");
+    }
+
+    if ("{{ game_phase }}" == "PLAY") {
+      make_player_play("{{ active_player }}", "{{ allowed_cards }}");
+    }
+
+    document.getElementById("post").onclick = function() {
+      post_msg();
+    }
+
+    // Register action for bet input field
+    id_bet = "#bets_" + username
+    $(id_bet).change(function() {
+      bet = $(id_bet + " option:selected").text();
+      if (bet != "Select") {
+        console.log("Bet:" + bet)
+        socket.emit("player bet", bet);
+        //$(id_bet + " [readonly=readonly] option:not(:selected)").prop('disabled', true);
+        $(id_bet).prop("disabled", true)
+      }
+      return
+    });
+
+    enable_start_game();
+    // Allow start button when numbe of players is between 2 and 4
+    if (the_players.length < 2 || the_players.length > 4) {
+      $("#start_game").prop('disabled', true);
+    }
+
+    function add_belote_button(enabled, text) {
+      $("#belote_button_div").append('<button id="belote" type="button" class="btn-primary" name="belote">' + text + '</button>');
+      document.getElementById("belote").onclick = function() {
+        announced = $("#belote").text()
+        socket.emit('belote announced', announced);
+        console.log ("Belote announced")
+        // TODO: change allowed cards to only allow queen and king of trump?
+      }
+      console.log("In add_belote_button enabled is" + enabled)
+      if (enabled == false) {
+        $("#belote").prop("disabled", true)
+      }
+    }
+
+    // Connect to websocket
+    console.log("Connecting to io")
+    socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/belote');
+    socket.on('connect', function() {
+      console.log("Connected to io")
+
+      // Register user - only used here to cover the case of
+      // first player joining. DO NOT REMOVE
+      socket.emit('join game', {data:''});
+
+    });
+
+    socket.on('sc game started', function(data) {
+      console.log("game started event received")
+      console.log(data)
+      $("input[name='rounds']").val(0);
+      $("input[name='score']").val(0);
+
+      nb_cards_to_deal = data['nb_cards']
+      $('#cards').html('');
+      $('#cards_played').empty()
+      $('#trump_card').empty()
+      $('#button').remove()
+      $('#msg_div').empty()
+
+      // Add scoresheet
+      $("#scoresheet_div").append("<td>")
+    });
+
+    socket.on('new hand', function(data) {
+      console.log("new hand event received");
+      make_players_inactive();
+      $('#trump_card').html('')
+      $('#cards').html('');
+      $('#cards_played').empty()
+      $("#nb_cards").removeClass("highlighted_field");
+      $('#msg_div').empty()
+      cards = data['cards']
+
+      // $('#cards').append('<ul>');
+      for (var card_index in cards) {
+        // $('#cards').append('<br>' + data[card])
+        let card =cards[card_index]
+        let image = 'img/' + card + ".svg"
+        // let card = data[card]
+        $('#cards').append('<td>'+
+          "<img id=" + card + " src={{ url_for('static', filename='') }}" +
+          image + ' alt=' + card + ' class="card_hand"' + '>' + '</td>')
+
+          $('#rounds input').val(0);
+          // $('#bets input').html('');
+        }
+      });
+
+      socket.on('belote announced', function(data) {
+        // Add Belote/Rebelote button
+        console.log("belote announced event received")
+        announce_player = data['player']
+        announce = data['announced']
+        // if (username != announce_player) {
+        //   show_alert("Player " + announce_player + " annouced " + data['announced'], data['announced'])
+        // }
+        $("#msg_div").text(announce_player + " announce " + announce)
+        fade_msg()
+        if (announce == "Rebelote" && announce_player == username) {
+          // Disable Belote button
+          $("#belote").remove()
+        }
+      });
+
+    socket.on('belote rebelote enabled', function(data) {
+      // Add Belote/Rebelote button
+      console.log("Belote / Rebelote possible")
+      add_belote_button(true, "Belote")
+    });
+
+    socket.on('belote played', function(data) {
+      // Add Belote/Rebelote button
+      $("#belote").text("Rebelote")
+    });
+
+    socket.on('rebelote played', function(data) {
+      // Disable Belote/Rebelote button
+      $("#belote").remove()
+    });
+
+    socket.on('belote lost', function(data) {
+      // Disable Belote/Rebelote button
+      $("#belote").remove()
+      show_alert("Belote points lost", "Belote or rebelote not announced!")
+      $("#msg_div").text("Belote points lost", "Belote or rebelote not announced!")
+      fade_msg()
+    });
+
+
+    socket.on('player to bet', function(data) {
+      console.log("player to bet event received")
+      player_name = data['player']
+      allowed_bets = data['allowed_bets']
+      let id_bet_suit = "#bets_suit_" + player_name
+      $(id_bet_suit).prop("disabled", false)
+      let id_bet_points = "#bets_points_" + player_name
+      $(id_bet_points).prop("disabled", false)
+
+      // Highlight Username
+      make_player_active(player_name);
+      make_player_the_better(player_name)
+
+      // $(id_bet).empty();
+      let html = ""
+      html = html.concat('<option value="select" selected>Select</option>')
+      for (bet in allowed_bets) {
+        html = html.concat('<option value="' + allowed_bets[bet] + '">' + allowed_bets[bet] + '</option>')
+      }
+      $(id_bet_points).append(html)
+      if (username != player_name) {
+        $(id_bet_points).prop("disabled", true)
+        $(id_bet_suit).prop("disabled", true)
+      }
+    });
+
+    socket.on('player bet', function(data) {
+      console.log("player bet event received")
+      player_name=data['player']
+      bet=data['bet']
+      console.log("bet is: " + bet)
+      let id_bet = "#bets_" + player_name
+
+      idx = $(id_bet).find('option[value="' + bet + '"]').index()
+      console.log("idx: " + idx)
+      $(id_bet).get(0).selectedIndex = idx
+      make_player_inactive(player_name);
+      $(id_bet).removeClass("highlighted_field");
+      //$(id_bet).prop('readonly', true);
+      // $(id_bet).prop("disabled", true)
+    });
+
+
+    socket.on('player to play', function(data) {
+      player_to_play(data)
+    })
+
+    socket.on('hand completed', function(data) {
+      console.log("hand completed event received");
+
+      let scores=data['scores']
+      let wins = data['wins']
+      let hand_nb=data['hand_nb']
+      let score_row_id = "#hand_score_nb" + hand_nb
+      let winners = data['winners']
+      let html = "<tr>"
+      // $("#scoresheet_body").append ("<tr id=" + score_row_id + ">/tr")
+
+      for (var i in the_players) {
+        let player = the_players[i]
+        score = scores[player];
+        bet=bets[player]
+        win=wins[player]
+        let id_score = "#score_" + player
+        $(id_score).val(score);
+        html = html.concat("<td><table class='padding-between-cols'><tr>")
+        html = html.concat("<td class='scoresheet_nb'>" + score + "</td></tr></table></td>")
+        // Reset the bid selection list
+        bet_id = "#bets_" + player
+        $(bet_id).empty()
+      }
+
+      html = html.concat("</tr>")
+      $("#scoresheet_body").append(html)
+
+      // TODO: message indicating who won the hand
+      if (winners[0] == "") {
+         msg = "It's a tie! Points of team who took will be given to next hand winner"
+      }
+      else {
+        msg = "Winner(s) of this hand: "
+        for (i in winners) {
+          if (i == 0) {
+            msg = msg + winners[i]
+          }
+          else {
+            msg = msg + ", and " + winners[i]
+          }
+        }
+      }
+
+      $("#msg_div").append("<p>" + msg + "</p>")
+      fade_msg()
+
+      let image = 'img/' + trump_card + ".svg"
+      $('#trump_card').html('')
+      $('#cards_played').empty()
+    });
+
+    socket.on('card played', function(data) { card_played_event(data) })
+    socket.on('new player', function(player_name) { new_player(player_name) })
+
+    socket.on('player left', function(player_name) {
+      if (player_name.localeCompare(username) != 0) {
+
+        $("#" + player_name).remove();
+        $("#label_" + player_name).remove();
+
+        let id_round = "#rounds_" + player_name;
+        $(id_round).parent().remove()
+        id_round = "#label_rounds_" + player_name;
+        $(id_round).parent().remove();
+
+        let id_score = "#score_" + player_name;
+        $(id_score).parent().remove()
+        id_score = "#label_score_" + player_name;
+        $(id_score).parent().remove()
+
+        show_alert("User " + player_name + " left the game!", "Warning")
+      }
+    });
+
+    socket.on('trump card', function(data) { trump_card_received(data, "") })
+    socket.on('trump suit', function(trump) {
+      console.log("trump suit event received");
+        // Update trump_suit
+        trump_suit = trump
+        $('#trump_card').html('')
+        $("#trump_card").append('<label class="trump_caption">Trump:' + trump_suit + '</label>')
+    })
+
+    socket.on('round ended', function(data) {
+      round_ended(data)
+      let points = data['points']
+      let id_rounds = "rounds_" + player_name
+
+      for (player in points) {
+        let id_rounds = "rounds_" + player
+        document.getElementById(id_rounds).value = points[player]
+      }
+    });
+
+    socket.on('clear round', function() { clear_round() });
+    socket.on('game over', function(winners) { game_over(winners) })
+    socket.on('msg posted', function(data) { msg_posted(data) });
+
+    socket.on('alert', function(msg) {
+      show_alert(msg, "Warning");
+    });
+  });
+
+
+</script>
+
+<div class="table-responsive">
+  <br>
+  <table class="table-with-padding">
+    <tr id="players">
+      {% for player in players -%}
+      <td id="label_{{ player }}" ></td>
+      <td id="name_{{ player }}" name="player" class="normal_player">{{ player }} </td>
+      {% endfor %}
+      {% if players|length == 4 %}
+      <script>
+        i = 0
+        {% for player in players -%}
+          if (i%2 == 0 ) {
+            $("#name_{{ player }}").addClass("team_1_player")
+          }
+          else {
+            $("#name_{{ player }}").addClass("team_2_player")
+          }
+          i++
+        {% endfor %}
+      </script>
+      {% endif %}
+    </tr>
+    <tr id="bets">
+      {% for player in players -%}
+      <td class="td_player_info_label">
+        <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">Bid</label>
+      </td>
+      <td class="td_player_info">
+        <select name="bets_suit" id="bets_suit_{{ player }}" disabled>
+            <option value="select" selected>Select</option>
+            <option value="Pass">Spade</option>
+            <option value="Spade">Spade</option>
+            <option value="Heart">Heart</option>
+            <option value="Diamond">diamond</option>
+            <option value="Club">Club</option>
+        </select>
+        <select name="bets_points" id="bets_points_{{ player }}" disabled>
+          {% if allowed_bets|length == 0 %}
+            {% if bets_points[player] != "" %}
+              <option value="{{ bets_points[player] }}" selected>{{ bets_points[player] }}</option>
+            {% endif %}
+          {% else %}
+            <option value="select" selected>Select</option>
+            {% for bet in allowed_bets -%}
+                <option value="{{ bet }}">{{ bet }}</option>
+            {% endfor %}
+          {% endif %}
+        </select>
+      </td>
+      {% endfor %}
+    </tr>
+    <tr id="rounds">
+      {% for player in players -%}
+      <td class="td_player_info_label" >
+        <label for="rounds_{{ player }}"  id="label_rounds_{{ player }}" class="player_info">Points</label>
+      </td>
+      <td class="td_player_info" >
+        <input type="number" id="rounds_{{ player }}" name="rounds" class="player_info" min=0 max=18 readonly value={{ wins[player] }}>
+      </td>
+      {% endfor %}
+    </tr>
+    <tr id=scores>
+      {% for player in players -%}
+      <td class="td_player_info_label" >
+        <label for="score_{{ player }}"  id="label_score_{{ player }}" class="player_info">Score</label>
+      </td>
+      <td class="td_player_info" >
+        <input type="number" id="score_{{ player }}" name="score" class="player_info" min=0 max=99 readonly value={{ scores[player] }}>
+      </td>
+      {% endfor %}
+    </tr>
+  </table>
+</div>
+<br>
+<div id = "#dialog-message">
+</div>
+<div id="card-table-burgundy" class="container">
+  <div class="bottomright" id="trump_card">
+    {% if game_phase != "PLAY" and trump != None %}
+      <figure>
+        <img src="{{ url_for('static', filename='') }}img/{{ trump }}.svg" alt=trump width=80 height=80>
+<!--        - <figcaption><h3 class='trump_caption'>Trump</h3></figcaption> -->
+      </figure>
+    {% elif game_phase == "PLAY" %}
+      <label class="trump_caption">Trump: {{ trump_suit }}<label>
+    {% endif %}
+  </div>
+  <div id="cards_played">
+  </div>
+</div>
+
+<!-- Belote / Rebelote and message sections -->
+<div id="msg_container">
+  <br>
+  <div id="belote_button_div">
+  </div>
+  <div id="msg_div">
+  </div>
+</div>
+
+<!-- Player cards section-->
+<div>
+  <form id="game_form" action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <br>
+    <input type="hidden" id="action_game" name="action_game" value="">
+    <div>
+      <div class="col-md-12" id="cards">
+        <br>
+        <!-- <tr id="cards"></tr> -->
+        {% for card in hand -%}
+        <td>
+          <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" class="card_hand">
+          <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
+        </td>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="chat" id="chat">
+      <br/>
+      <h4 class="div_title">Chat</h4>
+      <textarea id="chat_text" rows=5 cols=80 readonly></textarea><br>
+      <input type="text" id="chat_input" class = "chat_input" size=77></input>
+      <button id="post" class="btn btn-primary" name="post" type="button">Send</button>
+    </div>
+    <div>
+      <div id="game_action_buttons" class="btn-toolbar">
+        <p><br>
+      </div>
+    </div>
+    <div id="scoresheet_div">
+      <br/>
+      <h4 class="div_title">Scoresheet</h4>
+      <!-- <table id="scoresheet_table" class="table-no-padding-border padding-between-cols"> -->
+      <table id="scoresheet_table" class="table-no-padding-border table table-sm table-bordered">
+        <thead>
+          <tr>
+            {% for player in players -%}
+            <th class="td_player_info">{{player}}
+            </th>
+            {% endfor %}
+          </tr>
+        </thead>
+       <tbody id="scoresheet_body">
+    {% for scores_hand in scoresheet -%}
+    <tr>
+      {% for player in players -%}
+      <td>
+        <table>
+          <tr>
+            <td class="scoresheet_nb">{{scores_hand[player]}}</td>
+          </tr>
+        </table>
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+          </tbody>
+      </table>
+    </div>
+  </form>
+</div>
+
+{% endblock %}
