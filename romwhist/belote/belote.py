@@ -176,9 +176,7 @@ class BeloteGame(CardGame):
             self.phase = BeloteGame.GamePhase.DEAL
             self.current_round = None
             # self.trump_card = None
-            self.bets = dict()
-            self.wins = dict()
-            self.init_dict(self.bets, "")
+            self.init_bets()
             self.init_dict(self.wins, 0)
             self.hand_points[player] = 0
 

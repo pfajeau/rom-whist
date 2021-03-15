@@ -29,6 +29,7 @@ class ContreeGame(BeloteGame):
         BeloteGame.__init__(self, game_creator, id)
         BeloteGame.nb_cards_first_deal = {1: 8, 2: 8, 3: 8, 4: 8}
         self.current_bet = None
+        self.init_bets()
 
     def place_bet(self, player, bet):
         logging.info("Player " + player + "bid: " + str(bet))
@@ -80,9 +81,9 @@ class ContreeGame(BeloteGame):
             return next_player
 
         players = []
-        players[0] = player
+        players.append(player)
         for i in range(1, len(self.players) - 1):
-            players[i] = self.next_player(players[i - 1])
+            players.append(self.next_player(players[i - 1]))
             if players[i] != next_player and self.bets[players[i]] != "Pass":
                 return next_player
 
@@ -112,6 +113,15 @@ class ContreeGame(BeloteGame):
     def deal(self, dealer=""):
         return self.deal_cards(int(self.deck_size / len(self.players)), dealer)
 
+    def add_player(self, player):
+        BeloteGame.add_player(self, player)
+        if player in self.players:
+            self.init_bets()
+        else:
+            self.bets[player] = ContreeGame.Announce("", "")
+
+
     def init_bets(self):
+        print ("Initializing bets")
         for player in self.players:
-            self.bets[player] = None
+            self.bets[player] = ContreeGame.Announce("", "")

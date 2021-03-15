@@ -18,7 +18,6 @@ class CardGame:
         BET = "Bet"
         PLAY = "Play"
         OVER = "Over"
-
     def __init__(self, game_creator="", deck_size=0, id=0):
         self.players = []
         self.current_round = None

@@ -11,6 +11,8 @@ def main():
     for player in players:
         contree.add_player(player)
     assert (len(contree.get_playing_players()) == 4)
+    assert contree.bets["Joe"].suit == "", contree.bets["Joe"].suit
+    assert contree.bets["Joe"].points == "", contree.bets["Joe"].points
     contree.start_game()
 
     contree.deal(dealer="Johnny")
