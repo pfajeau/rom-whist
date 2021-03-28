@@ -100,7 +100,11 @@ class BeloteGame(CardGame):
 
     def get_state(self):
         state = BeloteState(self.id)
-        state = CardGame.populate_state(self, state)
+        self.populate_state(state)
+        return state
+
+    def populate_state(self, state):
+        CardGame.populate_state(self, state)
         state.allowed_bets = self.get_allowed_bets(self.active_player)
         state.phase = self.phase
         state.hand_winner = copy.deepcopy(self.hand_winner)
@@ -348,7 +352,6 @@ class BeloteGame(CardGame):
 
         return allowed_cards
 
-    # TODO: Belote / Rebelote
     def update_scores(self):
         # Check each player points
         # If 2 or 3 players, player that took need to have more points that other players to win

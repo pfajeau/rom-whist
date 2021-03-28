@@ -65,3 +65,10 @@ class ContreeSim(BeloteSim, ContreeGame):
         logging.debug("Hand completed")
         return
 
+
+    def sim_player_won(self):
+        logging.debug("Bet for %s: %s", self.sim_player, self.bets[self.sim_player])
+        sim_player_wins = (self.sim_player in self.hand_winner)
+        logging.debug("Wins: %s", sim_player_wins)
+        return sim_player_wins
+
