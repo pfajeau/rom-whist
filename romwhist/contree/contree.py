@@ -1,42 +1,20 @@
 import copy
-from enum import Enum
 import logging
 from romwhist.belote.belote import BeloteGame
 from romwhist.contree.contree_state import ContreeState
-from romwhist.belote.belote_state import BeloteState
+from romwhist.contree.announce import Announce
+from romwhist.contree.announce import ContreStatus
 
 
 class ContreeGame(BeloteGame):
-    class ContreStatus (Enum, str):
-        NORMAL = "None"
-        CONTREE = "Contree"
-        SURCONTREE = "Surcontree"
 
     all_bet_points = [80, 90, 100, 110, 120, 130, 140, 150, "Capot"]
-
-    class Announce:
-        def __init__(self, suit, points):
-            self.suit = suit
-            self.points = points
-
-        def __str__(self):
-            return self.suit + "_" + str(self.points)
-
-        def __gt__(self, other):
-            if other.points == "Capot" and self.points != "Capot":
-                return False
-            return self.points > other.points
-
-        @classmethod
-        def from_str(cls, announce_as_string):
-            suit, points = announce_as_string.split("_", 1)
-            return cls(suit, points)
 
     def __init__(self, game_creator="", id=0):
         BeloteGame.__init__(self, game_creator, id)
         BeloteGame.nb_cards_first_deal = {1: 8, 2: 8, 3: 8, 4: 8}
         self.current_bet = None
-        self.contree_status = ContreeGame.ContreStatus.NORMAL
+        self.contree_status = ContreStatus.NORMAL
         self.init_bets()
 
     def get_state(self):
@@ -135,13 +113,13 @@ class ContreeGame(BeloteGame):
         if player in self.players:
             self.init_bets()
         else:
-            self.bets[player] = ContreeGame.Announce("", "")
+            self.bets[player] = Announce("", "")
 
 
     def init_bets(self):
         print ("Initializing bets")
         for player in self.players:
-            self.bets[player] = ContreeGame.Announce("", "")
+            self.bets[player] = Announce("", "")
 
 
     def update_scores(self):
@@ -174,18 +152,16 @@ class ContreeGame(BeloteGame):
                 partner = self.next_player(self.next_player(self.player_with_belote))
                 self.scores[partner] = self.scores[self.player_with_belote]
             if player_points[0] + player_points[2] >= self.bets[0].points:
-                self.scores[players[0]] += player_points[0] + player_points[2] + self.bonus_litige
+                self.scores[players[0]] += player_points[0] + player_points[2]
                 self.scores[players[2]] = self.scores[players[0]]
                 self.scores[players[1]] += player_points[1] + player_points[3]
                 self.scores[players[3]] = self.scores[players[1]]
-                self.bonus_litige = 0
                 self.__hand_winner.append(players[0])
                 self.__hand_winner.append(players[2])
 
             else:
-                self.scores[players[1]] += BeloteGame.TOTAL_POINTS + self.bonus_litige
+                self.scores[players[1]] += BeloteGame.TOTAL_POINTS
                 self.scores[players[3]] = self.scores[players[1]]
-                self.bonus_litige = 0
                 self.__hand_winner.append(players[1])
                 self.__hand_winner.append(players[3])
 

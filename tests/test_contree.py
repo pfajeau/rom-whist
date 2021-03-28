@@ -1,6 +1,7 @@
 import logging
 from romwhist.contree.contree import ContreeGame
 from romwhist.belote.belote import BeloteGame
+from romwhist.contree.announce import Announce, ContreStatus
 
 from tests import test_common
 
@@ -25,17 +26,17 @@ def main():
 
     # Test Place Bet
     assert (len(contree.get_allowed_bets("Joe")) == len(ContreeGame.all_bet_points))
-    bet = ContreeGame.Announce("Spade", 80)
+    bet = Announce("Spade", 80)
     contree.place_bet("Joe", bet)
     assert contree.active_player == "Jack", contree.active_player
 
     assert (len(contree.get_allowed_bets("Jack")) == len(ContreeGame.all_bet_points) - 1)
-    bet = ContreeGame.Announce("Heart", 90)
+    bet = Announce("Heart", 90)
     contree.place_bet("Jack", bet)
     assert contree.active_player == "Jim", contree.active_player
 
     assert (len(contree.get_allowed_bets("Jim")) == len(ContreeGame.all_bet_points) - 2)
-    bet = ContreeGame.Announce("Diamond", "Capot")
+    bet = Announce("Diamond", "Capot")
     contree.place_bet("Jim", bet)
     assert contree.active_player == "Joe", contree.active_player
     assert contree.phase == BeloteGame.GamePhase.PLAY, contree.active_player
