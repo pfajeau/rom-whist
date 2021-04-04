@@ -81,7 +81,7 @@ class BeloteAiPlayer(AiPlayer):
         if ratio_win > 0.75:
             return bet
         else:
-            return allowed_bets[0]
+            return "Pass"
 
 
     def compute_bet_agent(self):

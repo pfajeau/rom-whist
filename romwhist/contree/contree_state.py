@@ -25,6 +25,5 @@ class ContreeState(BeloteState):
         for suit in Card.SUIT_NAMES:
         #     for bet_point in self.allowed_bets:
         #         allowed.append(ContreeGame.Announce(suit, bet_point))
-            # return the lowest points allowed to bet for each suit
-            allowed.append(Announce(suit, self.allowed_bets[0]))
+            allowed.append(suit)
         return allowed

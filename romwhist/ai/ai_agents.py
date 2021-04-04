@@ -186,7 +186,7 @@ class SimpleMCTSAgent(IAgent):
         for game in games:
             if game.sim_player_won():
                 self.action_value[game.starting_action] += 1
-            self.action_points[game.starting_action] += game.scores[self.ai_player]
+            self.action_points[game.starting_action] += game.hand_points[self.ai_player]
             self.num_simulations_total += 1
 
         best_action = self.compute_best_action(legal_actions)
@@ -219,7 +219,7 @@ class SimpleMCTSAgent(IAgent):
         for game in games:
             if game.sim_player_won():
                 self.action_value[game.bets[self.ai_player]] += 1
-            self.action_points[game.bets[self.ai_player]] += game.scores[self.ai_player]
+            self.action_points[game.bets[self.ai_player]] += game.hand_points[self.ai_player]
             self.num_simulations_total += 1
 
         best_bet = self.compute_best_action(legal_bets)
@@ -253,7 +253,6 @@ class SimpleMCTSAgent(IAgent):
                 futures_queue.put(future)
             else:
                 assert future.result()
-
 
     def compute_best_action(self, legal_actions):
         logging.info("action_value: %s", self.action_value)

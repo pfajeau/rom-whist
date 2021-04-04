@@ -1,6 +1,7 @@
 import json
 import logging
 
+from contree.announce import Announce
 from romwhist.contree.contree_state import ContreeState
 from romwhist.belote.belote_ai import BeloteAiPlayer
 
@@ -55,24 +56,23 @@ class ContreeAiPlayer(BeloteAiPlayer):
         self.game_state.active_player = self.game_state.next_player(self.game_state.dealer)
 
         # Remove Pass option
-        self.game_state.allowed_bets.pop(0)
+        # self.game_state.allowed_bets.pop(0)
 
-        bet = self._agent2.get_bet(self.game_state)
+        bet_suit = self._agent2.get_bet(self.game_state)
 
-        nb_simulations = self._agent2.num_simulations_per_action[bet]
-        nb_wins_for_best_bet = self._agent2.action_value[bet]
-        ratio_win = 0
-        if nb_simulations != 0:
-            ratio_win = nb_wins_for_best_bet/nb_simulations
+        nb_simulations = self._agent2.num_simulations_per_action[bet_suit]
+        avg_points_for_bet = self._agent2.action_points[bet_suit] / nb_simulations
+        # Bet on avg_points_per_bet
+        bet_points = round(avg_points_for_bet, -2) - 10
+        if bet_points < game_state.allowed_bets[0]:
+            bet_points = 0
+            bet_suit = "Pass"
 
-        logging.info("Agent calculated bet: %s", bet)
-        logging.info("Ratio of wins for that bet: %s", ratio_win)
+        logging.info("Agent calculated bet: %s", bet_suit)
+        logging.info("Avg points for this bet: %s", avg_points_for_bet)
 
-        # Only take if the bet will lead to a significant number of wins
-        if ratio_win > 0.75:
-            return bet
-        else:
-            return allowed_bets[0]
+        bet = Announce(bet_suit, bet_points)
+        return bet
 
     def compute_bet_agent(self):
         return self._agent2.get_bet(self.game_state)
