@@ -16,6 +16,7 @@ from flask_socketio import join_room, leave_room
 from romwhist import common_routes
 from romwhist import socketio
 from romwhist.contree.contree import ContreeGame
+from romwhist.contree.announce import Announce, ContreStatus
 from romwhist.belote.belote import BeloteGame
 from romwhist.belote.belote_form import BeloteStartForm
 from romwhist.extensions import db
@@ -133,7 +134,7 @@ def contree_play():
             return redirect(url_for('contree_play'))
 
         if request.form['action_game'] == "add_ai":
-            common_routes.add_ai_player("ai_" + game_id + "_" + str(len(game.players)),
+            common_routes.add_ai_player(len(game.players),
                                         game_id, NAMESPACE_AI)
             return redirect(url_for('contree_play'))
 
@@ -199,8 +200,6 @@ def game_started():
     if game_id is not None:
         game = games.get(game_id)
         if game is not None:
-            # In automated dealing, call start_hands with computed nb of cards and trump
-            # In case it is a restart
             game.reset()
             game.start_game()
             player = game.get_playing_players()[randint(0, len(game.get_playing_players()) - 1)]
@@ -220,15 +219,15 @@ def player_bet_ai(data):
     game_id = data.get('game_id')
     bet_suit = data.get('bet_suit')
     bet_points = data.get('bet_points')
-    bet = ContreeGame.Announce(bet_suit, bet_points)
+    bet = Announce(bet_suit, bet_points)
     player_bet_process(player, game_id, bet)
 
 
 @socketio.on("player bet", namespace=NAMESPACE)
-def player_bet(bet_as_str):
+def player_bet(bet_suit, bet_points):
     logging.info("player bet event received")
-    bet = ContreeGame.Announce.from_str(bet_as_str)
-    logging.info("Player bet: %s", bet_as_str)
+    bet = Announce(bet_suit, bet_points)
+    logging.info("Player bet: %s %s", bet_suit, bet_points)
     player = session.get('username')
     game_id = session.get('game_id')
 
@@ -431,7 +430,7 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
         logging.error("Unknown game: " + str(game_id))
         return
 
-    hands = game.deal_1(username)
+    hands = game.deal(username)
 
     # FInd out who the first player to bet is
     nplayer = game.get_active_player()

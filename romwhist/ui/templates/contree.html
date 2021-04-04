@@ -74,15 +74,28 @@
       post_msg();
     }
 
-    // Register action for bet input field
-    id_bet = "#bets_" + username
-    $(id_bet).change(function() {
-      bet = $(id_bet + " option:selected").text();
-      if (bet != "Select") {
-        console.log("Bet:" + bet)
-        socket.emit("player bet", bet);
+    // Register action for bet suit input field
+    id_bet_suit = "#bets_suit_" + username
+    $(id_bet_suit).change(function() {
+      bet_suit = $(id_bet_suit + " option:selected").text();
+      if (bet_suit != "Select") {
+        console.log("Bet:" + bet_suit)
+        $(id_bet_points).prop("enabled", true)
+      }
+      return
+    });
+
+    // Register action for bet points input field
+    id_bet_points = "#bets_points_" + username
+    $(id_bet_points).change(function() {
+      bet_points = $(id_bet_points + " option:selected").text();
+      if (bet_points != "Select") {
+        bet_suit = $(id_bet_suit + " option:selected").text();
+        console.log("Bet:" + bet_points)
+        socket.emit("player bet", bet_suit, bet_points);
         //$(id_bet + " [readonly=readonly] option:not(:selected)").prop('disabled', true);
-        $(id_bet).prop("disabled", true)
+        $(id_bet_points).prop("disabled", true)
+        $(id_bet_suit).prop("disabled", true)
       }
       return
     });
@@ -109,7 +122,7 @@
 
     // Connect to websocket
     console.log("Connecting to io")
-    socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/belote');
+    socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/contree');
     socket.on('connect', function() {
       console.log("Connected to io")
 
@@ -387,7 +400,7 @@
       <td class="td_player_info">
         <select name="bets_suit" id="bets_suit_{{ player }}" disabled>
             <option value="select" selected>Select</option>
-            <option value="Pass">Spade</option>
+            <option value="Pass">Pass</option>
             <option value="Spade">Spade</option>
             <option value="Heart">Heart</option>
             <option value="Diamond">diamond</option>

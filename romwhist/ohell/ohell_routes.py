@@ -155,7 +155,7 @@ def ohell_play():
             return redirect(url_for('ohell_play'))
 
         if request.form['action_game'] == "add_ai":
-            common_routes.add_ai_player("ai_" + game_id + "_" + str(len(game.players)),
+            common_routes.add_ai_player(len(game.players),
                                         game_id, NAMESPACE_AI)
             return redirect(url_for('ohell_play'))
     else:

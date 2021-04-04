@@ -18,7 +18,7 @@ class ContreeState(BeloteState):
                  owner=owner, dealer=dealer, bets=bets, allowed_bets=allowed_bets, trump_card=trump_card,
                  phase=phase, hand_points=hand_points, hand_winner=hand_winner, taker=taker)
 
-        self.contre_status = contree_status
+        self.contree_status = contree_status
 
     def get_legal_bets(self):
         allowed = []

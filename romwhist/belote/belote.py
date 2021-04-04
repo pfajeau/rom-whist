@@ -275,7 +275,7 @@ class BeloteGame(CardGame):
         # any card is allowed
         allowed_cards = []
         if self.current_round is None:
-            logging.error("Current round is None")
+            logging.debug("Current round is None")
             return allowed_cards
         if self.current_round.get_first_card_played() is None:
             # Round is just starting, all cards are allowed

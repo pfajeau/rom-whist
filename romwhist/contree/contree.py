@@ -20,7 +20,7 @@ class ContreeGame(BeloteGame):
     def get_state(self):
         state = ContreeState(self.id)
         self.populate_state(state)
-        state.contre_status = self.contree_status
+        state.contree_status = self.contree_status
         return state
 
     def set_state(self, state):
@@ -119,7 +119,7 @@ class ContreeGame(BeloteGame):
     def init_bets(self):
         print ("Initializing bets")
         for player in self.players:
-            self.bets[player] = Announce("", "")
+            self.bets[player] = Announce("", 0)
 
 
     def update_scores(self):

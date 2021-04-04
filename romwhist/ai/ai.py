@@ -8,8 +8,11 @@ import socketio
 from flask_socketio import emit
 from romwhist.belote.belote_ai import BeloteAiPlayer
 from romwhist.ohell.ohell_ai import OhellAiPlayer
+from romwhist.contree.contree_ai import ContreeAiPlayer
 
-NAMESPACES = {'ohell': '/ohell_ai', 'belote': '/belote_ai'}
+NAMESPACES = {'ohell': '/ohell_ai',
+              'belote': '/belote_ai',
+              'contree': '/contree_ai'}
 
 this = sys.modules[__name__]
 sio = socketio.Client()
@@ -103,7 +106,6 @@ def player_bet(data):
         ai_player.player_bet(player, bet)
 
 
-
 # @sio.on('player to play', namespace=NAMESPACE)
 def player_to_play(data):
     logging.info("player to play event received")
@@ -170,6 +172,8 @@ def create_ai_player(data):
         player = BeloteAiPlayer(name, game_id)
     elif this.game_type == "ohell":
         player = OhellAiPlayer(name, game_id)
+    elif this.game_type == "contree":
+        player = ContreeAiPlayer(name, game_id)
 
     if players.get(game_id) is None:
         players[game_id] = dict()

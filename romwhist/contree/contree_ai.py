@@ -1,7 +1,7 @@
 import json
 import logging
 
-from romwhist.belote.belote_state import BeloteState
+from romwhist.contree.contree_state import ContreeState
 from romwhist.belote.belote_ai import BeloteAiPlayer
 
 
@@ -12,7 +12,7 @@ class ContreeAiPlayer(BeloteAiPlayer):
         BeloteAiPlayer.__init__(self, name, game_id)
 
     def player_to_play(self, allowed_cards, game_state_json):
-        game_state = BeloteState(**json.loads(game_state_json))
+        game_state = ContreeState(**json.loads(game_state_json))
         self.game_state = game_state
         #self.game_state.allowed_cards = allowed_cards  # Unecessary
 
@@ -23,15 +23,15 @@ class ContreeAiPlayer(BeloteAiPlayer):
         if len(self.game_state.allowed_cards) == 0:
             raise RuntimeError("Allowed cards is empty!")
 
-        best_card = self.__agent.get_action(self.game_state)
+        best_card = self._agent.get_action(self.game_state)
 
         # Select the card which result in the most points
         best_avg_points = 0
         for card in self.game_state.allowed_cards:
-            points_for_card = self.__agent.action_points[card]
+            points_for_card = self._agent.action_points[card]
             avg_points_for_card = 0
-            if self.__agent.num_simulations_per_action[card] > 0:
-                avg_points_for_card = points_for_card / self.__agent.num_simulations_per_action[card]
+            if self._agent.num_simulations_per_action[card] > 0:
+                avg_points_for_card = points_for_card / self._agent.num_simulations_per_action[card]
             logging.info("Avg points for card %s: %s", card, avg_points_for_card)
             if avg_points_for_card > best_avg_points:
                 best_avg_points = max(best_avg_points, avg_points_for_card)
@@ -41,13 +41,13 @@ class ContreeAiPlayer(BeloteAiPlayer):
         return best_card
 
     def set_game_state_from_json(self, state_as_json):
-        self.game_state = BeloteState(**json.loads(state_as_json))
+        self.game_state = ContreeState(**json.loads(state_as_json))
 
     # TODO
     def player_to_bet(self, allowed_bets, game_state_json):
         logging.debug("Belote AI PLayer to bet: %s", self.name)
         logging.debug("Game state: %s", game_state_json)
-        game_state = BeloteState(**json.loads(game_state_json))
+        game_state = ContreeState(**json.loads(game_state_json))
         self.game_state = game_state
 
         # Make active player the one that will start playing
@@ -57,10 +57,10 @@ class ContreeAiPlayer(BeloteAiPlayer):
         # Remove Pass option
         self.game_state.allowed_bets.pop(0)
 
-        bet = self.__agent2.get_bet(self.game_state)
+        bet = self._agent2.get_bet(self.game_state)
 
-        nb_simulations = self.__agent2.num_simulations_per_action[bet]
-        nb_wins_for_best_bet = self.__agent2.action_value[bet]
+        nb_simulations = self._agent2.num_simulations_per_action[bet]
+        nb_wins_for_best_bet = self._agent2.action_value[bet]
         ratio_win = 0
         if nb_simulations != 0:
             ratio_win = nb_wins_for_best_bet/nb_simulations
@@ -74,8 +74,7 @@ class ContreeAiPlayer(BeloteAiPlayer):
         else:
             return allowed_bets[0]
 
-
     def compute_bet_agent(self):
-        return self.__agent2.get_bet(self.game_state)
+        return self._agent2.get_bet(self.game_state)
 
 

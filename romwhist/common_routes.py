@@ -61,13 +61,16 @@ def post_msg(msg, sender, room, namespace):
 #       game._current_hand_nb = game._current_hand_nb - 1  # Deal again
 #       generate_hands(game.id, game.dealer)
 
+
 def add_player(user, game, namespace):
     game.add_player(user)
     socketio.emit("new player", user, room=game.id, namespace=namespace)
 
+
 # To create an ai player
-def add_ai_player(player_name, game_id, namespace):
-    socketio.emit("create_ai_player", {"name": player_name, "game_id": game_id}, namespace=namespace)
+def add_ai_player(nb_players, game_id, namespace):
+    ai_name = "ai" + game_id + "_" + str(nb_players)
+    socketio.emit("create_ai_player", {"name": ai_name, "game_id": game_id}, namespace=namespace)
 
 
 def sanitize_username(username1):
@@ -108,6 +111,7 @@ def join_game(games, game_id, username, start_page, play_page, namespace, form):
     add_player(username, game, namespace)
     return redirect(url_for(play_page))
 
+
 def generate_game_id(max_id, games):
     if len(games) == max_id:
         error = "No more games available!!! Please try again later"
@@ -134,40 +138,41 @@ def next_round(game, nplayer, allowed_cards, hand_completed_cb, namespace):
             {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards},
             room=game_id, namespace=namespace, game_state=game.get_state())
 
+
 # Utility mothod to emit an event to both real players and the ai players
 # data must contain the game_id
 def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_state=None):
-    # If no room speified assumes it is not for any web clients
     if room is not None:
-        socketio.emit(event, data, game_id = None, room=room, namespace=namespace)
+        # If room specified assumes it goes to the web clients
+        socketio.emit(event, data, game_id = game_id, room=room, namespace=namespace)
 
     if game_id is None:
-        # In this case, teh game_id has to be part of the data being passed
+        # In this case, the game_id has to be part of the data being passed
         game_id = data.get("game_id")
         if game_id is None:
             logging.error("game_id not specified")
-            return
         else:
             if game_state is not None:
                 data['state'] = game_state.toJson()
             socketio.emit(event, data, namespace=namespace + "_ai")
-            return
+        return
 
     else:
         # game_id is passed to this function
         # Add game_id to the parameters for the event
         # TODO refactor so that all calls include the game id in the
         # data being passed
+        data2 = dict()
         if isinstance(data, dict):
-            data["game_id"] = game_id
+            data2 = data
+            data2["game_id"] = game_id
             if game_state is not None:
-                data['state'] = game_state.toJson()
+                data2['state'] = game_state.toJson()
         else:
-            data2 = dict()
             data2["game_id"] = game_id
             data2['param'] = data
             if game_state is not None:
-                data['state'] = game_state.toJson()
+                data2['state'] = game_state.toJson()
 
         socketio.emit(event, data2, namespace=namespace+"_ai")
 

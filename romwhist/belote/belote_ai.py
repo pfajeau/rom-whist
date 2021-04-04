@@ -11,11 +11,11 @@ class BeloteAiPlayer(AiPlayer):
 
     def __init__(self, name, game_id):
         AiPlayer.__init__(self, name, game_id)
-        self.__agent = SimpleMCTSAgent('BeloteSim', name,
-                                       action_chooser_function='random_action',
-                                       num_simulations=100)
+        self._agent = SimpleMCTSAgent('BeloteSim', name,
+                                      action_chooser_function='random_action',
+                                      num_simulations=100)
 
-        self.__agent2 = SimpleMCTSAgent('BeloteSim', name,
+        self._agent2 = SimpleMCTSAgent('BeloteSim', name,
                                        action_chooser_function='random_action',
                                        num_simulations=100)
 
@@ -33,15 +33,15 @@ class BeloteAiPlayer(AiPlayer):
         if len(self.game_state.allowed_cards) == 0:
             raise RuntimeError("Allowed cards is empty!")
 
-        best_card = self.__agent.get_action(self.game_state)
+        best_card = self._agent.get_action(self.game_state)
 
         # Select the card which result in the most points
         best_avg_points = 0
         for card in self.game_state.allowed_cards:
-            points_for_card = self.__agent.action_points[card]
+            points_for_card = self._agent.action_points[card]
             avg_points_for_card = 0
-            if self.__agent.num_simulations_per_action[card] > 0:
-                avg_points_for_card = points_for_card / self.__agent.num_simulations_per_action[card]
+            if self._agent.num_simulations_per_action[card] > 0:
+                avg_points_for_card = points_for_card / self._agent.num_simulations_per_action[card]
             logging.info("Avg points for card %s: %s", card, avg_points_for_card)
             if avg_points_for_card > best_avg_points:
                 best_avg_points = max(best_avg_points, avg_points_for_card)
@@ -66,10 +66,10 @@ class BeloteAiPlayer(AiPlayer):
         # Remove Pass option
         self.game_state.allowed_bets.pop(0)
 
-        bet = self.__agent2.get_bet(self.game_state)
+        bet = self._agent2.get_bet(self.game_state)
 
-        nb_simulations = self.__agent2.num_simulations_per_action[bet]
-        nb_wins_for_best_bet = self.__agent2.action_value[bet]
+        nb_simulations = self._agent2.num_simulations_per_action[bet]
+        nb_wins_for_best_bet = self._agent2.action_value[bet]
         ratio_win = 0
         if nb_simulations != 0:
             ratio_win = nb_wins_for_best_bet/nb_simulations
@@ -85,6 +85,6 @@ class BeloteAiPlayer(AiPlayer):
 
 
     def compute_bet_agent(self):
-        return self.__agent2.get_bet(self.game_state)
+        return self._agent2.get_bet(self.game_state)
 
 
