@@ -23,8 +23,12 @@ class Announce(dict):
 
     @classmethod
     def from_str(cls, announce_as_string):
-        suit, points = announce_as_string.split("_", 1)
-        return cls(suit, points)
+        print (announce_as_string)
+        if announce_as_string == "":
+            return None
+        else:
+            suit, points = announce_as_string.split("_", 1)
+            return cls(suit, points)
 
 
 class ContreStatus(str, Enum):

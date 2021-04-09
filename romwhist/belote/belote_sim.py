@@ -23,8 +23,10 @@ class BeloteSim(BeloteGame):
 
         if state is not None:
             state_copy = copy.deepcopy(state)
+            self.players = state.players
+            self.soft_init_dict(state_copy.bets, "")
             self.set_state(state_copy)
-            logging.debug("In OhellSim, state is %s:", state_copy.toJson())
+            logging.debug("In BeloteSim, state is %s:", state_copy.toJson())
 
     def play_single_move(self):
         logging.debug("Playing single move")
@@ -56,7 +58,7 @@ class BeloteSim(BeloteGame):
         if self.phase == BeloteGame.GamePhase.BET or self.phase == BeloteGame.GamePhase.BET2:
             self.place_bet(self.sim_player, self.bets[self.sim_player])
 
-            # Re-create hands from deck fo rother players for the simulation
+            # Re-create hands from deck for other players for the simulation
             self.deck.remove_card(self.trump_card)
             for player in self.players:
                 if player != self.sim_player:
@@ -81,6 +83,7 @@ class BeloteSim(BeloteGame):
         if self.current_round is None:
             self.create_round()
 
+        self.phase = BeloteGame.GamePhase.PLAY
         while winner is None:
             winner = self.play_single_move()
 

@@ -4,6 +4,7 @@ from romwhist.contree.announce import Announce, ContreStatus
 from romwhist.belote.belote_state import BeloteState
 
 class ContreeState(BeloteState):
+    # Note: bets must be passed as a list of strings
     def __init__(self, game_id, sim_player=None, players=[], trump="", cards_played_per_player=dict(),
                  cards_played_per_round=dict(), deck_size=0,
                  hand_cards=dict(), allowed_cards=[], active_player="", scores=dict(),
@@ -25,5 +26,5 @@ class ContreeState(BeloteState):
         for suit in Card.SUIT_NAMES:
         #     for bet_point in self.allowed_bets:
         #         allowed.append(ContreeGame.Announce(suit, bet_point))
-            allowed.append(suit)
+            allowed.append(str(Announce(suit, 80)))
         return allowed

@@ -9,6 +9,7 @@ from romwhist.card import Card
 from romwhist.game_state import GameState
 from romwhist.belote.belote_sim import BeloteSim
 from romwhist.ohell.ohell_sim import OhellSim
+from romwhist.contree.contree_sim import ContreeSim
 
 def lookup(name, namespace):
     """
@@ -217,9 +218,10 @@ class SimpleMCTSAgent(IAgent):
 
         self.run_simulation(games, num_simulations)
         for game in games:
+            bet = game.get_state().bets[self.ai_player]
             if game.sim_player_won():
-                self.action_value[game.bets[self.ai_player]] += 1
-            self.action_points[game.bets[self.ai_player]] += game.hand_points[self.ai_player]
+                self.action_value[bet] += 1
+            self.action_points[bet] += game.hand_points[self.ai_player]
             self.num_simulations_total += 1
 
         best_bet = self.compute_best_action(legal_bets)

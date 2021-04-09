@@ -93,7 +93,7 @@ class CardGame:
         state.allowed_cards = self.get_allowed_cards(state.active_player)
         logging.debug("state.allowed_cards: %s", state.allowed_cards)
 
-        state.bets = self.bets
+        state.bets = copy.deepcopy(self.bets)
         state.trump_card = str(self.trump_card)
         return copy.deepcopy(state)
 

@@ -21,10 +21,18 @@ class ContreeGame(BeloteGame):
         state = ContreeState(self.id)
         self.populate_state(state)
         state.contree_status = self.contree_status
+        for player in self.players:
+            state.bets[player] = str(self.bets[player])
+
         return state
 
     def set_state(self, state):
+        BeloteGame.set_state(self,state)
         self.contree_status = state.contree_status
+        for player in self.players:
+            print (state.bets[player])
+            print (self.bets[player])
+            self.bets[player] = Announce.from_str(state.bets[player])
 
     def place_bet(self, player, bet):
         logging.info("Player " + player + "bid: " + str(bet))
@@ -43,6 +51,8 @@ class ContreeGame(BeloteGame):
                 else:
                     self.phase = BeloteGame.GamePhase.PLAY
                     self.active_player = self.next_player(self.dealer)
+                    self.trump_suit =  self.current_bet.suit
+
             return
 
         if bet.points == "Capot" or self.next_player_to_bet(player) is None:
@@ -108,6 +118,9 @@ class ContreeGame(BeloteGame):
     def deal(self, dealer=""):
         return self.deal_cards(int(self.deck_size / len(self.players)), dealer)
 
+    def deal_2(self):
+        return
+
     def add_player(self, player):
         BeloteGame.add_player(self, player)
         if player in self.players:
@@ -117,7 +130,6 @@ class ContreeGame(BeloteGame):
 
 
     def init_bets(self):
-        print ("Initializing bets")
         for player in self.players:
             self.bets[player] = Announce("", 0)
 
@@ -151,7 +163,7 @@ class ContreeGame(BeloteGame):
                 # the belote points to be the same
                 partner = self.next_player(self.next_player(self.player_with_belote))
                 self.scores[partner] = self.scores[self.player_with_belote]
-            if player_points[0] + player_points[2] >= self.bets[0].points:
+            if player_points[0] + player_points[2] >= self.bets[players[0]].points:
                 self.scores[players[0]] += player_points[0] + player_points[2]
                 self.scores[players[2]] = self.scores[players[0]]
                 self.scores[players[1]] += player_points[1] + player_points[3]

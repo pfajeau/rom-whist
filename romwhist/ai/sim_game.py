@@ -1,5 +1,6 @@
 import logging
 from abc import abstractmethod
+import copy
 
 from romwhist.game import CardGame
 from romwhist.game_state import GameState
@@ -33,7 +34,7 @@ class SimGame(CardGame):
         self.agent = agent  # type: IAgent
         self.other_agent = other_agent  # type: IAgent
         self.games_counter = [0, 0]
-        self.initial_state = copy(state)
+        self.initial_state = copy.deepcopy(state)
 
 
     def play_single_move(self):

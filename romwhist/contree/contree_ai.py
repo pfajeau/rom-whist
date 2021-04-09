@@ -4,13 +4,26 @@ import logging
 from contree.announce import Announce
 from romwhist.contree.contree_state import ContreeState
 from romwhist.belote.belote_ai import BeloteAiPlayer
+from romwhist.ai.ai_agents import SimpleMCTSAgent
+from romwhist.ai.ai_player import AiPlayer
 
 
 # TODO: factorize with OhellAIPlayer
 class ContreeAiPlayer(BeloteAiPlayer):
 
     def __init__(self, name, game_id):
-        BeloteAiPlayer.__init__(self, name, game_id)
+        AiPlayer.__init__(self, name, game_id)
+        self._agent = SimpleMCTSAgent('ContreeSim', name,
+                                      action_chooser_function='random_action',
+                                      num_simulations=100)
+
+        self._agent2 = SimpleMCTSAgent('ContreeSim', name,
+                                       action_chooser_function='random_action',
+                                       num_simulations=100)
+
+        self.game_state = ContreeState(game_id, self.name)
+
+        #BeloteAiPlayer.__init__(self, name, game_id)
 
     def player_to_play(self, allowed_cards, game_state_json):
         game_state = ContreeState(**json.loads(game_state_json))
@@ -61,10 +74,11 @@ class ContreeAiPlayer(BeloteAiPlayer):
         bet_suit = self._agent2.get_bet(self.game_state)
 
         nb_simulations = self._agent2.num_simulations_per_action[bet_suit]
+
         avg_points_for_bet = self._agent2.action_points[bet_suit] / nb_simulations
         # Bet on avg_points_per_bet
         bet_points = round(avg_points_for_bet, -2) - 10
-        if bet_points < game_state.allowed_bets[0]:
+        if bet_points < int(game_state.allowed_bets[0]):
             bet_points = 0
             bet_suit = "Pass"
 

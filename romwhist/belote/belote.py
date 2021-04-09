@@ -506,7 +506,7 @@ class BeloteGame(CardGame):
 
         # Create a hand with nb_cards for each player
         for player in self.get_playing_players():
-            hand = Hand(self.deck, BeloteGame.nb_cards_first_deal[len(self.players)], player)
+            hand = Hand(self.deck, nb_cards, player)
             self.hands[player] = hand.sort()
             logging.debug("Hand for player " + player + " : " + str(hand.serialize()))
 
