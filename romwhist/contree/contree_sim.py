@@ -71,7 +71,7 @@ class ContreeSim(BeloteSim, ContreeGame):
 
     def game_loop(self):
        # self.phase = BeloteGame.GamePhase.PLAY
-        self.taker = self.sim_player
+        #self.taker = self.sim_player
 
         BeloteSim.game_loop(self)
         #self.phase = ContreeGame.GamePhase.PLAY
