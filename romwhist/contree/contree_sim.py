@@ -72,7 +72,6 @@ class ContreeSim(BeloteSim, ContreeGame):
     def game_loop(self):
        # self.phase = BeloteGame.GamePhase.PLAY
         self.taker = self.sim_player
-        self.trump_suit = self.bets[self.sim_player].suit
 
         BeloteSim.game_loop(self)
         #self.phase = ContreeGame.GamePhase.PLAY

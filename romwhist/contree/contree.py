@@ -65,10 +65,9 @@ class ContreeGame(BeloteGame):
         else:
             self.active_player = self.next_player(player)
 
-            if self.current_bet is None:
+            if self.current_bet is None or bet > self.current_bet:
                 self.current_bet = bet
-            elif bet > self.current_bet:
-                self.current_bet = bet
+                self.trump_suit = bet.suit
             else:
                 logging.error("Invalid Bet: %s", bet)
 
