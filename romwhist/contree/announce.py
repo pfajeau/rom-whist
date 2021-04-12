@@ -23,7 +23,6 @@ class Announce(dict):
 
     @classmethod
     def from_str(cls, announce_as_string):
-        print (announce_as_string)
         if announce_as_string == "":
             return None
         else:

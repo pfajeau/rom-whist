@@ -13,7 +13,7 @@ def main():
         contree.add_player(player)
     assert (len(contree.get_playing_players()) == 4)
     assert contree.bets["Joe"].suit == "", contree.bets["Joe"].suit
-    assert contree.bets["Joe"].points == "", contree.bets["Joe"].points
+    assert contree.bets["Joe"].points == 0, contree.bets["Joe"].points
     contree.start_game()
 
     contree.deal(dealer="Johnny")
@@ -39,7 +39,7 @@ def main():
     bet = Announce("Diamond", "Capot")
     contree.place_bet("Jim", bet)
     assert contree.active_player == "Joe", contree.active_player
-    assert contree.phase == BeloteGame.GamePhase.PLAY, contree.active_player
+    assert contree.phase == BeloteGame.GamePhase.PLAY, contree.phase
 
     # Simulate a game and check scoring works
     # First use a pre-defined set of cards for each player

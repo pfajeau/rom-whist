@@ -259,12 +259,13 @@ class SimpleMCTSAgent(IAgent):
     def compute_best_action(self, legal_actions):
         logging.info("action_value: %s", self.action_value)
         logging.info("action_points: %s", self.action_points)
+        logging.debug("Nb simulaitons per action %s", str(self.num_simulations_per_action))
 
-        # Choose best action
-        best_action = np.random.choice(legal_actions)
-        for action in legal_actions:
-            logging.info("action: %s, action has value %s", action, self.action_value[action])
-            logging.info("action: %s, action has points %s", action, self.action_points[action])
+        # Choose best action - start with
+        best_action = list(self.action_value.keys())[0]
+        for action in self.action_value:
+            logging.debug("action: %s, action has value %s", action, self.action_value[action])
+            logging.debug("action: %s, action has points %s", action, self.action_points[action])
             best_action = action if self.action_value[action] > self.action_value[best_action] \
                 else best_action
 

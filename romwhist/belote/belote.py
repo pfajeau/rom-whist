@@ -51,7 +51,7 @@ class BeloteGame(CardGame):
         self.__bonus_litige = 0
         self.__win_game_points = 1000
         self.init_dict(self.hand_points, 0)
-        self.__hand_winner = []
+        self._hand_winner = []
         self.deck = None
 
         self.reset_card_ranks_and_points()
@@ -72,7 +72,7 @@ class BeloteGame(CardGame):
 
     @property
     def hand_winner(self):
-        return self.__hand_winner
+        return self._hand_winner
 
     @property
     def bonus_litige(self):
@@ -361,7 +361,7 @@ class BeloteGame(CardGame):
         players.append(self.taker)
         player_points = []
         player_points.append(self.hand_points[self.taker])
-        self.__hand_winner = []
+        self._hand_winner = []
 
         for i in range(1, nb_players):
             players.append(self.next_player(players[i - 1]))
@@ -379,16 +379,16 @@ class BeloteGame(CardGame):
                 self.scores[players[0]] += player_points[0] + self.bonus_litige
                 self.scores[players[1]] += player_points[1]
                 self.bonus_litige = 0
-                self.__hand_winner.append(players[0])
+                self._hand_winner.append(players[0])
             elif player_points[1] > player_points[0]:
                 self.scores[players[1]] += player_points[0] + player_points[1] + self.bonus_litige
                 self.bonus_litige = 0
-                self.__hand_winner.append(players[1])
+                self._hand_winner.append(players[1])
             else:
                 # Players are tied
                 self.bonus_litige += player_points[0]
                 logging.info("Points litige: " + str(self.bonus_litige))
-                self.__hand_winner.append("")
+                self._hand_winner.append("")
 
             # Capot
             if self.wins[players[1]] == 0:
@@ -401,15 +401,15 @@ class BeloteGame(CardGame):
                 self.scores[players[0]] += player_points[0]
                 self.scores[players[1]] += player_points[1]
                 self.scores[players[2]] += player_points[2]
-                self.__hand_winner.append(players[0])
+                self._hand_winner.append(players[0])
             elif player_points[1] > player_points[2]:
                 self.scores[players[1]] += player_points[1] + player_points[0]
                 self.scores[players[2]] += player_points[2]
-                self.__hand_winner.append(players[1])
+                self._hand_winner.append(players[1])
             elif player_points[2] > player_points[1]:
                 self.scores[players[2]] += player_points[2] + player_points[0]
                 self.scores[players[1]] += player_points[1]
-                self.__hand_winner.append(players[2])
+                self._hand_winner.append(players[2])
                 # Player 1 has same number of points than player 2
             else:
                 self.scores[players[1]] += player_points[1] + player_points[0] / 2
@@ -444,22 +444,22 @@ class BeloteGame(CardGame):
                 self.scores[players[1]] += player_points[1] + player_points[3]
                 self.scores[players[3]] = self.scores[players[1]]
                 self.bonus_litige = 0
-                self.__hand_winner.append(players[0])
-                self.__hand_winner.append(players[2])
+                self._hand_winner.append(players[0])
+                self._hand_winner.append(players[2])
 
             elif player_points[1] + player_points[3] > player_points[0] + player_points[2]:
                 self.scores[players[1]] += BeloteGame.TOTAL_POINTS + self.bonus_litige
                 self.scores[players[3]] = self.scores[players[1]]
                 self.bonus_litige = 0
-                self.__hand_winner.append(players[1])
-                self.__hand_winner.append(players[3])
+                self._hand_winner.append(players[1])
+                self._hand_winner.append(players[3])
             else:
                 # Same number of points for both teams
                 # The team that did not take get their points
                 # The other team points are attributed to the winner of the next hand
                 self.bonus_litige += player_points[0]
                 logging.info("Points litige: " + str(self.bonus_litige))
-                self.__hand_winner.append("")
+                self._hand_winner.append("")
 
             # Capot
             points_capot = BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER

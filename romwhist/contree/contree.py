@@ -30,12 +30,10 @@ class ContreeGame(BeloteGame):
         BeloteGame.set_state(self,state)
         self.contree_status = state.contree_status
         for player in self.players:
-            print (state.bets[player])
-            print (self.bets[player])
             self.bets[player] = Announce.from_str(state.bets[player])
 
     def place_bet(self, player, bet):
-        logging.info("Player " + player + "bid: " + str(bet))
+        logging.info("Player " + player + " bet: " + str(bet))
         self.bets[player] = bet
 
         if bet.suit == "Pass":
@@ -43,8 +41,9 @@ class ContreeGame(BeloteGame):
             # Ask next player
             next_player = self.next_player(player)
             next_player_to_bet = self.next_player_to_bet(player)
+            logging.info("Next player to bet %s ", next_player_to_bet)
             if next_player_to_bet is None:
-                if self.bets[next_player] == "Pass":
+                if self.bets[next_player].suit == "Pass":
                     self.init_bets()
                     self.phase = BeloteGame.GamePhase.DEAL
                     self.dealer = self.next_player_to_deal()
@@ -52,10 +51,9 @@ class ContreeGame(BeloteGame):
                     self.phase = BeloteGame.GamePhase.PLAY
                     self.active_player = self.next_player(self.dealer)
                     self.trump_suit =  self.current_bet.suit
+                return
 
-            return
-
-        if bet.points == "Capot" or self.next_player_to_bet(player) is None:
+        if bet.points == BeloteGame.TOTAL_POINTS or self.next_player_to_bet(player) is None:
             # Move to PLAY phase
             self.phase = BeloteGame.GamePhase.PLAY
             self.trump_suit = bet.suit
@@ -68,14 +66,14 @@ class ContreeGame(BeloteGame):
             if self.current_bet is None or bet > self.current_bet:
                 self.current_bet = bet
                 self.trump_suit = bet.suit
-            else:
+            elif bet.suit != "Pass":
                 logging.error("Invalid Bet: %s", bet)
 
         return
 
     # Return None if all players have bet
     def next_player_to_bet(self, player):
-        logging.debug("Next player to bet after: " + player)
+        logging.debug("Computing next player to bet after: " + player)
         next_player = self.next_player(player)
         # If three other players than nplayers have passed and next_player has a bet
         # then move on to the play phase
@@ -84,19 +82,15 @@ class ContreeGame(BeloteGame):
         if self.bets[next_player] is None:
             return next_player
 
-        players = []
-        players.append(player)
+        # players = []
+        # players.append(player)
+        player2 = self.next_player(player)
         for i in range(1, len(self.players) - 1):
-            players.append(self.next_player(players[i - 1]))
-            if players[i] != next_player and self.bets[players[i]] != "Pass":
+            #players.append(self.next_player(players[i - 1]))
+            if self.bets[player2].suit != "Pass":
                 return next_player
+            player2 = self.next_player(player2)
 
-        # All 3 other players have passed
-        # Could mean hand needs to be re-done (if next_player has passed,
-        # or that game can start (if next_player has announced something)
-        # But case where next_player is the first to announce something? Other players
-        # that may have passed before have a change to announce as well. So need to be
-        # smarter TODO
         return None
 
     def get_allowed_bets(self, player):
@@ -157,24 +151,26 @@ class ContreeGame(BeloteGame):
 
         # TODO: remove test (always 4 players) and add support for contree / surcontree
         if nb_players == 4:
+            logging.debug("Bet points: %s", self.bets[players[0]].points)
             if self.player_with_belote is not None:
                 # set score of partner of player who may have gotten
                 # the belote points to be the same
                 partner = self.next_player(self.next_player(self.player_with_belote))
                 self.scores[partner] = self.scores[self.player_with_belote]
+
             if player_points[0] + player_points[2] >= self.bets[players[0]].points:
                 self.scores[players[0]] += player_points[0] + player_points[2]
                 self.scores[players[2]] = self.scores[players[0]]
                 self.scores[players[1]] += player_points[1] + player_points[3]
                 self.scores[players[3]] = self.scores[players[1]]
-                self.__hand_winner.append(players[0])
-                self.__hand_winner.append(players[2])
+                self._hand_winner.append(players[0])
+                self._hand_winner.append(players[2])
 
             else:
                 self.scores[players[1]] += BeloteGame.TOTAL_POINTS
                 self.scores[players[3]] = self.scores[players[1]]
-                self.__hand_winner.append(players[1])
-                self.__hand_winner.append(players[3])
+                self._hand_winner.append(players[1])
+                self._hand_winner.append(players[3])
 
             # Capot
             points_capot = BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER

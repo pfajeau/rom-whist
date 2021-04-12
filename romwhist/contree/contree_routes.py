@@ -216,10 +216,13 @@ def player_bet_ai(data):
     logging.debug("player bet event received for ai")
     logging.debug("Player bet: " + str(data.get('bet')))
     player = data.get('player')
+    bet = data.get('bet')
+    bet = Announce(bet['suit'], bet['points'])
+
     game_id = data.get('game_id')
-    bet_suit = data.get('bet_suit')
-    bet_points = data.get('bet_points')
-    bet = Announce(bet_suit, bet_points)
+    # bet_suit = data.get('bet_suit')
+    # bet_points = data.get('bet_points')
+    # bet = Announce(bet_suit, bet_points)
     player_bet_process(player, game_id, bet)
 
 
@@ -444,10 +447,10 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
             {'game_id': game_id, 'player': player, 'cards': cards},
             room=clients[game_id].get(player), namespace=NAMESPACE)
 
-    common_routes.emit_to_players(
-        "trump card",
-        {"game_id": game_id, "trump_card": str(game.trump_card), "trump_suit": str(game.trump_suit)},
-        room=game_id, namespace=NAMESPACE)
+    # common_routes.emit_to_players(
+    #     "trump card",
+    #     {"game_id": game_id, "trump_card": str(game.trump_card), "trump_suit": str(game.trump_suit)},
+    #     room=game_id, namespace=NAMESPACE)
 
     common_routes.emit_to_players(
         "player to bet",

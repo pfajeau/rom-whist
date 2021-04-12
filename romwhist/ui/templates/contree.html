@@ -78,7 +78,10 @@
     id_bet_suit = "#bets_suit_" + username
     $(id_bet_suit).change(function() {
       bet_suit = $(id_bet_suit + " option:selected").text();
-      if (bet_suit != "Select") {
+      if (bet_suit == "Pass"){
+        socket.emit("player bet", bet_suit, 0);
+      }
+      else if (bet_suit != "Select") {
         console.log("Bet:" + bet_suit)
         $(id_bet_points).prop("enabled", true)
       }
@@ -243,16 +246,24 @@
 
     socket.on('player bet', function(data) {
       console.log("player bet event received")
-      player_name=data['player']
-      bet=data['bet']
+      player_name = data['player']
+      bet_suit = data['bet_suit']
+      bet_points = data['bet_points']
       console.log("bet is: " + bet)
-      let id_bet = "#bets_" + player_name
+      let id_bet_suit = "#bets_suit_" + player_name
+      let id_bet_points = "#bets_points_" + player_name
 
-      idx = $(id_bet).find('option[value="' + bet + '"]').index()
+      idx = $(id_bet_suit).find('option[value="' + bet_suit + '"]').index()
       console.log("idx: " + idx)
-      $(id_bet).get(0).selectedIndex = idx
+      $(id_bet_suit).get(0).selectedIndex = idx
+
+      idx = $(id_bet_points).find('option[value="' + bet_points + '"]').index()
+      console.log("idx: " + idx)
+      $(id_bet_points).get(0).selectedIndex = idx
+
       make_player_inactive(player_name);
-      $(id_bet).removeClass("highlighted_field");
+      $(id_bet_suit).removeClass("highlighted_field");
+      $(id_bet_points).removeClass("highlighted_field");
       //$(id_bet).prop('readonly', true);
       // $(id_bet).prop("disabled", true)
     });
@@ -283,8 +294,10 @@
         html = html.concat("<td><table class='padding-between-cols'><tr>")
         html = html.concat("<td class='scoresheet_nb'>" + score + "</td></tr></table></td>")
         // Reset the bid selection list
-        bet_id = "#bets_" + player
-        $(bet_id).empty()
+        bet_id_suit = "#bets_suit_" + player
+        $(bet_id_suit).empty()
+        bet_id_points = "#bets_points_" + player
+        $(bet_id_points).empty()
       }
 
       html = html.concat("</tr>")

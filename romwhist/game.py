@@ -286,8 +286,8 @@ class CardGame:
                     if not cards_round.get(player) is None:
                         cards[player].append(str(cards_round[player]))
 
-            for player in self.players:
-                logging.debug("Cards played by %s: %s", player,  cards[player])
+            # for player in self.players:
+            #     logging.debug("Cards played by %s: %s", player,  cards[player])
         return cards
 
     def hand_completed(self) -> None:
