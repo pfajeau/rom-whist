@@ -77,17 +77,18 @@ class ContreeAiPlayer(BeloteAiPlayer):
         if nb_simulations != 0:
             avg_points_for_bet = self._agent2.action_points[bet_as_str] / nb_simulations
             # Bet on avg_points_per_bet
-            bet_points = round(avg_points_for_bet, -2)
+            bet_points = round(avg_points_for_bet, -1)
             if bet_points < int(game_state.allowed_bets[0]):
                 bet_points = 0
                 bet_as_str = "Pass_0"
-            logging.info("Agent calculated bet: %s", bet_as_str)
-            logging.info("Avg points for this bet: %s", avg_points_for_bet)
+            logging.info("Avg points for bet: %s", avg_points_for_bet)
         else:
             logging.error(("Computed Bet has no simulation!!"))
 
         bet = Announce.from_str(bet_as_str)
         bet = Announce(bet.suit, bet_points)
+        logging.info("Agent calculated bet: %s", str(bet))
+
         return bet
 
     def compute_bet_agent(self):

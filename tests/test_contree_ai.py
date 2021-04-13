@@ -16,9 +16,9 @@ def main():
     contree_ai = ContreeAiPlayer('AI1', '1')
     contree_ai.game_started(32, ["joe", "jack", "AI1", "jim"])
 
-    all_cards = {'AI1': ["s9", "s11", "s14", "s10", "c7", "c8", "h14", "h10"],
+    all_cards = {'AI1': ["s9", "s11", "s14", "s10", "c14", "c8", "h14", "h10"],
                  'jack': ["s7", "d8", "d7", "d10", "c9", "c12", "h8", "h12"],
-                 'joe': ["s12", "s13", "d9", "d12", "c10", "c14", "h9", "h11"],
+                 'joe': ["s12", "s13", "d9", "d12", "c10", "c7", "h9", "h11"],
                  'jim': ["s8", "d13", "d11", "d14", "c11", "c13", "h7", "h13"]}
 
     allowed_bets = ['80', '90','100','Capot']
@@ -30,11 +30,12 @@ def main():
     contree_ai.game_state.hand_cards = all_cards
     contree_ai.game_state.phase = ContreeGame.GamePhase.BET
     contree_ai.game_state.active_player = "AI1"
+    contree_ai.game_state.bets = {"joe": "Pass_0", "jack":"Pass_0", "AI1": "Pass_0", "jim":"Pass_0"}
 
     state_snapshop = copy.deepcopy(contree_ai.game_state)
     bet = contree_ai.player_to_bet(allowed_bets, json.dumps(contree_ai.game_state.__dict__))
     logging.info("bet = %s", bet)
-    assert bet.suit == "Spade"
+    assert bet.suit == "Spade", bet.suit
 
     # Test playing
     contree_ai.game_state = copy.deepcopy(state_snapshop)
