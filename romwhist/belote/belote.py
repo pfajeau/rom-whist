@@ -239,8 +239,8 @@ class BeloteGame(CardGame):
             self.set_cards_rank_and_value()
             self.active_player = self.next_player(self.dealer)
 
-            # TODO: active player must now be the one after the one that dealt the cards
-
+        return
+    
     # Return None if all players have bet
     def next_player_to_bet(self, player):
         logging.debug("Next player to bet after: " + player)

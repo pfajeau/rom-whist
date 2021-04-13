@@ -89,6 +89,8 @@ class ContreeGame(BeloteGame):
         # players = []
         # players.append(player)
         player2 = self.next_player(player)
+        if self.bets[player].suit == "Pass":
+            player2 = self.next_player(player2)
         for i in range(1, len(self.players) - 1):
             #players.append(self.next_player(players[i - 1]))
             if self.bets[player2].suit != "Pass":

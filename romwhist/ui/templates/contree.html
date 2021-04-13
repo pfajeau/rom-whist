@@ -411,8 +411,16 @@
         <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">Bid</label>
       </td>
       <td class="td_player_info">
+        <script>
+          console.log("{{ bets_suit[player] }}")
+          console.log("{{ bets_points[player] }}")
+        </script>
         <select name="bets_suit" id="bets_suit_{{ player }}" disabled>
+          {% if bets_suit[player] != "" %}
+            <option value="{{ bets_suit[player] }}" selected>{{ bets_suit[player] }}</option>
+          {% else %}
             <option value="select" selected>Select</option>
+          {% endif %}
             <option value="Pass">Pass</option>
             <option value="Spade">Spade</option>
             <option value="Heart">Heart</option>
@@ -420,16 +428,14 @@
             <option value="Club">Club</option>
         </select>
         <select name="bets_points" id="bets_points_{{ player }}" disabled>
-          {% if allowed_bets|length == 0 %}
-            {% if bets_points[player] != "" %}
-              <option value="{{ bets_points[player] }}" selected>{{ bets_points[player] }}</option>
-            {% endif %}
+          {% if bets_points[player] != "" %}
+            <option value="{{ bets_points[player] }}" selected>{{ bets_points[player] }}</option>
           {% else %}
             <option value="select" selected>Select</option>
-            {% for bet in allowed_bets -%}
-                <option value="{{ bet }}">{{ bet }}</option>
-            {% endfor %}
           {% endif %}
+          {% for bet in allowed_bets -%}
+              <option value="{{ bet }}">{{ bet }}</option>
+          {% endfor %}
         </select>
       </td>
       {% endfor %}
