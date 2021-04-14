@@ -62,7 +62,7 @@
     {% endif %}
 
     if ("{{ game_phase }}" == "BET" || "{{ game_phase }}" == "BET2") {
-      make_player_the_better("{{ active_player }}");
+      make_player_the_better2("{{ active_player }}");
       make_player_active("{{ active_player }}");
     }
 
@@ -120,6 +120,22 @@
       console.log("In add_belote_button enabled is" + enabled)
       if (enabled == false) {
         $("#belote").prop("disabled", true)
+      }
+    }
+
+    function make_player_the_better2(player_name) {
+      let id_bet_suit = "#bets_suit_" + player_name
+      let id_bet_points = "#bets_suit_points" + player_name
+      if (player_name == username) {
+        //play_sound("bicycle_bell.wav")
+        $(id_bet_suit).prop('readonly', false);
+        $(id_bet_suit).prop('disabled', false);
+        $(id_bet_suit).addClass("highlighted_field");
+        $(id_bet_suit).focus();
+
+        $(id_bet_points).prop('readonly', false);
+        $(id_bet_points).prop('disabled', false);
+        $(id_bet_points).addClass("highlighted_field");
       }
     }
 
@@ -229,7 +245,7 @@
 
       // Highlight Username
       make_player_active(player_name);
-      make_player_the_better(player_name)
+      make_player_the_better2(player_name)
 
       // $(id_bet).empty();
       let html = ""
@@ -424,7 +440,7 @@
             <option value="Pass">Pass</option>
             <option value="Spade">Spade</option>
             <option value="Heart">Heart</option>
-            <option value="Diamond">diamond</option>
+            <option value="Diamond">Diamond</option>
             <option value="Club">Club</option>
         </select>
         <select name="bets_points" id="bets_points_{{ player }}" disabled>

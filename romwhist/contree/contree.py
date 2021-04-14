@@ -52,7 +52,7 @@ class ContreeGame(BeloteGame):
                     self.active_player = self.next_player(self.dealer)
                     self.trump_suit =  self.current_bet.suit
                     self.set_cards_rank_and_value()
-
+                    self.taker = player
                 return
 
         if bet.points == BeloteGame.TOTAL_POINTS or self.next_player_to_bet(player) is None:
@@ -83,7 +83,7 @@ class ContreeGame(BeloteGame):
         # then move on to the play phase
         # If next player has passed and three other players have passed, then return None
         # If next_player has not bet then they are the next player to bet
-        if self.bets[next_player] is None:
+        if self.bets[next_player].suit == "":
             return next_player
 
         # players = []
