@@ -222,11 +222,13 @@ class BeloteGame(CardGame):
             # Ask next player
             self.active_player = self.next_player(player)
             if self.next_player_to_bet(player) is None:
+                self.init_bets()
                 if self.phase == BeloteGame.GamePhase.BET:
+                    logging.debug("Moving to second round of betting")
                     self.phase = BeloteGame.GamePhase.BET2
-                    self.init_dict(self.bets, "")
                 else:
-                    self.init_bets()
+                    logging.debug("Everyboddy has passed twice")
+                    # BET2 phase, and nobody has taken
                     self.phase = BeloteGame.GamePhase.DEAL
                     self.dealer = self.next_player_to_deal()
         else:
@@ -476,11 +478,9 @@ class BeloteGame(CardGame):
 
     # Initial deal
     def deal(self, dealer=""):
-        hands = self.deal_cards(BeloteGame.nb_cards_first_deal[len(self.players)])
-
+        hands = self.deal_cards(BeloteGame.nb_cards_first_deal[len(self.players)], dealer=dealer)
         # Pick up trump card
         self.trump_card = self.deck.deal()
-
         return hands
 
     def deal_cards (self, nb_cards, dealer=""):
@@ -511,7 +511,6 @@ class BeloteGame(CardGame):
             logging.debug("Hand for player " + player + " : " + str(hand.serialize()))
 
         # Pick up trump card
-        self.trump_card = self.deck.deal()
         self.phase = BeloteGame.GamePhase.BET
         return self.hands
 

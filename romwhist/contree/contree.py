@@ -35,6 +35,7 @@ class ContreeGame(BeloteGame):
     def place_bet(self, player, bet):
         logging.info("Player " + player + " bet: " + str(bet))
         self.bets[player] = bet
+        move_to_play_phase = False
 
         if bet.suit == "Pass":
             logging.info("Player passed")
@@ -42,37 +43,35 @@ class ContreeGame(BeloteGame):
             next_player = self.next_player(player)
             next_player_to_bet = self.next_player_to_bet(player)
             logging.info("Next player to bet %s ", next_player_to_bet)
+            self.active_player = self.next_player(player)
+
             if next_player_to_bet is None:
                 if self.bets[next_player].suit == "Pass":
                     self.init_bets()
                     self.phase = BeloteGame.GamePhase.DEAL
                     self.dealer = self.next_player_to_deal()
                 else:
-                    self.phase = BeloteGame.GamePhase.PLAY
-                    self.active_player = self.next_player(self.dealer)
-                    self.trump_suit =  self.current_bet.suit
-                    self.set_cards_rank_and_value()
-                    self.taker = player
-                return
+                    move_to_play_phase = True
 
-        if bet.points == BeloteGame.TOTAL_POINTS or self.next_player_to_bet(player) is None:
+        elif bet.points == BeloteGame.TOTAL_POINTS or self.next_player_to_bet(player) is None:
             # Move to PLAY phase
-            self.phase = BeloteGame.GamePhase.PLAY
-            self.trump_suit = bet.suit
-            self.taker = player
-            self.set_cards_rank_and_value()
-            self.active_player = self.next_player(self.dealer)
-            self.current_bet = bet
-
+            move_to_play_phase = True
         else:
             self.active_player = self.next_player(player)
 
             if self.current_bet is None or bet > self.current_bet:
                 self.current_bet = bet
                 self.trump_suit = bet.suit
-            elif bet.suit != "Pass":
+            else:
                 logging.error("Invalid Bet: %s", bet)
 
+        if move_to_play_phase:
+            self.phase = BeloteGame.GamePhase.PLAY
+            self.trump_suit = bet.suit
+            self.taker = player
+            self.set_cards_rank_and_value()
+            self.active_player = self.next_player(self.dealer)
+            self.current_bet = bet
         return
 
     # Return None if all players have bet

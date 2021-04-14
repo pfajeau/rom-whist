@@ -107,7 +107,7 @@ function initialize(players) {
 
 function add_card_to_table(player, card) {
   if (card == 'None') return
-    
+
   let image = "img/" + card + ".svg"
   let html = '<figure class="figures">'
   console.log("PLayer: " + player)
@@ -159,14 +159,23 @@ function make_player_play(player_name, allowed_cards) {
 }
 
 // TODO: Rename tnis function to "enable_bet"
-function make_player_the_better(player_name) {
-  let id_bet = "#bets_" + player_name
+function make_player_the_better(player_name, bet1="#bets_", bet2="") {
+  let id_bet = bet1 + player_name
   if (player_name == username) {
     //play_sound("bicycle_bell.wav")
     $(id_bet).prop('readonly', false);
     $(id_bet).prop('disabled', false);
     $(id_bet).addClass("highlighted_field");
     $(id_bet).focus();
+  }
+  if (bet2 != "") {
+    let id_bet2 = bet2 + player_name
+    if (player_name == username) {
+      //play_sound("bicycle_bell.wav")
+      $(id_bet2).prop('readonly', false);
+      $(id_bet2).prop('disabled', false);
+      $(id_bet2).addClass("highlighted_field");
+    }
   }
 }
 

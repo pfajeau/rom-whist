@@ -16,7 +16,7 @@ class Hand(object):
 
     def sort(self):
         # Sort by color, then by rank
-        string_hand=self.serialize()
+        #string_hand=self.serialize()
         res=dict()
         sorted_cards = []
         for suit in 'cdsh':
