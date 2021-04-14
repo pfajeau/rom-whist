@@ -62,7 +62,7 @@
     {% endif %}
 
     if ("{{ game_phase }}" == "BET" || "{{ game_phase }}" == "BET2") {
-      make_player_the_better("{{ active_player }}");
+      make_player_the_better("{{ active_player }}", "#bets_suit_", "#bets_points_");
       make_player_active("{{ active_player }}");
     }
 
@@ -223,9 +223,7 @@
       player_name = data['player']
       allowed_bets = data['allowed_bets']
       let id_bet_suit = "#bets_suit_" + player_name
-      $(id_bet_suit).prop("disabled", false)
       let id_bet_points = "#bets_points_" + player_name
-      $(id_bet_points).prop("disabled", false)
 
       // Highlight Username
       make_player_active(player_name);
@@ -233,11 +231,15 @@
 
       // $(id_bet).empty();
       let html = ""
+      html = html.concat('<select name="bets_points" id="bets_points_{{ player }}">')
+
       html = html.concat('<option value="select" selected>Select</option>')
       for (bet in allowed_bets) {
         html = html.concat('<option value="' + allowed_bets[bet] + '">' + allowed_bets[bet] + '</option>')
       }
-      $(id_bet_points).append(html)
+      html = html.concat('</select>')
+
+      $(id_bet_points).html(html)
       if (username != player_name) {
         $(id_bet_points).prop("disabled", true)
         $(id_bet_suit).prop("disabled", true)
@@ -249,7 +251,7 @@
       player_name = data['player']
       bet_suit = data['bet_suit']
       bet_points = data['bet_points']
-      console.log("bet is: " + bet)
+      console.log("bet is: " + bet_suit)
       let id_bet_suit = "#bets_suit_" + player_name
       let id_bet_points = "#bets_points_" + player_name
 

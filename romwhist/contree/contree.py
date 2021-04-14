@@ -55,23 +55,23 @@ class ContreeGame(BeloteGame):
 
         elif bet.points == BeloteGame.TOTAL_POINTS or self.next_player_to_bet(player) is None:
             # Move to PLAY phase
+            self.current_bet = bet
             move_to_play_phase = True
         else:
             self.active_player = self.next_player(player)
 
             if self.current_bet is None or bet > self.current_bet:
                 self.current_bet = bet
-                self.trump_suit = bet.suit
+                self.trump_suit = bet.suit    # Required for AI
             else:
                 logging.error("Invalid Bet: %s", bet)
 
         if move_to_play_phase:
             self.phase = BeloteGame.GamePhase.PLAY
-            self.trump_suit = bet.suit
+            self.trump_suit = self.current_bet.suit
             self.taker = player
             self.set_cards_rank_and_value()
             self.active_player = self.next_player(self.dealer)
-            self.current_bet = bet
         return
 
     # Return None if all players have bet
@@ -90,7 +90,7 @@ class ContreeGame(BeloteGame):
         player2 = self.next_player(player)
         if self.bets[player].suit == "Pass":
             player2 = self.next_player(player2)
-        for i in range(1, len(self.players) - 1):
+        for i in range(len(self.players) - 1):
             #players.append(self.next_player(players[i - 1]))
             if self.bets[player2].suit != "Pass":
                 return next_player
@@ -115,6 +115,7 @@ class ContreeGame(BeloteGame):
 
     def deal(self, dealer=""):
         return self.deal_cards(int(self.deck_size / len(self.players)), dealer)
+        self.current_bet = None
 
     def deal_2(self):
         return

@@ -64,6 +64,9 @@ class ContreeAiPlayer(BeloteAiPlayer):
         game_state = ContreeState(**json.loads(game_state_json))
         self.game_state = game_state
 
+        # Need to make sure trump suit is set to the right value
+        # bet = Announce.from_str(self.game_state.bets[self.game_state.active_player])
+        # self.game_state.trump_suit = bet.suit
         # Make active player the one that will start playing
         # for the simulated game
         self.game_state.active_player = self.game_state.next_player(self.game_state.dealer)
