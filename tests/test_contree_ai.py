@@ -2,6 +2,7 @@
 import copy
 import json
 import logging
+from romwhist.card import Card
 from romwhist.contree.contree_ai import ContreeAiPlayer
 from romwhist.contree.contree_state import ContreeState
 from romwhist.contree.contree import ContreeGame
@@ -21,7 +22,12 @@ def main():
                  'joe': ["s12", "s13", "d9", "d12", "c10", "c7", "h9", "h11"],
                  'jim': ["s8", "d13", "d11", "d14", "c11", "c13", "h7", "h13"]}
 
-    allowed_bets = ['80', '90','100','Capot']
+    #allowed_bets = ['80', '90','100','Capot']
+    allowed_bets_suits = ["Pass"]
+    allowed_bets_suits.extend(Card.SUIT_NAMES)
+    allowed_bets_points = ['80', '90','100','Capot']
+    allowed_bets = [allowed_bets_suits, allowed_bets_points]
+
     # Create a game state
     game_state = ContreeState("test", "AI1", deck_size=32, dealer="joe", players=["joe", "jack", "AI1", "jim"])
     contree_ai.game_state = copy.deepcopy(game_state)
@@ -33,6 +39,15 @@ def main():
     contree_ai.game_state.bets = {"joe": "Pass_0", "jack":"Pass_0", "AI1": "Pass_0", "jim":"Pass_0"}
 
     state_snapshop = copy.deepcopy(contree_ai.game_state)
+
+    #Test serialization
+    state_dict = state_snapshop.__dict__
+    logging.debug("Game state as dict: %s", state_snapshop)
+    state_json = json.dumps(state_dict)
+    logging.debug("Game state as JSON: %s", state_json)
+    game_state = ContreeState(**json.loads(state_json))
+    logging.debug("Game state from JSON as dict: %s", game_state.__dict__)
+
     bet = contree_ai.player_to_bet(allowed_bets, json.dumps(contree_ai.game_state.__dict__))
     logging.info("bet = %s", bet)
     assert bet.suit == "Spade", bet.suit

@@ -23,8 +23,10 @@ class ContreeState(BeloteState):
 
     def get_legal_bets(self):
         allowed = []
+
         for suit in Card.SUIT_NAMES:
         #     for bet_point in self.allowed_bets:
         #         allowed.append(ContreeGame.Announce(suit, bet_point))
             allowed.append(str(Announce(suit, 80)))
+        # TODO: add Contree or Surcontree option
         return allowed

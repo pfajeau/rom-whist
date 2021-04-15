@@ -1,5 +1,7 @@
 import copy
 import logging
+
+from romwhist.card import Card
 from romwhist.belote.belote import BeloteGame
 from romwhist.contree.contree_state import ContreeState
 from romwhist.contree.announce import Announce
@@ -99,23 +101,28 @@ class ContreeGame(BeloteGame):
         return None
 
     def get_allowed_bets(self, player):
-        allowed_bets = []
+        allowed_bets_points = []
         if self.phase == self.GamePhase.BET:
             if self.current_bet is None:
-                allowed_bets = copy.deepcopy(ContreeGame.all_bet_points)
+                allowed_bets_points = copy.deepcopy(ContreeGame.all_bet_points)
             else:
                 for bet in ContreeGame.all_bet_points:
                     if bet != "Capot":
                         if bet > self.current_bet.points:
-                            allowed_bets.append(bet)
-                allowed_bets.append("Capot")
+                            allowed_bets_points.append(bet)
+                allowed_bets_points.append("Capot")
 
-        logging.debug("allowed bets:" + str(allowed_bets))
+        allowed_bets_suits = copy.deepcopy(Card.SUIT_NAMES)
+        allowed_bets_suits.insert(0, "Pass")
+        # TODO: add Contree or Surcontree option
+
+        allowed_bets = [allowed_bets_suits, allowed_bets_points]
+        logging.debug("allowed bets:%s %s", allowed_bets[0], allowed_bets[1])
         return allowed_bets
 
     def deal(self, dealer=""):
-        return self.deal_cards(int(self.deck_size / len(self.players)), dealer)
         self.current_bet = None
+        return self.deal_cards(int(self.deck_size / len(self.players)), dealer)
 
     def deal_2(self):
         return

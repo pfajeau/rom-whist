@@ -1,6 +1,7 @@
 import json
 import logging
 
+from belote.belote import BeloteGame
 from contree.announce import Announce
 from romwhist.contree.contree_state import ContreeState
 from romwhist.belote.belote_ai import BeloteAiPlayer
@@ -10,6 +11,8 @@ from romwhist.ai.ai_player import AiPlayer
 
 # TODO: factorize with OhellAIPlayer
 class ContreeAiPlayer(BeloteAiPlayer):
+
+    CORRECTION_FACTOR = 1.1    # Because simulations are pessimistic in outcome
 
     def __init__(self, name, game_id):
         AiPlayer.__init__(self, name, game_id)
@@ -75,15 +78,19 @@ class ContreeAiPlayer(BeloteAiPlayer):
         # self.game_state.allowed_bets.pop(0)
 
         bet_as_str = self._agent2.get_bet(self.game_state)
+        logging.info("Agent calculated bet: %s", bet_as_str)
         bet_points = -999
         nb_simulations = self._agent2.num_simulations_per_action[bet_as_str]
         if nb_simulations != 0:
             avg_points_for_bet = self._agent2.action_points[bet_as_str] / nb_simulations
             # Bet on avg_points_per_bet
-            bet_points = round(avg_points_for_bet, -1)
-            if bet_points < int(game_state.allowed_bets[0]):
+            bet_points = round(avg_points_for_bet * ContreeAiPlayer.CORRECTION_FACTOR, -1)
+            if bet_points < int(self.game_state.allowed_bets[1][0]):
                 bet_points = 0
                 bet_as_str = "Pass_0"
+            elif bet_points > float(self.game_state.allowed_bets[1][len(self.game_state.allowed_bets[1]) - 2]):
+                bet_points = BeloteGame.TOTAL_POINTS
+
             logging.info("Avg points for bet: %s", avg_points_for_bet)
         else:
             logging.error(("Computed Bet has no simulation!!"))

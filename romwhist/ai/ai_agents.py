@@ -266,8 +266,10 @@ class SimpleMCTSAgent(IAgent):
         for action in self.action_value:
             logging.debug("action: %s, action has value %s", action, self.action_value[action])
             logging.debug("action: %s, action has points %s", action, self.action_points[action])
-            best_action = action if self.action_value[action] > self.action_value[best_action] \
-                else best_action
+            action_avg_val = 0.0 + self.action_value[action] / self.num_simulations_per_action[action]
+            best_action_avg =  0.0 + self.action_value[best_action]/ self.num_simulations_per_action[action]
+            if action_avg_val > best_action_avg:
+                best_action = action
 
         return best_action
 

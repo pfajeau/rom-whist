@@ -155,7 +155,6 @@
     socket.on('new hand', function(data) {
       console.log("new hand event received");
       make_players_inactive();
-      $('#trump_card').html('')
       $('#cards').html('');
       $('#cards_played').empty()
       $("#nb_cards").removeClass("highlighted_field");
@@ -222,6 +221,9 @@
       console.log("player to bet event received")
       player_name = data['player']
       allowed_bets = data['allowed_bets']
+      allowed_bets_suits = allowed_bets[0]
+      allowed_bet_points = allowed_bets[1]
+
       let id_bet_suit = "#bets_suit_" + player_name
       let id_bet_points = "#bets_points_" + player_name
 
@@ -232,14 +234,22 @@
       // $(id_bet).empty();
       let html = ""
       html = html.concat('<select name="bets_points" id="bets_points_{{ player }}">')
-
       html = html.concat('<option value="select" selected>Select</option>')
-      for (bet in allowed_bets) {
-        html = html.concat('<option value="' + allowed_bets[bet] + '">' + allowed_bets[bet] + '</option>')
+      for (i in allowed_bet_points) {
+        html = html.concat('<option value="' + allowed_bet_points[i] + '">' + allowed_bet_points[i] + '</option>')
       }
       html = html.concat('</select>')
-
       $(id_bet_points).html(html)
+
+      html = ""
+      html = html.concat('<select name="bets_suit" id="bets_suit_{{ player }}">')
+      html = html.concat('<option value="select" selected>Select</option>')
+      for (i in allowed_bets_suits) {
+        html = html.concat('<option value="' + allowed_bets_suits[i] + '">' + allowed_bets_suits[i] + '</option>')
+      }
+      html = html.concat('</select>')
+      $(id_bet_suit).html(html)
+
       if (username != player_name) {
         $(id_bet_points).prop("disabled", true)
         $(id_bet_suit).prop("disabled", true)
@@ -425,11 +435,14 @@
           {% else %}
             <option value="select" selected>Select</option>
           {% endif %}
-            <option value="Pass">Pass</option>
+            <!-- <option value="Pass">Pass</option>
             <option value="Spade">Spade</option>
             <option value="Heart">Heart</option>
             <option value="Diamond">Diamond</option>
-            <option value="Club">Club</option>
+            <option value="Club">Club</option>  -->
+            {% for bet in allowed_bets[0] -%}
+                <option value="{{ bet }}">{{ bet }}</option>
+            {% endfor %}
         </select>
         <select name="bets_points" id="bets_points_{{ player }}" disabled>
           {% if bets_points[player] != "" %}
@@ -437,7 +450,7 @@
           {% else %}
             <option value="select" selected>Select</option>
           {% endif %}
-          {% for bet in allowed_bets -%}
+          {% for bet in allowed_bets[1] -%}
               <option value="{{ bet }}">{{ bet }}</option>
           {% endfor %}
         </select>
