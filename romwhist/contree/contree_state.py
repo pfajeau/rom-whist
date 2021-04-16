@@ -11,7 +11,7 @@ class ContreeState(BeloteState):
                  owner="", dealer = "",
                  bets=dict(), allowed_bets=[], trump_card = "",
                  phase = None, hand_points=dict(), hand_winner=[], taker=None,
-                 contree_status = ContreStatus.NORMAL):
+                 contree_status = ContreStatus.NORMAL, current_bet = "Pass_0"):
 
         BeloteState.__init__(self, game_id, sim_player=sim_player, players=players, trump=trump, cards_played_per_player=cards_played_per_player,
                  cards_played_per_round=cards_played_per_round, deck_size=deck_size,
@@ -20,6 +20,7 @@ class ContreeState(BeloteState):
                  phase=phase, hand_points=hand_points, hand_winner=hand_winner, taker=taker)
 
         self.contree_status = contree_status
+        self.current_bet = current_bet
 
     def get_legal_bets(self):
         allowed = []

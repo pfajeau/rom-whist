@@ -78,7 +78,7 @@
     id_bet_suit = "#bets_suit_" + username
     $(id_bet_suit).change(function() {
       bet_suit = $(id_bet_suit + " option:selected").text();
-      if (bet_suit == "Pass"){
+      if (bet_suit == "Pass" || bet_suit == "Contre" || bet_suit == "Surcontre"){
         socket.emit("player bet", bet_suit, 0);
       }
       else if (bet_suit != "Select") {

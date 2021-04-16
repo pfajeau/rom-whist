@@ -1,5 +1,6 @@
 import copy
 import logging
+from enum import Enum
 
 from romwhist.card import Card
 from romwhist.belote.belote import BeloteGame
@@ -12,11 +13,17 @@ class ContreeGame(BeloteGame):
 
     all_bet_points = [80, 90, 100, 110, 120, 130, 140, 150, "Capot"]
 
-    def __init__(self, game_creator="", id=0):
+    class ContreCounting(str, Enum):
+        POINTS_ACHIEVED = "Points Achieved"
+        POINTS_BID = "Points Bid"
+        POINTS_ACHIEVED_PLUS_BID = "Points Achieved + Bid"
+
+    def __init__(self, game_creator="", id=0, counting=ContreCounting.POINTS_BID):
         BeloteGame.__init__(self, game_creator, id)
         BeloteGame.nb_cards_first_deal = {1: 8, 2: 8, 3: 8, 4: 8}
         self.current_bet = None
         self.contree_status = ContreStatus.NORMAL
+        self.counting = counting
         self.init_bets()
 
     def get_state(self):
@@ -25,6 +32,7 @@ class ContreeGame(BeloteGame):
         state.contree_status = self.contree_status
         for player in self.players:
             state.bets[player] = str(self.bets[player])
+        state.current_bet = str(self.current_bet)
 
         return state
 
@@ -33,13 +41,22 @@ class ContreeGame(BeloteGame):
         self.contree_status = state.contree_status
         for player in self.players:
             self.bets[player] = Announce.from_str(state.bets[player])
+        self.current_bet = Announce.from_str(state.current_bet)
 
     def place_bet(self, player, bet):
         logging.info("Player " + player + " bet: " + str(bet))
         self.bets[player] = bet
         move_to_play_phase = False
 
-        if bet.suit == "Pass":
+        if bet.suit == "Contre" or bet.suit == "Surcontre":
+            logging.info("Player %s", bet.suit)
+            move_to_play_phase = True
+            if bet.suit == "Contree":
+                self.contree_status = ContreStatus.CONTREE
+            else:
+                self.contree_status = ContreStatus.SURCONTREE
+
+        elif bet.suit == "Pass":
             logging.info("Player passed")
             # Ask next player
             next_player = self.next_player(player)
@@ -59,19 +76,21 @@ class ContreeGame(BeloteGame):
             # Move to PLAY phase
             self.current_bet = bet
             move_to_play_phase = True
+            self.taker = player
+
         else:
             self.active_player = self.next_player(player)
 
             if self.current_bet is None or bet > self.current_bet:
                 self.current_bet = bet
                 self.trump_suit = bet.suit    # Required for AI
+                self.taker = player
             else:
                 logging.error("Invalid Bet: %s", bet)
 
         if move_to_play_phase:
             self.phase = BeloteGame.GamePhase.PLAY
             self.trump_suit = self.current_bet.suit
-            self.taker = player
             self.set_cards_rank_and_value()
             self.active_player = self.next_player(self.dealer)
         return
@@ -116,9 +135,31 @@ class ContreeGame(BeloteGame):
         allowed_bets_suits.insert(0, "Pass")
         # TODO: add Contree or Surcontree option
 
+        if self.contre_enabled(player):
+            allowed_bets_suits.append("Contre")
+        elif self.surcontre_enabled(player):
+            allowed_bets_suits.append("Surcontre")
+
         allowed_bets = [allowed_bets_suits, allowed_bets_points]
         logging.debug("allowed bets:%s %s", allowed_bets[0], allowed_bets[1])
         return allowed_bets
+
+    def contre_enabled(self, player):
+        # True if one player has bet before and player is not partner
+        partner = self.next_player(self.next_player(player))
+        for a_player in self.players:
+            if self.bets[a_player].suit != "" and self.bets[a_player].suit != "Pass" \
+            and a_player != partner  and a_player != player:
+                return True
+        return False
+
+    def surcontre_enabled(self, player):
+        # True if one player has contre and is not partner
+        partner = self.next_player(self.next_player(player))
+        for a_player in self.players:
+            if self.bets[a_player].suit == "Contre" and a_player != partner and a_player != player:
+                return True
+        return False
 
     def deal(self, dealer=""):
         self.current_bet = None
@@ -172,15 +213,25 @@ class ContreeGame(BeloteGame):
                 self.scores[partner] = self.scores[self.player_with_belote]
 
             if player_points[0] + player_points[2] >= self.bets[players[0]].points:
-                self.scores[players[0]] += player_points[0] + player_points[2]
-                self.scores[players[2]] = self.scores[players[0]]
-                self.scores[players[1]] += player_points[1] + player_points[3]
-                self.scores[players[3]] = self.scores[players[1]]
+                if self.counting == ContreeGame.ContreCounting.POINTS_ACHIEVED:
+                    self.scores[players[0]] += round(player_points[0] + player_points[2], -1)
+                    self.scores[players[2]] = self.scores[players[0]]
+                    self.scores[players[1]] += round(player_points[1] + player_points[3], -1)
+                    self.scores[players[3]] = self.scores[players[1]]
+                elif self.counting == ContreeGame.ContreCounting.POINTS_BID:
+                    self.scores[players[0]] += self.current_bet.points
+                    self.scores[players[2]] = self.scores[players[0]]
+                elif self.counting == ContreeGame.ContreCounting.POINTS_BID:
+                    self.scores[players[0]] += round(player_points[0] + player_points[2] + self.current_bet.points, -1)
+                    self.scores[players[2]] = self.scores[players[0]]
+                    self.scores[players[1]] += player_points[1] + player_points[3]
+                    self.scores[players[3]] = self.scores[players[1]]
+
                 self._hand_winner.append(players[0])
                 self._hand_winner.append(players[2])
 
             else:
-                self.scores[players[1]] += BeloteGame.TOTAL_POINTS
+                self.scores[players[1]] += round(BeloteGame.TOTAL_POINTS, -1)
                 self.scores[players[3]] = self.scores[players[1]]
                 self._hand_winner.append(players[1])
                 self._hand_winner.append(players[3])

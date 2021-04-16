@@ -58,6 +58,7 @@ class BeloteSim(BeloteGame):
         if self.phase == BeloteGame.GamePhase.BET or self.phase == BeloteGame.GamePhase.BET2:
             self.place_bet(self.sim_player, self.bets[self.sim_player])
             self.taker = self.sim_player
+            self.cuurent_bet = self.bets[self.sim_player]
 
             # Re-create hands from deck for other players for the simulation
             self.deck.remove_card(self.trump_card)

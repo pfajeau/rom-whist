@@ -1,15 +1,12 @@
 from enum import Enum
 
-from belote.belote import BeloteGame
-
-
 class Announce(dict):
     def __init__(self, suit, points):
         dict.__init__(self, suit=suit, points=points)
         self.suit = suit
         if points == "Capot":
-            # Don't like this dependency....
-            self.points = BeloteGame.TOTAL_POINTS
+            # TODO: constant should be defined in another module
+            self.points = 162
         else:
             self.points = int(points)
 

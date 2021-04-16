@@ -227,7 +227,7 @@ class SimpleMCTSAgent(IAgent):
         best_bet = self.compute_best_action(legal_bets)
         return best_bet
 
-    def generate_rollout_data(self, legal_actions, num_simulations):
+    def generate_rollout_data2(self, legal_actions, num_simulations):
         logging.info("Legal actions: %s", legal_actions)
         self.reset_data()
 
@@ -241,9 +241,24 @@ class SimpleMCTSAgent(IAgent):
 
         return rollout_actions
 
+    def generate_rollout_data(self, legal_actions, num_simulations):
+        logging.info("Legal actions: %s", legal_actions)
+        self.reset_data()
+
+        rollout_actions = []
+        for action in legal_actions:
+            self.action_value[action] = 0
+            self.num_simulations_per_action[action] = 0
+            self.action_points[action] = 0
+
+            for i in range(num_simulations):
+                rollout_actions.append(action)
+
+        return rollout_actions
+
     def run_simulation(self, games, num_simulations):
         futures = [self.executor.submit(game.run) for game in games]
-        futures_queue = Queue(num_simulations)
+        futures_queue = Queue(num_simulations * len(self.action_value))
         for future in futures:
             futures_queue.put(future)
 
@@ -266,9 +281,9 @@ class SimpleMCTSAgent(IAgent):
         for action in self.action_value:
             logging.debug("action: %s, action has value %s", action, self.action_value[action])
             logging.debug("action: %s, action has points %s", action, self.action_points[action])
-            action_avg_val = 0.0 + self.action_value[action] / self.num_simulations_per_action[action]
-            best_action_avg =  0.0 + self.action_value[best_action]/ self.num_simulations_per_action[action]
-            if action_avg_val > best_action_avg:
+            action_avg = float(self.action_points[action]) / float(self.num_simulations_per_action[action])
+            best_action_avg =  float(self.action_points[best_action]) / float(self.num_simulations_per_action[best_action])
+            if action_avg > best_action_avg:
                 best_action = action
 
         return best_action

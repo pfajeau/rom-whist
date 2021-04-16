@@ -2,6 +2,8 @@
 import copy
 import json
 import logging
+
+from contree.announce import Announce
 from romwhist.card import Card
 from romwhist.contree.contree_ai import ContreeAiPlayer
 from romwhist.contree.contree_state import ContreeState
@@ -64,7 +66,8 @@ def main():
                  'AI1': ["s12", "s13", "d13", "d12", "c10", "c14", "h10", "h11"],
                  'jim': ["s8", "s14", "d11", "d14", "c11", "c13", "h13", "h14"]}
     contree_ai.game_state.hand_cards = all_cards
-    contree_ai.game_state.bets = {"joe":"Spade_80", "jack":"", "AI1":"", "jim":""}
+    contree_ai.game_state.bets = {"joe":"Spade_80", "jack":"Pass_0", "AI1":"Pass_0", "jim":"Pass_0"}
+    contree_ai.game_state.current_bet = "Spade_80"
 
     card = contree_ai.player_to_play("", contree_ai.game_state.toJson())
     logging.debug("AI played card: " + card)

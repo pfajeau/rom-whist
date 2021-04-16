@@ -25,17 +25,19 @@ def main():
     #self.assertEqual(True, False)
 
     # Test Place Bet
-    assert (len(contree.get_allowed_bets("Joe")) == len(ContreeGame.all_bet_points))
+    assert (len(contree.get_allowed_bets("Joe")[0]) == 5)
+    assert (len(contree.get_allowed_bets("Joe")[1]) == len(ContreeGame.all_bet_points))
     bet = Announce("Spade", 80)
     contree.place_bet("Joe", bet)
     assert contree.active_player == "Jack", contree.active_player
 
-    assert (len(contree.get_allowed_bets("Jack")) == len(ContreeGame.all_bet_points) - 1)
+    assert (len(contree.get_allowed_bets("Jack")[0]) == 6)
+    assert (len(contree.get_allowed_bets("Jack")[1]) == len(ContreeGame.all_bet_points) - 1)
     bet = Announce("Heart", 90)
     contree.place_bet("Jack", bet)
     assert contree.active_player == "Jim", contree.active_player
 
-    assert (len(contree.get_allowed_bets("Jim")) == len(ContreeGame.all_bet_points) - 2)
+    assert (len(contree.get_allowed_bets("Jim")[1]) == len(ContreeGame.all_bet_points) - 2)
     bet = Announce("Diamond", "Capot")
     contree.place_bet("Jim", bet)
     assert contree.active_player == "Joe", contree.active_player
