@@ -9,16 +9,18 @@ from romwhist.contree.announce import Announce
 from romwhist.contree.announce import ContreStatus
 
 
+class CountingMethod(str, Enum):
+    POINTS_ACHIEVED = "Points Achieved"
+    POINTS_BID = "Points Bid"
+    POINTS_ACHIEVED_PLUS_BID = "Points Achieved + Bid"
+
+
 class ContreeGame(BeloteGame):
 
     all_bet_points = [80, 90, 100, 110, 120, 130, 140, 150, "Capot"]
+    BONUS_CAPOT = 250
 
-    class ContreCounting(str, Enum):
-        POINTS_ACHIEVED = "Points Achieved"
-        POINTS_BID = "Points Bid"
-        POINTS_ACHIEVED_PLUS_BID = "Points Achieved + Bid"
-
-    def __init__(self, game_creator="", id=0, counting=ContreCounting.POINTS_BID):
+    def __init__(self, game_creator="", id=0, counting=CountingMethod.POINTS_BID):
         BeloteGame.__init__(self, game_creator, id)
         BeloteGame.nb_cards_first_deal = {1: 8, 2: 8, 3: 8, 4: 8}
         self.current_bet = None
@@ -165,7 +167,7 @@ class ContreeGame(BeloteGame):
         self.current_bet = None
         return self.deal_cards(int(self.deck_size / len(self.players)), dealer)
 
-    def deal_2(self):
+    def deal_2(self, dealer=""):
         return
 
     def add_player(self, player):
@@ -213,15 +215,15 @@ class ContreeGame(BeloteGame):
                 self.scores[partner] = self.scores[self.player_with_belote]
 
             if player_points[0] + player_points[2] >= self.bets[players[0]].points:
-                if self.counting == ContreeGame.ContreCounting.POINTS_ACHIEVED:
+                if self.counting == CountingMethod.POINTS_ACHIEVED:
                     self.scores[players[0]] += round(player_points[0] + player_points[2], -1)
                     self.scores[players[2]] = self.scores[players[0]]
                     self.scores[players[1]] += round(player_points[1] + player_points[3], -1)
                     self.scores[players[3]] = self.scores[players[1]]
-                elif self.counting == ContreeGame.ContreCounting.POINTS_BID:
-                    self.scores[players[0]] += self.current_bet.points
+                elif self.counting == CountingMethod.POINTS_BID:
+                    self.scores[players[0]] += round(self.current_bet.points, -1)
                     self.scores[players[2]] = self.scores[players[0]]
-                elif self.counting == ContreeGame.ContreCounting.POINTS_BID:
+                elif self.counting == CountingMethod.POINTS_ACHIEVED_PLUS_BID:
                     self.scores[players[0]] += round(player_points[0] + player_points[2] + self.current_bet.points, -1)
                     self.scores[players[2]] = self.scores[players[0]]
                     self.scores[players[1]] += player_points[1] + player_points[3]
@@ -237,13 +239,23 @@ class ContreeGame(BeloteGame):
                 self._hand_winner.append(players[3])
 
             # Capot
-            points_capot = BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
-            if self.wins[players[1]] + self.wins[players[3]] == 0:
-                self.scores[players[0]] += points_capot
-                self.scores[players[2]] = self.scores[players[0]]
-            elif self.wins[players[0]] + self.wins[players[2]] == 0:
-                self.scores[players[1]] += points_capot
-                self.scores[players[3]] = self.scores[players[1]]
+            if self.contree_status == ContreStatus.CONTREE:
+                points_capot = ContreeGame.BONUS_CAPOT * 2
+            elif self.contree_status == ContreStatus.SURCONTREE:
+                points_capot = ContreeGame.BONUS_CAPOT * 4
+            else:
+                points_capot = ContreeGame.BONUS_CAPOT
+
+            if self.counting == CountingMethod.POINTS_ACHIEVED or \
+               self.counting == CountingMethod.POINTS_ACHIEVED_PLUS_BID or \
+               self.counting == CountingMethod.POINTS_BID and self.current_bet.points == BeloteGame.TOTAL_POINTS:
+
+                if self.wins[players[1]] + self.wins[players[3]] == 0:
+                    self.scores[players[0]] += points_capot
+                    self.scores[players[2]] = self.scores[players[0]]
+                elif self.wins[players[0]] + self.wins[players[2]] == 0:
+                    self.scores[players[1]] += points_capot
+                    self.scores[players[3]] = self.scores[players[1]]
 
         logging.debug("Player points: %s", player_points)
         self.scoresheet.append(self.scores.copy())

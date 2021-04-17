@@ -7,6 +7,8 @@ from queue import Queue
 import numpy as np
 from romwhist.card import Card
 from romwhist.game_state import GameState
+
+# Do not remove the following imports, those classes are instantiated by name
 from romwhist.belote.belote_sim import BeloteSim
 from romwhist.ohell.ohell_sim import OhellSim
 from romwhist.contree.contree_sim import ContreeSim
@@ -132,6 +134,10 @@ class SimpleMCTSAgent(IAgent):
                 num_simulations = int(ai_config['number_of_simulations'])
                 logging.info("Number of simulations: %s", num_simulations)
 
+            if config.has_option('ai', 'min_number_simulations'):
+                nmin_um_simulations = int(ai_config['min_number_simulations'])
+                logging.info("Minimum Number of simulations: %s", num_simulations)
+
             if config.has_option('ai', 'max_thread_number_for_simulation'):
                 max_threads = int(ai_config['max_thread_number_for_simulation'])
 
@@ -141,6 +147,7 @@ class SimpleMCTSAgent(IAgent):
         self.action_value = dict()
         self.num_simulations_per_action = dict()  # Number of simulations for an action
         self.num_simulations = num_simulations
+        self.nmin_um_simulations = nmin_um_simulations
         self.executor = ThreadPoolExecutor(max_workers=max_threads)
         self.sim_game_class_name = sim_game_class_name
         self.action_points = dict()
@@ -227,6 +234,7 @@ class SimpleMCTSAgent(IAgent):
         best_bet = self.compute_best_action(legal_bets)
         return best_bet
 
+    # Old one, NOT USED
     def generate_rollout_data2(self, legal_actions, num_simulations):
         logging.info("Legal actions: %s", legal_actions)
         self.reset_data()
@@ -241,6 +249,8 @@ class SimpleMCTSAgent(IAgent):
 
         return rollout_actions
 
+    # Generate list of actions with num_simulations per action
+    # and a minumum of min_number_simulatoins simulations
     def generate_rollout_data(self, legal_actions, num_simulations):
         logging.info("Legal actions: %s", legal_actions)
         self.reset_data()
@@ -254,6 +264,11 @@ class SimpleMCTSAgent(IAgent):
             for i in range(num_simulations):
                 rollout_actions.append(action)
 
+        nb_sim = len(legal_actions) * self.num_simulations
+        if nb_sim < self.nmin_um_simulations:
+            additional_actions = np.random.choice(legal_actions,  # Pre-select initial actions
+                                               size=self.nmin_um_simulations - nb_sim, replace=True)
+            rollout_actions = rollout_actions.extend(additional_actions)
         return rollout_actions
 
     def run_simulation(self, games, num_simulations):

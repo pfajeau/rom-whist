@@ -11,19 +11,23 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, BooleanField, IntegerField
 from wtforms.validators import Length, InputRequired, Regexp, NumberRange
 
+
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[InputRequired(), Length(max=32)])
 #    password = PasswordField("Password", validators=[InputRequired(), Length(min=1, max=32)])
     submit = SubmitField('Sign In')
     remember_me = BooleanField('Remember Me')
 
+
 class StartGameForm(FlaskForm):
     game_id = StringField("Game id: ", validators=[InputRequired(), Length(max=32)])
     start_game = SubmitField('Submit')
 
+
 class JoinGameForm(FlaskForm):
     game_id = StringField("Game id: ", validators=[InputRequired(), Length(max=32)])
     join_game = SubmitField('Join game')
+
 
 class GameForm(FlaskForm):
     #nb_cards = IntegerField("Nb Cards: ", validators=[InputRequired(), Length(max=2)])

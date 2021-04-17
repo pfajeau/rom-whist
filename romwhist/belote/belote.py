@@ -227,7 +227,7 @@ class BeloteGame(CardGame):
                     logging.debug("Moving to second round of betting")
                     self.phase = BeloteGame.GamePhase.BET2
                 else:
-                    logging.debug("Everyboddy has passed twice")
+                    logging.debug("Everybody has passed twice")
                     # BET2 phase, and nobody has taken
                     self.phase = BeloteGame.GamePhase.DEAL
                     self.dealer = self.next_player_to_deal()
@@ -483,7 +483,7 @@ class BeloteGame(CardGame):
         self.trump_card = self.deck.deal()
         return hands
 
-    def deal_cards (self, nb_cards, dealer=""):
+    def deal_cards(self, nb_cards, dealer=""):
         self.deck = Deck(self.deck_size)
         self.deck.shuffle()
         self.init_bets()
@@ -513,7 +513,6 @@ class BeloteGame(CardGame):
         # Pick up trump card
         self.phase = BeloteGame.GamePhase.BET
         return self.hands
-
 
     # Distribute 3 cards for each player
     def deal_2(self, dealer=""):
@@ -617,5 +616,3 @@ class BeloteGame(CardGame):
 
     def init_bets(self):
         self.init_dict(self.bets, "")
-
-

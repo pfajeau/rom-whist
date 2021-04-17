@@ -15,10 +15,10 @@ from flask_socketio import emit
 from flask_socketio import join_room, leave_room
 from romwhist import common_routes
 from romwhist import socketio
-from romwhist.contree.contree import ContreeGame
+from romwhist.contree.contree import ContreeGame, CountingMethod
 from romwhist.contree.announce import Announce, ContreStatus
 from romwhist.belote.belote import BeloteGame
-from romwhist.belote.belote_form import BeloteStartForm
+from romwhist.contree.contree_form import ContreeStartForm
 from romwhist.extensions import db
 from romwhist.forms import LoginForm, GameForm
 from romwhist.models import User
@@ -37,7 +37,7 @@ clients = dict()
 
 # @app.route("/contree_start",methods=['GET', 'POST'])
 def contree_start():
-    form = BeloteStartForm()
+    form = ContreeStartForm()
     if form.validate_on_submit():
         # Sanitize the username (as it isued as IDs in the html)
         username = common_routes.sanitize_username(form.user_name.data)
@@ -61,10 +61,14 @@ def contree_start():
                 return render_template('contree_start.html', error="No more games available!!! Please try again later", form=form)
 
             points_to_reach = int(form.points_to_reach.data)
+            counting_str = form.counting.data
+            if counting_str == "Points Bid":
+                counting = CountingMethod[counting_str]
+            logging.debug("Counting: %s", counting)
 
             logging.info("creating new game with id: " + str(game_id))
             # Add game id in session
-            game = ContreeGame(game_creator=username, id=game_id)
+            game = ContreeGame(game_creator=username, id=game_id, counting=counting)
             game.win_game_points = points_to_reach
 
             games[game_id] = game
