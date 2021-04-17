@@ -61,9 +61,10 @@ def contree_start():
                 return render_template('contree_start.html', error="No more games available!!! Please try again later", form=form)
 
             points_to_reach = int(form.points_to_reach.data)
-            counting_str = form.counting.data
-            if counting_str == "Points Bid":
-                counting = CountingMethod[counting_str]
+            index = int(form.counting.data)
+            counting_str = form.counting.choices[index][1]
+            logging.debug("Counting string from UI: %s", counting_str)
+            counting = CountingMethod(counting_str)
             logging.debug("Counting: %s", counting)
 
             logging.info("creating new game with id: " + str(game_id))

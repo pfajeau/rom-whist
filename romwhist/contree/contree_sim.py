@@ -1,5 +1,7 @@
 import logging
 
+from card import Card
+from contree.announce import Announce
 from romwhist.belote.belote_sim import BeloteSim
 from romwhist.contree.contree import ContreeGame
 from romwhist.contree.contree_state import ContreeState

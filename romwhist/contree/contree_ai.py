@@ -18,11 +18,11 @@ class ContreeAiPlayer(BeloteAiPlayer):
         AiPlayer.__init__(self, name, game_id)
         self._agent = SimpleMCTSAgent('ContreeSim', name,
                                       action_chooser_function='random_action',
-                                      num_simulations=100)
+                                      num_simulations=15)
 
         self._agent2 = SimpleMCTSAgent('ContreeSim', name,
                                        action_chooser_function='random_action',
-                                       num_simulations=100)
+                                       num_simulations=15)
 
         self.game_state = ContreeState(game_id, self.name)
 
@@ -78,6 +78,7 @@ class ContreeAiPlayer(BeloteAiPlayer):
         # self.game_state.allowed_bets.pop(0)
 
         bet_as_str = self._agent2.get_bet(self.game_state)
+
         logging.info("Agent calculated bet: %s", bet_as_str)
         bet_points = -999
         nb_simulations = self._agent2.num_simulations_per_action[bet_as_str]

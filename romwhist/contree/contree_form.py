@@ -7,8 +7,8 @@ from romwhist.contree.contree import CountingMethod
 
 class ContreeStartForm(BeloteStartForm):
 
-    counting = SelectField("Counting ",
-                           choices=[(1, CountingMethod.POINTS_BID),
-                                    (2, CountingMethod.POINTS_ACHIEVED),
-                                    (3, CountingMethod.POINTS_ACHIEVED_PLUS_BID)],
+    counting = SelectField("Counting",
+                           choices=[(0, CountingMethod.POINTS_BID.value),
+                                    (1, CountingMethod.POINTS_ACHIEVED.value),
+                                    (2, CountingMethod.POINTS_ACHIEVED_PLUS_BID.value)],
                            default='Points_Bid')

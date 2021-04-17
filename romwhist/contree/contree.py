@@ -83,7 +83,7 @@ class ContreeGame(BeloteGame):
         else:
             self.active_player = self.next_player(player)
 
-            if self.current_bet is None or bet > self.current_bet:
+            if self.current_bet is None or bet.points > self.current_bet.points:
                 self.current_bet = bet
                 self.trump_suit = bet.suit    # Required for AI
                 self.taker = player

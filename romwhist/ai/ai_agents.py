@@ -135,8 +135,8 @@ class SimpleMCTSAgent(IAgent):
                 logging.info("Number of simulations: %s", num_simulations)
 
             if config.has_option('ai', 'min_number_simulations'):
-                nmin_um_simulations = int(ai_config['min_number_simulations'])
-                logging.info("Minimum Number of simulations: %s", num_simulations)
+                nmin_num_simulations = int(ai_config['min_number_simulations'])
+                logging.info("Minimum Number of simulations: %s", nmin_num_simulations)
 
             if config.has_option('ai', 'max_thread_number_for_simulation'):
                 max_threads = int(ai_config['max_thread_number_for_simulation'])
@@ -147,7 +147,7 @@ class SimpleMCTSAgent(IAgent):
         self.action_value = dict()
         self.num_simulations_per_action = dict()  # Number of simulations for an action
         self.num_simulations = num_simulations
-        self.nmin_um_simulations = nmin_um_simulations
+        self.nmin_num_simulations = nmin_num_simulations
         self.executor = ThreadPoolExecutor(max_workers=max_threads)
         self.sim_game_class_name = sim_game_class_name
         self.action_points = dict()
@@ -211,6 +211,8 @@ class SimpleMCTSAgent(IAgent):
         """
         legal_bets = state.get_legal_bets()
         rollout_bets = self.generate_rollout_data(legal_bets, num_simulations)
+        #self.num_simulations = len(rollout_bets)
+        print("Rollout bets: %s", rollout_bets)
 
         # Simulate games on separate threads
         games = []
@@ -223,7 +225,7 @@ class SimpleMCTSAgent(IAgent):
                                         SimpleAgent(random_action), self.ai_player,
                                         state=state, starting_action=None))
 
-        self.run_simulation(games, num_simulations)
+        self.run_simulation(games, len(rollout_bets))
         for game in games:
             bet = game.get_state().bets[self.ai_player]
             if game.sim_player_won():
@@ -264,11 +266,14 @@ class SimpleMCTSAgent(IAgent):
             for i in range(num_simulations):
                 rollout_actions.append(action)
 
-        nb_sim = len(legal_actions) * self.num_simulations
-        if nb_sim < self.nmin_um_simulations:
+        print("Rollout actions: ", rollout_actions)
+
+        nb_sim = len(legal_actions) * num_simulations
+        if nb_sim < self.nmin_num_simulations:
             additional_actions = np.random.choice(legal_actions,  # Pre-select initial actions
-                                               size=self.nmin_um_simulations - nb_sim, replace=True)
-            rollout_actions = rollout_actions.extend(additional_actions)
+                                                  size=self.nmin_num_simulations - nb_sim, replace=True)
+            rollout_actions.extend(additional_actions)
+        print("Rollout actions aftre adding some: ", rollout_actions)
         return rollout_actions
 
     def run_simulation(self, games, num_simulations):
