@@ -211,8 +211,6 @@ class SimpleMCTSAgent(IAgent):
         """
         legal_bets = state.get_legal_bets()
         rollout_bets = self.generate_rollout_data(legal_bets, num_simulations)
-        #self.num_simulations = len(rollout_bets)
-        print("Rollout bets: %s", rollout_bets)
 
         # Simulate games on separate threads
         games = []
@@ -266,14 +264,11 @@ class SimpleMCTSAgent(IAgent):
             for i in range(num_simulations):
                 rollout_actions.append(action)
 
-        print("Rollout actions: ", rollout_actions)
-
         nb_sim = len(legal_actions) * num_simulations
         if nb_sim < self.nmin_num_simulations:
             additional_actions = np.random.choice(legal_actions,  # Pre-select initial actions
                                                   size=self.nmin_num_simulations - nb_sim, replace=True)
             rollout_actions.extend(additional_actions)
-        print("Rollout actions aftre adding some: ", rollout_actions)
         return rollout_actions
 
     def run_simulation(self, games, num_simulations):

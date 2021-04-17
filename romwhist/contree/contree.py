@@ -17,13 +17,13 @@ class CountingMethod(str, Enum):
 
 class ContreeGame(BeloteGame):
 
-    all_bet_points = [80, 90, 100, 110, 120, 130, 140, 150, "Capot"]
+    all_bet_points = [80, 90, 100, 110, 120, 130, 140, 150, 162]
     BONUS_CAPOT = 250
 
     def __init__(self, game_creator="", id=0, counting=CountingMethod.POINTS_BID):
         BeloteGame.__init__(self, game_creator, id)
         BeloteGame.nb_cards_first_deal = {1: 8, 2: 8, 3: 8, 4: 8}
-        self.current_bet = None
+        self.current_bet = Announce.from_str("Pass_0")
         self.contree_status = ContreStatus.NORMAL
         self.counting = counting
         self.init_bets()
@@ -83,12 +83,15 @@ class ContreeGame(BeloteGame):
         else:
             self.active_player = self.next_player(player)
 
-            if self.current_bet is None or bet.points > self.current_bet.points:
+            if self.current_bet is None or \
+                    bet.points > self.current_bet.points or \
+                    self.current_bet.suit == "Pass":
                 self.current_bet = bet
                 self.trump_suit = bet.suit    # Required for AI
                 self.taker = player
             else:
                 logging.error("Invalid Bet: %s", bet)
+                logging.error("self.current_bet: %s", self.current_bet)
 
         if move_to_play_phase:
             self.phase = BeloteGame.GamePhase.PLAY
@@ -128,10 +131,8 @@ class ContreeGame(BeloteGame):
                 allowed_bets_points = copy.deepcopy(ContreeGame.all_bet_points)
             else:
                 for bet in ContreeGame.all_bet_points:
-                    if bet != "Capot":
-                        if bet > self.current_bet.points:
-                            allowed_bets_points.append(bet)
-                allowed_bets_points.append("Capot")
+                    if bet > self.current_bet.points:
+                        allowed_bets_points.append(bet)
 
         allowed_bets_suits = copy.deepcopy(Card.SUIT_NAMES)
         allowed_bets_suits.insert(0, "Pass")

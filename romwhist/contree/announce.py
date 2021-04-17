@@ -1,4 +1,5 @@
 from enum import Enum
+import logging
 
 class Announce(dict):
     def __init__(self, suit, points):
@@ -23,8 +24,12 @@ class Announce(dict):
         if announce_as_string == "":
             return None
         else:
-            suit, points = announce_as_string.split("_", 1)
-            return cls(suit, points)
+            try:
+                suit, points = announce_as_string.split("_", 1)
+                return cls(suit, points)
+            except:
+                logging.warning("Could not parse bet string: %s", announce_as_string)
+                return None
 
 
 class ContreStatus(str, Enum):
