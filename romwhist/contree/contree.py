@@ -27,6 +27,7 @@ class ContreeGame(BeloteGame):
         self.contree_status = ContreStatus.NORMAL
         self.counting = counting
         self.init_bets()
+        self._nb_pass_since_bet = 0
 
     def get_state(self):
         state = ContreeState(self.id)
@@ -60,6 +61,8 @@ class ContreeGame(BeloteGame):
 
         elif bet.suit == "Pass":
             logging.info("Player passed")
+            self._nb_pass_since_bet += 1
+
             # Ask next player
             next_player = self.next_player(player)
             next_player_to_bet = self.next_player_to_bet(player)
@@ -86,6 +89,7 @@ class ContreeGame(BeloteGame):
             if self.current_bet is None or \
                     bet.points > self.current_bet.points or \
                     self.current_bet.suit == "Pass":
+                self._nb_pass_since_bet = 0
                 self.current_bet = bet
                 self.trump_suit = bet.suit    # Required for AI
                 self.taker = player
@@ -108,21 +112,22 @@ class ContreeGame(BeloteGame):
         # then move on to the play phase
         # If next player has passed and three other players have passed, then return None
         # If next_player has not bet then they are the next player to bet
-        if self.bets[next_player].suit == "":
+        if self.bets[next_player].suit == "" or self._nb_pass_since_bet < 3:
             return next_player
-
+        else:
+            return None
         # players = []
         # players.append(player)
-        player2 = self.next_player(player)
-        if self.bets[player].suit == "Pass":
-            player2 = self.next_player(player2)
-        for i in range(len(self.players) - 1):
-            #players.append(self.next_player(players[i - 1]))
-            if self.bets[player2].suit != "Pass":
-                return next_player
-            player2 = self.next_player(player2)
-
-        return None
+        # player2 = self.next_player(player)
+        # if self.bets[player].suit == "Pass":
+        #     player2 = self.next_player(player2)
+        # for i in range(len(self.players) - 1):
+        #     #players.append(self.next_player(players[i - 1]))
+        #     if self.bets[player2].suit != "Pass":
+        #         return next_player
+        #     player2 = self.next_player(player2)
+        #
+        # return None
 
     def get_allowed_bets(self, player):
         allowed_bets_points = []
@@ -136,8 +141,8 @@ class ContreeGame(BeloteGame):
 
         allowed_bets_suits = copy.deepcopy(Card.SUIT_NAMES)
         allowed_bets_suits.insert(0, "Pass")
-        # TODO: add Contree or Surcontree option
 
+        # Add Contree or Surcontree option
         if self.contre_enabled(player):
             allowed_bets_suits.append("Contre")
         elif self.surcontre_enabled(player):
@@ -151,9 +156,13 @@ class ContreeGame(BeloteGame):
         # True if one player has bet before and player is not partner
         partner = self.next_player(self.next_player(player))
         for a_player in self.players:
-            if self.bets[a_player].suit != "" and self.bets[a_player].suit != "Pass" \
-            and a_player != partner  and a_player != player:
+            if self.bets[a_player].suit != "" and \
+               self.bets[a_player].suit != "Pass" and \
+               a_player != partner  and a_player != player:
+                logging.debug("Contre enabled")
                 return True
+
+        logging.debug("Contre disabled")
         return False
 
     def surcontre_enabled(self, player):
@@ -166,6 +175,7 @@ class ContreeGame(BeloteGame):
 
     def deal(self, dealer=""):
         self.current_bet = None
+        self._nb_pass_since_bet = 0
         return self.deal_cards(int(self.deck_size / len(self.players)), dealer)
 
     def deal_2(self, dealer=""):

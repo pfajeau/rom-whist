@@ -190,7 +190,7 @@ class SimpleMCTSAgent(IAgent):
                                          SimpleAgent(random_action), self.ai_player,
                                          state, action))
 
-        self.run_simulation(games, num_simulations)
+        self.run_simulation(games, len(legal_actions))
         for game in games:
             if game.sim_player_won():
                 self.action_value[game.starting_action] += 1
@@ -271,9 +271,9 @@ class SimpleMCTSAgent(IAgent):
             rollout_actions.extend(additional_actions)
         return rollout_actions
 
-    def run_simulation(self, games, num_simulations):
+    def run_simulation(self, games, num_simulations_per_action):
         futures = [self.executor.submit(game.run) for game in games]
-        futures_queue = Queue(num_simulations * len(self.action_value))
+        futures_queue = Queue(len(games))
         for future in futures:
             futures_queue.put(future)
 
