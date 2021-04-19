@@ -117,7 +117,7 @@ class SimpleMCTSAgent(IAgent):
         the opponent's local decisions are chosen randomly."""
 
     def __init__(self, sim_game_class_name, ai_player, action_chooser_function='random_action',
-                 num_simulations=100):
+                 num_simulations=20, min_num_simulations =100):
         """
         :param str action_chooser_function: See `super().__init__()` docstring
         :param int num_simulations: How many simulations for rollout
@@ -135,8 +135,8 @@ class SimpleMCTSAgent(IAgent):
                 logging.info("Number of simulations: %s", num_simulations)
 
             if config.has_option('ai', 'min_number_simulations'):
-                nmin_num_simulations = int(ai_config['min_number_simulations'])
-                logging.info("Minimum Number of simulations: %s", nmin_num_simulations)
+                min_num_simulations = int(ai_config['min_number_simulations'])
+                logging.info("Minimum Number of simulations: %s", min_num_simulations)
 
             if config.has_option('ai', 'max_thread_number_for_simulation'):
                 max_threads = int(ai_config['max_thread_number_for_simulation'])
@@ -147,7 +147,7 @@ class SimpleMCTSAgent(IAgent):
         self.action_value = dict()
         self.num_simulations_per_action = dict()  # Number of simulations for an action
         self.num_simulations = num_simulations
-        self.nmin_num_simulations = nmin_num_simulations
+        self.min_num_simulations = min_num_simulations
         self.executor = ThreadPoolExecutor(max_workers=max_threads)
         self.sim_game_class_name = sim_game_class_name
         self.action_points = dict()
@@ -265,9 +265,9 @@ class SimpleMCTSAgent(IAgent):
                 rollout_actions.append(action)
 
         nb_sim = len(legal_actions) * num_simulations
-        if nb_sim < self.nmin_num_simulations:
+        if nb_sim < self.min_num_simulations:
             additional_actions = np.random.choice(legal_actions,  # Pre-select initial actions
-                                                  size=self.nmin_num_simulations - nb_sim, replace=True)
+                                                  size=self.min_num_simulations - nb_sim, replace=True)
             rollout_actions.extend(additional_actions)
         return rollout_actions
 
