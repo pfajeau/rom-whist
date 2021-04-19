@@ -1,7 +1,7 @@
-from romwhist.belote.belote_state import BeloteState
 from romwhist.card import Card
 from romwhist.contree.announce import Announce, ContreStatus
 from romwhist.belote.belote_state import BeloteState
+
 
 class ContreeState(BeloteState):
     # Note: bets must be passed as a list of strings

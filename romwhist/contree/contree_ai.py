@@ -1,8 +1,8 @@
 import json
 import logging
 
-from belote.belote import BeloteGame
-from contree.announce import Announce
+from romwhist.belote.belote import BeloteGame
+from romwhist.contree.announce import Announce
 from romwhist.contree.contree_state import ContreeState
 from romwhist.belote.belote_ai import BeloteAiPlayer
 from romwhist.ai.ai_agents import SimpleMCTSAgent
