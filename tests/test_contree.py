@@ -29,6 +29,7 @@ def main():
     assert (len(contree.get_allowed_bets("Joe")[1]) == len(ContreeGame.all_bet_points))
     bet = Announce("Spade", 80)
     contree.place_bet("Joe", bet)
+    assert contree.next_player_to_bet("Joe", "_0") == "Jack", contree.next_player_to_bet("Joe", "_0")
     assert contree.active_player == "Jack", contree.active_player
 
     assert (len(contree.get_allowed_bets("Jack")[0]) == 6)

@@ -53,6 +53,7 @@ class BeloteGame(CardGame):
         self.init_dict(self.hand_points, 0)
         self._hand_winner = []
         self.deck = None
+        self._nb_pass_since_bet = 0
 
         self.reset_card_ranks_and_points()
 
@@ -219,12 +220,15 @@ class BeloteGame(CardGame):
 
         if bet == "Pass":
             logging.info("Player passed")
+            self._nb_pass_since_bet += 1
+
             # Ask next player
             self.active_player = self.next_player(player)
             if self.next_player_to_bet(player) is None:
                 self.init_bets()
                 if self.phase == BeloteGame.GamePhase.BET:
                     logging.debug("Moving to second round of betting")
+                    self._nb_pass_since_bet = 0
                     self.phase = BeloteGame.GamePhase.BET2
                 else:
                     logging.debug("Everybody has passed twice")
@@ -244,15 +248,15 @@ class BeloteGame(CardGame):
         return
     
     # Return None if all players have bet
-    def next_player_to_bet(self, player):
+    def next_player_to_bet(self, player, no_bet_string=""):
         logging.debug("Next player to bet after: " + player)
         next_player = self.next_player(player)
-        if self.bets[next_player] != "" or len(self.get_playing_players()) == 1:
-            logging.debug("No more player to bet")
-            return None
-        else:
+        if str(self.bets[next_player]) == no_bet_string or self._nb_pass_since_bet < len(self.players)-1:
             logging.debug("Next player to bet after " + player + " is: " + next_player)
             return next_player
+        else:
+            logging.debug("No more player to bet")
+            return None
 
     def get_allowed_bets(self, player):
         allowed_bets = []
@@ -491,6 +495,7 @@ class BeloteGame(CardGame):
         self.init_dict(self.hand_points, 0)
         self.trump_suit = None
         self.rounds = []
+        self._nb_pass_since_bet = 0
 
         # Reset belote/rebelote states
         self.belote_state = BeloteGame.BeloteState.Not_Allowed

@@ -27,7 +27,6 @@ class ContreeGame(BeloteGame):
         self.contree_status = ContreStatus.NORMAL
         self.counting = counting
         self.init_bets()
-        self._nb_pass_since_bet = 0
 
     def get_state(self):
         state = ContreeState(self.id)
@@ -65,7 +64,7 @@ class ContreeGame(BeloteGame):
 
             # Ask next player
             next_player = self.next_player(player)
-            next_player_to_bet = self.next_player_to_bet(player)
+            next_player_to_bet = self.next_player_to_bet(player, "_0")
             logging.info("Next player to bet %s ", next_player_to_bet)
             self.active_player = self.next_player(player)
 
@@ -104,30 +103,6 @@ class ContreeGame(BeloteGame):
             self.active_player = self.next_player(self.dealer)
         return
 
-    # Return None if all players have bet
-    def next_player_to_bet(self, player):
-        logging.debug("Computing next player to bet after: " + player)
-        next_player = self.next_player(player)
-        # If three other players than nplayers have passed and next_player has a bet
-        # then move on to the play phase
-        # If next player has passed and three other players have passed, then return None
-        # If next_player has not bet then they are the next player to bet
-        if self.bets[next_player].suit == "" or self._nb_pass_since_bet < 3:
-            return next_player
-        else:
-            return None
-        # players = []
-        # players.append(player)
-        # player2 = self.next_player(player)
-        # if self.bets[player].suit == "Pass":
-        #     player2 = self.next_player(player2)
-        # for i in range(len(self.players) - 1):
-        #     #players.append(self.next_player(players[i - 1]))
-        #     if self.bets[player2].suit != "Pass":
-        #         return next_player
-        #     player2 = self.next_player(player2)
-        #
-        # return None
 
     def get_allowed_bets(self, player):
         allowed_bets_points = []
@@ -175,7 +150,6 @@ class ContreeGame(BeloteGame):
 
     def deal(self, dealer=""):
         self.current_bet = None
-        self._nb_pass_since_bet = 0
         return self.deal_cards(int(self.deck_size / len(self.players)), dealer)
 
     def deal_2(self, dealer=""):
