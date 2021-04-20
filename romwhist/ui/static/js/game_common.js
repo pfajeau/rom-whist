@@ -79,7 +79,7 @@ function initialize(players) {
     html= html.concat('</select>');
     html= html.concat('&nbsp;');
     $("#game_action_buttons").append(html);
-    $("#game_action_buttons").append('<button id="remove_player" class="btn btn-primary" name="remove_player" type="button">Remove Plsyer</button>');
+    $("#game_action_buttons").append('<button id="remove_player" class="btn btn-primary" name="remove_player" type="button">Remove Player</button>');
     document.getElementById("remove_player").onclick = function() {
       show_alert("Are you sure you want to remove this player?", "Warning", cancel=true, callback_ok=submit_form, action="remove_player");
     }
