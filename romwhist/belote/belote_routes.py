@@ -123,7 +123,7 @@ def belote_play():
             return redirect(url_for('belote_start'))
 
         if request.form['action_game'] == "remove_player":
-            logging.info("Remve Player button pressed")
+            logging.info("Remove Player button pressed")
             rplayer = request.form['player_list']
             logging.info("Player to remove: " + rplayer)
 
@@ -439,7 +439,7 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
         logging.error("Unknown game: " + str(game_id))
         return
 
-    hands = game.deal_1(username)
+    hands = game.deal(username)
 
     # FInd out who the first player to bet is
     nplayer = game.get_active_player()
