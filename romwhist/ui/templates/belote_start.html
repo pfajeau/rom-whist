@@ -79,37 +79,15 @@
       </div>
     </form>
     <br><br>
+     <script type="text/javascript">
+          guide = "{{ url_for('static', filename='html/belote_guide.html') }}"
+         $(function(){
+          $("#user_guide").load(guide);
+         });
+        </script>
     <div id="user_guide">
-      <h2>User Guide</h2>
-      <h3> Creating and joining a game</h3>
-      You can either create a new game, or join an existing game. Somebody first need to create a game.
-      Then the game creator has to inform other players of the game id so they can join the newly
-      created game.
-      <p>When creating or joining a game, each player has to specify their alias for the game. The computer does not play, so all
-      players have to be real persons</p>
-      <p>When creating the game, one can specify the number of points a player or team must reach to win the game</p>
-
-      <h3>Playing</h3>
-      Whenever a player has to do something (bid, or play), the player alias
-      flashes to remind the player that they have to do something.
-      To play a card, just clik that card. Cards that can be played have a green border.
-      <p>The rules used are the ones from the official belote game, available at
-        <a href="http://www.ffbelote.org/wp-content/uploads/2016/01/regles-officielles-de-la-Belote-27-01-2016.pdf">RÈGLES OFFICIELLES DE BELOTE</a><br>
-      <p>Summary of the game play rules:</p>
-      <ul>
-        <li>One always has to play the suit being asked. If the suit asked is trump, then one has to play a higher trump than
-          the highest card played if possible.</li>
-        <li>If ones does not have a card from the asked suit, and if one's partner has not played the winning card (or has not played yet),
-          one must play a trump card if possible. Otherwise one can play any card.</li>
-        <li>If a player from another team has already cut and is winning the round, and one has to cut, then one has to cut
-          above that player card, If it is not possible, one must play a smaller trump.</li>
-        <li>If one's partner is winning the round and one does not have the asked suit, then one can play any card they wish</li>
-      </ul>
-      <h3>Scoring</h3>
-      Points for the current hand are displayed in the "Points" fields. Score represents the overall score for each
-      player or team.
     </div>
-    <div id="rules">
+     <div id="rules">
       <h2>Rules of game</h2>
         <p>Francais:<a href="http://www.ffbelote.org/wp-content/uploads/2016/01/regles-officielles-de-la-Belote-27-01-2016.pdf" target="_blank" rel="noopener noreferrer">Règles officielles de la Belote</a></p>
         <p>English:<a href="{{ url_for('static', filename='') }}pdf/official_rules_belote.pdf" target="_blank" rel="noopener noreferrer">Belote Official Rules</a></p>
