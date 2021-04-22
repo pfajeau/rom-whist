@@ -6,7 +6,7 @@ author: Philippe Fajeau
 """
 import logging
 import threading
-import traceback
+import json
 from random import randint
 
 from flask import render_template, request, flash, session, url_for, redirect
@@ -14,6 +14,7 @@ from flask import render_template, request, flash, session, url_for, redirect
 from flask_login import current_user, login_user
 from flask_socketio import emit
 from flask_socketio import join_room, leave_room
+from i18n_strings import i18n
 from romwhist import common_routes
 from romwhist import socketio
 from romwhist.belote.belote import BeloteGame
@@ -22,6 +23,8 @@ from romwhist.belote.belote_state import BeloteState
 from romwhist.extensions import db
 from romwhist.forms import LoginForm, GameForm
 from romwhist.models import User
+from romwhist import i18n_strings
+
 
 NAMESPACE = '/belote'
 NAMESPACE_AI = '/belote_ai'
@@ -39,7 +42,7 @@ clients = dict()
 def belote_start():
     form = BeloteStartForm()
     if form.validate_on_submit():
-        # Sanitize the username (as it isued as IDs in the html)
+        # Sanitize the username (as it used as IDs in the html)
         username = common_routes.sanitize_username(form.user_name.data)
         logging.debug("User: " + username)
 
@@ -83,6 +86,8 @@ def belote_start():
 
 # @app.route("/belote_play", methods=['GET', 'POST'])
 def belote_play():
+    i18n_strings.init_strings()
+
     logging.info("In belote_play route")
     form = GameForm()
     player = session.get('username')
@@ -174,7 +179,7 @@ def belote_play():
                                trump=game.trump_card, trump_suit=game.trump_suit,
                                allowed_bets=game.get_allowed_bets(player),
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
-                               belote_allowed=belote_enabled, player_with_belote=game.player_with_belote)
+                               belote_allowed=belote_enabled, player_with_belote=game.player_with_belote, i18n=json.dumps(i18n_strings.i18n))
 
 
 # @app.route("/login",methods=['GET', 'POST'])

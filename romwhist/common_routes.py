@@ -17,6 +17,7 @@ from romwhist.extensions import db
 from romwhist.forms import LoginForm
 from romwhist.models import User
 from romwhist.ohell import ohell_routes
+from romwhist import i18n_strings
 
 
 # TODO: separate from this file to remove circular dependency between

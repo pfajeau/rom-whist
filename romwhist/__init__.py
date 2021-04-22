@@ -10,7 +10,10 @@ App init module
 """
 
 from flask import Flask
+from flask import request
 from flask_login import LoginManager
+from flask_babel import Babel
+
 import logging
 import logging.handlers
 from .extensions import *
@@ -40,6 +43,9 @@ app.add_url_rule('/', view_func=common_routes.home, methods=["GET", "POST"])
 app.add_url_rule('/admin', view_func=common_routes.admin, methods=["GET", "POST"])
 app.add_url_rule('/home', view_func=common_routes.home, methods=["GET", "POST"])
 
+babel = Babel(app)
+
+
 def create_app():
     login_manager = LoginManager()
     Bootstrap(app)
@@ -55,6 +61,10 @@ def create_app():
     logging.basicConfig(filename=app.config["LOG_FILE"],
                         format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
                         level=app.config["LOG_LEVEL"])
+
+    # Initialize Flask-Babel
+    # babel = Babel(app)
+
 
     # init extensions
     csrf.init_app(app)
@@ -79,3 +89,12 @@ def create_app():
         # finally create tables as per models
         db.create_all()
     return app
+
+
+# Use the browser's language preferences to select an available translation
+# add to you main app code
+@babel.localeselector
+def get_locale():
+    print (app.config['LANGUAGES'])
+    return request.accept_languages.best_match(app.config['LANGUAGES'])
+

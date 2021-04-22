@@ -28,6 +28,10 @@ Add footer / contact info
   var trump_suit = ""
   var the_players
   var bool = {"True": true, "False": false}
+  var i18n_json = {{ i18n|tojson }}
+  var i18n = JSON.parse(i18n_json);
+  console.log(i18n)
+  // var i18n = JSON.parse({{ i18n }})
 
   // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
   let html_frag = ''

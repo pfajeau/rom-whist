@@ -76,10 +76,12 @@ function initialize(players) {
       html= html.concat('<option value="' + players[i] + '">' + players[i] + '</option>');
     }
 
+    console.log(i18n)
+    console.log(i18n["remove_player"])
     html= html.concat('</select>');
     html= html.concat('&nbsp;');
     $("#game_action_buttons").append(html);
-    $("#game_action_buttons").append('<button id="remove_player" class="btn btn-primary" name="remove_player" type="button">Remove Player</button>');
+    $("#game_action_buttons").append('<button id="remove_player" class="btn btn-primary" name="remove_player" type="button">' + i18n.remove_player  + '</button>');
     document.getElementById("remove_player").onclick = function() {
       show_alert("Are you sure you want to remove this player?", "Warning", cancel=true, callback_ok=submit_form, action="remove_player");
     }
@@ -104,6 +106,17 @@ function initialize(players) {
 
   make_players_inactive();
 }
+
+//function getValue(key, list) {
+//    for (var i = 0; i < list.length; i++) {
+//        var value = list[i];
+//        if (value.id === key) {
+//            return value;
+//        }
+//    }
+//
+//    return null;
+//}
 
 function add_card_to_table(player, card) {
   if (card == 'None') return
