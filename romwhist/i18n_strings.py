@@ -1,8 +1,8 @@
-import gettext
-_ = gettext.gettext
+from flask_babel import gettext as _
 
 i18n = dict()
 
 
 def init_strings():
-    i18n["remove_player"] = gettext.gettext("remove_player")
+    print (_("remove_player"))
+    i18n["remove_player"] = _("remove_player")
