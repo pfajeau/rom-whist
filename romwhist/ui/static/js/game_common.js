@@ -46,7 +46,7 @@ function initialize(players) {
   });
 
   // Send button for chat
-  $("#post").html(i18n["send"])
+  $("#post_chat").html(i18n["send"])
 
   // Add game action buttons
   if (username == ownername) {
@@ -55,13 +55,6 @@ function initialize(players) {
     i18n["start_game"] + '</button>');
   }
 
-  $("#game_action_buttons").append(
-      '<button id="leave_game" type="button" class="btn btn-primary" name="leave_game">' +
-      i18n['leave_game'] + '</button>');
-  document.getElementById("leave_game").onclick = function() {
-    show_alert("Are you sure you want to leave the game?", "Warning", cancel=true, callback_ok=submit_form, action="leave_game");
-    // show_dialog_ok("Warning", "Are you sure you want to leave the game?", ok_function=submit_form, action="leave_game")
-  }
 
   if (username == ownername) {
     // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
@@ -72,6 +65,15 @@ function initialize(players) {
       show_alert("Are you sure you want to stop the game?", "Warning", cancel=true, callback_ok=submit_form, action="stop_game");
     }
   }
+
+  $("#game_action_buttons").append(
+      '<button id="leave_game" type="button" class="btn btn-primary" name="leave_game">' +
+      i18n["leave_game"] + '</button>');
+  document.getElementById("leave_game").onclick = function() {
+    show_alert("Are you sure you want to leave the game?", "Warning", cancel=true, callback_ok=submit_form, action="leave_game");
+    // show_dialog_ok("Warning", "Are you sure you want to leave the game?", ok_function=submit_form, action="leave_game")
+  }
+
   if (username == ownername) {
     $("#game_action_buttons").append('&nbsp;&nbsp;');
 

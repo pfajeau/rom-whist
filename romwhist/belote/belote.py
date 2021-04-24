@@ -219,7 +219,7 @@ class BeloteGame(CardGame):
         logging.info("Player " + player + "bid: " + bet)
         self.bets[player] = bet
 
-        if bet == _("pass"):
+        if bet == "pass":
             logging.info("Player passed")
             self._nb_pass_since_bet += 1
 

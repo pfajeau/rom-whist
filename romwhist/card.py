@@ -4,7 +4,7 @@ class Card(object):
 
     SUITS = 'cdhs'
 
-    SUIT_NAMES = ["club", "diamond", "heart", "Spade"]
+    SUIT_NAMES = ["club", "diamond", "heart", "spade"]
 
     NUMBERS = list(range(2, 15))
     CARD_NAMES = ['two', 'three', 'four', 'five',
