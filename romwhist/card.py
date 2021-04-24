@@ -1,26 +1,22 @@
-class Card(object):
+from flask_babel import gettext as _
 
-    # class SuitName(Enum):
-    #     CLUB = "Club"
-    #     DIAMOND = "Diamond"
-    #     HEART = "Heart"
-    #     SPADE = "Spade"
+class Card(object):
 
     SUITS = 'cdhs'
 
-    SUIT_NAMES = ["Club", "Diamond", "Heart", "Spade"]
+    SUIT_NAMES = ["club", "diamond", "heart", "Spade"]
 
     NUMBERS = list(range(2, 15))
-    CARD_NAMES = ['Two', 'Three', 'Four', 'Five', 'Six',
-                  'Seven', 'Eight', 'Nine', 'Ten',
-                  'Jack', 'Queen', 'King', 'Ace']
+    CARD_NAMES = ['two', 'three', 'four', 'five',
+                  'six', 'seven', 'eight', 'nine',
+                  'ten', 'jack', 'queen', 'king', 'ace']
 
     SUIT_NAMES_BY_INITIAL = {
-        'c': "Club",
-        'd': "Diamond",
-        'h': "Heart",
-        's': "Spade"
-    }
+        'c': "club",
+        'd': "diamond",
+        'h': "heart",
+        's': "spade"}
+    
 
     def __init__(self, card_number, suit):
         self.card_num = card_number

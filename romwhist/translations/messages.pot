@@ -1,0 +1,179 @@
+# Translations template for PROJECT.
+# Copyright (C) 2021 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2021-04-23 16:35-0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.0\n"
+
+#: i18n_strings.py:8
+msgid "join_game"
+msgstr ""
+
+#: i18n_strings.py:9
+msgid "new_game"
+msgstr ""
+
+#: i18n_strings.py:10
+msgid "alias"
+msgstr ""
+
+#: i18n_strings.py:12
+msgid "bet"
+msgstr ""
+
+#: i18n_strings.py:13
+msgid "bets"
+msgstr ""
+
+#: i18n_strings.py:14
+msgid "wins"
+msgstr ""
+
+#: i18n_strings.py:15
+msgid "points"
+msgstr ""
+
+#: i18n_strings.py:16
+msgid "score"
+msgstr ""
+
+#: i18n_strings.py:17
+msgid "scoresheet"
+msgstr ""
+
+#: i18n_strings.py:19
+msgid "remove_player"
+msgstr ""
+
+#: i18n_strings.py:20
+msgid "add_ai"
+msgstr ""
+
+#: i18n_strings.py:21
+msgid "leave_game"
+msgstr ""
+
+#: i18n_strings.py:22
+msgid "stop_game"
+msgstr ""
+
+#: i18n_strings.py:23
+msgid "start_game"
+msgstr ""
+
+#: i18n_strings.py:24
+msgid "restart_hand"
+msgstr ""
+
+#: i18n_strings.py:26
+msgid "ohell"
+msgstr ""
+
+#: i18n_strings.py:27
+msgid "belote"
+msgstr ""
+
+#: i18n_strings.py:28
+msgid "contree"
+msgstr ""
+
+#: i18n_strings.py:31
+msgid "spade"
+msgstr ""
+
+#: i18n_strings.py:32
+msgid "heart"
+msgstr ""
+
+#: i18n_strings.py:33
+msgid "diamond"
+msgstr ""
+
+#: i18n_strings.py:34
+msgid "club"
+msgstr ""
+
+#: belote/belote.py:222 i18n_strings.py:35
+msgid "pass"
+msgstr ""
+
+#: i18n_strings.py:38
+msgid "two"
+msgstr ""
+
+#: i18n_strings.py:39
+msgid "three"
+msgstr ""
+
+#: i18n_strings.py:40
+msgid "four"
+msgstr ""
+
+#: i18n_strings.py:41
+msgid "five"
+msgstr ""
+
+#: i18n_strings.py:42
+msgid "six"
+msgstr ""
+
+#: i18n_strings.py:43
+msgid "seven"
+msgstr ""
+
+#: i18n_strings.py:44
+msgid "eight"
+msgstr ""
+
+#: i18n_strings.py:45
+msgid "nine"
+msgstr ""
+
+#: i18n_strings.py:46
+msgid "ten"
+msgstr ""
+
+#: i18n_strings.py:47
+msgid "jack"
+msgstr ""
+
+#: i18n_strings.py:48
+msgid "queen"
+msgstr ""
+
+#: i18n_strings.py:49
+msgid "king"
+msgstr ""
+
+#: i18n_strings.py:50
+msgid "ace"
+msgstr ""
+
+#: i18n_strings.py:52
+msgid "copyright"
+msgstr ""
+
+#: i18n_strings.py:53
+msgid "game_id"
+msgstr ""
+
+#: i18n_strings.py:54
+msgid "chat"
+msgstr ""
+
+#: i18n_strings.py:55
+msgid "send"
+msgstr ""
+

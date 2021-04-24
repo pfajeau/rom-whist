@@ -45,13 +45,19 @@ function initialize(players) {
     }
   });
 
+  // Send button for chat
+  $("#post").html(i18n["send"])
 
   // Add game action buttons
   if (username == ownername) {
-    $("#game_action_buttons").append('<button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>');
+    $("#game_action_buttons").append(
+    '<button id="start_game" class="btn btn-primary" name="start_game" type="button">' +
+    i18n["start_game"] + '</button>');
   }
 
-  $("#game_action_buttons").append('<button id="leave_game" type="button" class="btn btn-primary" name="leave_game">Leave Game</button>');
+  $("#game_action_buttons").append(
+      '<button id="leave_game" type="button" class="btn btn-primary" name="leave_game">' +
+      i18n['leave_game'] + '</button>');
   document.getElementById("leave_game").onclick = function() {
     show_alert("Are you sure you want to leave the game?", "Warning", cancel=true, callback_ok=submit_form, action="leave_game");
     // show_dialog_ok("Warning", "Are you sure you want to leave the game?", ok_function=submit_form, action="leave_game")
@@ -59,7 +65,9 @@ function initialize(players) {
 
   if (username == ownername) {
     // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
-    $("#game_action_buttons").append('<button id="stop_game" type="button" class="btn btn-warning" name="stop_game">Stop Game</button>');
+    $("#game_action_buttons").append(
+    '<button id="stop_game" type="button" class="btn btn-warning" name="stop_game">' +
+    i18n["stop_game"] + '</button>');
     document.getElementById("stop_game").onclick = function() {
       show_alert("Are you sure you want to stop the game?", "Warning", cancel=true, callback_ok=submit_form, action="stop_game");
     }
@@ -76,8 +84,6 @@ function initialize(players) {
       html= html.concat('<option value="' + players[i] + '">' + players[i] + '</option>');
     }
 
-    console.log(i18n)
-    console.log(i18n["remove_player"])
     html= html.concat('</select>');
     html= html.concat('&nbsp;');
     $("#game_action_buttons").append(html);
@@ -89,7 +95,10 @@ function initialize(players) {
 
   if (username == ownername) {
     // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
-    $("#game_action_buttons").append('<button id="restart_hand" type="button" class="btn btn-warning" name="restart_hand">Restart Hand</button>');
+    $("#game_action_buttons").append(
+        '<button id="restart_hand" type="button" class="btn btn-warning" name="restart_hand">' +
+        i18n["restart_hand"] +
+        '</button>');
     document.getElementById("restart_hand").onclick = function() {
       show_alert("Are you sure you want to restart the hand", "Warning", cancel=true, callback_ok=submit_form, action="restart_hand");
     }
@@ -97,7 +106,9 @@ function initialize(players) {
 
   if (username == ownername) {
     // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
-    $("#game_action_buttons").append('<button id="add_ai" type="button" class="btn btn-warning" name="add_ai">Add AI</button>');
+    $("#game_action_buttons").append(
+        '<button id="add_ai" type="button" class="btn btn-warning" name="add_ai">' +
+        i18n["add_ai"] + '</button>');
     document.getElementById("add_ai").onclick = function() {
       show_alert("Please confirm you want to add an AI player", "Warning", cancel=true, callback_ok=submit_form, action="add_ai");
     }
@@ -129,7 +140,22 @@ function add_card_to_table(player, card) {
   html = html.concat("<figcaption class='trump_caption'>" + player + "</figcaption>")
   html = html.concat("</figure>")
   $('#cards_played').append(html)
+}
 
+function populate_header(player, game_id, game_logo_url) {
+  let html_frag = ""
+  html_frag = html_frag.concat("<span class='game_page_title'>")
+  html_frag = html_frag.concat(i18n["game_id"] + ": " + game_id)
+  html_frag = html_frag.concat(" - " + player + "</span>")
+  html_frag = html_frag.concat(
+      "<span class='game_page_title'><a href='#scoresheet_div'>" +
+      i18n["scoresheet"] +
+      "</a></span>")
+  html_frag = html_frag.concat(
+      "<span class='logo_game'><img border='0' alt='Belote' src=" +
+      game_logo_url + " width='80'></a> </span>")
+
+  $("#topnav").last().after(html_frag);
 }
 
 function start_game() {

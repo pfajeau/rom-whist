@@ -6,6 +6,7 @@ author: Philippe Fajeau
 """
 import logging
 import threading
+import json
 from random import randint
 
 from flask import render_template, request, flash, session, url_for, redirect
@@ -20,6 +21,7 @@ from romwhist.forms import LoginForm, GameForm
 from romwhist.models import User
 from romwhist.ohell.ohell import OhellGame
 from romwhist.ohell.ohell_form import OhellStartForm
+from romwhist import i18n_strings
 from romwhist.ohell.ohell_state import OhellState
 
 NAMESPACE = '/ohell'
@@ -72,7 +74,8 @@ def ohell_start():
             game_id = common_routes.generate_game_id(999, games)
             if game_id is None:
                 return render_template('ohell_start.html', error="No more games available!!! Please try again later",
-                                       form=form)
+                                       form=form,
+                                       i18n=json.dumps(i18n_strings.i18n))
 
             logging.debug("creating new game with id: " + str(game_id))
             # Add game id in session
@@ -94,7 +97,10 @@ def ohell_start():
             add_player(username, game_id)
             return redirect(url_for('ohell_play'))
     else:
-        return render_template("ohell_start.html", form=form, error=form.errors)
+        return render_template("ohell_start.html",
+                               form=form,
+                               error=form.errors,
+                               i18n=json.dumps(i18n_strings.i18n))
 
 
 @app.route("/base")
@@ -126,7 +132,9 @@ def ohell_play():
         if game_id is None:
             error = "Could not find game_id in session"
             logging.debug(error)
-            return render_template('ohell_start.html', error=error)
+            return render_template('ohell_start.html',
+                                   error=error,
+                                   i18n=json.dumps(i18n_strings.i18n))
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":
@@ -169,22 +177,18 @@ def ohell_play():
         cards_played = game.get_cards_played_current_round()
 
         logging.debug("Player: " + player)
-        #logging.debug("Active Player: " + game.get_active_player())
+        logging.debug("Active Player: " + game.get_active_player())
         logging.debug("Game Phase: " + game.phase.name)
         active_player = game.get_active_player()
         logging.debug("Allowed cards: " + str(game.get_allowed_cards(player)))
-        # logging.debug("Scoresheet:")
-        # for i in range(game._current_hand_nb - 1):
-        #     logging.debug(i, " ", game.scoresheet[i][0])
-        #     logging.debug(i, " ", game.scoresheet[i][1])
-        #     logging.debug(i, " ", game.scoresheet[i][2])
 
         return render_template("ohell.html", form=form, players=game.get_playing_players(), scores=game.get_scores(),
                                hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player,
                                cards_played=cards_played, allowed_cards=game.get_allowed_cards(player),
                                trump=game.trump_card, dealing_method=game.dealing_method,
                                allowed_bets=game.get_allowed_bets(player), game_phase=game.phase.name,
-                               hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet)
+                               hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet,
+                               i18n=json.dumps(i18n_strings.i18n))
 
 
 # @app.route("/login",methods=['GET', 'POST'])

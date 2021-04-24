@@ -6,6 +6,7 @@ author: Philippe Fajeau
 """
 import logging
 import threading
+import json
 from random import randint
 
 from flask import render_template, request, flash, session, url_for, redirect
@@ -22,10 +23,10 @@ from romwhist.contree.contree_form import ContreeStartForm
 from romwhist.extensions import db
 from romwhist.forms import LoginForm, GameForm
 from romwhist.models import User
+from romwhist import i18n_strings
 
 NAMESPACE = '/contree'
 NAMESPACE_AI = '/contree_ai'
-
 
 # Map of games, key is game id
 games = dict()
@@ -58,7 +59,10 @@ def contree_start():
             logging.info("start game")
             game_id = common_routes.generate_game_id(999,games)
             if game_id is None:
-                return render_template('contree_start.html', error="No more games available!!! Please try again later", form=form)
+                return render_template('contree_start.html',
+                                       error="No more games available!!! Please try again later",
+                                       form=form,
+                                       i18n=json.dumps(i18n_strings.i18n()))
 
             points_to_reach = int(form.points_to_reach.data)
             index = int(form.counting.data)
@@ -82,7 +86,9 @@ def contree_start():
             add_player(username, game_id)
             return redirect(url_for('contree_play'))
     else:
-        return render_template("contree_start.html", form=form, error=form.errors)
+        return render_template("contree_start.html", form=form,
+                               error=form.errors,
+                               i18n=json.dumps(i18n_strings.i18n()))
 
 
 # @app.route("/contree_play", methods=['GET', 'POST'])
@@ -113,7 +119,8 @@ def contree_play():
         if game_id is None:
             error = "Could not find game_id in session"
             logging.error(error)
-            return render_template('contree_start.html', error=error)
+            return render_template('contree_start.html', error=error,
+                                    i18n=json.dumps(i18n_strings.i18n()))
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":
@@ -178,7 +185,8 @@ def contree_play():
                                trump=game.trump_card, trump_suit=game.trump_suit,
                                allowed_bets=game.get_allowed_bets(player),
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
-                               belote_allowed=belote_enabled, player_with_belote=game.player_with_belote)
+                               belote_allowed=belote_enabled, player_with_belote=game.player_with_belote,
+                               i18n=json.dumps(i18n_strings.i18n()))
 
 
 # @app.route("/login",methods=['GET', 'POST'])

@@ -32,16 +32,8 @@ Add footer / contact info
   var i18n = JSON.parse(i18n_json);
   console.log(i18n)
 
-  // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
-  let html_frag = ''
-  html_frag = html_frag.concat("<span class='game_page_title'>")
-  html_frag = html_frag.concat(" Game ID: {{ session['game_id'] }}")
-  html_frag = html_frag.concat(" - {{ session['username'] }}</span>")
-  html_frag = html_frag.concat("<span class='game_page_title'><a href='#scoresheet_div'>Scoresheet</a></span>")
-  html_frag = html_frag.concat("<span class='logo_game'><img border='0' alt='Belote' src='{{ url_for('static', filename='') }}img/belote.png' width='80'></a> </span>")
-  $("#topnav").last().after(html_frag);
-  // $("#topnav").last().after("<card_playedspan class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</span>")
-  // $("#topnav").last().after("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
+  populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
+                   "{{ url_for('static', filename='img/belote.png') }}")
 
   document.addEventListener('DOMContentLoaded', () => {
 
@@ -50,6 +42,8 @@ Add footer / contact info
        the_players.push("{{ the_player }}")
     {% endfor %}
     initialize(the_players)
+
+    populate_bets()
 
     console.log("player_with_belote: " + "{{ player_with_belote }}")
     console.log("belote_allowed: " + "{{ belote_allowed }}")
@@ -86,7 +80,8 @@ Add footer / contact info
     // Register action for bet input field
     id_bet = "#bets_" + username
     $(id_bet).change(function() {
-      bet = $(id_bet + " option:selected").text();
+      bet = $(id_bet + " option:selected").val();
+      // bet = list.options[list.selectedIndex];
       if (bet != "Select") {
         console.log("Bet:" + bet)
         socket.emit("player bet", bet);
@@ -100,6 +95,26 @@ Add footer / contact info
     // Allow start button when numbe of players is between 2 and 4
     if (the_players.length < 2 || the_players.length > 4) {
       $("#start_game").prop('disabled', true);
+    }
+
+    function populate_bets() {
+      html = ""
+      for (player in the_players) {
+        let id_bet = "#bets_" + player
+        html = html.concat('<option value="select" selected>i18n["select"]</option>')
+        {% if allowed_bets|length == 0 %}
+          {% if bets[player] != "" %}
+            html = html.concat('<option value="{{ bets[player] }}" selected>i18n["{{ bets[player] }}"</option>')
+          {% endif %}
+        {% else %}
+          html = html.concat('<option value="select" selected>i18n['Select']</option>')
+          {% for bet in allowed_bets -%}
+              html = html.concat('<option value="{{ bet }}">i18n["{{ bet }}"]</option>')
+          {% endfor %}
+        {% endif %}
+        $(id_bet).append(html)
+        // $(id_bet).prop("disabled", true)
+      }
     }
 
     function add_belote_button(enabled, text) {
@@ -226,7 +241,7 @@ Add footer / contact info
       let html = ""
       html = html.concat('<option value="select" selected>Select</option>')
       for (bet in allowed_bets) {
-        html = html.concat('<option value="' + allowed_bets[bet] + '">' + allowed_bets[bet] + '</option>')
+        html = html.concat('<option value="' + allowed_bets[bet] + '">' + i18n[allowed_bets[bet]] + '</option>')
       }
       $(id_bet).append(html)
       if (username != player_name) {
@@ -392,16 +407,6 @@ Add footer / contact info
       </td>
       <td class="td_player_info">
         <select name="bets" id="bets_{{ player }}" disabled>
-          {% if allowed_bets|length == 0 %}
-            {% if bets[player] != "" %}
-              <option value="{{ bets[player] }}" selected>{{ bets[player] }}</option>
-            {% endif %}
-          {% else %}
-            <option value="select" selected>Select</option>
-            {% for bet in allowed_bets -%}
-                <option value="{{ bet }}">{{ bet }}</option>
-            {% endfor %}
-          {% endif %}
         </select>
       </td>
       {% endfor %}
@@ -439,7 +444,7 @@ Add footer / contact info
 <!--        - <figcaption><h3 class='trump_caption'>Trump</h3></figcaption> -->
       </figure>
     {% elif game_phase == "PLAY" %}
-      <label class="trump_caption">Trump: {{ trump_suit }}<label>
+      <label class="trump_caption">Trump: {{ trump_suit }}</label>
     {% endif %}
   </div>
   <div id="cards_played">
@@ -447,6 +452,11 @@ Add footer / contact info
 </div>
 
 <!-- Belote / Rebelote and message sections -->
+<!--<script type="text/javascript">-->
+<!--    html_file = "{{ url_for('static', filename='html/msg_container.html') }}"-->
+<!--    $("#msg_container").load(html_file);-->
+<!--</script>-->
+
 <div id="msg_container">
   <br>
   <div id="belote_button_div">
@@ -475,10 +485,10 @@ Add footer / contact info
     </div>
     <div class="chat" id="chat">
       <br/>
-      <h4 class="div_title">Chat</h4>
+      <h4 class="div_title">{{ i18n["chat"] }}</h4>
       <textarea id="chat_text" rows=5 cols=80 readonly></textarea><br>
       <input type="text" id="chat_input" class = "chat_input" size=77></input>
-      <button id="post" class="btn btn-primary" name="post" type="button">Send</button>
+      <button id="post" class="btn btn-primary" name="post" type="button"></button>
     </div>
     <div>
       <div id="game_action_buttons" class="btn-toolbar">
@@ -487,7 +497,7 @@ Add footer / contact info
     </div>
     <div id="scoresheet_div">
       <br/>
-      <h4 class="div_title">Scoresheet</h4>
+      <h4 class="div_title">{{ i18n["scoresheet"] }}</h4>
       <!-- <table id="scoresheet_table" class="table-no-padding-border padding-between-cols"> -->
       <table id="scoresheet_table" class="table-no-padding-border table table-sm table-bordered">
         <thead>
