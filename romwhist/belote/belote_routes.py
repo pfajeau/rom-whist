@@ -61,8 +61,7 @@ def belote_start():
             if game_id is None:
                 return render_template('belote_start.html',
                                        error="No more games available!!! Please try again later",
-                                       form=form,
-                                       i18n=json.dumps(i18n_strings.i18n()))
+                                       form=form)
 
             points_to_reach = int(form.points_to_reach.data)
 
@@ -82,8 +81,8 @@ def belote_start():
             add_player(username, game_id)
             return redirect(url_for('belote_play'))
     else:
-        return render_template("belote_start.html", form=form, error=form.errors,
-                                i18n=json.dumps(i18n_strings.i18n()))
+        return render_template("belote_start.html",
+                               form=form, error=form.errors)
 
 
 # @app.route("/belote_play", methods=['GET', 'POST'])
@@ -115,8 +114,7 @@ def belote_play():
         if game_id is None:
             error = "Could not find game_id in session"
             logging.error(error)
-            return render_template('belote_start.html', error=error,
-                                    i18n=json.dumps(i18n_strings.i18n()))
+            return render_template('belote_start.html', error=error)
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":

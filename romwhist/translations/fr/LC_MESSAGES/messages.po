@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-23 16:35-0700\n"
-"PO-Revision-Date: 2021-04-22 16:53-0700\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2021-04-25 15:15-0700\n"
+"PO-Revision-Date: 2021-04-25 15:11-0700\n"
+"Last-Translator: \n"
 "Language: fr\n"
 "Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
@@ -17,6 +17,10 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.0\n"
+
+#: forms.py:28 i18n_strings.py:53
+msgid "game_id"
+msgstr "Identifiant Jeu"
 
 #: i18n_strings.py:8
 msgid "join_game"
@@ -28,7 +32,7 @@ msgstr "Nouveau Jeu"
 
 #: i18n_strings.py:10
 msgid "alias"
-msgstr "Nom"
+msgstr "Votre Alias"
 
 #: i18n_strings.py:12
 msgid "bet"
@@ -104,9 +108,9 @@ msgstr "Carreau"
 
 #: i18n_strings.py:34
 msgid "club"
-msgstr "Trefle"
+msgstr "Trèfle"
 
-#: belote/belote.py:222 i18n_strings.py:35
+#: i18n_strings.py:35
 msgid "pass"
 msgstr "Passe"
 
@@ -166,10 +170,6 @@ msgstr ""
 msgid "copyright"
 msgstr "Copyright"
 
-#: i18n_strings.py:53
-msgid "game_id"
-msgstr "Jeu ID"
-
 #: i18n_strings.py:54
 msgid "chat"
 msgstr "Chat"
@@ -177,4 +177,46 @@ msgstr "Chat"
 #: i18n_strings.py:55
 msgid "send"
 msgstr "Envoie"
+
+#: ui/templates/belote_start.html:26
+msgid "welcome_play_belote"
+msgstr "Bienvenue au jeu de belote!"
+
+#: ui/templates/belote_start.html:33 ui/templates/contree_start.html:31
+#: ui/templates/ohell_start.html:52
+msgid "enter_alias"
+msgstr "Entrez votre alias pour le jeu"
+
+#: ui/templates/belote_start.html:41 ui/templates/contree_start.html:39
+#: ui/templates/ohell_start.html:60
+msgid "choose_option"
+msgstr "Puis sélectionner une des options suivantes:"
+
+#: ui/templates/belote_start.html:46 ui/templates/contree_start.html:44
+#: ui/templates/ohell_start.html:65
+msgid "join_a_game"
+msgstr "Joindre un jeu existant"
+
+#: ui/templates/belote_start.html:77 ui/templates/contree_start.html:78
+msgid "rules_of_game"
+msgstr "Règles"
+
+#: ui/templates/contree_start.html:24
+msgid "welcome_play_contree"
+msgstr "Bienvenue au jeu de Belote Contrée!"
+
+#: ui/templates/contree_start.html:57
+msgid "create_new_game"
+msgstr "Creer un nouveau jeu"
+
+#: ui/templates/ohell_start.html:45
+msgid "welcome_play_ohell"
+msgstr "Bienvenue au jeu de l'Ascensur (ou Whist Roumain)!"
+
+#: ui/templates/ohell_start.html:100
+msgid "references"
+msgstr "Références"
+
+#~ msgid "\"welcome_play_contree\""
+#~ msgstr "Bienvenue au jeu de belote contrée!"
 

@@ -74,8 +74,7 @@ def ohell_start():
             game_id = common_routes.generate_game_id(999, games)
             if game_id is None:
                 return render_template('ohell_start.html', error="No more games available!!! Please try again later",
-                                       form=form,
-                                       i18n=json.dumps(i18n_strings.i18n))
+                                       form=form)
 
             logging.debug("creating new game with id: " + str(game_id))
             # Add game id in session
@@ -99,8 +98,7 @@ def ohell_start():
     else:
         return render_template("ohell_start.html",
                                form=form,
-                               error=form.errors,
-                               i18n=json.dumps(i18n_strings.i18n))
+                               error=form.errors)
 
 
 @app.route("/base")
@@ -133,8 +131,7 @@ def ohell_play():
             error = "Could not find game_id in session"
             logging.debug(error)
             return render_template('ohell_start.html',
-                                   error=error,
-                                   i18n=json.dumps(i18n_strings.i18n))
+                                   error=error)
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":
@@ -188,7 +185,7 @@ def ohell_play():
                                trump=game.trump_card, dealing_method=game.dealing_method,
                                allowed_bets=game.get_allowed_bets(player), game_phase=game.phase.name,
                                hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet,
-                               i18n=json.dumps(i18n_strings.i18n))
+                               i18n=json.dumps(i18n_strings.i18n()))
 
 
 # @app.route("/login",methods=['GET', 'POST'])

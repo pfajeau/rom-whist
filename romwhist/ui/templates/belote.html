@@ -30,7 +30,6 @@ Add footer / contact info
   var bool = {"True": true, "False": false}
   var i18n_json = {{ i18n|tojson }}
   var i18n = JSON.parse(i18n_json);
-  console.log(i18n)
 
   populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
                    "{{ url_for('static', filename='img/belote.png') }}")
@@ -121,7 +120,6 @@ Add footer / contact info
       // Register user - only used here to cover the case of
       // first player joining. DO NOT REMOVE
       socket.emit('join game', {data:''});
-
     });
 
     socket.on('sc game started', function(data) {

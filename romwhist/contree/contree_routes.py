@@ -61,8 +61,7 @@ def contree_start():
             if game_id is None:
                 return render_template('contree_start.html',
                                        error="No more games available!!! Please try again later",
-                                       form=form,
-                                       i18n=json.dumps(i18n_strings.i18n()))
+                                       form=form)
 
             points_to_reach = int(form.points_to_reach.data)
             index = int(form.counting.data)
@@ -87,8 +86,7 @@ def contree_start():
             return redirect(url_for('contree_play'))
     else:
         return render_template("contree_start.html", form=form,
-                               error=form.errors,
-                               i18n=json.dumps(i18n_strings.i18n()))
+                               error=form.errors)
 
 
 # @app.route("/contree_play", methods=['GET', 'POST'])
@@ -119,8 +117,7 @@ def contree_play():
         if game_id is None:
             error = "Could not find game_id in session"
             logging.error(error)
-            return render_template('contree_start.html', error=error,
-                                    i18n=json.dumps(i18n_strings.i18n()))
+            return render_template('contree_start.html', error=error)
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":
