@@ -11,6 +11,7 @@ Add footer / contact info
 {% block content %}
 <script type="text/javascript" src="https://cdn.socket.io/3.1.1/socket.io.min.js"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/game_common.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/belote.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/belote.css') }}"/>
 <script type="text/javascript">
 
@@ -36,17 +37,11 @@ Add footer / contact info
 
   document.addEventListener('DOMContentLoaded', () => {
 
-    the_players = []
-    {% for the_player in players -%}
-       the_players.push("{{ the_player }}")
-    {% endfor %}
-
+    the_players = {{ players|safe }}
     initialize(the_players)
 
     populate_bets()
 
-    console.log("player_with_belote: " + "{{ player_with_belote }}")
-    console.log("belote_allowed: " + "{{ belote_allowed }}")
     belote_allowed = bool["{{ belote_allowed }}"]
 
     if (username == "{{ player_with_belote }}") {
@@ -73,10 +68,10 @@ Add footer / contact info
       make_player_play("{{ active_player }}", "{{ allowed_cards }}");
     }
 
-    document.getElementById("post_chat").onclick = function() {
-      post_msg();
-    }
-
+    // document.getElementById("post_chat").onclick = function() {
+    //   post_msg();
+    // }
+    //
     // Register action for bet input field
     id_bet = "#bets_" + username
     $(id_bet).change(function() {
@@ -117,20 +112,6 @@ Add footer / contact info
       }
     }
 
-    function add_belote_button(enabled, text) {
-      $("#belote_button_div").append('<button id="belote" type="button" class="btn-primary" name="belote">' + text + '</button>');
-      document.getElementById("belote").onclick = function() {
-        announced = $("#belote").text()
-        socket.emit('belote announced', announced);
-        console.log ("Belote announced")
-        // TODO: change allowed cards to only allow queen and king of trump?
-      }
-      console.log("In add_belote_button enabled is" + enabled)
-      if (enabled == false) {
-        $("#belote").prop("disabled", true)
-      }
-    }
-
     // Connect to websocket
     console.log("Connecting to io")
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/belote');
@@ -144,72 +125,27 @@ Add footer / contact info
     });
 
     socket.on('sc game started', function(data) {
-      console.log("game started event received")
-      console.log(data)
-      $("input[name='rounds']").val(0);
-      $("input[name='score']").val(0);
-
-      nb_cards_to_deal = data['nb_cards']
-      $('#cards').html('');
-      $('#cards_played').empty()
-      $('#trump_card').empty()
-      $('#button').remove()
-      $('#msg_div').empty()
-
-      // Add scoresheet
-      $("#scoresheet_div").append("<td>")
+      game_started(data)
     });
 
     socket.on('new hand', function(data) {
-      console.log("new hand event received");
-      make_players_inactive();
+      new_hand(data)
       $('#trump_card').html('')
-      $('#cards').html('');
-      $('#cards_played').empty()
-      $("#nb_cards").removeClass("highlighted_field");
-      $('#msg_div').empty()
-      cards = data['cards']
+    });
 
-      // $('#cards').append('<ul>');
-      for (var card_index in cards) {
-        // $('#cards').append('<br>' + data[card])
-        let card =cards[card_index]
-        let image = 'img/' + card + ".svg"
-        // let card = data[card]
-        $('#cards').append('<td>'+
-          "<img id=" + card + " src={{ url_for('static', filename='') }}" +
-          image + ' alt=' + card + ' class="card_hand"' + '>' + '</td>')
-
-          $('#rounds input').val(0);
-          // $('#bets input').html('');
-        }
-      });
-
-      socket.on('belote announced', function(data) {
-        // Add Belote/Rebelote button
-        console.log("belote announced event received")
-        announce_player = data['player']
-        announce = data['announced']
-        // if (username != announce_player) {
-        //   show_alert("Player " + announce_player + " annouced " + data['announced'], data['announced'])
-        // }
-        $("#msg_div").text(announce_player + " announce " + announce)
-        fade_msg()
-        if (announce == "Rebelote" && announce_player == username) {
-          // Disable Belote button
-          $("#belote").remove()
-        }
-      });
+    socket.on('belote announced', function(data) {
+      belote_announced(data)
+    });
 
     socket.on('belote rebelote enabled', function(data) {
       // Add Belote/Rebelote button
       console.log("Belote / Rebelote possible")
-      add_belote_button(true, "Belote")
+      add_belote_button(true, i18n["belote"])
     });
 
     socket.on('belote played', function(data) {
       // Add Belote/Rebelote button
-      $("#belote").text("Rebelote")
+      $("#belote").text(i18n["rebelote"])
     });
 
     socket.on('rebelote played', function(data) {
@@ -218,11 +154,7 @@ Add footer / contact info
     });
 
     socket.on('belote lost', function(data) {
-      // Disable Belote/Rebelote button
-      $("#belote").remove()
-      show_alert("Belote points lost", "Belote or rebelote not announced!")
-      $("#msg_div").text("Belote points lost", "Belote or rebelote not announced!")
-      fade_msg()
+      belote_lost(i18n["belote_points_lost"])
     });
 
 
@@ -265,61 +197,18 @@ Add footer / contact info
       // $(id_bet).prop("disabled", true)
     });
 
-
     socket.on('player to play', function(data) {
       player_to_play(data)
     })
 
     socket.on('hand completed', function(data) {
-      console.log("hand completed event received");
-
-      let scores=data['scores']
-      let wins = data['wins']
-      let hand_nb=data['hand_nb']
-      let score_row_id = "#hand_score_nb" + hand_nb
-      let winners = data['winners']
-      let html = "<tr>"
-      // $("#scoresheet_body").append ("<tr id=" + score_row_id + ">/tr")
-
+      hand_completed(data)
       for (var i in the_players) {
         let player = the_players[i]
-        score = scores[player];
-        bet=bets[player]
-        win=wins[player]
-        let id_score = "#score_" + player
-        $(id_score).val(score);
-        html = html.concat("<td><table class='padding-between-cols'><tr>")
-        html = html.concat("<td class='scoresheet_nb'>" + score + "</td></tr></table></td>")
         // Reset the bid selection list
         bet_id = "#bets_" + player
         $(bet_id).empty()
       }
-
-      html = html.concat("</tr>")
-      $("#scoresheet_body").append(html)
-
-      // TODO: message indicating who won the hand
-      if (winners[0] == "") {
-         msg = "It's a tie! Points of team who took will be given to next hand winner"
-      }
-      else {
-        msg = "Winner(s) of this hand: "
-        for (i in winners) {
-          if (i == 0) {
-            msg = msg + winners[i]
-          }
-          else {
-            msg = msg + ", and " + winners[i]
-          }
-        }
-      }
-
-      $("#msg_div").append("<p>" + msg + "</p>")
-      fade_msg()
-
-      let image = 'img/' + trump_card + ".svg"
-      $('#trump_card').html('')
-      $('#cards_played').empty()
     });
 
     socket.on('card played', function(data) { card_played_event(data) })
@@ -346,6 +235,7 @@ Add footer / contact info
     });
 
     socket.on('trump card', function(data) { trump_card_received(data, "") })
+
     socket.on('trump suit', function(trump) {
       console.log("trump suit event received");
         // Update trump_suit
@@ -366,7 +256,9 @@ Add footer / contact info
     });
 
     socket.on('clear round', function() { clear_round() });
+
     socket.on('game over', function(winners) { game_over(winners) })
+
     socket.on('msg posted', function(data) { msg_posted(data) });
 
     socket.on('alert', function(msg) {
@@ -451,12 +343,8 @@ Add footer / contact info
   </div>
 </div>
 
-<!-- Belote / Rebelote and message sections -->
-<!-- <script type="text/javascript">
-  html_file = "{{ url_for('static', filename='html/msg_container.html') }}"
-  $(function() { $("#msg_container").load(html_file); })
-</script> -->
 {% include 'msg_container.html' %}
+
 <!-- Player cards section-->
 <div>
   <form id="game_form" action="" method="post" novalidate>
@@ -474,12 +362,15 @@ Add footer / contact info
         {% endfor %}
       </div>
     </div>
+
     {% include 'chat.html' %}
+
     <div>
       <div id="game_action_buttons" class="btn-toolbar">
         <p><br>
       </div>
     </div>
+
     <div id="scoresheet_div">
       <br/>
       <h4 class="div_title">{{ i18n["scoresheet"] }}</h4>

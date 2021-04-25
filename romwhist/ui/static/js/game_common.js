@@ -47,6 +47,9 @@ function initialize(players) {
 
   // Send button for chat
   $("#post_chat").html(i18n["send"])
+  $( "#post_chat" ).click(function() {
+    post_msg();
+  })
 
   // Add game action buttons
   if (username == ownername) {
@@ -164,6 +167,48 @@ function start_game() {
   socket.emit('cs game started');
   //disable_start_game();
 }
+
+function game_stated(data) {
+  console.log("game started event received")
+  console.log(data)
+  $("input[name='rounds']").val(0);
+  $("input[name='score']").val(0);
+
+  nb_cards_to_deal = data['nb_cards']
+  $('#cards').html('');
+  $('#cards_played').empty()
+  $('#trump_card').empty()
+  $('#button').remove()
+  $('#msg_div').empty()
+
+  // Add scoresheet
+  $("#scoresheet_div").append("<td>")
+}
+
+function new_hand(data) {
+  console.log("new hand event received");
+  make_players_inactive();
+  $('#cards').html('');
+  $('#cards_played').empty()
+  $("#nb_cards").removeClass("highlighted_field");
+  $('#msg_div').empty()
+  cards = data['cards']
+
+  // $('#cards').append('<ul>');
+  for (var card_index in cards) {
+    // $('#cards').append('<br>' + data[card])
+    let card =cards[card_index]
+    let image = 'img/' + card + ".svg"
+    // let card = data[card]
+    $('#cards').append('<td>'+
+      "<img id=" + card + " src={{ url_for('static', filename='') }}" +
+      image + ' alt=' + card + ' class="card_hand"' + '>' + '</td>')
+
+      $('#rounds input').val(0);
+      // $('#bets input').html('');
+    }
+}
+
 function enable_start_game() {
   if (username == ownername) {
     document.getElementById("start_game").onclick = function() {

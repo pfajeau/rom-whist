@@ -11,7 +11,8 @@ Add footer / contact info
 {% block content %}
 <script type="text/javascript" src="https://cdn.socket.io/3.1.1/socket.io.min.js"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/game_common.js') }}"></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
+<script type="text/javascript" src="{{ url_for('static', filename='js/belote.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/belote.css') }}"/>
 <script type="text/javascript">
 
   // Note that js cannot be separated from html as JINJA2 expressions are not
@@ -29,26 +30,18 @@ Add footer / contact info
   var trump_card
   var allowed_bets
   var the_players
+  var i18n_json = {{ i18n|tojson }}
+  var i18n = JSON.parse(i18n_json);
+  console.log(i18n)
 
-  // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
-  let html_frag = ''
-  html_frag = html_frag.concat("<span class='game_page_title'>")
-  html_frag = html_frag.concat(" Game ID: {{ session['game_id'] }}")
-  html_frag = html_frag.concat(" - {{ session['username'] }}</span>")
-  html_frag = html_frag.concat("<span class='game_page_title'><a href='#scoresheet_div'>Scoresheet</a></span>")
-  html_frag = html_frag.concat("<span class='logo_game'><img border='0' alt='Belote' src='{{ url_for('static', filename='') }}img/ohell.png' width='80'></a> </span>")
-  $("#topnav").last().after(html_frag);
-  // $("#topnav").last().after("<card_playedspan class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</span>")
-  // $("#topnav").last().after("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
+  populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
+                   "{{ url_for('static', filename='img/ohell.png') }}")
 
   document.addEventListener('DOMContentLoaded', () => {
 
     allowed_bets = {{ allowed_bets }}
 
-    the_players = []
-    {% for the_player in players -%}
-       the_players.push("{{ the_player }}")
-    {% endfor %}
+    the_players = {{ players|safe }}
     initialize(the_players)
 
     {% if cards_played != None %}
@@ -65,10 +58,6 @@ Add footer / contact info
     console.log("Game phase: {{ game_phase }}")
     if ("{{ game_phase }}" == "PLAY") {
       make_player_play("{{ active_player }}", "{{ allowed_cards }}");
-    }
-
-    document.getElementById("post").onclick = function() {
-      post_msg();
     }
 
     // Register action for bet input field
@@ -99,62 +88,26 @@ Add footer / contact info
     // Connect to websocket
     console.log("Connecting to io")
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/ohell');
+
     socket.on('connect', function() {
       console.log("Connected to io")
 
       // Register user - only used here to cover the case of
       // first player joining. DO NOT REMOVE
       socket.emit('join game', {data:''});
-
     });
 
     socket.on('sc game started', function(data) {
-      console.log("game started event received")
-      console.log(data)
+      game_started(data)
       $("input[name='bets']").attr('readonly', true);
       $("input[name='bets']").removeClass("highlighted_field");
       $("input[name='bets']").val('')
-      $("input[name='rounds']").val(0);
-      $("input[name='score']").val(0);
-
-      nb_cards_to_deal = data['nb_cards']
-      $('#cards').html('');
-      $('#cards_played').empty()
-      $('#trump_card').empty()
-
-      // Add scoresheet
-      $("#scoresheet_div").append("<td>")
     });
 
     socket.on('new hand', function(data) {
-      console.log("new hand event received");
-      make_players_inactive();
+      new_hand(data)
       $('#trump_card').html('')
-      $('#cards').html('');
-      $('#cards_played').empty()
-      $("#nb_cards").removeClass("highlighted_field");
-      cards = data['cards']
-
-      // $('#cards').append('<ul>');
-      for (var card_index in cards) {
-        // $('#cards').append('<br>' + data[card])
-        let card =cards[card_index]
-        let image = 'img/' + card + ".svg"
-        // let card = data[card]
-        $('#cards').append('<td>'+
-          "<img id=" + card + " src={{ url_for('static', filename='') }}" +
-          image + ' alt=' + card + ' class="card_hand"' + '>' + '</td>')
-
-          // Reset bets and wins to 0
-          $('#rounds input').val(0);
-          $('#bets input').val("");
-        }
-
-        // Trump checkbox wil be updated if/when trump card received
-        // $("#trump").prop('disabled', false);
-        // $("#trump").prop('checked', false);
-      });
-
+    });
 
     socket.on('player to bet', function(data) {
       console.log("player to bet event received")
@@ -162,7 +115,6 @@ Add footer / contact info
       allowed_bets = data['allowed_bets']
       make_player_the_better(player_name)
       make_player_active(player_name);
-
     });
 
     socket.on('player bet', function(data) {
@@ -210,8 +162,8 @@ Add footer / contact info
     });
 
     socket.on('card played', function(data) { card_played_event(data) })
-    socket.on('new player', function(player_name) { new_player(player_name) })
 
+    socket.on('new player', function(player_name) { new_player(player_name) })
 
     socket.on('player left', function(player_name) {
       if (player_name.localeCompare(username) != 0) {
@@ -251,7 +203,9 @@ Add footer / contact info
     });
 
     socket.on('clear round', function() { clear_round() });
+
     socket.on('game over', function(winners) { game_over(winners) })
+
     socket.on('msg posted', function(data) { msg_posted(data) });
 
     socket.on('alert', function(msg) {
@@ -322,11 +276,7 @@ Add footer / contact info
 </div>
 
 <!-- Mssage sections -->
-<div id="msg_container">
-  <br>
-  <div id="msg_div">
-  </div>
-</div>
+{% include 'msg_container.html' %}
 
 <!-- Player cards section-->
 <div>
@@ -345,18 +295,15 @@ Add footer / contact info
         {% endfor %}
       </div>
     </div>
-    <div class="chat" id="chat">
-      <br/>
-      <h4 class="div_title">Chat</h4>
-      <textarea id="chat_text" rows=5 cols=80 readonly></textarea><br>
-      <input type="text" id="chat_input" class = "chat_input" size=77></input>
-      <button id="post" class="btn btn-primary" name="post" type="button">Send</button>
-    </div>
+
+    {% include 'chat.html' %}
+
     <div>
       <div id="game_action_buttons" class="btn-toolbar">
         <p><br>
       </div>
     </div>
+    
     <div id="scoresheet_div">
       <br/>
       <h4 class="div_title">Scoresheet</h4>
