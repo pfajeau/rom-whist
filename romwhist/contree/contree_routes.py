@@ -66,8 +66,9 @@ def contree_start():
                                        form=form, locale=locale)
 
             points_to_reach = int(form.points_to_reach.data)
-            index = int(form.counting.data)
-            counting_str = form.counting.choices[index][1]
+            #index = int(form.counting.data)
+            # counting_str = form.counting.choices[index][1]
+            counting_str = form.counting.data
             logging.debug("Counting string from UI: %s", counting_str)
             counting = CountingMethod(counting_str)
             logging.debug("Counting: %s", counting)
@@ -97,6 +98,7 @@ def contree_play():
     locale = common_routes.get_locale(request)
     form = GameForm()
     player = session.get('username')
+
     if player is None:
         logging.error("Unknow player in session")
         flash("Session has expired")

@@ -1,5 +1,6 @@
 import copy
 from flask_babel import lazy_gettext as _l
+from flask_babel import gettext as _
 import logging
 from enum import Enum
 
@@ -9,11 +10,10 @@ from romwhist.contree.contree_state import ContreeState
 from romwhist.contree.announce import Announce
 from romwhist.contree.announce import ContreStatus
 
-
 class CountingMethod(str, Enum):
-    POINTS_ACHIEVED = _l(u"points_achieved")
-    POINTS_BID = _l(u"points_bid")
-    POINTS_ACHIEVED_PLUS_BID = _l(u"points_achieved_bid")
+    POINTS_ACHIEVED = "points_achieved"
+    POINTS_BID = "points_bid"
+    POINTS_ACHIEVED_PLUS_BID = "points_achieved_bid"
 
 
 class ContreeGame(BeloteGame):

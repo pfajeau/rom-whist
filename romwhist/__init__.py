@@ -22,6 +22,7 @@ from flask_socketio import SocketIO
 
 app = Flask(__name__, instance_relative_config=True, template_folder="ui/templates", static_folder="ui/static")
 socketio = SocketIO(app, logger=True)
+babel = Babel(app)
 
 # app = Flask(__name__, instance_relative_config=True, template_folder="ui/templates", static_folder="ui/static")
 # socketio = SocketIO(app)
@@ -48,7 +49,6 @@ app.add_url_rule('/admin', view_func=common_routes.admin, methods=["GET", "POST"
 app.add_url_rule('/home', view_func=common_routes.home, methods=["GET", "POST"])
 app.add_url_rule('/base', view_func=common_routes.base, methods=["GET", "POST"])
 
-babel = Babel(app)
 
 
 def create_app():
@@ -80,6 +80,13 @@ def create_app():
     def load_user(user_id):
         return User.query.get(user_id)
 
+    # Use the browser's language preferences to select an available translation
+    # add to you main app code
+    @babel.localeselector
+    def get_locale():
+        # print(app.config['LANGUAGES'])
+        return request.accept_languages.best_match(app.config['LANGUAGES'])
+
     with app.app_context():
         # TODO - register blueprints here. e.g.
         # from .routes import auth_blueprint
@@ -94,9 +101,3 @@ def create_app():
     return app
 
 
-# Use the browser's language preferences to select an available translation
-# add to you main app code
-@babel.localeselector
-def get_locale():
-    print(app.config['LANGUAGES'])
-    return request.accept_languages.best_match(app.config['LANGUAGES'])
