@@ -4,7 +4,6 @@ This module implements webapp forms.
 author: Philippe Fajeau
 """
 
-from flask_babel import gettext as _
 from flask_babel import lazy_gettext as _l
 
 from flask_wtf import FlaskForm
@@ -17,11 +16,6 @@ class LoginForm(FlaskForm):
 #    password = PasswordField("Password", validators=[InputRequired(), Length(min=1, max=32)])
     submit = SubmitField('Sign In')
     remember_me = BooleanField('Remember Me')
-
-
-class StartGameForm(FlaskForm):
-    game_id = StringField(_("game_id"), validators=[InputRequired(), Length(max=32)])
-    start_game = SubmitField(_('submit'))
 
 
 class GameForm(FlaskForm):

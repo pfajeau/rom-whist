@@ -39,6 +39,8 @@ clients = dict()
 # @app.route("/belote_start",methods=['GET', 'POST'])
 def belote_start():
     form = BeloteStartForm()
+    locale = common_routes.get_locale(request)
+
     if form.validate_on_submit():
         # Sanitize the username (as it used as IDs in the html)
         username = common_routes.sanitize_username(form.user_name.data)
@@ -61,7 +63,7 @@ def belote_start():
             if game_id is None:
                 return render_template('belote_start.html',
                                        error="No more games available!!! Please try again later",
-                                       form=form)
+                                       form=form, locale=locale)
 
             points_to_reach = int(form.points_to_reach.data)
 
@@ -82,13 +84,15 @@ def belote_start():
             return redirect(url_for('belote_play'))
     else:
         return render_template("belote_start.html",
-                               form=form, error=form.errors)
+                               form=form, error=form.errors, locale=locale)
 
 
 # @app.route("/belote_play", methods=['GET', 'POST'])
 def belote_play():
 
     logging.info("In belote_play route")
+    locale = common_routes.get_locale(request)
+
     form = GameForm()
     player = session.get('username')
     if player is None:
@@ -114,7 +118,7 @@ def belote_play():
         if game_id is None:
             error = "Could not find game_id in session"
             logging.error(error)
-            return render_template('belote_start.html', error=error)
+            return render_template('belote_start.html', error=error, locale=locale)
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":

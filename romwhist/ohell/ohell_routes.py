@@ -50,11 +50,12 @@ def ohell_start():
     # db.session.add(user)
     # db.session.commit()
     # login_user(user)
+
     form = OhellStartForm()
+    locale = common_routes.get_locale(request)
+
     if form.validate_on_submit():
         # Sanitize the username (as it isued as IDs in the html)
-        # username = unidecode.unidecode(form.user_name.data)
-        # username = username.replace(" ", "")
         username = common_routes.sanitize_username(form.user_name.data)
         logging.debug("User: " + username)
 
@@ -74,7 +75,7 @@ def ohell_start():
             game_id = common_routes.generate_game_id(999, games)
             if game_id is None:
                 return render_template('ohell_start.html', error="No more games available!!! Please try again later",
-                                       form=form)
+                                       form=form, locale=locale)
 
             logging.debug("creating new game with id: " + str(game_id))
             # Add game id in session
@@ -98,17 +99,14 @@ def ohell_start():
     else:
         return render_template("ohell_start.html",
                                form=form,
-                               error=form.errors)
-
-
-@app.route("/base")
-def base():
-    return render_template("base.html")
+                               error=form.errors, locale=locale)
 
 
 def ohell_play():
     logging.debug("In ohell_play route")
     form = GameForm()
+    locale = common_routes.get_locale(request)
+
     player = session.get('username')
     logging.debug("Player name: " + player)
     if player is None:
@@ -131,7 +129,7 @@ def ohell_play():
             error = "Could not find game_id in session"
             logging.debug(error)
             return render_template('ohell_start.html',
-                                   error=error)
+                                   error=error, locale=locale)
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":

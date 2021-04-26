@@ -75,7 +75,7 @@
         <!-- <h3>or</h3> -->
         <div class="col-5 data_block">
           <div id="create_div">
-            <h2>Create a new game</h2>
+            <h2>{{ _("create_new_game") }}</h2>
             <br/>
             <div id="create_options">
               {{ form.multiple_one_card.label }}
@@ -95,7 +95,13 @@
     </div>
   </form>
   <br><br>
-  {% include 'ohell_guide.html' %}
+
+  {% if locale == "fr" %}
+    {% include 'ohell_guide_fr.html' %}
+  {% else %}
+    {% include 'ohell_guide.html' %}
+  {% endif %}
+
   <div>
     <h3>{% trans %}references{% endtrans %}: </h3>
     <a href="https://en.wikipedia.org/wiki/Romanian_whist">Wikipedia</a><br><br>

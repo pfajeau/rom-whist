@@ -46,6 +46,7 @@ from romwhist import common_routes
 app.add_url_rule('/', view_func=common_routes.home, methods=["GET", "POST"])
 app.add_url_rule('/admin', view_func=common_routes.admin, methods=["GET", "POST"])
 app.add_url_rule('/home', view_func=common_routes.home, methods=["GET", "POST"])
+app.add_url_rule('/base', view_func=common_routes.base, methods=["GET", "POST"])
 
 babel = Babel(app)
 

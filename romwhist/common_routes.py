@@ -17,8 +17,12 @@ from romwhist.extensions import db
 from romwhist.forms import LoginForm
 from romwhist.models import User
 from romwhist.ohell import ohell_routes
+from romwhist import app
 from romwhist import i18n_strings
 
+def get_locale(request):
+    print(app.config['LANGUAGES'])
+    return request.accept_languages.best_match(app.config['LANGUAGES'])
 
 # TODO: separate from this file to remove circular dependency between
 #  game specific routes modules and this module
@@ -29,6 +33,9 @@ def admin():
 def home():
     return render_template("home.html")
 
+#@app.route("/base")
+def base():
+    return render_template("base.html")
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():

@@ -39,6 +39,8 @@ clients = dict()
 # @app.route("/contree_start",methods=['GET', 'POST'])
 def contree_start():
     form = ContreeStartForm()
+    locale = common_routes.get_locale(request)
+
     if form.validate_on_submit():
         # Sanitize the username (as it isued as IDs in the html)
         username = common_routes.sanitize_username(form.user_name.data)
@@ -61,7 +63,7 @@ def contree_start():
             if game_id is None:
                 return render_template('contree_start.html',
                                        error="No more games available!!! Please try again later",
-                                       form=form)
+                                       form=form, locale=locale)
 
             points_to_reach = int(form.points_to_reach.data)
             index = int(form.counting.data)
@@ -86,12 +88,13 @@ def contree_start():
             return redirect(url_for('contree_play'))
     else:
         return render_template("contree_start.html", form=form,
-                               error=form.errors)
+                               error=form.errors, locale=locale)
 
 
 # @app.route("/contree_play", methods=['GET', 'POST'])
 def contree_play():
     logging.info("In contree_play route")
+    locale = common_routes.get_locale(request)
     form = GameForm()
     player = session.get('username')
     if player is None:
@@ -117,7 +120,7 @@ def contree_play():
         if game_id is None:
             error = "Could not find game_id in session"
             logging.error(error)
-            return render_template('contree_start.html', error=error)
+            return render_template('contree_start.html', error=error, locale=locale)
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":
