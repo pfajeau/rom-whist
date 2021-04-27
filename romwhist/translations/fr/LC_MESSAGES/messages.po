@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-26 11:04-0700\n"
+"POT-Creation-Date: 2021-04-27 16:34-0700\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -26,7 +26,8 @@ msgstr "Identifiant Jeu"
 msgid "alias"
 msgstr "Votre Alias"
 
-#: forms.py:29 ui/templates/contree_start.html:57
+#: forms.py:29 ui/templates/belote_start.html:59
+#: ui/templates/contree_start.html:57 ui/templates/ohell_start.html:78
 msgid "create_new_game"
 msgstr "Creer un nouveau jeu"
 
@@ -58,7 +59,7 @@ msgstr "Points"
 msgid "score"
 msgstr "Score"
 
-#: i18n_strings.py:17
+#: i18n_strings.py:17 ui/templates/ohell.html:309
 msgid "scoresheet"
 msgstr "Feuille de Score"
 
@@ -190,18 +191,6 @@ msgstr "Limite de points"
 msgid "number_between_500_and_2000"
 msgstr "Entrez un nombre entre 500 et 2000"
 
-#: contree/contree.py:14
-msgid "points_achieved"
-msgstr "Points gagnés"
-
-#: contree/contree.py:15
-msgid "points_bid"
-msgstr "Points demandés"
-
-#: contree/contree.py:16
-msgid "points_achieved_bid"
-msgstr "Points gagnés plus demandés"
-
 #: contree/contree_form.py:11
 msgid "counting"
 msgstr "Comptage"
@@ -222,6 +211,16 @@ msgstr "Increment entre tours"
 msgid "enter_increment_between_1_and_5"
 msgstr "Increment entre tours (entre 1 et 5)"
 
+#: ui/templates/base.html:48
+msgid "copyright_notice"
+msgstr ""
+"Ce site a été crée pendant COVID19            &copy; Copyright 2020/2021 "
+"Philippe Fajeau"
+
+#: ui/templates/belote.html:280
+msgid "select"
+msgstr "Selectionner une option"
+
 #: ui/templates/belote_start.html:26
 msgid "welcome_play_belote"
 msgstr "Bienvenue au jeu de belote!"
@@ -241,7 +240,7 @@ msgstr "Puis sélectionner une des options suivantes:"
 msgid "join_a_game"
 msgstr "Joindre un jeu existant"
 
-#: ui/templates/belote_start.html:77 ui/templates/contree_start.html:78
+#: ui/templates/belote_start.html:81 ui/templates/contree_start.html:82
 msgid "rules_of_game"
 msgstr "Règles"
 
@@ -249,11 +248,32 @@ msgstr "Règles"
 msgid "welcome_play_contree"
 msgstr "Bienvenue au jeu de Belote Contrée!"
 
+#: ui/templates/home.html:5
+msgid "welcome_home"
+msgstr "Bienvenue sur ce site, oú vous pouvez jouer gratuitement à plusieurs jeux!"
+
+#: ui/templates/home.html:6
+msgid "ṕick_game"
+msgstr "Choisissez un jeu"
+
+#: ui/templates/home.html:13
+msgid "ohell_image"
+msgstr "whist.jpg"
+
 #: ui/templates/ohell_start.html:45
 msgid "welcome_play_ohell"
-msgstr "Bienvenue au jeu de l'Ascensur (ou Whist Roumain)!"
+msgstr "Bienvenue au jeu de l'Ascenseur (ou Whist Roumain)!"
 
-#: ui/templates/ohell_start.html:100
+#: ui/templates/ohell_start.html:106
 msgid "references"
 msgstr "Références"
+
+#~ msgid "points_achieved"
+#~ msgstr "Points gagnés"
+
+#~ msgid "points_bid"
+#~ msgstr "Points demandés"
+
+#~ msgid "points_achieved_bid"
+#~ msgstr "Points gagnés plus demandés"
 

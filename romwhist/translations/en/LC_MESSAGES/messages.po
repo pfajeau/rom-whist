@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-26 11:04-0700\n"
+"POT-Creation-Date: 2021-04-27 16:34-0700\n"
 "PO-Revision-Date: 2021-04-22 16:30-0700\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -26,7 +26,8 @@ msgstr "Game IDfwfw"
 msgid "alias"
 msgstr "Your Alias"
 
-#: forms.py:29 ui/templates/contree_start.html:57
+#: forms.py:29 ui/templates/belote_start.html:59
+#: ui/templates/contree_start.html:57 ui/templates/ohell_start.html:78
 msgid "create_new_game"
 msgstr "Create a new game"
 
@@ -58,7 +59,7 @@ msgstr "Points"
 msgid "score"
 msgstr "Score"
 
-#: i18n_strings.py:17
+#: i18n_strings.py:17 ui/templates/ohell.html:309
 msgid "scoresheet"
 msgstr "Scoresheet"
 
@@ -172,7 +173,7 @@ msgstr ""
 
 #: i18n_strings.py:52
 msgid "copyright"
-msgstr ""
+msgstr "Copyright"
 
 #: i18n_strings.py:54
 msgid "chat"
@@ -189,18 +190,6 @@ msgstr "Stop game after player/team reaches"
 #: belote/belote_form.py:12
 msgid "number_between_500_and_2000"
 msgstr "Enter a number between 500 and 2000"
-
-#: contree/contree.py:14
-msgid "points_achieved"
-msgstr "Points Achieved"
-
-#: contree/contree.py:15
-msgid "points_bid"
-msgstr "Points Bid"
-
-#: contree/contree.py:16
-msgid "points_achieved_bid"
-msgstr "Points Achieved + Bid"
 
 #: contree/contree_form.py:11
 msgid "counting"
@@ -222,6 +211,14 @@ msgstr "Increment between deals"
 msgid "enter_increment_between_1_and_5"
 msgstr "Enter Increment (between 1 and 5)"
 
+#: ui/templates/base.html:48
+msgid "copyright_notice"
+msgstr "This site was created during COVID 19"
+
+#: ui/templates/belote.html:280
+msgid "select"
+msgstr "Select"
+
 #: ui/templates/belote_start.html:26
 msgid "welcome_play_belote"
 msgstr "Welcome to the game of belote!"
@@ -241,7 +238,7 @@ msgstr "Then choose one of the following options:"
 msgid "join_a_game"
 msgstr "Join a Game"
 
-#: ui/templates/belote_start.html:77 ui/templates/contree_start.html:78
+#: ui/templates/belote_start.html:81 ui/templates/contree_start.html:82
 msgid "rules_of_game"
 msgstr "Stop Game"
 
@@ -249,11 +246,34 @@ msgstr "Stop Game"
 msgid "welcome_play_contree"
 msgstr "Welcome to the game of belote contree!"
 
+#: ui/templates/home.html:5
+msgid "welcome_home"
+msgstr ""
+"Welcome to this site, where you can play a number of games with friends "
+"or alone"
+
+#: ui/templates/home.html:6
+msgid "ṕick_game"
+msgstr "Pick the game you want to play"
+
+#: ui/templates/home.html:13
+msgid "ohell_image"
+msgstr "ohell.png"
+
 #: ui/templates/ohell_start.html:45
 msgid "welcome_play_ohell"
 msgstr "Welcome to the game of ohell!"
 
-#: ui/templates/ohell_start.html:100
+#: ui/templates/ohell_start.html:106
 msgid "references"
 msgstr "References: "
+
+#~ msgid "points_achieved"
+#~ msgstr "Points Achieved"
+
+#~ msgid "points_bid"
+#~ msgstr "Points Bid"
+
+#~ msgid "points_achieved_bid"
+#~ msgstr "Points Achieved + Bid"
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-26 11:04-0700\n"
+"POT-Creation-Date: 2021-04-27 16:34-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,8 @@ msgstr ""
 msgid "alias"
 msgstr ""
 
-#: forms.py:29 ui/templates/contree_start.html:57
+#: forms.py:29 ui/templates/belote_start.html:59
+#: ui/templates/contree_start.html:57 ui/templates/ohell_start.html:78
 msgid "create_new_game"
 msgstr ""
 
@@ -57,7 +58,7 @@ msgstr ""
 msgid "score"
 msgstr ""
 
-#: i18n_strings.py:17
+#: i18n_strings.py:17 ui/templates/ohell.html:309
 msgid "scoresheet"
 msgstr ""
 
@@ -189,18 +190,6 @@ msgstr ""
 msgid "number_between_500_and_2000"
 msgstr ""
 
-#: contree/contree.py:14
-msgid "points_achieved"
-msgstr ""
-
-#: contree/contree.py:15
-msgid "points_bid"
-msgstr ""
-
-#: contree/contree.py:16
-msgid "points_achieved_bid"
-msgstr ""
-
 #: contree/contree_form.py:11
 msgid "counting"
 msgstr ""
@@ -219,6 +208,14 @@ msgstr ""
 
 #: ohell/ohell_form.py:17
 msgid "enter_increment_between_1_and_5"
+msgstr ""
+
+#: ui/templates/base.html:48
+msgid "copyright_notice"
+msgstr ""
+
+#: ui/templates/belote.html:280
+msgid "select"
 msgstr ""
 
 #: ui/templates/belote_start.html:26
@@ -240,7 +237,7 @@ msgstr ""
 msgid "join_a_game"
 msgstr ""
 
-#: ui/templates/belote_start.html:77 ui/templates/contree_start.html:78
+#: ui/templates/belote_start.html:81 ui/templates/contree_start.html:82
 msgid "rules_of_game"
 msgstr ""
 
@@ -248,11 +245,23 @@ msgstr ""
 msgid "welcome_play_contree"
 msgstr ""
 
+#: ui/templates/home.html:5
+msgid "welcome_home"
+msgstr ""
+
+#: ui/templates/home.html:6
+msgid "ṕick_game"
+msgstr ""
+
+#: ui/templates/home.html:13
+msgid "ohell_image"
+msgstr ""
+
 #: ui/templates/ohell_start.html:45
 msgid "welcome_play_ohell"
 msgstr ""
 
-#: ui/templates/ohell_start.html:100
+#: ui/templates/ohell_start.html:106
 msgid "references"
 msgstr ""
 

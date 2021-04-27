@@ -8,7 +8,7 @@ import logging
 from random import randint
 
 import unidecode
-from flask import render_template, session, url_for, redirect
+from flask import render_template, session, url_for, redirect, request
 # from flask import Blueprint
 from flask_login import current_user, login_user
 from romwhist import socketio
@@ -20,6 +20,7 @@ from romwhist.ohell import ohell_routes
 from romwhist import app
 from romwhist import i18n_strings
 
+
 def get_locale(request):
     print(app.config['LANGUAGES'])
     return request.accept_languages.best_match(app.config['LANGUAGES'])
@@ -30,8 +31,10 @@ def admin():
     return render_template('admin.html', nb_belote_games = len(belote_routes.games),
                            nb_whist_games =len(ohell_routes.games))
 
+
 def home():
-    return render_template("home.html")
+    locale = get_locale(request)
+    return render_template("home.html", locale=locale)
 
 #@app.route("/base")
 def base():

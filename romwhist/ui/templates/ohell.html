@@ -105,7 +105,7 @@ Add footer / contact info
     });
 
     socket.on('new hand', function(data) {
-      new_hand(data)
+      new_hand(data, "{{ url_for('static', filename='') }}")
       $('#trump_card').html('')
     });
 
@@ -303,10 +303,10 @@ Add footer / contact info
         <p><br>
       </div>
     </div>
-    
+
     <div id="scoresheet_div">
       <br/>
-      <h4 class="div_title">Scoresheet</h4>
+      <h4 class="div_title">{{ _('scoresheet') }}</h4>
       <!-- <table id="scoresheet_table" class="table-no-padding-border padding-between-cols"> -->
       <table id="scoresheet_table" class="table-no-padding-border table table-sm table-bordered">
         <thead>

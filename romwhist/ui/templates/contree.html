@@ -127,7 +127,7 @@
     });
 
     socket.on('new hand', function(data) {
-      new_hand(data)
+      new_hand(data, "{{ url_for('static', filename='') }}")
     });
 
     socket.on('belote announced', function(data) {
@@ -329,7 +329,7 @@
           {% if bets_suit[player] != "" %}
             <option value="{{ bets_suit[player] }}" selected>{{ bets_suit[player] }}</option>
           {% else %}
-            <option value="select" selected>Select</option>
+            <option value="select" selected>{{ _("select")} }</option>
           {% endif %}
           {% for bet in allowed_bets[0] -%}
               <option value="{{ bet }}">{{ _l(bet) }}</option>
@@ -339,10 +339,10 @@
           {% if bets_points[player] != "" %}
             <option value="{{ bets_points[player] }}" selected>{{ bets_points[player] }}</option>
           {% else %}
-            <option value="select" selected>Select</option>
+            <option value="select" selected>{{ _("select")} }</option>
           {% endif %}
           {% for bet in allowed_bets[1] -%}
-              <option value="{{ bet }}">{{ bet }}</option>
+              <option value="{{ bet }}">{{ _l(bet) }}</option>
           {% endfor %}
         </select>
       </td>

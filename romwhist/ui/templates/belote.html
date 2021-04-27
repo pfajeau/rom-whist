@@ -39,7 +39,7 @@ Add footer / contact info
     the_players = {{ players|safe }}
     initialize(the_players)
 
-    populate_bets()
+    //populate_bets()
 
     belote_allowed = bool["{{ belote_allowed }}"]
 
@@ -89,25 +89,6 @@ Add footer / contact info
     // Allow start button when numbe of players is between 2 and 4
     if (the_players.length < 2 || the_players.length > 4) {
       $("#start_game").prop('disabled', true);
-    }
-
-    function populate_bets() {
-      html = ""
-      for (player in the_players) {
-        let id_bet = "#bets_" + the_players[player]
-        html = html.concat('<option value="select" selected>' + '{{ _("select") }}' + '</option>')
-        {% if allowed_bets|length == 0 %}
-          {% if bets[player] != "" %}
-            html = html.concat('<option value="{{ bets[player] }}" selected>' + "{{ _(bets[player]) }}" + "</option>)"
-          {% endif %}
-        {% else %}
-          {% for bet in allowed_bets -%}
-              html = html.concat('<option value="{{ bet }}">{{ bet }}</option>')
-          {% endfor %}
-        {% endif %}
-        $(id_bet).append(html)
-        // $(id_bet).prop("disabled", true)
-      }
     }
 
     // Connect to websocket
@@ -296,6 +277,16 @@ Add footer / contact info
       </td>
       <td class="td_player_info">
         <select name="bets" id="bets_{{ player }}" disabled>
+          <option value="select" selected>{{ _("select") }}</option>
+          {% if allowed_bets|length == 0 %}
+            {% if bets[player] != "" %}
+            <option value="{{ bets[player] }}" selected>{{ _l(bets[player]) }}</option>
+            {% endif %}
+          {% else %}
+            {% for bet in allowed_bets -%}
+                <option value="{{ bet }}">{{ _(bet) }}</option>
+            {% endfor %}
+          {% endif %}
         </select>
       </td>
       {% endfor %}

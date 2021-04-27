@@ -2,14 +2,14 @@
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
 <br><br>
-<h2>Welcome to a place to play card games with your friends! <br></h2>
-<p><h3>Pick the game you want to play:</p></h3>
+<h2>{{ _('welcome_home') }}<br></h2>
+<p><h3>{{ _('ṕick_game') }}: </p></h3>
 <br>
 <table id="game_list">
   <tr>
     <td>
       <a href="ohell_start">
-      <img border="0" alt="Play Oh Hell" src="{{ url_for('static', filename='') }}img/ohell.png" width="200"></a>
+      <img border="0" alt="Play Oh Hell" src="{{ url_for('static', filename='') }}img/{{ _('ohell_image') }}" width="200"></a>
     </td>
     <td>
       <a href="belote_start">
