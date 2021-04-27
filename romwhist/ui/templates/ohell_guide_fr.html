@@ -1,0 +1,77 @@
+<div id = "user_guide">
+  <h2> Guide de l'utilisateur </h2>
+  <h3> Créer et rejoindre un jeu </h3>
+  Vous pouvez soit créer un nouveau jeu, soit rejoindre un jeu existant. Quelqu'un doit d'abord créer un jeu.
+  Ensuite, le créateur du jeu doit informer les autres joueurs de l'identifiant du jeu afin qu'ils puissent rejoindre le nouveau
+  jeu créé. Lors de la création du jeu il y a quelques options pour le modèle de distribution des cartes:
+  <ul>
+    <li> S'il faut jouer plusieurs mains avec une seule carte (plusieurs signifie autant qu'il y a de joueurs) </li>
+    <li> S'il faut jouer plusieurs mains sans atout (aucun atout ne se produit lorsque le nombre maximum de cartes a été distribué -
+      donc par exemple s'il y a 4 joueurs et que vous avez choisi un jeu de 32 cartes, aucun atout ne sera lorsque chaque joueur reçoit 8 cartes) </li>
+    <li> L'incrément à utiliser pour augmenter / diminuer le nombre de cartes distribuées. </li>
+  </ul>
+  <p> Par exemple, en choisissant un incrément de 1, une seule main avec une carte et plusieurs mains sans atout, le modèle de distribution sera:
+  1, 2, 3, 4, 5, 6, 7, 8, 8, 8, 8, 7, 6, 5, 4, 3, 2, 1 (4 joueurs, 32 cartes) </p>
+
+  <p> Si vous voulez une partie plus courte, vous pouvez définir l'incrément sur 2, et le modèle de distribution sera:
+    1, 3, 5, 7, 8, 8, 8, 8, 7, 5, 3, 1 </p>
+
+  <p> Lors de la création ou de la participation à une partie, chaque joueur doit spécifier son alias pour la partie.</p>
+
+  <h3> Jeu </h3>
+  Le jeu comporte trois phases: distribution des cartes, les enchères et le jeu lui même. Chaque fois qu'un joueur doit faire quelque chose (par exemple, parier ou jouer), l'alias du joueur
+  clignote. Lors de la phase des enchères, le dernier joueur à parier peut être limité
+  le nombre total de plis demandés ne peut pas être égal au nombre de cartes qui ont été distribuées.
+  Pour jouer une carte, cliquez simplement sur cette carte. Les cartes qui peuvent être jouées ont une bordure verte.
+</div>
+<div id = "rules">
+  <h2> Règles du jeu </h2>
+    <p>
+      Le whist roumain ou ascenseur est un jeu pour 3 à 6 joueurs. Chaque joueur joue seul. <br>
+      Les cartes sont classées comme suit: A, Roi, Dame, Valet, 10, 9, etc.
+    </p>
+    <h3> Distribution des Cartes </h3>
+    Le premier distributeur est choisi au hasard. <br>
+    Le nombre de cartes distribuées à chaque joueur varie au cours du jeu. <br>
+    Cela commence avec une seule carte. Après cela, le nombre de cartes distribuées à chaque joueur augmente <br>
+    avec chaque main jusqu'à ce que toutes les cartes soient finalement distribuées. <br>
+    Ensuite, autant de mains sont jouées avec toutes les cartes utilisées (sans atout) qu'il y a de joueurs. <br> <br>
+
+    Puis le nombre de cartes distribuées diminue à nouveau jusqu'à ce que chaque joueur n'obtienne qu'une seule carte. <br>
+
+    Exemple: à 4 joueurs, l'ensemble du jeu peut être composé d'offres avec le nombre de cartes suivant: <br>
+    1, 2, 3, 4, 5, 6, 7, 8, 8, 8, 8, 7, 6, 5, 4, 3, 2, 1 <br> <br>
+
+    Pour accélérer les choses, l'incrément pourrait être défini sur 2, ce qui donnerait le modèle d'accord suivant: <br>
+    1, 3, 5, 7, 8, 8, 8, 8, 7, 5, 3, 1 <br> <br>
+
+    Une fois les cartes distribuées, la carte suivante est mise face visible (si l'atout est utilisé); la couleur de cette carte est la couleur de l'atout. <br>
+   <br>
+   <h3> Enchères </h3>
+   Chaque joueur dans l'ordre, en commençant par le joueur à gauche du donneur, indique le nombre de plis qu'il pense prendre. <br>
+   Toutes les offres sont définitives et ne peuvent pas être modifiées par la suite. <br>
+   Pour garantir que tout le monde ne réussira pas son enchère, la somme de toutes les plis demandé ne doit pas être la même que le nombre de cartes distribuées à chaque joueur. <br>
+   (Exemple: jeu avec six cartes, trois joueurs: le premier joueur demande "3", le suivant "1". <br>
+   Le dernier joueur ne peut pas demander "2", car cela rendrait la somme des plis demandés égale à 6. <br>
+   Dans ce cas, le dernier parieur doit demander 0, 1, 3, 4, 5 ou 6). <br>
+   Cette règle désavantage le dernier parieur (le donneur). <br> <br>
+
+   <h3> Jeu de la carte </h3>
+   Le joueur à la gauche du donneur joue la première carte. <br>
+   Les autres joueurs doivent jouer une carte de la même couleur si possible. <br>
+   Tout joueur qui n'a pas de carte de la couleur demandée peut jouer un atout ou toute autre carte <br>
+   Le pli est remporté par celui qui a joué l'atout le plus élevé, ou si aucun atout n'a été joué, par celui qui a joué la carte la plus élevée de la couleur demandée. <br>
+   Le gagnant du plis commence le suivant. <br> <br>
+
+   L'objectif est de gagner exactement le nombre de plis que demandé. <br> <br>
+
+   La main se termine lorsque toutes les cartes sont jouées. <br>
+
+   <h3> Comptage des points </h3>
+       Les joueurs qui ont conclu leur contrat (exactement) obtiennent un point de bonus plus le nombre de levées qu'ils ont faites. <br> <br>
+       Les joueurs qui ont effectué moins de plis que demandé perdent un point pour chaque pli non fait <br>
+       Les joueurs qui ont effectué plus de plis que leur enchère perdent un point pour chaque pli en plus. <br> <br>
+
+       Exemples: supposons que vous demander 3 plis. Si vous en faites exactement 3, vous gagnerez 4 points (3 + 1). <br>
+       Si vous ne faites que deux plis, vous perdez 1 point; la même chose si vous faites 4 plis. <br>
+       Si vous remportez un ou cinq plis (difference de deux avec votre enchère), vous perdrez 2 points; <br>
