@@ -94,16 +94,15 @@ Add footer / contact info
     function populate_bets() {
       html = ""
       for (player in the_players) {
-        let id_bet = "#bets_" + player
-        html = html.concat('<option value="select" selected>i18n["select"]</option>')
+        let id_bet = "#bets_" + the_players[player]
+        html = html.concat('<option value="select" selected>' + '{{ _("select") }}' + '</option>')
         {% if allowed_bets|length == 0 %}
           {% if bets[player] != "" %}
-            html = html.concat('<option value="{{ bets[player] }}" selected>i18n["{{ bets[player] }}"</option>')
+            html = html.concat('<option value="{{ bets[player] }}" selected>' + "{{ _(bets[player]) }}" + "</option>)"
           {% endif %}
         {% else %}
-          html = html.concat('<option value="select" selected>i18n['Select']</option>')
           {% for bet in allowed_bets -%}
-              html = html.concat('<option value="{{ bet }}">i18n["{{ bet }}"]</option>')
+              html = html.concat('<option value="{{ bet }}">{{ bet }}</option>')
           {% endfor %}
         {% endif %}
         $(id_bet).append(html)
@@ -127,7 +126,7 @@ Add footer / contact info
     });
 
     socket.on('new hand', function(data) {
-      new_hand(data)
+      new_hand(data, "{{ url_for('static', filename='') }}")
       $('#trump_card').html('')
     });
 

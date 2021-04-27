@@ -331,9 +331,9 @@
           {% else %}
             <option value="select" selected>Select</option>
           {% endif %}
-            {% for bet in allowed_bets[0] -%}
-                <option value="{{ bet }}">{{ bet }}</option>
-            {% endfor %}
+          {% for bet in allowed_bets[0] -%}
+              <option value="{{ bet }}">{{ _l(bet) }}</option>
+          {% endfor %}
         </select>
         <select name="bets_points" id="bets_points_{{ player }}" disabled>
           {% if bets_points[player] != "" %}

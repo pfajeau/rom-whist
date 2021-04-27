@@ -157,7 +157,7 @@ function populate_header(player, game_id, game_logo_url) {
       i18n["scoresheet"] +
       "</a></span>")
   html_frag = html_frag.concat(
-      "<span class='logo_game'><img border='0' alt='Belote' src=" +
+      "<span class='logo_game'><img border='0' alt='' src=" +
       game_logo_url + " width='80'></a> </span>")
 
   $("#topnav").last().after(html_frag);
@@ -185,7 +185,7 @@ function game_stated(data) {
   $("#scoresheet_div").append("<td>")
 }
 
-function new_hand(data) {
+function new_hand(data, static_url) {
   console.log("new hand event received");
   make_players_inactive();
   $('#cards').html('');
@@ -201,7 +201,7 @@ function new_hand(data) {
     let image = 'img/' + card + ".svg"
     // let card = data[card]
     $('#cards').append('<td>'+
-      "<img id=" + card + " src={{ url_for('static', filename='') }}" +
+      "<img id=" + card + " src=" + static_url +
       image + ' alt=' + card + ' class="card_hand"' + '>' + '</td>')
 
       $('#rounds input').val(0);

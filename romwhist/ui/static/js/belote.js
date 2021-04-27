@@ -37,7 +37,7 @@ function belote_lost(msg) {
   fade_msg()
 }
 
-function hand_completed(data) {}
+function hand_completed(data) {
   console.log("hand completed event received");
 
   let scores=data['scores']
