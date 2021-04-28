@@ -7,6 +7,7 @@ from romwhist.forms import StartForm
 
 
 class BeloteStartForm(StartForm):
-    points_to_reach = IntegerField(_l(u"points_limit"), default=1000,
+
+    points_to_reach = IntegerField(_l("points_limit"), default=1000,
                                    validators=[InputRequired(), NumberRange(min=50, max=2000,
                                                                             message=_("number_between_500_and_2000"))])

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-27 16:34-0700\n"
+"POT-Creation-Date: 2021-04-27 17:35-0700\n"
 "PO-Revision-Date: 2021-04-22 16:30-0700\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -115,7 +115,7 @@ msgstr "Diamond"
 msgid "club"
 msgstr "Club"
 
-#: i18n_strings.py:35
+#: contree/contree.py:33 i18n_strings.py:35
 msgid "pass"
 msgstr "Pass"
 
@@ -191,6 +191,14 @@ msgstr "Stop game after player/team reaches"
 msgid "number_between_500_and_2000"
 msgstr "Enter a number between 500 and 2000"
 
+#: contree/contree.py:34
+msgid "contre"
+msgstr "Double"
+
+#: contree/contree.py:35
+msgid "surcontre"
+msgstr "Doube-Double"
+
 #: contree/contree_form.py:11
 msgid "counting"
 msgstr "Counting"
@@ -215,7 +223,8 @@ msgstr "Enter Increment (between 1 and 5)"
 msgid "copyright_notice"
 msgstr "This site was created during COVID 19"
 
-#: ui/templates/belote.html:280
+#: ui/templates/belote.html:280 ui/templates/contree.html:332
+#: ui/templates/contree.html:342
 msgid "select"
 msgstr "Select"
 
@@ -256,7 +265,7 @@ msgstr ""
 msgid "ṕick_game"
 msgstr "Pick the game you want to play"
 
-#: ui/templates/home.html:13
+#: ui/templates/home.html:12
 msgid "ohell_image"
 msgstr "ohell.png"
 

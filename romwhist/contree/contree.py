@@ -24,10 +24,15 @@ class ContreeGame(BeloteGame):
     def __init__(self, game_creator="", id=0, counting=CountingMethod.POINTS_BID):
         BeloteGame.__init__(self, game_creator, id)
         BeloteGame.nb_cards_first_deal = {1: 8, 2: 8, 3: 8, 4: 8}
-        self.current_bet = Announce.from_str("Pass_0")
+        self.current_bet = Announce.from_str("pass_0")
         self.contree_status = ContreStatus.NORMAL
         self.counting = counting
         self.init_bets()
+
+        # THose are there so that these strings are extracted for i18n
+        self.__PASS = _("pass")
+        self.__CONTRE = _("contre")
+        self.__SURCONTRE = _("surcontre")
 
     def get_state(self):
         state = ContreeState(self.id)
@@ -51,15 +56,19 @@ class ContreeGame(BeloteGame):
         self.bets[player] = bet
         move_to_play_phase = False
 
-        if bet.suit == "Contre" or bet.suit == "Surcontre":
-            logging.info("Player %s", bet.suit)
-            move_to_play_phase = True
-            if bet.suit == "Contree":
-                self.contree_status = ContreStatus.CONTREE
-            else:
-                self.contree_status = ContreStatus.SURCONTREE
+        logging.info("Player bet: %s", bet.suit)
 
-        elif bet.suit == "Pass":
+        if bet.suit == "contre":
+            self.contree_status = ContreStatus.CONTREE
+            next_player_to_bet = self.next_player(player)
+            logging.info("Next player to bet %s ", next_player_to_bet)
+            self.active_player = next_player_to_bet
+
+        elif  bet.suit == "surcontre":
+            move_to_play_phase = True
+            self.contree_status = ContreStatus.SURCONTREE
+
+        elif bet.suit == "pass":
             logging.info("Player passed")
             self._nb_pass_since_bet += 1
 
@@ -70,7 +79,7 @@ class ContreeGame(BeloteGame):
             self.active_player = self.next_player(player)
 
             if next_player_to_bet is None:
-                if self.bets[next_player].suit == "Pass":
+                if self.bets[next_player].suit == "pass":
                     self.init_bets()
                     self.phase = BeloteGame.GamePhase.DEAL
                     self.dealer = self.next_player_to_deal()
@@ -88,7 +97,7 @@ class ContreeGame(BeloteGame):
 
             if self.current_bet is None or \
                     bet.points > self.current_bet.points or \
-                    self.current_bet.suit == "Pass":
+                    self.current_bet.suit == "pass":
                 self._nb_pass_since_bet = 0
                 self.current_bet = bet
                 self.trump_suit = bet.suit    # Required for AI
@@ -116,13 +125,13 @@ class ContreeGame(BeloteGame):
                         allowed_bets_points.append(bet)
 
         allowed_bets_suits = copy.deepcopy(Card.SUIT_NAMES)
-        allowed_bets_suits.insert(0, "Pass")
+        allowed_bets_suits.insert(0, "pass")
 
         # Add Contree or Surcontree option
         if self.contre_enabled(player):
-            allowed_bets_suits.append("Contre")
+            allowed_bets_suits.append("contre")
         elif self.surcontre_enabled(player):
-            allowed_bets_suits.append("Surcontre")
+            allowed_bets_suits.append("surcontre")
 
         allowed_bets = [allowed_bets_suits, allowed_bets_points]
         logging.debug("allowed bets:%s %s", allowed_bets[0], allowed_bets[1])
@@ -133,7 +142,7 @@ class ContreeGame(BeloteGame):
         partner = self.next_player(self.next_player(player))
         for a_player in self.players:
             if self.bets[a_player].suit != "" and \
-               self.bets[a_player].suit != "Pass" and \
+               self.bets[a_player].suit != "pass" and \
                a_player != partner  and a_player != player:
                 logging.debug("Contre enabled")
                 return True

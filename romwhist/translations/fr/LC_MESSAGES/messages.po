@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-27 16:34-0700\n"
+"POT-Creation-Date: 2021-04-27 17:35-0700\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -115,7 +115,7 @@ msgstr "Carreau"
 msgid "club"
 msgstr "Trèfle"
 
-#: i18n_strings.py:35
+#: contree/contree.py:33 i18n_strings.py:35
 msgid "pass"
 msgstr "Passe"
 
@@ -191,6 +191,14 @@ msgstr "Limite de points"
 msgid "number_between_500_and_2000"
 msgstr "Entrez un nombre entre 500 et 2000"
 
+#: contree/contree.py:34
+msgid "contre"
+msgstr "Contre"
+
+#: contree/contree.py:35
+msgid "surcontre"
+msgstr "Surcontre"
+
 #: contree/contree_form.py:11
 msgid "counting"
 msgstr "Comptage"
@@ -217,7 +225,8 @@ msgstr ""
 "Ce site a été crée pendant COVID19            &copy; Copyright 2020/2021 "
 "Philippe Fajeau"
 
-#: ui/templates/belote.html:280
+#: ui/templates/belote.html:280 ui/templates/contree.html:332
+#: ui/templates/contree.html:342
 msgid "select"
 msgstr "Selectionner une option"
 
@@ -256,7 +265,7 @@ msgstr "Bienvenue sur ce site, oú vous pouvez jouer gratuitement à plusieurs j
 msgid "ṕick_game"
 msgstr "Choisissez un jeu"
 
-#: ui/templates/home.html:13
+#: ui/templates/home.html:12
 msgid "ohell_image"
 msgstr "whist.jpg"
 

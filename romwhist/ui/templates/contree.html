@@ -327,22 +327,22 @@
         </script>
         <select name="bets_suit" id="bets_suit_{{ player }}" disabled>
           {% if bets_suit[player] != "" %}
-            <option value="{{ bets_suit[player] }}" selected>{{ bets_suit[player] }}</option>
+            <option value="{{ bets_suit[player] }}" selected>{{ _(bets_suit[player]) }}</option>
           {% else %}
-            <option value="select" selected>{{ _("select")} }</option>
+            <option value="select" selected>{{ _("select") }}</option>
           {% endif %}
           {% for bet in allowed_bets[0] -%}
-              <option value="{{ bet }}">{{ _l(bet) }}</option>
+              <option value="{{ bet }}">{{ _(bet) }}</option>
           {% endfor %}
         </select>
         <select name="bets_points" id="bets_points_{{ player }}" disabled>
           {% if bets_points[player] != "" %}
-            <option value="{{ bets_points[player] }}" selected>{{ bets_points[player] }}</option>
+            <option value="{{ bets_points[player] }}" selected>{{ _(bets_points[player]) }}</option>
           {% else %}
-            <option value="select" selected>{{ _("select")} }</option>
+            <option value="select" selected>{{ _("select") }}</option>
           {% endif %}
           {% for bet in allowed_bets[1] -%}
-              <option value="{{ bet }}">{{ _l(bet) }}</option>
+              <option value="{{ bet }}">{{ _(bet) }}</option>
           {% endfor %}
         </select>
       </td>
