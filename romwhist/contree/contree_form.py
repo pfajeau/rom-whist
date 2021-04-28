@@ -11,7 +11,7 @@ class ContreeStartForm(BeloteStartForm):
 
     # TODO: translation of select options are not translated for some reason
     counting = SelectField(
-        _l("counting"),
+        _("counting"),
         choices=[(CountingMethod.POINTS_BID.value, _l(CountingMethod.POINTS_BID.value)),
                  (CountingMethod.POINTS_ACHIEVED.value, _l(CountingMethod.POINTS_ACHIEVED.value)),
                  (CountingMethod.POINTS_ACHIEVED_PLUS_BID.value, _l(CountingMethod.POINTS_ACHIEVED_PLUS_BID.value))],

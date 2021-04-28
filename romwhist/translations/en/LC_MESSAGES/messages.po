@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-27 17:35-0700\n"
+"POT-Creation-Date: 2021-04-27 21:55-0700\n"
 "PO-Revision-Date: 2021-04-22 16:30-0700\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.0\n"
 
-#: forms.py:27 i18n_strings.py:53
+#: contree/contree_routes.py:57 forms.py:27 i18n_strings.py:53
 msgid "game_id"
 msgstr "Game IDfwfw"
 
@@ -183,11 +183,11 @@ msgstr "Chat"
 msgid "send"
 msgstr "Send"
 
-#: belote/belote_form.py:10
+#: belote/belote_form.py:11
 msgid "points_limit"
 msgstr "Stop game after player/team reaches"
 
-#: belote/belote_form.py:12
+#: belote/belote_form.py:13
 msgid "number_between_500_and_2000"
 msgstr "Enter a number between 500 and 2000"
 
@@ -199,7 +199,20 @@ msgstr "Double"
 msgid "surcontre"
 msgstr "Doube-Double"
 
-#: contree/contree_form.py:11
+#: contree/contree.py:36 contree/contree_routes.py:47
+#: contree/contree_routes.py:48
+msgid "points_bid"
+msgstr "Points Bid"
+
+#: contree/contree.py:37
+msgid "points_achieved"
+msgstr "Points Achieved"
+
+#: contree/contree.py:38
+msgid "points_achieved_bid"
+msgstr "Points Achieved + Bid"
+
+#: contree/contree_form.py:14 contree/contree_routes.py:50
 msgid "counting"
 msgstr "Counting"
 
@@ -265,7 +278,8 @@ msgstr ""
 msgid "ṕick_game"
 msgstr "Pick the game you want to play"
 
-#: ui/templates/home.html:12
+#: ui/templates/home.html:12 ui/templates/ohell.html:38
+#: ui/templates/ohell_start.html:4
 msgid "ohell_image"
 msgstr "ohell.png"
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-27 17:35-0700\n"
+"POT-Creation-Date: 2021-04-27 21:55-0700\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.0\n"
 
-#: forms.py:27 i18n_strings.py:53
+#: contree/contree_routes.py:57 forms.py:27 i18n_strings.py:53
 msgid "game_id"
 msgstr "Identifiant Jeu"
 
@@ -183,11 +183,11 @@ msgstr "Chat"
 msgid "send"
 msgstr "Envoie"
 
-#: belote/belote_form.py:10
+#: belote/belote_form.py:11
 msgid "points_limit"
 msgstr "Limite de points"
 
-#: belote/belote_form.py:12
+#: belote/belote_form.py:13
 msgid "number_between_500_and_2000"
 msgstr "Entrez un nombre entre 500 et 2000"
 
@@ -199,7 +199,20 @@ msgstr "Contre"
 msgid "surcontre"
 msgstr "Surcontre"
 
-#: contree/contree_form.py:11
+#: contree/contree.py:36 contree/contree_routes.py:47
+#: contree/contree_routes.py:48
+msgid "points_bid"
+msgstr "Points demandés"
+
+#: contree/contree.py:37
+msgid "points_achieved"
+msgstr "Points gagnés"
+
+#: contree/contree.py:38
+msgid "points_achieved_bid"
+msgstr "Points gagnés + demandés"
+
+#: contree/contree_form.py:14 contree/contree_routes.py:50
 msgid "counting"
 msgstr "Comptage"
 
@@ -265,7 +278,8 @@ msgstr "Bienvenue sur ce site, oú vous pouvez jouer gratuitement à plusieurs j
 msgid "ṕick_game"
 msgstr "Choisissez un jeu"
 
-#: ui/templates/home.html:12
+#: ui/templates/home.html:12 ui/templates/ohell.html:38
+#: ui/templates/ohell_start.html:4
 msgid "ohell_image"
 msgstr "whist.jpg"
 

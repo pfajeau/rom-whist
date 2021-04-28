@@ -29,10 +29,13 @@ class ContreeGame(BeloteGame):
         self.counting = counting
         self.init_bets()
 
-        # THose are there so that these strings are extracted for i18n
+        # THose are there so that these strings are extracted in pot file for i18n
         self.__PASS = _("pass")
         self.__CONTRE = _("contre")
         self.__SURCONTRE = _("surcontre")
+        self.__POINTS_BID = _("points_bid")
+        self.__POINTS_ACHIEVED = _("points_achieved")
+        self.__POINTS_ACHIEVED_BID = _("points_achieved_bid")
 
     def get_state(self):
         state = ContreeState(self.id)

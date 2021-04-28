@@ -36,9 +36,11 @@ def home():
     locale = get_locale(request)
     return render_template("home.html", locale=locale)
 
+
 #@app.route("/base")
 def base():
     return render_template("base.html")
+
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
