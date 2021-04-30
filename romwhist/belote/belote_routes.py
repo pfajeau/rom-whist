@@ -158,7 +158,6 @@ def belote_play():
 
         cards_played = game.get_cards_played_current_round()
 
-        logging.debug("Active Player: " + str(game.get_active_player()))
         logging.debug("Game Phase: " + game.phase.name)
         active_player = game.get_active_player()
 

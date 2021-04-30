@@ -172,7 +172,6 @@ def ohell_play():
         cards_played = game.get_cards_played_current_round()
 
         logging.debug("Player: " + player)
-        logging.debug("Active Player: " + game.get_active_player())
         logging.debug("Game Phase: " + game.phase.name)
         active_player = game.get_active_player()
         logging.debug("Allowed cards: " + str(game.get_allowed_cards(player)))
