@@ -137,7 +137,6 @@ Add footer / contact info
       let bets=data['bets']
       let wins=data['wins']
 
-
       let score_row_id = "#hand_score_nb" + hand_nb
       let html = "<tr>"
       // $("#scoresheet_body").append ("<tr id=" + score_row_id + ">/tr")
@@ -186,11 +185,11 @@ Add footer / contact info
         id_score = "#label_score_" + player_name;
         $(id_score).parent().remove()
 
-        show_alert("User " + player_name + " left the game!", "Warning")
+        show_alert(i18n["user"] + " " + player_name + " " + i18n["left_game"], "Warning")
       }
     });
 
-    socket.on('trump card', function(data) { trump_card_received(data, "Trump") })
+    socket.on('trump card', function(data) { trump_card_received(data, i18n['trump']) })
 
     socket.on('round ended', function(data) {
       round_ended(data)
@@ -266,7 +265,7 @@ Add footer / contact info
     {% if trump != None %}
       <figure>
         <img src="{{ url_for('static', filename='') }}img/{{ trump }}.svg" alt=trump width=80 height=80>
-        <figcaption><h3 class='trump_caption'>Trump</h3></figcaption>
+        <figcaption><h3 class='trump_caption'>{{ _('trump') }}</h3></figcaption>
       </figure>"
     {% endif %}
   </div>

@@ -65,7 +65,7 @@ function initialize(players) {
     '<button id="stop_game" type="button" class="btn btn-warning" name="stop_game">' +
     i18n["stop_game"] + '</button>');
     document.getElementById("stop_game").onclick = function() {
-      show_alert("Are you sure you want to stop the game?", "Warning", cancel=true, callback_ok=submit_form, action="stop_game");
+      show_alert(i18n["confirm_stop_game"], cancel=true, callback_ok=submit_form, action="stop_game");
     }
   }
 
@@ -73,7 +73,7 @@ function initialize(players) {
       '<button id="leave_game" type="button" class="btn btn-primary" name="leave_game">' +
       i18n["leave_game"] + '</button>');
   document.getElementById("leave_game").onclick = function() {
-    show_alert("Are you sure you want to leave the game?", "Warning", cancel=true, callback_ok=submit_form, action="leave_game");
+    show_alert(i18n["confirm_leave_game"], "Warning", cancel=true, callback_ok=submit_form, action="leave_game");
     // show_dialog_ok("Warning", "Are you sure you want to leave the game?", ok_function=submit_form, action="leave_game")
   }
 
@@ -94,7 +94,7 @@ function initialize(players) {
     $("#game_action_buttons").append(html);
     $("#game_action_buttons").append('<button id="remove_player" class="btn btn-primary" name="remove_player" type="button">' + i18n.remove_player  + '</button>');
     document.getElementById("remove_player").onclick = function() {
-      show_alert("Are you sure you want to remove this player?", "Warning", cancel=true, callback_ok=submit_form, action="remove_player");
+      show_alert(i18n["confirm_remove_player"], "Warning", cancel=true, callback_ok=submit_form, action="remove_player");
     }
   }
 
@@ -105,7 +105,7 @@ function initialize(players) {
         i18n["restart_hand"] +
         '</button>');
     document.getElementById("restart_hand").onclick = function() {
-      show_alert("Are you sure you want to restart the hand", "Warning", cancel=true, callback_ok=submit_form, action="restart_hand");
+      show_alert(i18n["confirm_restart_hand"], "Warning", cancel=true, callback_ok=submit_form, action="restart_hand");
     }
   }
 
@@ -115,24 +115,11 @@ function initialize(players) {
         '<button id="add_ai" type="button" class="btn btn-warning" name="add_ai">' +
         i18n["add_ai"] + '</button>');
     document.getElementById("add_ai").onclick = function() {
-      show_alert("Please confirm you want to add an AI player", "Warning", cancel=true, callback_ok=submit_form, action="add_ai");
+      show_alert(i18n["confirm_add_ai"], "Warning", cancel=true, callback_ok=submit_form, action="add_ai");
     }
   }
-
-
   make_players_inactive();
 }
-
-//function getValue(key, list) {
-//    for (var i = 0; i < list.length; i++) {
-//        var value = list[i];
-//        if (value.id === key) {
-//            return value;
-//        }
-//    }
-//
-//    return null;
-//}
 
 function add_card_to_table(player, card) {
   if (card == 'None') return

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-29 17:49-0700\n"
+"POT-Creation-Date: 2021-04-29 20:29-0700\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -46,7 +46,7 @@ msgstr "Ce jeu a déjà un joueur avec le même nom"
 msgid "game_already_started"
 msgstr "Ce jeu a déjà commencé. Il n'est pas possible de joindre unn jeu en cours"
 
-#: forms.py:27 i18n_strings.py:59
+#: forms.py:27 i18n_strings.py:64
 msgid "game_id"
 msgstr "Identifiant Jeu"
 
@@ -138,96 +138,128 @@ msgid "cancel"
 msgstr "Annuler"
 
 #: i18n_strings.py:33
-msgid "round_winnner"
-msgstr "Gagant du pli"
+msgid "round_winner"
+msgstr "Gagnant du pli"
 
 #: i18n_strings.py:34
 msgid "with_the"
-msgstr "avec le"
+msgstr "avec"
+
+#: i18n_strings.py:36 ui/templates/ohell.html:269
+msgid "trump"
+msgstr "Atout"
 
 #: i18n_strings.py:37
+msgid "user"
+msgstr "Joueur"
+
+#: i18n_strings.py:38
+msgid "left_game"
+msgstr "quitté la partie"
+
+#: i18n_strings.py:42
 msgid "spade"
 msgstr "Pique"
 
-#: i18n_strings.py:38
+#: i18n_strings.py:43
 msgid "heart"
 msgstr "Coeur"
 
-#: i18n_strings.py:39
+#: i18n_strings.py:44
 msgid "diamond"
 msgstr "Carreau"
 
-#: i18n_strings.py:40
+#: i18n_strings.py:45
 msgid "club"
 msgstr "Trèfle"
 
-#: contree/contree.py:33 i18n_strings.py:41
+#: contree/contree.py:33 i18n_strings.py:46
 msgid "pass"
 msgstr "Passe"
 
-#: i18n_strings.py:44
+#: i18n_strings.py:49
 msgid "two"
 msgstr "Deux"
 
-#: i18n_strings.py:45
+#: i18n_strings.py:50
 msgid "three"
 msgstr "Trois"
 
-#: i18n_strings.py:46
+#: i18n_strings.py:51
 msgid "four"
 msgstr "Quatre"
 
-#: i18n_strings.py:47
+#: i18n_strings.py:52
 msgid "five"
 msgstr "Cinq"
 
-#: i18n_strings.py:48
+#: i18n_strings.py:53
 msgid "six"
 msgstr "Six"
 
-#: i18n_strings.py:49
+#: i18n_strings.py:54
 msgid "seven"
 msgstr "Sept"
 
-#: i18n_strings.py:50
+#: i18n_strings.py:55
 msgid "eight"
 msgstr "Huit"
 
-#: i18n_strings.py:51
+#: i18n_strings.py:56
 msgid "nine"
 msgstr "Neuf"
 
-#: i18n_strings.py:52
+#: i18n_strings.py:57
 msgid "ten"
 msgstr "Dix"
 
-#: i18n_strings.py:53
+#: i18n_strings.py:58
 msgid "jack"
 msgstr "Valet"
 
-#: i18n_strings.py:54
+#: i18n_strings.py:59
 msgid "queen"
 msgstr "Dame"
 
-#: i18n_strings.py:55
+#: i18n_strings.py:60
 msgid "king"
 msgstr "Roi"
 
-#: i18n_strings.py:56
+#: i18n_strings.py:61
 msgid "ace"
 msgstr "As"
 
-#: i18n_strings.py:58
+#: i18n_strings.py:63
 msgid "copyright"
 msgstr "Copyright"
 
-#: i18n_strings.py:60
+#: i18n_strings.py:65
 msgid "chat"
 msgstr "Chat"
 
-#: i18n_strings.py:61
+#: i18n_strings.py:66
 msgid "send"
 msgstr "Envoie"
+
+#: i18n_strings.py:68
+msgid "confirm_leave_game"
+msgstr "Confirmez que vous voulez quitter cetter partie"
+
+#: i18n_strings.py:69
+msgid "confirm_remove_player"
+msgstr "Confirmez que vous voulez enlever ce joueur de la partie"
+
+#: i18n_strings.py:70
+msgid "confirm_stop_game"
+msgstr "Confirmez que vous voulez arrêter  cette partie"
+
+#: i18n_strings.py:71
+msgid "confirm_add_ai"
+msgstr "Confirmez que vous voulez ajouter un joueur artificiel"
+
+#: i18n_strings.py:72
+msgid "confirm_restart_hand"
+msgstr "Confirmez que voulez voulez rejouer cette main"
 
 #: belote/belote_form.py:11
 msgid "points_limit"
@@ -348,4 +380,10 @@ msgstr "Références"
 
 #~ msgid "points_achieved_bid"
 #~ msgstr "Points gagnés plus demandés"
+
+#~ msgid "round_winnner"
+#~ msgstr "Gagant du pli"
+
+#~ msgid "confirm_arestaet_hand"
+#~ msgstr ""
 

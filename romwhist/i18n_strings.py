@@ -30,8 +30,13 @@ def i18n():
     __i18n["game_over"] = _("game_over")
     __i18n["ok"] = _("ok")
     __i18n["cancel"] = _("cancel")
-    __i18n["round_winnner"] = _("round_winnner")
+    __i18n["round_winner"] = _("round_winner")
     __i18n["with_the"] = _("with_the")
+
+    __i18n["trump"] = _("trump")
+    __i18n["user"] = _("user")
+    __i18n["left_game"] = _("left_game")
+
 
     # This block may not be required
     __i18n["spade"] = _("spade")
@@ -59,6 +64,13 @@ def i18n():
     __i18n["game_id"] = _("game_id")
     __i18n["chat"] = _("chat")
     __i18n["send"] = _("send")
+
+    __i18n["confirm_leave_game"] = _("confirm_leave_game")
+    __i18n["confirm_remove_player"] = _("confirm_remove_player")
+    __i18n["confirm_stop_game"] = _("confirm_stop_game")
+    __i18n["confirm_add_ai"] = _("confirm_add_ai")
+    __i18n["confirm_restart_hand"] = _("confirm_restart_hand")
+
     return __i18n
 
 def i18n_val(key):
