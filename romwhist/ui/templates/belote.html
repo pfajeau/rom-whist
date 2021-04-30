@@ -76,7 +76,7 @@ Add footer / contact info
     $(id_bet).change(function() {
       bet = $(id_bet + " option:selected").val();
       // bet = list.options[list.selectedIndex];
-      if (bet != "Select") {
+      if (bet != "select") {
         console.log("Bet:" + bet)
         socket.emit("player bet", bet);
         //$(id_bet + " [readonly=readonly] option:not(:selected)").prop('disabled', true);
@@ -149,7 +149,7 @@ Add footer / contact info
 
       $(id_bet).empty();
       let html = ""
-      html = html.concat('<option value="select" selected>Select</option>')
+      html = html.concat('<option value="select" selected>i18n["select"]</option>')
       for (bet in allowed_bets) {
         html = html.concat('<option value="' + allowed_bets[bet] + '">' + i18n[allowed_bets[bet]] + '</option>')
       }
@@ -273,7 +273,7 @@ Add footer / contact info
     <tr id="bets">
       {% for player in players -%}
       <td class="td_player_info_label">
-        <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">Bid</label>
+        <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">{{ _('bid') }}</label>
       </td>
       <td class="td_player_info">
         <select name="bets" id="bets_{{ player }}" disabled>
@@ -294,7 +294,7 @@ Add footer / contact info
     <tr id="rounds">
       {% for player in players -%}
       <td class="td_player_info_label" >
-        <label for="rounds_{{ player }}"  id="label_rounds_{{ player }}" class="player_info">Points</label>
+        <label for="rounds_{{ player }}"  id="label_rounds_{{ player }}" class="player_info">{{ _('points') }}</label>
       </td>
       <td class="td_player_info" >
         <input type="number" id="rounds_{{ player }}" name="rounds" class="player_info" min=0 max=18 readonly value={{ wins[player] }}>
@@ -304,7 +304,7 @@ Add footer / contact info
     <tr id=scores>
       {% for player in players -%}
       <td class="td_player_info_label" >
-        <label for="score_{{ player }}"  id="label_score_{{ player }}" class="player_info">Score</label>
+        <label for="score_{{ player }}"  id="label_score_{{ player }}" class="player_info">{{ _('score') }}</label>
       </td>
       <td class="td_player_info" >
         <input type="number" id="score_{{ player }}" name="score" class="player_info" min=0 max=99 readonly value={{ scores[player] }}>

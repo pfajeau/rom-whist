@@ -68,7 +68,7 @@ class ContreeAiPlayer(BeloteAiPlayer):
         self.game_state = game_state
 
         self.game_state.active_player = self.game_state.next_player(self.game_state.dealer)
-        self.game_state.current_bet = "Pass_0"
+        self.game_state.current_bet = "pass_0"
 
         # Remove Pass option
         # self.game_state.allowed_bets.pop(0)
@@ -84,7 +84,7 @@ class ContreeAiPlayer(BeloteAiPlayer):
             bet_points = round(avg_points_for_bet * ContreeAiPlayer.CORRECTION_FACTOR, -1)
             if bet_points < int(self.game_state.allowed_bets[1][0]):
                 bet_points = 0
-                bet_as_str = "Pass_0"
+                bet_as_str = "pass_0"
             elif bet_points > float(self.game_state.allowed_bets[1][len(self.game_state.allowed_bets[1]) - 2]):
                 bet_points = BeloteGame.TOTAL_POINTS
 

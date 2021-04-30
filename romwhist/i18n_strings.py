@@ -26,7 +26,13 @@ def i18n():
     __i18n["ohell"] = _("ohell")
     __i18n["belote"] = _("belote")
     __i18n["contree"] = _("contree")
-    
+
+    __i18n["game_over"] = _("game_over")
+    __i18n["ok"] = _("ok")
+    __i18n["cancel"] = _("cancel")
+    __i18n["round_winnner"] = _("round_winnner")
+    __i18n["with_the"] = _("with_the")
+
     # This block may not be required
     __i18n["spade"] = _("spade")
     __i18n["heart"] = _("heart")

@@ -1,4 +1,5 @@
 from flask_babel import gettext as _
+from flask_babel import lazy_gettext as _l
 
 class Card(object):
 
@@ -52,10 +53,10 @@ class Card(object):
         return self.CARD_NAMES[index]
 
     def __lt__(self, other):
-         return self.rank < other.rank
+        return self.rank < other.rank
 
     def __gt__(self, other):
-         return self.rank > other.rank
+        return self.rank > other.rank
 
     def __eq__(self, other):
         return str(self) == str(other)
@@ -65,4 +66,5 @@ class Card(object):
         #return self.rankName() + ' of ' + self.suitName()
 
     def desc(self):
-        return self.get_card_name() + ' of ' + self.get_suit_name()
+        return _l(self.get_card_name()) + " " + _('of') + \
+                  " " + _l(self.get_suit_name())

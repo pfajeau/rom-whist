@@ -227,7 +227,7 @@ Add footer / contact info
     <tr id="bets">
       {% for player in players -%}
       <td class="td_player_info_label">
-        <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">Bets</label>
+        <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">{{ _('bets') }}</label>
       </td>
       <td class="td_player_info">
         {% if bets[player] == -1 %}
@@ -241,7 +241,7 @@ Add footer / contact info
     <tr id="rounds">
       {% for player in players -%}
       <td class="td_player_info_label" >
-        <label for="rounds_{{ player }}"  id="label_rounds_{{ player }}" class="player_info">Wins</label>
+        <label for="rounds_{{ player }}"  id="label_rounds_{{ player }}" class="player_info">{{ _('wins') }}</label>
       </td>
       <td class="td_player_info" >
         <input type="number" id="rounds_{{ player }}" name="rounds" class="player_info" min=0 max=18 readonly value={{ wins[player] }}>
@@ -251,7 +251,7 @@ Add footer / contact info
     <tr id=scores>
       {% for player in players -%}
       <td class="td_player_info_label" >
-        <label for="score_{{ player }}"  id="label_score_{{ player }}" class="player_info">Score</label>
+        <label for="score_{{ player }}"  id="label_score_{{ player }}" class="player_info">{{ _('score') }}</label>
       </td>
       <td class="td_player_info" >
         <input type="number" id="score_{{ player }}" name="score" class="player_info" min=0 max=99 readonly value={{ scores[player] }}>

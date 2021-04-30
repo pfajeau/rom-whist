@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-27 21:55-0700\n"
+"POT-Creation-Date: 2021-04-29 17:49-0700\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -18,7 +18,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.0\n"
 
-#: contree/contree_routes.py:57 forms.py:27 i18n_strings.py:53
+#: card.py:69
+msgid "of"
+msgstr "de"
+
+#: common_routes.py:69
+msgid "session_has_expired"
+msgstr "La session a expiré"
+
+#: common_routes.py:75 common_routes.py:81
+msgid "game_does_not_exist"
+msgstr "Ce jeu n'existe pas"
+
+#: common_routes.py:89 i18n_strings.py:30
+msgid "game_over"
+msgstr "Partie Terminée"
+
+#: common_routes.py:162
+msgid "game_not_created"
+msgstr "Ce jeu n'a pas été crée"
+
+#: common_routes.py:171
+msgid "game_has_user_with_same_name"
+msgstr "Ce jeu a déjà un joueur avec le même nom"
+
+#: common_routes.py:178
+msgid "game_already_started"
+msgstr "Ce jeu a déjà commencé. Il n'est pas possible de joindre unn jeu en cours"
+
+#: forms.py:27 i18n_strings.py:59
 msgid "game_id"
 msgstr "Identifiant Jeu"
 
@@ -43,19 +71,21 @@ msgstr "Nouveau Jeu"
 msgid "bet"
 msgstr "Annonce"
 
-#: i18n_strings.py:13
+#: i18n_strings.py:13 ui/templates/ohell.html:230
 msgid "bets"
 msgstr "Annonces"
 
-#: i18n_strings.py:14
+#: i18n_strings.py:14 ui/templates/ohell.html:244
 msgid "wins"
 msgstr "Plis"
 
-#: i18n_strings.py:15
+#: i18n_strings.py:15 ui/templates/belote.html:297
+#: ui/templates/contree.html:354
 msgid "points"
 msgstr "Points"
 
-#: i18n_strings.py:16
+#: i18n_strings.py:16 ui/templates/belote.html:307
+#: ui/templates/contree.html:364 ui/templates/ohell.html:254
 msgid "score"
 msgstr "Score"
 
@@ -100,86 +130,102 @@ msgid "contree"
 msgstr "Contree"
 
 #: i18n_strings.py:31
+msgid "ok"
+msgstr "Continuer"
+
+#: i18n_strings.py:32
+msgid "cancel"
+msgstr "Annuler"
+
+#: i18n_strings.py:33
+msgid "round_winnner"
+msgstr "Gagant du pli"
+
+#: i18n_strings.py:34
+msgid "with_the"
+msgstr "avec le"
+
+#: i18n_strings.py:37
 msgid "spade"
 msgstr "Pique"
 
-#: i18n_strings.py:32
+#: i18n_strings.py:38
 msgid "heart"
 msgstr "Coeur"
 
-#: i18n_strings.py:33
+#: i18n_strings.py:39
 msgid "diamond"
 msgstr "Carreau"
 
-#: i18n_strings.py:34
+#: i18n_strings.py:40
 msgid "club"
 msgstr "Trèfle"
 
-#: contree/contree.py:33 i18n_strings.py:35
+#: contree/contree.py:33 i18n_strings.py:41
 msgid "pass"
 msgstr "Passe"
 
-#: i18n_strings.py:38
-msgid "two"
-msgstr ""
-
-#: i18n_strings.py:39
-msgid "three"
-msgstr ""
-
-#: i18n_strings.py:40
-msgid "four"
-msgstr ""
-
-#: i18n_strings.py:41
-msgid "five"
-msgstr ""
-
-#: i18n_strings.py:42
-msgid "six"
-msgstr ""
-
-#: i18n_strings.py:43
-msgid "seven"
-msgstr ""
-
 #: i18n_strings.py:44
-msgid "eight"
-msgstr ""
+msgid "two"
+msgstr "Deux"
 
 #: i18n_strings.py:45
-msgid "nine"
-msgstr ""
+msgid "three"
+msgstr "Trois"
 
 #: i18n_strings.py:46
-msgid "ten"
-msgstr ""
+msgid "four"
+msgstr "Quatre"
 
 #: i18n_strings.py:47
-msgid "jack"
-msgstr ""
+msgid "five"
+msgstr "Cinq"
 
 #: i18n_strings.py:48
-msgid "queen"
-msgstr ""
+msgid "six"
+msgstr "Six"
 
 #: i18n_strings.py:49
-msgid "king"
-msgstr ""
+msgid "seven"
+msgstr "Sept"
 
 #: i18n_strings.py:50
-msgid "ace"
-msgstr ""
+msgid "eight"
+msgstr "Huit"
+
+#: i18n_strings.py:51
+msgid "nine"
+msgstr "Neuf"
 
 #: i18n_strings.py:52
+msgid "ten"
+msgstr "Dix"
+
+#: i18n_strings.py:53
+msgid "jack"
+msgstr "Valet"
+
+#: i18n_strings.py:54
+msgid "queen"
+msgstr "Dame"
+
+#: i18n_strings.py:55
+msgid "king"
+msgstr "Roi"
+
+#: i18n_strings.py:56
+msgid "ace"
+msgstr "As"
+
+#: i18n_strings.py:58
 msgid "copyright"
 msgstr "Copyright"
 
-#: i18n_strings.py:54
+#: i18n_strings.py:60
 msgid "chat"
 msgstr "Chat"
 
-#: i18n_strings.py:55
+#: i18n_strings.py:61
 msgid "send"
 msgstr "Envoie"
 
@@ -199,8 +245,7 @@ msgstr "Contre"
 msgid "surcontre"
 msgstr "Surcontre"
 
-#: contree/contree.py:36 contree/contree_routes.py:47
-#: contree/contree_routes.py:48
+#: contree/contree.py:36
 msgid "points_bid"
 msgstr "Points demandés"
 
@@ -212,7 +257,7 @@ msgstr "Points gagnés"
 msgid "points_achieved_bid"
 msgstr "Points gagnés + demandés"
 
-#: contree/contree_form.py:14 contree/contree_routes.py:50
+#: contree/contree_form.py:14
 msgid "counting"
 msgstr "Comptage"
 
@@ -238,10 +283,14 @@ msgstr ""
 "Ce site a été crée pendant COVID19            &copy; Copyright 2020/2021 "
 "Philippe Fajeau"
 
+#: ui/templates/belote.html:276 ui/templates/contree.html:321
+msgid "bid"
+msgstr "Annonce"
+
 #: ui/templates/belote.html:280 ui/templates/contree.html:332
 #: ui/templates/contree.html:342
 msgid "select"
-msgstr "Selectionner une option"
+msgstr "Choisir"
 
 #: ui/templates/belote_start.html:26
 msgid "welcome_play_belote"

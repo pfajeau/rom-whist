@@ -102,45 +102,14 @@ def contree_play():
     locale = common_routes.get_locale(request)
     form = GameForm()
     player = session.get('username')
-
-    if player is None:
-        logging.error("Unknow player in session")
-        flash("Session has expired")
-        return redirect(url_for('contree_start'))
-
     game_id = session.get('game_id')
-    if game_id is None:
-        logging.error("Unknow game id: %s", game_id)
-        flash("Game does not exist")
-        return redirect(url_for('contree_start'))
-
     game = games.get(game_id)
-    if game is None:
-        logging.error("Unknow game: %s", game_id)
-        flash("Game does not exist")
-        return redirect(url_for('contree_start'))
 
-    if request.method == 'POST':
+    redirect_template = common_routes.redirect_game_start(games, request.form.get('action_game'), 'contree_start')
 
-        # logging.info (request.form)
-        if game_id is None:
-            error = "Could not find game_id in session"
-            logging.error(error)
-            return render_template('contree_start.html', error=error, locale=locale)
-
-        # if "stop_game" in request.form:
-        if request.form['action_game'] == "stop_game":
-            socketio.emit("game over", game.get_highest_score_player(), room=game_id, namespace=NAMESPACE)
-            clean_game_data(game_id)
-            return redirect(url_for('contree_start'))
-
-        # if "leave_game" in request.form:
-        if request.form['action_game'] == "leave_game":
-            remove_player(game_id, session['username'])
-            return redirect(url_for('contree_start'))
-
+    if redirect_template is None and request.method == 'POST':
         if request.form['action_game'] == "remove_player":
-            logging.info("Remve Player button pressed")
+            logging.info("Remove Player button pressed")
             rplayer = request.form['player_list']
             logging.info("Player to remove: " + rplayer)
 
@@ -156,7 +125,7 @@ def contree_play():
                                         game_id, NAMESPACE_AI)
             return redirect(url_for('contree_play'))
 
-    else:
+    elif redirect_template is None:
         hand = game.get_hands().get(player)
         if hand is None:
             hand = []
@@ -193,7 +162,8 @@ def contree_play():
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
                                belote_allowed=belote_enabled, player_with_belote=game.player_with_belote,
                                i18n=json.dumps(i18n_strings.i18n()))
-
+    else:
+        return redirect_template
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
@@ -568,6 +538,7 @@ def check_player_left(player, game_id, client_id):
     #     if current_client_id == client_id:
     # remove_player(game_id, player)
 
+
 def restart_hand(game_id):
     game = games.get(game_id)
     if game is None:
@@ -588,29 +559,16 @@ def add_player(player, game_id):
         if game.started:
             restart_hand(game_id)
 
-# TODO: factorize
-def remove_player(game_id, player):
-    # game_id = session.get('game_id')
-    if not game_id is None:
-        game = games.get(game_id)
-        if not game is None:
-            if game.started:
-                game.disable_player(player)
-            else:
-                game.remove_player(player)
-                if player in clients[game_id]:
-                    del clients[game_id][player]
 
-        socketio.emit("player left", player, room=game_id, namespace=NAMESPACE)
-        socketio.emit("clear round", room=game_id, namespace=NAMESPACE)
-        restart_hand(game_id)
+def remove_player(game_id, player):
+    common_routes.remove_player(game_id, games, clients, player, NAMESPACE)
+    restart_hand(game_id)
+
 
 def clean_game_data(game_id):
-    game = games.get(game_id)
-    if game is None:
-        return
-    del games[game_id]
-    del clients[game_id]
+    common_routes.clean_game_data(game_id, games, clients)
+
+
 # e.g blueprint and routes
 # auth_blueprint = Blueprint("auth", "auth", url_prefix="/auth")
 # auth_blueprint.add_url_rule("register", "register", controllers.register)

@@ -325,7 +325,8 @@ function round_ended(data) {
   let last_player = data["last_player"]
   console.log("round ended event received: " + player_name);
 
-  $("#msg_div").text("Round winner: " + player_name + " with the " + data["card"])
+  $("#msg_div").text(i18n['round_winner'] + ": " + player_name + " " +
+                     i18n['with_the'] + " " + data["card"])
   fade_msg()
 
   // alertify.alert("Round ended", "Round winner is: " + data["winner"] + " with the " + data["card"])
@@ -372,7 +373,7 @@ function game_over(winners) {
     winner_list = winner_list.concat(item, " ");
   });
 
-  show_alert("Game Over!", "Winner: " + winner_list);
+  show_alert(i18n['game_over'] + " - Winner: " + winner_list);
   play_sound("applause2_x.wav")
 }
 
@@ -398,12 +399,9 @@ function msg_posted(data) {
   // play_sound("beep.wav");
 }
 
-function show_question(msg, title, rsp1="Yes", rsp1_callback, rsp2="No", rsp2_callback) {
-//  alertify.set({ labels: { ok: rsp1, cancel : rsp2} });
-  alertify.confirm().set('labels', {ok:'Yes!', cancel:'No!'});
+function show_question(msg, title, rsp1=i18n["ok"], rsp1_callback, rsp2=i18n["cancel"], rsp2_callback) {
+  alertify.confirm().set('labels', {ok:rsp1, cancel:rsp2});
   alertify.confirm(title, msg, function() { rsp1_callback(); }, function(){ rsp2_callback });
-  alertify.confirm().set('labels', {ok:'Ok', cancel:'Cancel'});
-//  alertify.set({ labels: { ok: "Ok", cancel : "Cancel"} });
 }
 
 function show_alert(msg, title, cancel=false, callback_ok, action="") {
