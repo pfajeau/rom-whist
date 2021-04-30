@@ -6,10 +6,15 @@ author: Philippe Fajeau
 """
 import logging
 import threading
+import json
 from random import randint
 
 from flask import render_template, request, flash, session, url_for, redirect
+from flask_babel import gettext as _
+from flask_babel import lazy_gettext as _l
 # from flask import Blueprint
+from wtforms import SelectField
+
 from flask_login import current_user, login_user
 from flask_socketio import emit
 from flask_socketio import join_room, leave_room
@@ -22,10 +27,10 @@ from romwhist.contree.contree_form import ContreeStartForm
 from romwhist.extensions import db
 from romwhist.forms import LoginForm, GameForm
 from romwhist.models import User
+from romwhist import i18n_strings
 
 NAMESPACE = '/contree'
 NAMESPACE_AI = '/contree_ai'
-
 
 # Map of games, key is game id
 games = dict()
@@ -38,6 +43,8 @@ clients = dict()
 # @app.route("/contree_start",methods=['GET', 'POST'])
 def contree_start():
     form = ContreeStartForm()
+    locale = common_routes.get_locale(request)
+
     if form.validate_on_submit():
         # Sanitize the username (as it isued as IDs in the html)
         username = common_routes.sanitize_username(form.user_name.data)
@@ -58,11 +65,14 @@ def contree_start():
             logging.info("start game")
             game_id = common_routes.generate_game_id(999,games)
             if game_id is None:
-                return render_template('contree_start.html', error="No more games available!!! Please try again later", form=form)
+                return render_template('contree_start.html',
+                                       error="No more games available!!! Please try again later",
+                                       form=form, locale=locale)
 
             points_to_reach = int(form.points_to_reach.data)
-            index = int(form.counting.data)
-            counting_str = form.counting.choices[index][1]
+            #index = int(form.counting.data)
+            # counting_str = form.counting.choices[index][1]
+            counting_str = form.counting.data
             logging.debug("Counting string from UI: %s", counting_str)
             counting = CountingMethod(counting_str)
             logging.debug("Counting: %s", counting)
@@ -82,52 +92,24 @@ def contree_start():
             add_player(username, game_id)
             return redirect(url_for('contree_play'))
     else:
-        return render_template("contree_start.html", form=form, error=form.errors)
+        return render_template("contree_start.html", form=form,
+                               error=form.errors, locale=locale)
 
 
 # @app.route("/contree_play", methods=['GET', 'POST'])
 def contree_play():
     logging.info("In contree_play route")
+    locale = common_routes.get_locale(request)
     form = GameForm()
     player = session.get('username')
-    if player is None:
-        logging.error("Unknow player in session")
-        flash("Session has expired")
-        return redirect(url_for('contree_start'))
-
     game_id = session.get('game_id')
-    if game_id is None:
-        logging.error("Unknow game id: %s", game_id)
-        flash("Game does not exist")
-        return redirect(url_for('contree_start'))
-
     game = games.get(game_id)
-    if game is None:
-        logging.error("Unknow game: %s", game_id)
-        flash("Game does not exist")
-        return redirect(url_for('contree_start'))
 
-    if request.method == 'POST':
+    redirect_template = common_routes.redirect_game_start(games, request.form.get('action_game'), 'contree_start')
 
-        # logging.info (request.form)
-        if game_id is None:
-            error = "Could not find game_id in session"
-            logging.error(error)
-            return render_template('contree_start.html', error=error)
-
-        # if "stop_game" in request.form:
-        if request.form['action_game'] == "stop_game":
-            socketio.emit("game over", game.get_highest_score_player(), room=game_id, namespace=NAMESPACE)
-            clean_game_data(game_id)
-            return redirect(url_for('contree_start'))
-
-        # if "leave_game" in request.form:
-        if request.form['action_game'] == "leave_game":
-            remove_player(game_id, session['username'])
-            return redirect(url_for('contree_start'))
-
+    if redirect_template is None and request.method == 'POST':
         if request.form['action_game'] == "remove_player":
-            logging.info("Remve Player button pressed")
+            logging.info("Remove Player button pressed")
             rplayer = request.form['player_list']
             logging.info("Player to remove: " + rplayer)
 
@@ -143,7 +125,7 @@ def contree_play():
                                         game_id, NAMESPACE_AI)
             return redirect(url_for('contree_play'))
 
-    else:
+    elif redirect_template is None:
         hand = game.get_hands().get(player)
         if hand is None:
             hand = []
@@ -178,8 +160,10 @@ def contree_play():
                                trump=game.trump_card, trump_suit=game.trump_suit,
                                allowed_bets=game.get_allowed_bets(player),
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
-                               belote_allowed=belote_enabled, player_with_belote=game.player_with_belote)
-
+                               belote_allowed=belote_enabled, player_with_belote=game.player_with_belote,
+                               i18n=json.dumps(i18n_strings.i18n()))
+    else:
+        return redirect_template
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
@@ -554,6 +538,7 @@ def check_player_left(player, game_id, client_id):
     #     if current_client_id == client_id:
     # remove_player(game_id, player)
 
+
 def restart_hand(game_id):
     game = games.get(game_id)
     if game is None:
@@ -574,29 +559,16 @@ def add_player(player, game_id):
         if game.started:
             restart_hand(game_id)
 
-# TODO: factorize
-def remove_player(game_id, player):
-    # game_id = session.get('game_id')
-    if not game_id is None:
-        game = games.get(game_id)
-        if not game is None:
-            if game.started:
-                game.disable_player(player)
-            else:
-                game.remove_player(player)
-                if player in clients[game_id]:
-                    del clients[game_id][player]
 
-        socketio.emit("player left", player, room=game_id, namespace=NAMESPACE)
-        socketio.emit("clear round", room=game_id, namespace=NAMESPACE)
-        restart_hand(game_id)
+def remove_player(game_id, player):
+    common_routes.remove_player(game_id, games, clients, player, NAMESPACE)
+    restart_hand(game_id)
+
 
 def clean_game_data(game_id):
-    game = games.get(game_id)
-    if game is None:
-        return
-    del games[game_id]
-    del clients[game_id]
+    common_routes.clean_game_data(game_id, games, clients)
+
+
 # e.g blueprint and routes
 # auth_blueprint = Blueprint("auth", "auth", url_prefix="/auth")
 # auth_blueprint.add_url_rule("register", "register", controllers.register)

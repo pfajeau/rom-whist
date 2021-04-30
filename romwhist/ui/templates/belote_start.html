@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+  <img border="0" alt="Play Contree" src="{{ url_for('static', filename='') }}img/belote.png" height="100" align="right"></a>
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
 
   {% if error %}
@@ -17,85 +19,72 @@
           return false;
         }
       });
-      $('#increment').keydown(function (e) {
-        if (e.keyCode == 13) {
-          e.preventDefault();
-          return false;
-        }
-      });
     });
+  </script>
 
-</script>
-    <p><p>
-    <img border="0" alt="Play Belote" src="{{ url_for('static', filename='') }}img/belote.png" width="200"></a>
-    <br>
-    <h2>Welcome to a place to play <b>Belote</b> with your friends!!! </h2>
-    <p>Belote is a fun card game that is usually played with 4 players, although it is possible to play with 2 or 3 players</p>
-    <p>The <a href="#rules">rules</a> are fairly simple, it is a perfect game to spend some time with family and friends</p>
-    See <a href="#user_guide">user guide</a> for instructions on how to start or join a game.
-    <br><br>
+  <p><p>
+  <h2>{% trans %}welcome_play_belote{% endtrans %}</h2>
+  <br><br>
 
-    <form action="" method="post" novalidate>
-        {{ form.hidden_tag() }}
+  <form action="" method="post" novalidate>
+      {{ form.hidden_tag() }}
 
-      <div class="container">
-        <h3>Enter your alias for the game</h3>
-        <div class="row">
-          <div class="col-12">
-            {{ form.user_name.label }}
-            {{ form.user_name(size=10) }}
-          </div>
-        </div>
-        <br><br>
-        <h3>Then choose one of the following options:</h3>
-        <br>
-        <div class="row">
-          <br/>
-          <div class="col-4 data_block">
-            <h2>Join a game</h2>
-            <br/>
-            {{ form.game_id.label }}
-            {{ form.game_id(size=5) }}
-            <br><br>
-            {{ form.join_game(class="btn btn-primary") }}
-          </div>
-          <div class="col-2">
-            <br><h3>&nbsp &nbsp or</h3>
-          </div>
-          <!-- <h3>or</h3> -->
-          <div class="col-5 data_block">
-            <div id="create_div">
-              <h2>Create a new game</h2>
-              <br/>
-              <div id="create_options">
-                {{ form.points_to_reach.label }}
-                {{ form.points_to_reach }}
-              </div>
-            </div>
-            <br>
-            {{ form.start_game(class="btn btn-primary") }}
-          </div>
+    <div class="container">
+      <h3>{% trans %}enter_alias{% endtrans %}</h3>
+      <div class="row">
+        <div class="col-12">
+          {{ form.user_name.label }}
+          {{ form.user_name(size=10) }}
         </div>
       </div>
-    </form>
-    <br><br>
-     <script type="text/javascript">
-          guide = "{{ url_for('static', filename='html/belote_guide.html') }}"
-         $(function(){
-          $("#user_guide").load(guide);
-         });
-        </script>
-    <div id="user_guide">
+      <br><br>
+      <h3>{% trans %}choose_option{% endtrans %}</h3>
+      <br>
+      <div class="row">
+        <br/>
+        <div class="col-4 data_block">
+          <h2>{% trans %}join_a_game{% endtrans %}</h2>
+          <br/>
+          {{ form.game_id.label }}
+          {{ form.game_id(size=5) }}
+          <br><br>
+          {{ form.join_game(class="btn btn-primary") }}
+        </div>
+        <div class="col-2">
+          <br><h3>&nbsp &nbsp or</h3>
+        </div>
+        <!-- <h3>or</h3> -->
+        <div class="col-5 data_block">
+          <div id="create_div">
+            <h2>{{ _("create_new_game") }}</h2>
+            <br/>
+            <div id="create_options">
+              {{ form.points_to_reach.label }}
+              {{ form.points_to_reach }}
+            </div>
+          </div>
+          <br>
+          {{ form.start_game(class="btn btn-primary") }}
+        </div>
+      </div>
     </div>
-     <div id="rules">
-      <h2>Rules of game</h2>
-        <p>Francais:<a href="http://www.ffbelote.org/wp-content/uploads/2016/01/regles-officielles-de-la-Belote-27-01-2016.pdf" target="_blank" rel="noopener noreferrer">Règles officielles de la Belote</a></p>
-        <p>English:<a href="{{ url_for('static', filename='') }}pdf/official_rules_belote.pdf" target="_blank" rel="noopener noreferrer">Belote Official Rules</a></p>
-    </div>
-    <br/><br/>
-    <div>
-    {% block footer %}
-    {{ super() }}
-    {% endblock %}
+  </form>
+  <br><br>
 
+  {% if locale == "fr" %}
+    {% include 'belote_guide_fr.html' %}
+  {% else %}
+    {% include 'belote_guide.html' %}
+  {% endif %}
+
+   <div id="rules">
+    <h2>{% trans %}rules_of_game{% endtrans %}</h2>
+      <p>Francais:<a href="http://www.ffbelote.org/wp-content/uploads/2016/01/regles-officielles-de-la-Belote-27-01-2016.pdf" target="_blank" rel="noopener noreferrer">Règles officielles de la Belote</a></p>
+      <p>English:<a href="{{ url_for('static', filename='') }}pdf/official_rules_belote.pdf" target="_blank" rel="noopener noreferrer">Belote Official Rules</a></p>
+  </div>
+  <br/><br/>
+  <div>
+  {% block footer %}
+    {{ super() }}
+  {% endblock %}
 {% endblock %}

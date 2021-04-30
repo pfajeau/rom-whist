@@ -45,25 +45,38 @@ function initialize(players) {
     }
   });
 
+  // Send button for chat
+  $("#post_chat").html(i18n["send"])
+  $( "#post_chat" ).click(function() {
+    post_msg();
+  })
 
   // Add game action buttons
   if (username == ownername) {
-    $("#game_action_buttons").append('<button id="start_game" class="btn btn-primary" name="start_game" type="button">Start Game</button>');
+    $("#game_action_buttons").append(
+    '<button id="start_game" class="btn btn-primary" name="start_game" type="button">' +
+    i18n["start_game"] + '</button>');
   }
 
-  $("#game_action_buttons").append('<button id="leave_game" type="button" class="btn btn-primary" name="leave_game">Leave Game</button>');
-  document.getElementById("leave_game").onclick = function() {
-    show_alert("Are you sure you want to leave the game?", "Warning", cancel=true, callback_ok=submit_form, action="leave_game");
-    // show_dialog_ok("Warning", "Are you sure you want to leave the game?", ok_function=submit_form, action="leave_game")
-  }
 
   if (username == ownername) {
     // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
-    $("#game_action_buttons").append('<button id="stop_game" type="button" class="btn btn-warning" name="stop_game">Stop Game</button>');
+    $("#game_action_buttons").append(
+    '<button id="stop_game" type="button" class="btn btn-warning" name="stop_game">' +
+    i18n["stop_game"] + '</button>');
     document.getElementById("stop_game").onclick = function() {
-      show_alert("Are you sure you want to stop the game?", "Warning", cancel=true, callback_ok=submit_form, action="stop_game");
+      show_alert(i18n["confirm_stop_game"], cancel=true, callback_ok=submit_form, action="stop_game");
     }
   }
+
+  $("#game_action_buttons").append(
+      '<button id="leave_game" type="button" class="btn btn-primary" name="leave_game">' +
+      i18n["leave_game"] + '</button>');
+  document.getElementById("leave_game").onclick = function() {
+    show_alert(i18n["confirm_leave_game"], "Warning", cancel=true, callback_ok=submit_form, action="leave_game");
+    // show_dialog_ok("Warning", "Are you sure you want to leave the game?", ok_function=submit_form, action="leave_game")
+  }
+
   if (username == ownername) {
     $("#game_action_buttons").append('&nbsp;&nbsp;');
 
@@ -79,29 +92,32 @@ function initialize(players) {
     html= html.concat('</select>');
     html= html.concat('&nbsp;');
     $("#game_action_buttons").append(html);
-    $("#game_action_buttons").append('<button id="remove_player" class="btn btn-primary" name="remove_player" type="button">Remove Player</button>');
+    $("#game_action_buttons").append('<button id="remove_player" class="btn btn-primary" name="remove_player" type="button">' + i18n.remove_player  + '</button>');
     document.getElementById("remove_player").onclick = function() {
-      show_alert("Are you sure you want to remove this player?", "Warning", cancel=true, callback_ok=submit_form, action="remove_player");
+      show_alert(i18n["confirm_remove_player"], "Warning", cancel=true, callback_ok=submit_form, action="remove_player");
     }
   }
 
   if (username == ownername) {
     // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
-    $("#game_action_buttons").append('<button id="restart_hand" type="button" class="btn btn-warning" name="restart_hand">Restart Hand</button>');
+    $("#game_action_buttons").append(
+        '<button id="restart_hand" type="button" class="btn btn-warning" name="restart_hand">' +
+        i18n["restart_hand"] +
+        '</button>');
     document.getElementById("restart_hand").onclick = function() {
-      show_alert("Are you sure you want to restart the hand", "Warning", cancel=true, callback_ok=submit_form, action="restart_hand");
+      show_alert(i18n["confirm_restart_hand"], "Warning", cancel=true, callback_ok=submit_form, action="restart_hand");
     }
   }
 
   if (username == ownername) {
     // $("#game_action_buttons").append('<button id="restart_round" class="btn btn-primary" name="restart_round" type="button">Restart Round</button>');
-    $("#game_action_buttons").append('<button id="add_ai" type="button" class="btn btn-warning" name="add_ai">Add AI</button>');
+    $("#game_action_buttons").append(
+        '<button id="add_ai" type="button" class="btn btn-warning" name="add_ai">' +
+        i18n["add_ai"] + '</button>');
     document.getElementById("add_ai").onclick = function() {
-      show_alert("Please confirm you want to add an AI player", "Warning", cancel=true, callback_ok=submit_form, action="add_ai");
+      show_alert(i18n["confirm_add_ai"], "Warning", cancel=true, callback_ok=submit_form, action="add_ai");
     }
   }
-
-
   make_players_inactive();
 }
 
@@ -116,13 +132,70 @@ function add_card_to_table(player, card) {
   html = html.concat("<figcaption class='trump_caption'>" + player + "</figcaption>")
   html = html.concat("</figure>")
   $('#cards_played').append(html)
+}
 
+function populate_header(player, game_id, game_logo_url) {
+  let html_frag = ""
+  html_frag = html_frag.concat("<span class='game_page_title'>")
+  html_frag = html_frag.concat(i18n["game_id"] + ": " + game_id)
+  html_frag = html_frag.concat(" - " + player + "</span>")
+  html_frag = html_frag.concat(
+      "<span class='game_page_title'><a href='#scoresheet_div'>" +
+      i18n["scoresheet"] +
+      "</a></span>")
+  html_frag = html_frag.concat(
+      "<span class='logo_game'><img border='0' alt='' src=" +
+      game_logo_url + " width='80'></a> </span>")
+
+  $("#topnav").last().after(html_frag);
 }
 
 function start_game() {
   socket.emit('cs game started');
   //disable_start_game();
 }
+
+function game_stated(data) {
+  console.log("game started event received")
+  console.log(data)
+  $("input[name='rounds']").val(0);
+  $("input[name='score']").val(0);
+
+  nb_cards_to_deal = data['nb_cards']
+  $('#cards').html('');
+  $('#cards_played').empty()
+  $('#trump_card').empty()
+  $('#button').remove()
+  $('#msg_div').empty()
+
+  // Add scoresheet
+  $("#scoresheet_div").append("<td>")
+}
+
+function new_hand(data, static_url) {
+  console.log("new hand event received");
+  make_players_inactive();
+  $('#cards').html('');
+  $('#cards_played').empty()
+  $("#nb_cards").removeClass("highlighted_field");
+  $('#msg_div').empty()
+  cards = data['cards']
+
+  // $('#cards').append('<ul>');
+  for (var card_index in cards) {
+    // $('#cards').append('<br>' + data[card])
+    let card =cards[card_index]
+    let image = 'img/' + card + ".svg"
+    // let card = data[card]
+    $('#cards').append('<td>'+
+      "<img id=" + card + " src=" + static_url +
+      image + ' alt=' + card + ' class="card_hand"' + '>' + '</td>')
+
+      $('#rounds input').val(0);
+      // $('#bets input').html('');
+    }
+}
+
 function enable_start_game() {
   if (username == ownername) {
     document.getElementById("start_game").onclick = function() {
@@ -239,7 +312,8 @@ function round_ended(data) {
   let last_player = data["last_player"]
   console.log("round ended event received: " + player_name);
 
-  $("#msg_div").text("Round winner: " + player_name + " with the " + data["card"])
+  $("#msg_div").text(i18n['round_winner'] + ": " + player_name + " " +
+                     i18n['with_the'] + " " + data["card"])
   fade_msg()
 
   // alertify.alert("Round ended", "Round winner is: " + data["winner"] + " with the " + data["card"])
@@ -286,7 +360,7 @@ function game_over(winners) {
     winner_list = winner_list.concat(item, " ");
   });
 
-  show_alert("Game Over!", "Winner: " + winner_list);
+  show_alert(i18n['game_over'] + " - Winner: " + winner_list);
   play_sound("applause2_x.wav")
 }
 
@@ -312,12 +386,9 @@ function msg_posted(data) {
   // play_sound("beep.wav");
 }
 
-function show_question(msg, title, rsp1="Yes", rsp1_callback, rsp2="No", rsp2_callback) {
-//  alertify.set({ labels: { ok: rsp1, cancel : rsp2} });
-  alertify.confirm().set('labels', {ok:'Yes!', cancel:'No!'});
+function show_question(msg, title, rsp1=i18n["ok"], rsp1_callback, rsp2=i18n["cancel"], rsp2_callback) {
+  alertify.confirm().set('labels', {ok:rsp1, cancel:rsp2});
   alertify.confirm(title, msg, function() { rsp1_callback(); }, function(){ rsp2_callback });
-  alertify.confirm().set('labels', {ok:'Ok', cancel:'Cancel'});
-//  alertify.set({ labels: { ok: "Ok", cancel : "Cancel"} });
 }
 
 function show_alert(msg, title, cancel=false, callback_ok, action="") {

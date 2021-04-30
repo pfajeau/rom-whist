@@ -1,6 +1,7 @@
 import copy
 import logging
 from enum import Enum
+from flask_babel import gettext as _
 
 from romwhist.card import Card
 from romwhist.deck import Deck
@@ -218,7 +219,7 @@ class BeloteGame(CardGame):
         logging.info("Player " + player + "bid: " + bet)
         self.bets[player] = bet
 
-        if bet == "Pass":
+        if bet == "pass":
             logging.info("Player passed")
             self._nb_pass_since_bet += 1
 
@@ -263,9 +264,9 @@ class BeloteGame(CardGame):
         # if self.hands.get(player) is None:
         #     allowed_bets = []  # No hand yet
         if self.phase == self.GamePhase.BET:
-            allowed_bets = ['Pass', str(self.trump_card.get_suit_name())]
+            allowed_bets = ['pass', str(self.trump_card.get_suit_name())]
         elif self.phase == self.GamePhase.BET2:
-            allowed_bets = ['Pass']
+            allowed_bets = ['pass']
             for suit in Card.SUIT_NAMES:
                 if suit != self.trump_card.get_suit_name():
                     allowed_bets.append(suit)

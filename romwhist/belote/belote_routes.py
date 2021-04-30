@@ -6,7 +6,7 @@ author: Philippe Fajeau
 """
 import logging
 import threading
-import traceback
+import json
 from random import randint
 
 from flask import render_template, request, flash, session, url_for, redirect
@@ -22,10 +22,11 @@ from romwhist.belote.belote_state import BeloteState
 from romwhist.extensions import db
 from romwhist.forms import LoginForm, GameForm
 from romwhist.models import User
+from romwhist import i18n_strings
+
 
 NAMESPACE = '/belote'
 NAMESPACE_AI = '/belote_ai'
-
 
 # Map of games, key is game id
 games = dict()
@@ -38,8 +39,10 @@ clients = dict()
 # @app.route("/belote_start",methods=['GET', 'POST'])
 def belote_start():
     form = BeloteStartForm()
+    locale = common_routes.get_locale(request)
+
     if form.validate_on_submit():
-        # Sanitize the username (as it isued as IDs in the html)
+        # Sanitize the username (as it used as IDs in the html)
         username = common_routes.sanitize_username(form.user_name.data)
         logging.debug("User: " + username)
 
@@ -58,7 +61,9 @@ def belote_start():
             logging.info("start game")
             game_id = common_routes.generate_game_id(999,games)
             if game_id is None:
-                return render_template('belote_start.html', error="No more games available!!! Please try again later", form=form)
+                return render_template('belote_start.html',
+                                       error="No more games available!!! Please try again later",
+                                       form=form, locale=locale)
 
             points_to_reach = int(form.points_to_reach.data)
 
@@ -78,12 +83,16 @@ def belote_start():
             add_player(username, game_id)
             return redirect(url_for('belote_play'))
     else:
-        return render_template("belote_start.html", form=form, error=form.errors)
+        return render_template("belote_start.html",
+                               form=form, error=form.errors, locale=locale)
 
 
 # @app.route("/belote_play", methods=['GET', 'POST'])
 def belote_play():
+
     logging.info("In belote_play route")
+    locale = common_routes.get_locale(request)
+
     form = GameForm()
     player = session.get('username')
     if player is None:
@@ -109,7 +118,7 @@ def belote_play():
         if game_id is None:
             error = "Could not find game_id in session"
             logging.error(error)
-            return render_template('belote_start.html', error=error)
+            return render_template('belote_start.html', error=error, locale=locale)
 
         # if "stop_game" in request.form:
         if request.form['action_game'] == "stop_game":
@@ -153,13 +162,6 @@ def belote_play():
         logging.debug("Game Phase: " + game.phase.name)
         active_player = game.get_active_player()
 
-        # logging.debug("Scoresheet:")
-        # for i in range(game._current_hand_nb - 1):
-        #     logging.debug(i, " ", game.scoresheet[i][0])
-        #     logging.debug(i, " ", game.scoresheet[i][1])
-        #     logging.debug(i, " ", game.scoresheet[i][2])
-
-        # TODO Determine status of belote button
         # if game phase = play and user has both queen and king then enabled. If user has already play belote, then
         # enable.
         belote_enabled = False
@@ -174,7 +176,7 @@ def belote_play():
                                trump=game.trump_card, trump_suit=game.trump_suit,
                                allowed_bets=game.get_allowed_bets(player),
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
-                               belote_allowed=belote_enabled, player_with_belote=game.player_with_belote)
+                               belote_allowed=belote_enabled, player_with_belote=game.player_with_belote, i18n=json.dumps(i18n_strings.i18n()))
 
 
 # @app.route("/login",methods=['GET', 'POST'])

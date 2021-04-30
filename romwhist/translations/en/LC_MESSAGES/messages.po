@@ -1,0 +1,389 @@
+# English translations for PROJECT.
+# Copyright (C) 2021 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2021-04-29 20:29-0700\n"
+"PO-Revision-Date: 2021-04-22 16:30-0700\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.0\n"
+
+#: card.py:69
+msgid "of"
+msgstr "de"
+
+#: common_routes.py:69
+msgid "session_has_expired"
+msgstr "Session has expired"
+
+#: common_routes.py:75 common_routes.py:81
+msgid "game_does_not_exist"
+msgstr "Game does not exist"
+
+#: common_routes.py:89 i18n_strings.py:30
+msgid "game_over"
+msgstr "Game Over"
+
+#: common_routes.py:162
+msgid "game_not_created"
+msgstr "This game has not been created yet\""
+
+#: common_routes.py:171
+msgid "game_has_user_with_same_name"
+msgstr "The game already has a user with the same name"
+
+#: common_routes.py:178
+msgid "game_already_started"
+msgstr "This game has already started! You cannot join a game in progress"
+
+#: forms.py:27 i18n_strings.py:64
+msgid "game_id"
+msgstr "Game IDfwfw"
+
+#: forms.py:28 i18n_strings.py:10
+msgid "alias"
+msgstr "Your Alias"
+
+#: forms.py:29 ui/templates/belote_start.html:59
+#: ui/templates/contree_start.html:57 ui/templates/ohell_start.html:78
+msgid "create_new_game"
+msgstr "Create a new game"
+
+#: forms.py:30 i18n_strings.py:8
+msgid "join_game"
+msgstr "Join Game"
+
+#: i18n_strings.py:9
+msgid "new_game"
+msgstr "New Game"
+
+#: i18n_strings.py:12
+msgid "bet"
+msgstr "Bet"
+
+#: i18n_strings.py:13 ui/templates/ohell.html:230
+msgid "bets"
+msgstr "Bets"
+
+#: i18n_strings.py:14 ui/templates/ohell.html:244
+msgid "wins"
+msgstr "Wins"
+
+#: i18n_strings.py:15 ui/templates/belote.html:297
+#: ui/templates/contree.html:354
+msgid "points"
+msgstr "Points"
+
+#: i18n_strings.py:16 ui/templates/belote.html:307
+#: ui/templates/contree.html:364 ui/templates/ohell.html:254
+msgid "score"
+msgstr "Score"
+
+#: i18n_strings.py:17 ui/templates/ohell.html:309
+msgid "scoresheet"
+msgstr "Scoresheet"
+
+#: i18n_strings.py:19
+msgid "remove_player"
+msgstr "Remove this player"
+
+#: i18n_strings.py:20
+msgid "add_ai"
+msgstr "Add AI"
+
+#: i18n_strings.py:21
+msgid "leave_game"
+msgstr "Leave Game"
+
+#: i18n_strings.py:22
+msgid "stop_game"
+msgstr "Stop Game"
+
+#: i18n_strings.py:23
+msgid "start_game"
+msgstr "Start Game"
+
+#: i18n_strings.py:24
+msgid "restart_hand"
+msgstr "Restart Hand"
+
+#: i18n_strings.py:26
+msgid "ohell"
+msgstr "Ohell"
+
+#: i18n_strings.py:27
+msgid "belote"
+msgstr "Belote"
+
+#: i18n_strings.py:28
+msgid "contree"
+msgstr "Contree"
+
+#: i18n_strings.py:31
+msgid "ok"
+msgstr "Ok"
+
+#: i18n_strings.py:32
+msgid "cancel"
+msgstr "Cancel"
+
+#: i18n_strings.py:33
+msgid "round_winner"
+msgstr "Round winner"
+
+#: i18n_strings.py:34
+msgid "with_the"
+msgstr "with the"
+
+#: i18n_strings.py:36 ui/templates/ohell.html:269
+msgid "trump"
+msgstr "Trump"
+
+#: i18n_strings.py:37
+msgid "user"
+msgstr "User"
+
+#: i18n_strings.py:38
+msgid "left_game"
+msgstr "left the game"
+
+#: i18n_strings.py:42
+msgid "spade"
+msgstr "Spade"
+
+#: i18n_strings.py:43
+msgid "heart"
+msgstr "Heart"
+
+#: i18n_strings.py:44
+msgid "diamond"
+msgstr "Diamond"
+
+#: i18n_strings.py:45
+msgid "club"
+msgstr "Club"
+
+#: contree/contree.py:33 i18n_strings.py:46
+msgid "pass"
+msgstr "Pass"
+
+#: i18n_strings.py:49
+msgid "two"
+msgstr "Two"
+
+#: i18n_strings.py:50
+msgid "three"
+msgstr "Three"
+
+#: i18n_strings.py:51
+msgid "four"
+msgstr "Four"
+
+#: i18n_strings.py:52
+msgid "five"
+msgstr "Five"
+
+#: i18n_strings.py:53
+msgid "six"
+msgstr "Six"
+
+#: i18n_strings.py:54
+msgid "seven"
+msgstr "Seven"
+
+#: i18n_strings.py:55
+msgid "eight"
+msgstr "Eight"
+
+#: i18n_strings.py:56
+msgid "nine"
+msgstr "Nine"
+
+#: i18n_strings.py:57
+msgid "ten"
+msgstr "Ten"
+
+#: i18n_strings.py:58
+msgid "jack"
+msgstr "Jack"
+
+#: i18n_strings.py:59
+msgid "queen"
+msgstr "Queen"
+
+#: i18n_strings.py:60
+msgid "king"
+msgstr "King"
+
+#: i18n_strings.py:61
+msgid "ace"
+msgstr "Ace"
+
+#: i18n_strings.py:63
+msgid "copyright"
+msgstr "Copyright"
+
+#: i18n_strings.py:65
+msgid "chat"
+msgstr "Chat"
+
+#: i18n_strings.py:66
+msgid "send"
+msgstr "Send"
+
+#: i18n_strings.py:68
+msgid "confirm_leave_game"
+msgstr "Please confirm you want to leave the game"
+
+#: i18n_strings.py:69
+msgid "confirm_remove_player"
+msgstr "Please confirm you want to lremove this player"
+
+#: i18n_strings.py:70
+msgid "confirm_stop_game"
+msgstr "Please confirm you want to stop the game"
+
+#: i18n_strings.py:71
+msgid "confirm_add_ai"
+msgstr "Please confirm you want to add a computer player"
+
+#: i18n_strings.py:72
+msgid "confirm_restart_hand"
+msgstr "Please confirm you want to restart the hand"
+
+#: belote/belote_form.py:11
+msgid "points_limit"
+msgstr "Stop game after player/team reaches"
+
+#: belote/belote_form.py:13
+msgid "number_between_500_and_2000"
+msgstr "Enter a number between 500 and 2000"
+
+#: contree/contree.py:34
+msgid "contre"
+msgstr "Double"
+
+#: contree/contree.py:35
+msgid "surcontre"
+msgstr "Doube-Double"
+
+#: contree/contree.py:36
+msgid "points_bid"
+msgstr "Points Bid"
+
+#: contree/contree.py:37
+msgid "points_achieved"
+msgstr "Points Achieved"
+
+#: contree/contree.py:38
+msgid "points_achieved_bid"
+msgstr "Points Achieved + Bid"
+
+#: contree/contree_form.py:14
+msgid "counting"
+msgstr "Counting"
+
+#: ohell/ohell_form.py:10
+msgid "multiple_one_card_deals"
+msgstr "Multiple one card deals"
+
+#: ohell/ohell_form.py:12
+msgid "multiple_no_trump_deals"
+msgstr "Multiple no trump deals"
+
+#: ohell/ohell_form.py:14
+msgid "increment_between_deals"
+msgstr "Increment between deals"
+
+#: ohell/ohell_form.py:17
+msgid "enter_increment_between_1_and_5"
+msgstr "Enter Increment (between 1 and 5)"
+
+#: ui/templates/base.html:48
+msgid "copyright_notice"
+msgstr "This site was created during COVID 19"
+
+#: ui/templates/belote.html:276 ui/templates/contree.html:321
+msgid "bid"
+msgstr "Bid"
+
+#: ui/templates/belote.html:280 ui/templates/contree.html:332
+#: ui/templates/contree.html:342
+msgid "select"
+msgstr "Select"
+
+#: ui/templates/belote_start.html:26
+msgid "welcome_play_belote"
+msgstr "Welcome to the game of belote!"
+
+#: ui/templates/belote_start.html:33 ui/templates/contree_start.html:31
+#: ui/templates/ohell_start.html:52
+msgid "enter_alias"
+msgstr "Enter your alias for the game"
+
+#: ui/templates/belote_start.html:41 ui/templates/contree_start.html:39
+#: ui/templates/ohell_start.html:60
+msgid "choose_option"
+msgstr "Then choose one of the following options:"
+
+#: ui/templates/belote_start.html:46 ui/templates/contree_start.html:44
+#: ui/templates/ohell_start.html:65
+msgid "join_a_game"
+msgstr "Join a Game"
+
+#: ui/templates/belote_start.html:81 ui/templates/contree_start.html:82
+msgid "rules_of_game"
+msgstr "Stop Game"
+
+#: ui/templates/contree_start.html:24
+msgid "welcome_play_contree"
+msgstr "Welcome to the game of belote contree!"
+
+#: ui/templates/home.html:5
+msgid "welcome_home"
+msgstr ""
+"Welcome to this site, where you can play a number of games with friends "
+"or alone"
+
+#: ui/templates/home.html:6
+msgid "ṕick_game"
+msgstr "Pick the game you want to play"
+
+#: ui/templates/home.html:12 ui/templates/ohell.html:38
+#: ui/templates/ohell_start.html:4
+msgid "ohell_image"
+msgstr "ohell.png"
+
+#: ui/templates/ohell_start.html:45
+msgid "welcome_play_ohell"
+msgstr "Welcome to the game of ohell!"
+
+#: ui/templates/ohell_start.html:106
+msgid "references"
+msgstr "References: "
+
+#~ msgid "points_achieved"
+#~ msgstr "Points Achieved"
+
+#~ msgid "points_bid"
+#~ msgstr "Points Bid"
+
+#~ msgid "points_achieved_bid"
+#~ msgstr "Points Achieved + Bid"
+
+#~ msgid "round_winnner"
+#~ msgstr "Round winner"
+
+#~ msgid "confirm_arestaet_hand"
+#~ msgstr ""
+
