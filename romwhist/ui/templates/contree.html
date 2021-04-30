@@ -30,6 +30,8 @@
 
   document.addEventListener('DOMContentLoaded', () => {
 
+    setup_alertify()
+
     the_players = {{ players|safe }}
     initialize(the_players)
 
@@ -253,8 +255,7 @@
         id_score = "#label_score_" + player_name;
         $(id_score).parent().remove()
 
-        show_alert(i18n['user'] : " " + player_name + " " + i18n['left_game'], "Warning")
-      }
+        show_alert(i18n["user"] + " " + player_name + " " + i18n["left_game"], "Warning")      }
     });
 
     socket.on('trump card', function(data) { trump_card_received(data, "") })
@@ -264,7 +265,7 @@
         // Update trump_suit
         trump_suit = trump
         $('#trump_card').html('')
-        $("#trump_card").append('<label class="trump_caption">Trump:' + trump_suit + '</label>')
+        $("#trump_card").append('<label class="trump_caption">' + i18n['trump'] + ': ' + i18n[trump_suit] + '</label>')
     })
 
     socket.on('round ended', function(data) {

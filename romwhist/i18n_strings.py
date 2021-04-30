@@ -39,6 +39,7 @@ def i18n():
 
 
     # This block may not be required
+    __i18n["select"] = _("select")
     __i18n["spade"] = _("spade")
     __i18n["heart"] = _("heart")
     __i18n["diamond"] = _("diamond")
@@ -70,6 +71,7 @@ def i18n():
     __i18n["confirm_stop_game"] = _("confirm_stop_game")
     __i18n["confirm_add_ai"] = _("confirm_add_ai")
     __i18n["confirm_restart_hand"] = _("confirm_restart_hand")
+    __i18n["bet_not_allowed"] = _("bet_not_allowed")
 
     return __i18n
 

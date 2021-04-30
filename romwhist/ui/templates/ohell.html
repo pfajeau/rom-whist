@@ -39,6 +39,7 @@ Add footer / contact info
 
   document.addEventListener('DOMContentLoaded', () => {
 
+    setup_alertify()
     allowed_bets = {{ allowed_bets }}
 
     the_players = {{ players|safe }}
@@ -78,7 +79,7 @@ Add footer / contact info
         return
       }
       else {
-        show_alert ("This bet is not allowed.", "Error");
+        show_alert (i18n["bet_not_allowed"], "Error");
         return;
       }
     });
@@ -106,6 +107,8 @@ Add footer / contact info
 
     socket.on('new hand', function(data) {
       new_hand(data, "{{ url_for('static', filename='') }}")
+      $("input[name='bets']").val('')
+
       $('#trump_card').html('')
     });
 

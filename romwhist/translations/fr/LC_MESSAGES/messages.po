@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-29 20:29-0700\n"
+"POT-Creation-Date: 2021-04-29 23:52-0700\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -79,13 +79,13 @@ msgstr "Annonces"
 msgid "wins"
 msgstr "Plis"
 
-#: i18n_strings.py:15 ui/templates/belote.html:297
-#: ui/templates/contree.html:354
+#: i18n_strings.py:15 ui/templates/belote.html:298
+#: ui/templates/contree.html:355
 msgid "points"
 msgstr "Points"
 
-#: i18n_strings.py:16 ui/templates/belote.html:307
-#: ui/templates/contree.html:364 ui/templates/ohell.html:254
+#: i18n_strings.py:16 ui/templates/belote.html:308
+#: ui/templates/contree.html:365 ui/templates/ohell.html:254
 msgid "score"
 msgstr "Score"
 
@@ -261,6 +261,10 @@ msgstr "Confirmez que vous voulez ajouter un joueur artificiel"
 msgid "confirm_restart_hand"
 msgstr "Confirmez que voulez voulez rejouer cette main"
 
+#: i18n_strings.py:73
+msgid "bet_not_allowed"
+msgstr "Le nomber de plis demandé n'est pas valide"
+
 #: belote/belote_form.py:11
 msgid "points_limit"
 msgstr "Limite de points"
@@ -315,12 +319,12 @@ msgstr ""
 "Ce site a été crée pendant COVID19            &copy; Copyright 2020/2021 "
 "Philippe Fajeau"
 
-#: ui/templates/belote.html:276 ui/templates/contree.html:321
+#: ui/templates/belote.html:277 ui/templates/contree.html:322
 msgid "bid"
 msgstr "Annonce"
 
-#: ui/templates/belote.html:280 ui/templates/contree.html:332
-#: ui/templates/contree.html:342
+#: ui/templates/belote.html:281 ui/templates/contree.html:333
+#: ui/templates/contree.html:343
 msgid "select"
 msgstr "Choisir"
 

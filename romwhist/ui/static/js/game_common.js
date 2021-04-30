@@ -1,3 +1,8 @@
+function setup_alertify() {
+  // Override glossary values
+  alertify.defaults.glossary.ok = i18n['ok'];
+  alertify.defaults.glossary.cancel = i18n['cancel'];
+}
 
 function play_sound(audio_file) {
   const sound = new Audio()
@@ -155,7 +160,7 @@ function start_game() {
   //disable_start_game();
 }
 
-function game_stated(data) {
+function game_started(data) {
   console.log("game started event received")
   console.log(data)
   $("input[name='rounds']").val(0);

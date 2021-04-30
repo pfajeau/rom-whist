@@ -10,6 +10,7 @@ from romwhist.contree.contree_state import ContreeState
 from romwhist.contree.announce import Announce
 from romwhist.contree.announce import ContreStatus
 
+
 class CountingMethod(str, Enum):
     POINTS_ACHIEVED = "points_achieved"
     POINTS_BID = "points_bid"
@@ -19,15 +20,17 @@ class CountingMethod(str, Enum):
 class ContreeGame(BeloteGame):
 
     all_bet_points = [80, 90, 100, 110, 120, 130, 140, 150, 162]
-    BONUS_CAPOT = 250
 
     def __init__(self, game_creator="", id=0, counting=CountingMethod.POINTS_BID):
         BeloteGame.__init__(self, game_creator, id)
-        BeloteGame.nb_cards_first_deal = {1: 8, 2: 8, 3: 8, 4: 8}
+        # Number of cards to deal depending on number of players
+        self.nb_cards_first_deal = {1: 8, 2: 8, 3: 8, 4: 8}
         self.current_bet = Announce.from_str("pass_0")
         self.contree_status = ContreStatus.NORMAL
         self.counting = counting
         self.init_bets()
+
+        self.BONUS_CAPOT = 250
 
         # THose are there so that these strings are extracted in pot file for i18n
         self.__PASS = _("pass")
@@ -36,6 +39,7 @@ class ContreeGame(BeloteGame):
         self.__POINTS_BID = _("points_bid")
         self.__POINTS_ACHIEVED = _("points_achieved")
         self.__POINTS_ACHIEVED_BID = _("points_achieved_bid")
+
 
     def get_state(self):
         state = ContreeState(self.id)
@@ -89,7 +93,7 @@ class ContreeGame(BeloteGame):
                 else:
                     move_to_play_phase = True
 
-        elif bet.points == BeloteGame.TOTAL_POINTS or self.next_player_to_bet(player) is None:
+        elif bet.points == self.TOTAL_POINTS or self.next_player_to_bet(player) is None:
             # Move to PLAY phase
             self.current_bet = bet
             move_to_play_phase = True
@@ -200,7 +204,7 @@ class ContreeGame(BeloteGame):
             if self.belote_state == BeloteGame.BeloteState.Rebelote_Played and \
                     self.player_with_belote == players[i]:
                 logging.info("In update_scores, adding belote / rebelote points to " + players[i])
-                player_points[i] += BeloteGame.BELOTE_REBELOTE
+                player_points[i] += self.BELOTE_REBELOTE
                 self.hand_points[players[i]] = player_points[i]
 
         # TODO: remove test (always 4 players) and add support for contree / surcontree
@@ -231,22 +235,22 @@ class ContreeGame(BeloteGame):
                 self._hand_winner.append(players[2])
 
             else:
-                self.scores[players[1]] += round(BeloteGame.TOTAL_POINTS, -1)
+                self.scores[players[1]] += round(self.TOTAL_POINTS, -1)
                 self.scores[players[3]] = self.scores[players[1]]
                 self._hand_winner.append(players[1])
                 self._hand_winner.append(players[3])
 
             # Capot
             if self.contree_status == ContreStatus.CONTREE:
-                points_capot = ContreeGame.BONUS_CAPOT * 2
+                points_capot = self.BONUS_CAPOT * 2
             elif self.contree_status == ContreStatus.SURCONTREE:
-                points_capot = ContreeGame.BONUS_CAPOT * 4
+                points_capot = self.BONUS_CAPOT * 4
             else:
-                points_capot = ContreeGame.BONUS_CAPOT
+                points_capot = self.BONUS_CAPOT
 
             if self.counting == CountingMethod.POINTS_ACHIEVED or \
                self.counting == CountingMethod.POINTS_ACHIEVED_PLUS_BID or \
-               self.counting == CountingMethod.POINTS_BID and self.current_bet.points == BeloteGame.TOTAL_POINTS:
+               self.counting == CountingMethod.POINTS_BID and self.current_bet.points == self.TOTAL_POINTS:
 
                 if self.wins[players[1]] + self.wins[players[3]] == 0:
                     self.scores[players[0]] += points_capot
