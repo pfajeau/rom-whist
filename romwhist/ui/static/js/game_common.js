@@ -240,7 +240,6 @@ function make_player_play(player_name, allowed_cards) {
 function make_player_the_better(player_name, bet1="#bets_", bet2="") {
   let id_bet = bet1 + player_name
   if (player_name == username) {
-    //play_sound("bicycle_bell.wav")
     $(id_bet).prop('readonly', false);
     $(id_bet).prop('disabled', false);
     $(id_bet).addClass("highlighted_field");
@@ -249,9 +248,8 @@ function make_player_the_better(player_name, bet1="#bets_", bet2="") {
   if (bet2 != "") {
     let id_bet2 = bet2 + player_name
     if (player_name == username) {
-      //play_sound("bicycle_bell.wav")
-      $(id_bet2).prop('readonly', false);
-      $(id_bet2).prop('disabled', false);
+      // $(id_bet2).prop('readonly', false);
+      // $(id_bet2).prop('disabled', false);
       $(id_bet2).addClass("highlighted_field");
     }
   }
@@ -365,7 +363,7 @@ function game_over(winners) {
     winner_list = winner_list.concat(item, " ");
   });
 
-  show_alert(i18n['game_over'] + " - Winner: " + winner_list);
+  show_alert(i18n['game_over'] + " - " + ii18n['winner'] + ": " + winner_list);
   play_sound("applause2_x.wav")
 }
 

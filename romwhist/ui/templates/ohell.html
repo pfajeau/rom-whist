@@ -108,7 +108,6 @@ Add footer / contact info
     socket.on('new hand', function(data) {
       new_hand(data, "{{ url_for('static', filename='') }}")
       $("input[name='bets']").val('')
-
       $('#trump_card').html('')
     });
 

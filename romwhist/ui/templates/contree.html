@@ -130,6 +130,8 @@
 
     socket.on('new hand', function(data) {
       new_hand(data, "{{ url_for('static', filename='') }}")
+      $("input[name='bets_points']").val('')
+      $("input[name='bets_suit']").val('')
     });
 
     socket.on('belote announced', function(data) {
@@ -172,7 +174,7 @@
 
       $(id_bet_suit).empty();
       $(id_bet_points).empty()
-      
+
       let html = ""
       html = html.concat('<select name="bets_points" id="bets_points_{{ player }}">')
       html = html.concat('<option value="select" selected>' + i18n["select"] + '</option>')

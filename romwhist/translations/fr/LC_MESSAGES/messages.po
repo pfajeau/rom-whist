@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-29 23:52-0700\n"
+"POT-Creation-Date: 2021-04-30 16:01-0700\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -46,7 +46,7 @@ msgstr "Ce jeu a déjà un joueur avec le même nom"
 msgid "game_already_started"
 msgstr "Ce jeu a déjà commencé. Il n'est pas possible de joindre unn jeu en cours"
 
-#: forms.py:27 i18n_strings.py:64
+#: forms.py:27 i18n_strings.py:68
 msgid "game_id"
 msgstr "Identifiant Jeu"
 
@@ -71,25 +71,25 @@ msgstr "Nouveau Jeu"
 msgid "bet"
 msgstr "Annonce"
 
-#: i18n_strings.py:13 ui/templates/ohell.html:230
+#: i18n_strings.py:13 ui/templates/ohell.html:232
 msgid "bets"
 msgstr "Annonces"
 
-#: i18n_strings.py:14 ui/templates/ohell.html:244
+#: i18n_strings.py:14 ui/templates/ohell.html:246
 msgid "wins"
 msgstr "Plis"
 
 #: i18n_strings.py:15 ui/templates/belote.html:298
-#: ui/templates/contree.html:355
+#: ui/templates/contree.html:357
 msgid "points"
 msgstr "Points"
 
 #: i18n_strings.py:16 ui/templates/belote.html:308
-#: ui/templates/contree.html:365 ui/templates/ohell.html:254
+#: ui/templates/contree.html:367 ui/templates/ohell.html:256
 msgid "score"
 msgstr "Score"
 
-#: i18n_strings.py:17 ui/templates/ohell.html:309
+#: i18n_strings.py:17 ui/templates/ohell.html:311
 msgid "scoresheet"
 msgstr "Feuille de Score"
 
@@ -145,123 +145,140 @@ msgstr "Gagnant du pli"
 msgid "with_the"
 msgstr "avec"
 
-#: i18n_strings.py:36 ui/templates/ohell.html:269
+#: i18n_strings.py:35
+msgid "winner"
+msgstr "Gagnant"
+
+#: i18n_strings.py:37 ui/templates/ohell.html:271
 msgid "trump"
 msgstr "Atout"
 
-#: i18n_strings.py:37
+#: i18n_strings.py:38
 msgid "user"
 msgstr "Joueur"
 
-#: i18n_strings.py:38
+#: i18n_strings.py:39
 msgid "left_game"
 msgstr "quitté la partie"
 
-#: i18n_strings.py:42
+#: i18n_strings.py:43 ui/templates/belote.html:281
+#: ui/templates/contree.html:335 ui/templates/contree.html:345
+msgid "select"
+msgstr "Choisir"
+
+#: i18n_strings.py:44
 msgid "spade"
 msgstr "Pique"
 
-#: i18n_strings.py:43
+#: i18n_strings.py:45
 msgid "heart"
 msgstr "Coeur"
 
-#: i18n_strings.py:44
+#: i18n_strings.py:46
 msgid "diamond"
 msgstr "Carreau"
 
-#: i18n_strings.py:45
+#: i18n_strings.py:47
 msgid "club"
 msgstr "Trèfle"
 
-#: contree/contree.py:33 i18n_strings.py:46
+#: contree/contree.py:36 i18n_strings.py:48
 msgid "pass"
 msgstr "Passe"
 
-#: i18n_strings.py:49
+#: contree/contree.py:37 i18n_strings.py:49
+msgid "contre"
+msgstr "Contre"
+
+#: contree/contree.py:38 i18n_strings.py:50
+msgid "surcontre"
+msgstr "Surcontre"
+
+#: i18n_strings.py:53
 msgid "two"
 msgstr "Deux"
 
-#: i18n_strings.py:50
+#: i18n_strings.py:54
 msgid "three"
 msgstr "Trois"
 
-#: i18n_strings.py:51
+#: i18n_strings.py:55
 msgid "four"
 msgstr "Quatre"
 
-#: i18n_strings.py:52
+#: i18n_strings.py:56
 msgid "five"
 msgstr "Cinq"
 
-#: i18n_strings.py:53
+#: i18n_strings.py:57
 msgid "six"
 msgstr "Six"
 
-#: i18n_strings.py:54
+#: i18n_strings.py:58
 msgid "seven"
 msgstr "Sept"
 
-#: i18n_strings.py:55
+#: i18n_strings.py:59
 msgid "eight"
 msgstr "Huit"
 
-#: i18n_strings.py:56
+#: i18n_strings.py:60
 msgid "nine"
 msgstr "Neuf"
 
-#: i18n_strings.py:57
+#: i18n_strings.py:61
 msgid "ten"
 msgstr "Dix"
 
-#: i18n_strings.py:58
+#: i18n_strings.py:62
 msgid "jack"
 msgstr "Valet"
 
-#: i18n_strings.py:59
+#: i18n_strings.py:63
 msgid "queen"
 msgstr "Dame"
 
-#: i18n_strings.py:60
+#: i18n_strings.py:64
 msgid "king"
 msgstr "Roi"
 
-#: i18n_strings.py:61
+#: i18n_strings.py:65
 msgid "ace"
 msgstr "As"
 
-#: i18n_strings.py:63
+#: i18n_strings.py:67
 msgid "copyright"
 msgstr "Copyright"
 
-#: i18n_strings.py:65
+#: i18n_strings.py:69
 msgid "chat"
 msgstr "Chat"
 
-#: i18n_strings.py:66
+#: i18n_strings.py:70
 msgid "send"
 msgstr "Envoie"
 
-#: i18n_strings.py:68
+#: i18n_strings.py:72
 msgid "confirm_leave_game"
 msgstr "Confirmez que vous voulez quitter cetter partie"
 
-#: i18n_strings.py:69
+#: i18n_strings.py:73
 msgid "confirm_remove_player"
 msgstr "Confirmez que vous voulez enlever ce joueur de la partie"
 
-#: i18n_strings.py:70
+#: i18n_strings.py:74
 msgid "confirm_stop_game"
 msgstr "Confirmez que vous voulez arrêter  cette partie"
 
-#: i18n_strings.py:71
+#: i18n_strings.py:75
 msgid "confirm_add_ai"
 msgstr "Confirmez que vous voulez ajouter un joueur artificiel"
 
-#: i18n_strings.py:72
+#: i18n_strings.py:76
 msgid "confirm_restart_hand"
 msgstr "Confirmez que voulez voulez rejouer cette main"
 
-#: i18n_strings.py:73
+#: i18n_strings.py:77
 msgid "bet_not_allowed"
 msgstr "Le nomber de plis demandé n'est pas valide"
 
@@ -273,23 +290,15 @@ msgstr "Limite de points"
 msgid "number_between_500_and_2000"
 msgstr "Entrez un nombre entre 500 et 2000"
 
-#: contree/contree.py:34
-msgid "contre"
-msgstr "Contre"
-
-#: contree/contree.py:35
-msgid "surcontre"
-msgstr "Surcontre"
-
-#: contree/contree.py:36
+#: contree/contree.py:39
 msgid "points_bid"
 msgstr "Points demandés"
 
-#: contree/contree.py:37
+#: contree/contree.py:40
 msgid "points_achieved"
 msgstr "Points gagnés"
 
-#: contree/contree.py:38
+#: contree/contree.py:41
 msgid "points_achieved_bid"
 msgstr "Points gagnés + demandés"
 
@@ -319,14 +328,9 @@ msgstr ""
 "Ce site a été crée pendant COVID19            &copy; Copyright 2020/2021 "
 "Philippe Fajeau"
 
-#: ui/templates/belote.html:277 ui/templates/contree.html:322
+#: ui/templates/belote.html:277 ui/templates/contree.html:324
 msgid "bid"
 msgstr "Annonce"
-
-#: ui/templates/belote.html:281 ui/templates/contree.html:333
-#: ui/templates/contree.html:343
-msgid "select"
-msgstr "Choisir"
 
 #: ui/templates/belote_start.html:26
 msgid "welcome_play_belote"

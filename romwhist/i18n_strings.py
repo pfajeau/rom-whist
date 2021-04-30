@@ -32,6 +32,7 @@ def i18n():
     __i18n["cancel"] = _("cancel")
     __i18n["round_winner"] = _("round_winner")
     __i18n["with_the"] = _("with_the")
+    __i18n["winner"] = _("winner")
 
     __i18n["trump"] = _("trump")
     __i18n["user"] = _("user")
@@ -45,7 +46,9 @@ def i18n():
     __i18n["diamond"] = _("diamond")
     __i18n["club"] = _("club")
     __i18n["pass"] = _("pass")
-    
+    __i18n["contre"] = _("contre")
+    __i18n["surcontre"] = _("surcontre")
+
     # This block may not be required
     __i18n["two"] = _("two")
     __i18n["three"] = _("three")
