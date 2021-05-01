@@ -28,11 +28,11 @@ def main():
 
     assert(len(belote.get_allowed_bets("Joe")) == 2)
     for player in players:
-        belote.place_bet(player, "Pass")
+        belote.place_bet(player, "pass")
 
     assert (len(belote.get_allowed_bets("Joe")) == 4)
-    belote.place_bet("Joe", "Spade")
-    assert (belote.trump_suit == "Spade")
+    belote.place_bet("Joe", "spade")
+    assert (belote.trump_suit == "spade")
 
     belote.deal_2(dealer="")
     for player in players:
@@ -120,8 +120,8 @@ def main():
 
     # Override cards with pre-defined set
     test_common.create_hands(belote, cards_as_str)
-    belote.place_bet("Joe", "Spade")
-    assert (belote.trump_suit == "Spade")
+    belote.place_bet("Joe", "spade")
+    assert (belote.trump_suit == "spade")
 
     belote.deal_2(dealer="")
     assert belote.belote_state == BeloteGame.BeloteState.Allowed, belote.belote_state.name
@@ -133,7 +133,7 @@ def main():
         assert (len(belote.get_hand(player).cards) == 8)
 
     test_common.create_hands(belote, cards_as_str)
-    belote.place_bet("Joe", "Spade")
+    belote.place_bet("Joe", "spade")
     belote.active_player = "Joe"
     assert(belote.has_player_card("Joe", "s12") is True)
     assert(belote.has_player_card("Joe", "s13") is True)
@@ -203,7 +203,7 @@ def main():
     for player in players:
         print(player + ": " + format(belote.hand_points[player]))
         total_points += belote.hand_points[player]
-    assert total_points == BeloteGame.TOTAL_POINTS + BeloteGame.BELOTE_REBELOTE, total_points
+    assert total_points == belote.TOTAL_POINTS + belote.BELOTE_REBELOTE, total_points
 
     print("Scores: ")
     for player in players:
@@ -216,10 +216,10 @@ def main():
 
     belote.active_player = "Joe"
     for player in players:
-        belote.place_bet(player, "Pass")
+        belote.place_bet(player, "pass")
 
     for player in players:
-        belote.place_bet(player, "Pass")
+        belote.place_bet(player, "pass")
 
     # New hands should have been distributed
     print("Active player is: " + belote.active_player)
