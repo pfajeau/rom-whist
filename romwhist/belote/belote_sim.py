@@ -58,23 +58,29 @@ class BeloteSim(BeloteGame):
         if self.phase == BeloteGame.GamePhase.BET or self.phase == BeloteGame.GamePhase.BET2:
             self.place_bet(self.sim_player, self.bets[self.sim_player])
             self.taker = self.sim_player
-            self.cuurent_bet = self.bets[self.sim_player]
+            self.current_bet = self.bets[self.sim_player]
 
             # Re-create hands from deck for other players for the simulation
             self.deck.remove_card(self.trump_card)
             for player in self.players:
                 if player != self.sim_player:
-                    self.hands[player] = Hand(self.deck, BeloteGame.nb_cards_first_deal[len(self.players)])
+                    self.hands[player] = Hand(self.deck, self.nb_cards_first_deal[len(self.players)])
 
             self.deal_2()
         else:
             # Remove from deck all cards that have been played
+            # TODO except the ones played in current round as those need to be part
+            # of the simulation
             cards_played_per_player = current_state.cards_played_per_player
             for player in self.players:
                 cards_played = cards_played_per_player.get(player)
                 if cards_played is not None:
                     for card in cards_played:
                         self.deck.remove_card(Card.card_from_value(card))
+
+            # cards_current_round = self.current_round.get_cards_played()
+            # for card in cards_current_round:
+            #     self.deck.addRandom(card)
 
             for player in self.players:
                 if player != self.sim_player:

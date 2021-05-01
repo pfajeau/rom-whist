@@ -160,7 +160,7 @@ def contree_play():
                                allowed_bets=game.get_allowed_bets(player),
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
                                belote_allowed=belote_enabled, player_with_belote=game.player_with_belote,
-                               i18n=json.dumps(i18n_strings.i18n()))
+                               contree_status=game.contree_status, i18n=json.dumps(i18n_strings.i18n()))
     else:
         return redirect_template
 

@@ -65,6 +65,7 @@
 
     // Register action for bet suit input field
     id_bet_suit = "#bets_suit_" + username
+
     $(id_bet_suit).change(function() {
       bet_suit = $(id_bet_suit + " option:selected").val();
       console.log("Bet suit: " + bet_suit)
@@ -72,7 +73,8 @@
         socket.emit("player bet", bet_suit, 0);
       }
       else if (bet_suit != "select") {
-        $(id_bet_points).prop("enabled", true)
+        id_bet_points = "#bets_points_" + username
+        $(id_bet_points).prop("disabled", false)
       }
       return
     });
@@ -80,6 +82,7 @@
     // Register action for bet points input field
     id_bet_points = "#bets_points_" + username
     $(id_bet_points).change(function() {
+      id_bet_points = "#bets_points_" + username
       bet_points = $(id_bet_points + " option:selected").val();
       if (bet_points != "select") {
         bet_suit = $(id_bet_suit + " option:selected").val();
@@ -217,6 +220,20 @@
       make_player_inactive(player_name);
       $(id_bet_suit).removeClass("highlighted_field");
       $(id_bet_points).removeClass("highlighted_field");
+
+      if (bet_suit == "surcontre") {
+        // Make sure taker's bet is reset to its value in case the taker
+        // has surcontre
+        taker = data['taker']
+        id_bet_suit = "#bets_suit_" + taker
+        idx = $(id_bet_suit).find('option[value="' + bet_suit + '"]').index()
+        $(id_bet_suit).get(0).selectedIndex = idx
+
+        $("#contree_status").text(i18n["surcontre"])
+      }
+      else if (bet_suit == "contre") {
+        $("#contree_status").text(i18n["contre"])
+      }
     });
 
     socket.on('player to play', function(data) {
@@ -380,13 +397,17 @@
 </div>
 <div id="card-table-burgundy" class="container">
   <div class="bottomright" id="trump_card">
-    {% if game_phase != "PLAY" and trump != None %}
-      <figure>
-        <img src="{{ url_for('static', filename='') }}img/{{ trump }}.svg" alt=trump width=80 height=80>
-<!--        - <figcaption><h3 class='trump_caption'>Trump</h3></figcaption> -->
-      </figure>
-    {% elif game_phase == "PLAY" %}
-      <label class="trump_caption">Trump: {{ trump_suit }}<label>
+    {% if game_phase == "PLAY" %}
+      <label class="trump_caption">{{ _('trump') }} : {{ _(trump_suit) }}</label>
+      <br>
+
+      {% if contree_status == "contree" %}
+        <label id="contree_status" class="trump_caption">{{ _('contre') }}!</label>
+      {% elif contree_status == "surcontree" %}
+        <label id="contree_status" class="trump_caption">{{ _('surcontre') }}!</label>
+      {% else %}
+         <label id="contree_status" class="trump_caption"></label>
+      {% endif %}
     {% endif %}
   </div>
   <div id="cards_played">
@@ -403,14 +424,18 @@
     <input type="hidden" id="action_game" name="action_game" value="">
     <div>
       <div class="col-md-12" id="cards">
-        <br>
-        <!-- <tr id="cards"></tr> -->
-        {% for card in hand -%}
-        <td>
-          <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" class="card_hand">
-          <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
-        </td>
-        {% endfor %}
+        <table>
+          <br>
+         <tr>
+          <!-- <tr id="cards"></tr> -->
+          {% for card in hand -%}
+          <td>
+            <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" class="card_hand">
+            <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
+          </td>
+          {% endfor %}
+          </tr>
+          </table>
       </div>
     </div>
 

@@ -29,6 +29,7 @@ class ContreeGame(BeloteGame):
         self.contree_status = ContreStatus.NORMAL
         self.counting = counting
         self.init_bets()
+        self.active_player = game_creator
 
         self.BONUS_CAPOT = 250
 
@@ -113,9 +114,10 @@ class ContreeGame(BeloteGame):
                 logging.error("Invalid Bet: %s", bet)
                 logging.error("self.current_bet: %s", self.current_bet)
 
+        self.trump_suit = self.current_bet.suit
+
         if move_to_play_phase:
             self.phase = BeloteGame.GamePhase.PLAY
-            self.trump_suit = self.current_bet.suit
             self.set_cards_rank_and_value()
             self.active_player = self.next_player(self.dealer)
         return
@@ -123,15 +125,18 @@ class ContreeGame(BeloteGame):
 
     def get_allowed_bets(self, player):
         allowed_bets_points = []
-        if self.phase == self.GamePhase.BET:
-            if self.current_bet is None:
-                allowed_bets_points = copy.deepcopy(ContreeGame.all_bet_points)
-            else:
-                for bet in ContreeGame.all_bet_points:
-                    if bet > self.current_bet.points:
-                        allowed_bets_points.append(bet)
+        allowed_bets_suits = []
 
-        allowed_bets_suits = copy.deepcopy(Card.SUIT_NAMES)
+        if self.contree_status != ContreStatus.CONTREE:
+            allowed_bets_suits = copy.deepcopy(Card.SUIT_NAMES)
+            if self.phase == self.GamePhase.BET:
+                if self.current_bet is None:
+                    allowed_bets_points = copy.deepcopy(ContreeGame.all_bet_points)
+                else:
+                    for bet in ContreeGame.all_bet_points:
+                        if bet > self.current_bet.points:
+                            allowed_bets_points.append(bet)
+
         allowed_bets_suits.insert(0, "pass")
 
         # Add Contree or Surcontree option

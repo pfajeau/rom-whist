@@ -114,6 +114,7 @@ class CardGame:
         self.dealer = state_copy.dealer
         self.hand_points = copy.deepcopy(state.hand_points)
         self.soft_init_dict(self.hand_points,0)
+        self.active_player = state.active_player
 
 
         # Create hands
