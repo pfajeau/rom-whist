@@ -59,12 +59,15 @@ class ContreeGame(BeloteGame):
             self.bets[player] = Announce.from_str(state.bets[player])
         self.current_bet = Announce.from_str(state.current_bet)
 
-    def place_bet(self, player, bet):
+    def place_bet(self, player, bet, ai=False):
         logging.info("Player " + player + " bet: " + str(bet))
         self.bets[player] = bet
         move_to_play_phase = False
 
         logging.info("Player bet: %s", bet.suit)
+
+        if bet.suit == "contre" and self.current_bet.suit == "pass":
+            logging.info("weird")
 
         if bet.suit == "contre":
             self.contree_status = ContreStatus.CONTREE
@@ -72,7 +75,7 @@ class ContreeGame(BeloteGame):
             logging.info("Next player to bet %s ", next_player_to_bet)
             self.active_player = next_player_to_bet
 
-        elif  bet.suit == "surcontre":
+        elif bet.suit == "surcontre":
             move_to_play_phase = True
             self.contree_status = ContreStatus.SURCONTREE
 
@@ -105,6 +108,7 @@ class ContreeGame(BeloteGame):
 
             if self.current_bet is None or \
                     bet.points > self.current_bet.points or \
+                    ai or \
                     self.current_bet.suit == "pass":
                 self._nb_pass_since_bet = 0
                 self.current_bet = bet
@@ -157,7 +161,9 @@ class ContreeGame(BeloteGame):
         for a_player in self.players:
             if self.bets[a_player].suit != "" and \
                self.bets[a_player].suit != "pass" and \
-               a_player != partner  and a_player != player:
+               self.bets[a_player].suit != "contre" and \
+               self.bets[a_player].suit != "surcontre" and \
+                a_player != partner  and a_player != player:
                 logging.debug("Contre enabled")
                 return True
 
@@ -168,7 +174,8 @@ class ContreeGame(BeloteGame):
         # True if one player has contre and is not partner
         partner = self.next_player(self.next_player(player))
         for a_player in self.players:
-            if self.bets[a_player].suit == "Contre" and a_player != partner and a_player != player:
+            if self.bets[a_player].suit == "Contre" and \
+                a_player != partner and a_player != player:
                 return True
         return False
 
@@ -266,6 +273,8 @@ class ContreeGame(BeloteGame):
                     self.scores[players[1]] += points_capot
                     self.scores[players[3]] = self.scores[players[1]]
 
+        logging.debug("Bet %s", self.current_bet)
         logging.debug("Player points: %s", player_points)
+        logging.debug("Hand Winners: %s", self._hand_winner)
         self.scoresheet.append(self.scores.copy())
         return self.scores

@@ -56,7 +56,7 @@ class BeloteSim(BeloteGame):
             self.deck.remove_card(card)
 
         if self.phase == BeloteGame.GamePhase.BET or self.phase == BeloteGame.GamePhase.BET2:
-            self.place_bet(self.sim_player, self.bets[self.sim_player])
+            self.place_bet(self.sim_player, self.bets[self.sim_player], ai=True)
             self.taker = self.sim_player
             self.current_bet = self.bets[self.sim_player]
 
@@ -114,6 +114,7 @@ class BeloteSim(BeloteGame):
         return winner
 
     def run(self) -> bool:
+        print ("Evaluating bet: " + str(self.bets[self.sim_player]))
         self.game_loop()
         return True
 

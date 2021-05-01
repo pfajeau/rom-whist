@@ -68,7 +68,7 @@ class ContreeAiPlayer(BeloteAiPlayer):
         self.game_state = game_state
 
         self.game_state.active_player = self.game_state.next_player(self.game_state.dealer)
-        self.game_state.current_bet = "pass_0"
+        #self.game_state.current_bet = "pass_0"
 
         # Remove Pass option
         # self.game_state.allowed_bets.pop(0)
@@ -77,6 +77,9 @@ class ContreeAiPlayer(BeloteAiPlayer):
 
         logging.info("Agent calculated bet: %s", bet_as_str)
         bet_points = -999
+        if len(self.game_state.allowed_bets) == 1:
+            print ("no allowed game points")
+
         nb_simulations = self._agent2.num_simulations_per_action[bet_as_str]
         if nb_simulations != 0:
             avg_points_for_bet = self._agent2.action_points[bet_as_str] / nb_simulations

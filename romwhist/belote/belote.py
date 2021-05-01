@@ -217,7 +217,7 @@ class BeloteGame(CardGame):
         self.deck_size = 32
         self.phase = BeloteGame.GamePhase.BET
 
-    def place_bet(self, player, bet):
+    def place_bet(self, player, bet, ai=False):
         logging.info("Player " + player + "bid: " + bet)
         self.bets[player] = bet
 
@@ -298,6 +298,7 @@ class BeloteGame(CardGame):
             higher_trump = False
             logging.debug("Player %s hand is: %s ", player, self.hands[player].serialize())
             logging.debug("Asked suit is %s", asked_suit)
+            logging.debug("Trump suit is  %s", self.trump_suit)
             for card in self.hands[player].get_cards():
                 if card.get_suit_name() == asked_suit:
                     if trump_asked:

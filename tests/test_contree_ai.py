@@ -25,9 +25,9 @@ def main():
                  'jim': ["s8", "d13", "d11", "d14", "c11", "c13", "h7", "h13"]}
 
     #allowed_bets = ['80', '90','100','Capot']
-    allowed_bets_suits = ["pass"]
-    allowed_bets_suits.extend(Card.SUIT_NAMES)
-    allowed_bets_points = ['80', '90','100','Capot']
+    allowed_bets_suits = ["pass", "spade", "heart", "diamond","club"]
+    allowed_bets_suits.append( 'contre')
+    allowed_bets_points = ['80', '90','100','162']
     allowed_bets = [allowed_bets_suits, allowed_bets_points]
 
     # Create a game state
@@ -38,8 +38,9 @@ def main():
     contree_ai.game_state.hand_cards = all_cards
     contree_ai.game_state.phase = ContreeGame.GamePhase.BET
     contree_ai.game_state.active_player = "AI1"
-    contree_ai.game_state.bets = {"joe": "pass_0", "jack":"pass_0", "AI1": "pass_0", "jim":"pass_0"}
-
+    contree_ai.game_state.bets = {"joe": "pass_0", "jack":"heart_80", "AI1": "pass_0", "jim":"pass_0"}
+    contree_ai.game_state.trump = "heart"
+    contree_ai.game_state.current_bet = "heart_80"
     state_snapshop = copy.deepcopy(contree_ai.game_state)
 
     #Test serialization
