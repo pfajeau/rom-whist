@@ -52,6 +52,7 @@ def main():
     logging.debug("Game state from JSON as dict: %s", game_state.__dict__)
 
     bet = contree_ai.player_to_bet(allowed_bets, json.dumps(contree_ai.game_state.__dict__))
+    print ("Computed bet %s", bet)
     logging.info("bet = %s", bet)
     assert bet.suit == "spade", bet.suit
 
@@ -73,9 +74,6 @@ def main():
     card = contree_ai.player_to_play("", contree_ai.game_state.toJson())
     logging.debug("AI played card: " + card)
     #assert card in ["s9", "s11", "d13", "h12"], card
-    logging.info("Trump is: Heart")
-    logging.info("AI cards: %s %s %s %s %s %s %s %s", "s12", "s13", "d13", "d12", "c10", "c14", "h10", "h11")
-    logging.info("Card chosen to start is: %s", card)
 
 
 if __name__ == '__main__':

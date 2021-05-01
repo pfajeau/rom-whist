@@ -114,7 +114,6 @@ class BeloteSim(BeloteGame):
         return winner
 
     def run(self) -> bool:
-        print ("Evaluating bet: " + str(self.bets[self.sim_player]))
         self.game_loop()
         return True
 
