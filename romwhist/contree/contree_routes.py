@@ -542,7 +542,7 @@ def restart_hand(game_id):
     game = games.get(game_id)
     if game is None:
         return
-    socketio.emit("alert", "Hand to be replayed", room=game_id, namespace=NAMESPACE)
+    socketio.emit("alert", _("hand_to_be_replayed"), room=game_id, namespace=NAMESPACE)
     if game.started:
         # Deal another hand
         game._current_hand_nb = game._current_hand_nb - 1

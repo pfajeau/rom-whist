@@ -97,7 +97,7 @@
 
     enable_start_game();
     // Allow start button when numbe of players is between 2 and 4
-    if (the_players.length < 2 || the_players.length > 4) {
+    if (the_players.length != 4) {
       $("#start_game").prop('disabled', true);
     }
 

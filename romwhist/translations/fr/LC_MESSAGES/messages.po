@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-30 16:01-0700\n"
+"POT-Creation-Date: 2021-05-01 10:29-0700\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -71,25 +71,25 @@ msgstr "Nouveau Jeu"
 msgid "bet"
 msgstr "Annonce"
 
-#: i18n_strings.py:13 ui/templates/ohell.html:232
+#: i18n_strings.py:13 ui/templates/ohell.html:231
 msgid "bets"
 msgstr "Annonces"
 
-#: i18n_strings.py:14 ui/templates/ohell.html:246
+#: i18n_strings.py:14 ui/templates/ohell.html:245
 msgid "wins"
 msgstr "Plis"
 
-#: i18n_strings.py:15 ui/templates/belote.html:298
-#: ui/templates/contree.html:357
+#: i18n_strings.py:15 ui/templates/belote.html:299
+#: ui/templates/contree.html:376
 msgid "points"
 msgstr "Points"
 
-#: i18n_strings.py:16 ui/templates/belote.html:308
-#: ui/templates/contree.html:367 ui/templates/ohell.html:256
+#: i18n_strings.py:16 ui/templates/belote.html:309
+#: ui/templates/contree.html:386 ui/templates/ohell.html:255
 msgid "score"
 msgstr "Score"
 
-#: i18n_strings.py:17 ui/templates/ohell.html:311
+#: i18n_strings.py:17 ui/templates/ohell.html:310
 msgid "scoresheet"
 msgstr "Feuille de Score"
 
@@ -149,7 +149,7 @@ msgstr "avec"
 msgid "winner"
 msgstr "Gagnant"
 
-#: i18n_strings.py:37 ui/templates/ohell.html:271
+#: i18n_strings.py:37 ui/templates/contree.html:401 ui/templates/ohell.html:270
 msgid "trump"
 msgstr "Atout"
 
@@ -161,8 +161,8 @@ msgstr "Joueur"
 msgid "left_game"
 msgstr "quitté la partie"
 
-#: i18n_strings.py:43 ui/templates/belote.html:281
-#: ui/templates/contree.html:335 ui/templates/contree.html:345
+#: i18n_strings.py:43 ui/templates/belote.html:282
+#: ui/templates/contree.html:354 ui/templates/contree.html:364
 msgid "select"
 msgstr "Choisir"
 
@@ -182,15 +182,15 @@ msgstr "Carreau"
 msgid "club"
 msgstr "Trèfle"
 
-#: contree/contree.py:36 i18n_strings.py:48
+#: contree/contree.py:37 i18n_strings.py:48
 msgid "pass"
 msgstr "Passe"
 
-#: contree/contree.py:37 i18n_strings.py:49
+#: contree/contree.py:38 i18n_strings.py:49 ui/templates/contree.html:405
 msgid "contre"
 msgstr "Contre"
 
-#: contree/contree.py:38 i18n_strings.py:50
+#: contree/contree.py:39 i18n_strings.py:50 ui/templates/contree.html:407
 msgid "surcontre"
 msgstr "Surcontre"
 
@@ -290,21 +290,25 @@ msgstr "Limite de points"
 msgid "number_between_500_and_2000"
 msgstr "Entrez un nombre entre 500 et 2000"
 
-#: contree/contree.py:39
+#: contree/contree.py:40
 msgid "points_bid"
 msgstr "Points demandés"
 
-#: contree/contree.py:40
+#: contree/contree.py:41
 msgid "points_achieved"
 msgstr "Points gagnés"
 
-#: contree/contree.py:41
+#: contree/contree.py:42
 msgid "points_achieved_bid"
 msgstr "Points gagnés + demandés"
 
 #: contree/contree_form.py:14
 msgid "counting"
 msgstr "Comptage"
+
+#: contree/contree_routes.py:545
+msgid "hand_to_be_replayed"
+msgstr "La main va être rejouée"
 
 #: ohell/ohell_form.py:10
 msgid "multiple_one_card_deals"
@@ -328,7 +332,7 @@ msgstr ""
 "Ce site a été crée pendant COVID19            &copy; Copyright 2020/2021 "
 "Philippe Fajeau"
 
-#: ui/templates/belote.html:277 ui/templates/contree.html:324
+#: ui/templates/belote.html:278 ui/templates/contree.html:343
 msgid "bid"
 msgstr "Annonce"
 
