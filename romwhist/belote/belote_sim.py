@@ -78,9 +78,9 @@ class BeloteSim(BeloteGame):
                     for card in cards_played:
                         self.deck.remove_card(Card.card_from_value(card))
 
-            # cards_current_round = self.current_round.get_cards_played()
-            # for card in cards_current_round:
-            #     self.deck.addRandom(card)
+            cards_current_round = self.current_round.get_cards_played()
+            for card in cards_current_round:
+                self.deck.add_top(card)
 
             for player in self.players:
                 if player != self.sim_player:

@@ -11,6 +11,8 @@ from romwhist.belote.belote_state import BeloteState
 
 
 class BeloteGame(CardGame):
+    TOTAL_POINTS = 162
+
     class GamePhase(str, Enum):
         DEAL = "Deal"
         DEAL2 = "Deal2"
@@ -53,7 +55,7 @@ class BeloteGame(CardGame):
         self.nb_cards_second_deal = {1: 3, 2: 3, 3: 3, 4: 3}
 
         # Total number of points
-        self.TOTAL_POINTS = 162
+        self.TOTAL_POINTS = BeloteGame.TOTAL_POINTS
         self.BONUS_CAPOT = 100
         self.DIX_DE_DER = 10
         self.BELOTE_REBELOTE = 20

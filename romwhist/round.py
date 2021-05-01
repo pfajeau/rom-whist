@@ -37,7 +37,7 @@ class Round:
         cards = list(self.cards_played.values())
         str_cards = []
         for card in cards:
-            str_cards.append(str(card))
+            str_cards.append(card)
         return str_cards
 
     def last_card_played(self):
