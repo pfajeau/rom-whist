@@ -127,7 +127,7 @@ class ContreeGame(BeloteGame):
         allowed_bets_points = []
         allowed_bets_suits = []
 
-        if self.contree_status != ContreStatus.CONTREE:
+        if self.contree_status != ContreStatus.CONTREE and self.contree_status != ContreStatus.SURCONTREE:
             allowed_bets_suits = copy.deepcopy(Card.SUIT_NAMES)
             if self.phase == self.GamePhase.BET:
                 if self.current_bet is None:
@@ -142,8 +142,10 @@ class ContreeGame(BeloteGame):
         # Add Contree or Surcontree option
         if self.contre_enabled(player):
             allowed_bets_suits.append("contre")
+            #allowed_bets_points.append(0)
         elif self.surcontre_enabled(player):
             allowed_bets_suits.append("surcontre")
+            #allowed_bets_points.append(0)
 
         allowed_bets = [allowed_bets_suits, allowed_bets_points]
         logging.debug("allowed bets:%s %s", allowed_bets[0], allowed_bets[1])
