@@ -223,19 +223,14 @@
       $(id_bet_suit).removeClass("highlighted_field");
       $(id_bet_points).removeClass("highlighted_field");
 
-      if (bet_suit == "surcontre") {
-        // Make sure taker's bet is reset to its value in case the taker
-        // has surcontre
-        taker = data['taker']
-        id_bet_suit = "#bets_suit_" + taker
-        idx = $(id_bet_suit).find('option[value="' + bet_suit + '"]').index()
-        $(id_bet_suit).get(0).selectedIndex = idx
-
-        $("#contree_status").text(i18n["surcontre"])
-      }
-      else if (bet_suit == "contre") {
+      {% if contree_status.value == "Contree" %}
         $("#contree_status").text(i18n["contre"])
-      }
+      {% elif contree_status .value== "Surcontree" %}
+        $("#contree_status").text(i18n["surcontre"])
+      {% else %}
+        $("#contree_status").text(i18n[""])
+      {% endif %}
+
     });
 
     socket.on('player to play', function(data) {

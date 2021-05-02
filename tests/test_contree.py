@@ -46,7 +46,7 @@ def main():
     assert contree.phase == BeloteGame.GamePhase.BET, contree.phase
 
     assert (len(contree.get_allowed_bets("Johnny")[0]) == 2)
-    assert contree.get_allowed_bets("Johnny")[0][1] == "contre", contree.get_allowed_bets("Johnny")[0][1]
+    assert contree.get_allowed_bets("Johnny")[0][1] == "surcontre", contree.get_allowed_bets("Johnny")[0][1]
     #assert contree.get_allowed_bets("Johnny")[1][0] == 0, contree.get_allowed_bets("Johnny")[1][0]
     bet = Announce("surcontre", 0)
     contree.place_bet("Johnny", bet)

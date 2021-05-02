@@ -227,7 +227,7 @@ class SimpleMCTSAgent(IAgent):
 
         self.run_simulation(games, len(rollout_bets))
         for game in games:
-            bet = game.get_state().bets[self.ai_player]
+            bet = game.get_state().current_bet
             if game.sim_player_won():
                 self.action_value[bet] += 1
             self.action_points[bet] += game.hand_points[self.ai_player]
