@@ -28,6 +28,8 @@
   populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
                    "{{ url_for('static', filename='img/contree.jpg') }}")
 
+  console.log("Contree status: " + "{{ contree_status.value }}")
+
   document.addEventListener('DOMContentLoaded', () => {
 
     setup_alertify()
@@ -344,8 +346,8 @@
       </td>
       <td class="td_player_info">
         <script>
-          console.log("{{ bets_suit[player] }}")
-          console.log("{{ bets_points[player] }}")
+<!--          console.log("{{ bets_suit[player] }}")-->
+<!--          console.log("{{ bets_points[player] }}")-->
         </script>
         <select name="bets_suit" id="bets_suit_{{ player }}" disabled>
           {% if bets_suit[player] != "" %}
@@ -400,10 +402,9 @@
     {% if game_phase == "PLAY" %}
       <label class="trump_caption">{{ _('trump') }} : {{ _(trump_suit) }}</label>
       <br>
-
-      {% if contree_status == "contree" %}
+      {% if contree_status.value == "Contree" %}
         <label id="contree_status" class="trump_caption">{{ _('contre') }}!</label>
-      {% elif contree_status == "surcontree" %}
+      {% elif contree_status .value== "Surcontree" %}
         <label id="contree_status" class="trump_caption">{{ _('surcontre') }}!</label>
       {% else %}
          <label id="contree_status" class="trump_caption"></label>

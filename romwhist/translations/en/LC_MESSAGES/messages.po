@@ -48,7 +48,7 @@ msgstr "This game has already started! You cannot join a game in progress"
 
 #: forms.py:27 i18n_strings.py:68
 msgid "game_id"
-msgstr "Game IDfwfw"
+msgstr "Game ID"
 
 #: forms.py:28 i18n_strings.py:10
 msgid "alias"
@@ -188,11 +188,11 @@ msgstr "Pass"
 
 #: contree/contree.py:38 i18n_strings.py:49 ui/templates/contree.html:405
 msgid "contre"
-msgstr "Double"
+msgstr "Contre"
 
 #: contree/contree.py:39 i18n_strings.py:50 ui/templates/contree.html:407
 msgid "surcontre"
-msgstr "Doube-Double"
+msgstr "Surcontre"
 
 #: i18n_strings.py:53
 msgid "two"

@@ -158,26 +158,27 @@ class ContreeGame(BeloteGame):
     def contre_enabled(self, player):
         # True if one player has bet before and player is not partner
         partner = self.next_player(self.next_player(player))
-        for a_player in self.players:
-            if self.bets[a_player].suit != "" and \
-               self.bets[a_player].suit != "pass" and \
-               self.bets[a_player].suit != "contre" and \
-               self.bets[a_player].suit != "surcontre" and \
-                a_player != partner  and a_player != player:
-                logging.debug("Contre enabled")
-                return True
 
-        logging.debug("Contre disabled")
-        return False
+        if self.contree_status == ContreStatus.CONTREE or \
+           self.contree_status == ContreStatus.SURCONTREE or \
+           self.taker == partner or \
+           self.current_bet is None or \
+           self.current_bet.suit == "pass":
+            logging.debug("Contre disabled")
+            return False
+
+        else:
+            logging.debug("Contre enabled")
+            return True
 
     def surcontre_enabled(self, player):
         # True if one player has contre and is not partner
         partner = self.next_player(self.next_player(player))
-        for a_player in self.players:
-            if self.bets[a_player].suit == "Contre" and \
-                a_player != partner and a_player != player:
-                return True
-        return False
+        if self.contree_status == ContreStatus.CONTREE and \
+           (self.taker == partner or self.taker == player):
+            return True
+        else:
+            return False
 
     def deal(self, dealer=""):
         self.current_bet = None
