@@ -71,6 +71,7 @@ class ContreeGame(BeloteGame):
             next_player_to_bet = self.next_player(player)
             logging.info("Next player to bet %s ", next_player_to_bet)
             self.active_player = next_player_to_bet
+            self._nb_pass_since_bet = 0
 
         elif bet.suit == "surcontre":
             move_to_play_phase = True
@@ -192,12 +193,15 @@ class ContreeGame(BeloteGame):
         return
 
     def add_player(self, player):
+        if len(self.get_playing_players()) >= 4:
+            return None
+
         BeloteGame.add_player(self, player)
         if player in self.players:
             self.init_bets()
         else:
             self.bets[player] = Announce("", "")
-
+        return player
 
     def init_bets(self):
         for player in self.players:

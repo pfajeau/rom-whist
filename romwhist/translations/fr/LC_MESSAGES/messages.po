@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-05-01 10:29-0700\n"
+"POT-Creation-Date: 2021-05-02 13:54-0700\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -80,12 +80,12 @@ msgid "wins"
 msgstr "Plis"
 
 #: i18n_strings.py:15 ui/templates/belote.html:299
-#: ui/templates/contree.html:376
+#: ui/templates/contree.html:374
 msgid "points"
 msgstr "Points"
 
 #: i18n_strings.py:16 ui/templates/belote.html:309
-#: ui/templates/contree.html:386 ui/templates/ohell.html:255
+#: ui/templates/contree.html:384 ui/templates/ohell.html:255
 msgid "score"
 msgstr "Score"
 
@@ -149,7 +149,7 @@ msgstr "avec"
 msgid "winner"
 msgstr "Gagnant"
 
-#: i18n_strings.py:37 ui/templates/contree.html:401 ui/templates/ohell.html:270
+#: i18n_strings.py:37 ui/templates/contree.html:399 ui/templates/ohell.html:270
 msgid "trump"
 msgstr "Atout"
 
@@ -162,7 +162,7 @@ msgid "left_game"
 msgstr "quitté la partie"
 
 #: i18n_strings.py:43 ui/templates/belote.html:282
-#: ui/templates/contree.html:354 ui/templates/contree.html:364
+#: ui/templates/contree.html:352 ui/templates/contree.html:362
 msgid "select"
 msgstr "Choisir"
 
@@ -186,11 +186,11 @@ msgstr "Trèfle"
 msgid "pass"
 msgstr "Passe"
 
-#: contree/contree.py:38 i18n_strings.py:49 ui/templates/contree.html:405
+#: contree/contree.py:38 i18n_strings.py:49 ui/templates/contree.html:402
 msgid "contre"
 msgstr "Contre"
 
-#: contree/contree.py:39 i18n_strings.py:50 ui/templates/contree.html:407
+#: contree/contree.py:39 i18n_strings.py:50 ui/templates/contree.html:404
 msgid "surcontre"
 msgstr "Surcontre"
 
@@ -306,7 +306,12 @@ msgstr "Points gagnés + demandés"
 msgid "counting"
 msgstr "Comptage"
 
-#: contree/contree_routes.py:545
+#: contree/contree_routes.py:63 contree/contree_routes.py:65
+#: contree/contree_routes.py:133
+msgid "game_already_has_4_players"
+msgstr "Ce jeu a déjà 4 joueurs!"
+
+#: contree/contree_routes.py:557
 msgid "hand_to_be_replayed"
 msgstr "La main va être rejouée"
 
@@ -332,7 +337,7 @@ msgstr ""
 "Ce site a été crée pendant COVID19            &copy; Copyright 2020/2021 "
 "Philippe Fajeau"
 
-#: ui/templates/belote.html:278 ui/templates/contree.html:343
+#: ui/templates/belote.html:278 ui/templates/contree.html:341
 msgid "bid"
 msgstr "Annonce"
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-05-01 10:29-0700\n"
+"POT-Creation-Date: 2021-05-02 13:54-0700\n"
 "PO-Revision-Date: 2021-04-22 16:30-0700\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -80,12 +80,12 @@ msgid "wins"
 msgstr "Wins"
 
 #: i18n_strings.py:15 ui/templates/belote.html:299
-#: ui/templates/contree.html:376
+#: ui/templates/contree.html:374
 msgid "points"
 msgstr "Points"
 
 #: i18n_strings.py:16 ui/templates/belote.html:309
-#: ui/templates/contree.html:386 ui/templates/ohell.html:255
+#: ui/templates/contree.html:384 ui/templates/ohell.html:255
 msgid "score"
 msgstr "Score"
 
@@ -149,7 +149,7 @@ msgstr "with the"
 msgid "winner"
 msgstr "Winner"
 
-#: i18n_strings.py:37 ui/templates/contree.html:401 ui/templates/ohell.html:270
+#: i18n_strings.py:37 ui/templates/contree.html:399 ui/templates/ohell.html:270
 msgid "trump"
 msgstr "Trump"
 
@@ -162,7 +162,7 @@ msgid "left_game"
 msgstr "left the game"
 
 #: i18n_strings.py:43 ui/templates/belote.html:282
-#: ui/templates/contree.html:354 ui/templates/contree.html:364
+#: ui/templates/contree.html:352 ui/templates/contree.html:362
 msgid "select"
 msgstr "Select"
 
@@ -186,11 +186,11 @@ msgstr "Club"
 msgid "pass"
 msgstr "Pass"
 
-#: contree/contree.py:38 i18n_strings.py:49 ui/templates/contree.html:405
+#: contree/contree.py:38 i18n_strings.py:49 ui/templates/contree.html:402
 msgid "contre"
 msgstr "Contre"
 
-#: contree/contree.py:39 i18n_strings.py:50 ui/templates/contree.html:407
+#: contree/contree.py:39 i18n_strings.py:50 ui/templates/contree.html:404
 msgid "surcontre"
 msgstr "Surcontre"
 
@@ -306,7 +306,12 @@ msgstr "Points Achieved + Bid"
 msgid "counting"
 msgstr "Counting"
 
-#: contree/contree_routes.py:545
+#: contree/contree_routes.py:63 contree/contree_routes.py:65
+#: contree/contree_routes.py:133
+msgid "game_already_has_4_players"
+msgstr "Game already has 4 players - Cannot add another one"
+
+#: contree/contree_routes.py:557
 msgid "hand_to_be_replayed"
 msgstr "Hand to be replayed"
 
@@ -330,7 +335,7 @@ msgstr "Enter Increment (between 1 and 5)"
 msgid "copyright_notice"
 msgstr "This site was created during COVID 19"
 
-#: ui/templates/belote.html:278 ui/templates/contree.html:343
+#: ui/templates/belote.html:278 ui/templates/contree.html:341
 msgid "bid"
 msgstr "Bid"
 

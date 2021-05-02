@@ -56,8 +56,16 @@ def contree_start():
         session['username'] = username
         if form.join_game.data:
             game_id = request.form['game_id']
+            game = games.get(game_id)
+
             session['game_id'] = game_id
-            return common_routes.join_game(games, game_id, username,
+            if len(game.get_playing_players()) >= 4:
+                flash(_("game_already_has_4_players"))
+                return render_template('contree_start.html',
+                                       error=_("game_already_has_4_players"),
+                                       form=form, locale=locale)
+            else:
+                return common_routes.join_game(games, game_id, username,
                                            'contree_start.html', 'contree_play',
                                            NAMESPACE, form)
 
@@ -121,8 +129,12 @@ def contree_play():
             return redirect(url_for('contree_play'))
 
         if request.form['action_game'] == "add_ai":
-            common_routes.add_ai_player(len(game.players),
-                                        game_id, NAMESPACE_AI)
+            if len(game.get_playing_players()) >= 4:
+                socketio.emit("alert", _("game_already_has_4_players"),
+                              room=clients[game_id].get(player), namespace=NAMESPACE)
+            else:
+                common_routes.add_ai_player(len(game.players),
+                                            game_id, NAMESPACE_AI)
             return redirect(url_for('contree_play'))
 
     elif redirect_template is None:
@@ -238,9 +250,11 @@ def player_bet_process(player, game_id, bet):
             game.place_bet(player, bet)
 
             #emit("player bet", {'player': player, 'bet': bet}, room=game_id, namespace=NAMESPACE)
+            # There is a case where actual_bet and bet will be different (surcontre)
+            actual_bet = game.bets[player]
             common_routes.emit_to_players(
                 "player bet",
-                {'game_id': game_id, 'player': player, 'bet_suit': bet.suit, 'bet_points': bet.points},
+                {'game_id': game_id, 'player': player, 'bet_suit': actual_bet.suit, 'bet_points': actual_bet.points},
                 room=game_id, namespace=NAMESPACE)
 
             nplayer = game.get_active_player()
@@ -553,11 +567,15 @@ def restart_hand(game_id):
 def add_player(player, game_id):
     game = games.get(game_id)
     if not game is None:
-        session['game_id'] = game.id
-        common_routes.add_player(player, game, NAMESPACE)
-        if game.started:
-            restart_hand(game_id)
-
+        if len(game.get_playing_players()) >= 4:
+            logging.error("Max number of players reached")
+            return None
+        else:
+            session['game_id'] = game.id
+            common_routes.add_player(player, game, NAMESPACE)
+            if game.started:
+                restart_hand(game_id)
+            return player
 
 def remove_player(game_id, player):
     common_routes.remove_player(game_id, games, clients, player, NAMESPACE)

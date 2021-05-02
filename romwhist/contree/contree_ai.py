@@ -73,7 +73,10 @@ class ContreeAiPlayer(BeloteAiPlayer):
         # Remove Pass option
         # self.game_state.allowed_bets.pop(0)
 
-        bet_as_str = self._agent2.get_bet(self.game_state)
+        if len(allowed_bets[0]) == 1 and allowed_bets[0][0] == "pass":
+            return Announce("pass", 0)
+        else:
+            bet_as_str = self._agent2.get_bet(self.game_state)
 
         logging.info("Agent calculated bet: %s", bet_as_str)
         bet_points = -999
@@ -85,7 +88,7 @@ class ContreeAiPlayer(BeloteAiPlayer):
             avg_points_for_bet = self._agent2.action_points[bet_as_str] / nb_simulations
             # Bet on avg_points_per_bet
             bet_points = round(avg_points_for_bet * ContreeAiPlayer.CORRECTION_FACTOR, -1)
-            if bet_as_str == "contre_0" or bet_as_str == "surcontre_0":
+            if bet_as_str == "contre_80" or bet_as_str == "surcontre_80":
                 if bet_points < self.game_state.BONUS_CAPOT / 2:
                     bet_points = 0
                     bet_as_str = "pass_0"

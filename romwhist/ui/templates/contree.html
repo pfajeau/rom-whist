@@ -134,9 +134,10 @@
     });
 
     socket.on('new hand', function(data) {
+      console.log("new hand event received")
       new_hand(data, "{{ url_for('static', filename='') }}")
-      $("input[name='bets_points']").val('')
-      $("input[name='bets_suit']").val('')
+      $("input[name='bets_points']").html('')
+      $("input[name='bets_suit']").html('')
     });
 
     socket.on('belote announced', function(data) {
@@ -224,13 +225,10 @@
       $(id_bet_points).removeClass("highlighted_field");
 
       {% if contree_status.value == "Contree" %}
-        $("#contree_status").text(i18n["contre"])
+        $("#contree_status").append('<label class="trump_caption">' + i18n['contre'] + '!' + '</label>')
       {% elif contree_status .value== "Surcontree" %}
-        $("#contree_status").text(i18n["surcontre"])
-      {% else %}
-        $("#contree_status").text(i18n[""])
+        $("#contree_status").append('<label class="trump_caption">' + i18n['surcontre'] + '!' + '</label>')
       {% endif %}
-
     });
 
     socket.on('player to play', function(data) {
@@ -275,8 +273,6 @@
 
         show_alert(i18n["user"] + " " + player_name + " " + i18n["left_game"], "Warning")      }
     });
-
-    socket.on('trump card', function(data) { trump_card_received(data, "") })
 
     socket.on('trump suit', function(trump) {
       console.log("trump suit event received");
@@ -396,14 +392,13 @@
   <div class="bottomright" id="trump_card">
     {% if game_phase == "PLAY" %}
       <label class="trump_caption">{{ _('trump') }} : {{ _(trump_suit) }}</label>
-      <br>
-      {% if contree_status.value == "Contree" %}
-        <label id="contree_status" class="trump_caption">{{ _('contre') }}!</label>
-      {% elif contree_status .value== "Surcontree" %}
-        <label id="contree_status" class="trump_caption">{{ _('surcontre') }}!</label>
-      {% else %}
-         <label id="contree_status" class="trump_caption"></label>
-      {% endif %}
+    {% endif %}
+  </div>
+  <div class="bottomright" id="contree_status">
+    {% if contree_status.value == "Contree" %}
+      <label class="trump_caption">{{ _('contre') }}!</label>
+    {% elif contree_status .value== "Surcontree" %}
+      <label class="trump_caption">{{ _('surcontre') }}!</label>
     {% endif %}
   </div>
   <div id="cards_played">
@@ -456,21 +451,21 @@
             {% endfor %}
           </tr>
         </thead>
-       <tbody id="scoresheet_body">
-    {% for scores_hand in scoresheet -%}
-    <tr>
-      {% for player in players -%}
-      <td>
-        <table>
-          <tr>
-            <td class="scoresheet_nb">{{scores_hand[player]}}</td>
+        <tbody id="scoresheet_body">
+        {% for scores_hand in scoresheet -%}
+        <tr>
+          {% for player in players -%}
+          <td>
+            <table>
+              <tr>
+                <td class="scoresheet_nb">{{scores_hand[player]}}</td>
+              </tr>
+            </table>
+            </td>
+            {% endfor %}
           </tr>
-        </table>
-        </td>
-        {% endfor %}
-      </tr>
-      {% endfor %}
-          </tbody>
+          {% endfor %}
+       </tbody>
       </table>
     </div>
   </form>

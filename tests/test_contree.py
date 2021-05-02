@@ -53,6 +53,51 @@ def main():
     assert contree.active_player == "Joe", contree.active_player
     assert contree.phase == BeloteGame.GamePhase.PLAY, contree.phase
 
+    # Test case where player that toook get contred and then passes on his turn
+    contree = ContreeGame("Joe")
+    for player in players:
+        contree.add_player(player)
+    contree.start_game()
+    contree.deal(dealer="Johnny")
+    bet = Announce("spade", 80)
+    contree.place_bet("Joe", bet)
+    bet = Announce("contre", 0)
+    contree.place_bet("Jack", bet)
+    bet = Announce("pass", 0)
+    contree.place_bet("Jim", bet)
+    bet = Announce("pass", 0)
+    contree.place_bet("Jim", bet)
+    contree.place_bet("Johnny", bet)
+    assert contree.active_player == "Joe", contree.active_player
+    contree.place_bet("Joe", bet)
+    assert contree.phase == BeloteGame.GamePhase.PLAY, contree.phase
+    assert contree.bets["Joe"].suit == "spade", contree.bets["Joe"].suit
+
+    # Similar test but Joe surcontre at the end
+    contree = ContreeGame("Joe")
+    for player in players:
+        contree.add_player(player)
+    contree.start_game()
+    contree.deal(dealer="Johnny")
+    bet = Announce("spade", 80)
+    contree.place_bet("Joe", bet)
+    bet = Announce("contre", 0)
+    contree.place_bet("Jack", bet)
+    bet = Announce("pass", 0)
+    contree.place_bet("Jim", bet)
+    bet = Announce("pass", 0)
+    contree.place_bet("Jim", bet)
+    bet = Announce("pass", 0)
+    contree.place_bet("Johnny", bet)
+    assert contree.active_player == "Joe", contree.active_player
+    bet = Announce("surcontre", 0)
+    contree.place_bet("Joe", bet)
+    assert contree.phase == BeloteGame.GamePhase.PLAY, contree.phase
+    assert contree.bets["Joe"].suit == "spade", contree.bets["Joe"].suit
+
+
+
+
     # Simulate a game and check scoring works
     # First use a pre-defined set of cards for each player
     cards_as_str = dict()

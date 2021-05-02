@@ -70,7 +70,7 @@ function initialize(players) {
     '<button id="stop_game" type="button" class="btn btn-warning" name="stop_game">' +
     i18n["stop_game"] + '</button>');
     document.getElementById("stop_game").onclick = function() {
-      show_alert(i18n["confirm_stop_game"], cancel=true, callback_ok=submit_form, action="stop_game");
+      show_alert(i18n["confirm_stop_game"], "Warning", cancel=true, callback_ok=submit_form, action="stop_game");
     }
   }
 
