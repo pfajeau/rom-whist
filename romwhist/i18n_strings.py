@@ -48,6 +48,8 @@ def i18n():
     __i18n["pass"] = _("pass")
     __i18n["contre"] = _("contre")
     __i18n["surcontre"] = _("surcontre")
+    __i18n["contré"] = _("contré")
+    __i18n["surcontré"] = _("surcontré")
 
     # This block may not be required
     __i18n["two"] = _("two")

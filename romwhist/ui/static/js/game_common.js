@@ -404,7 +404,6 @@ function show_alert(msg, title, cancel=false, callback_ok, action="") {
       }
     }, function(){});
   }
-
   else {
     alertify.alert(title, msg, function() {
       if (callback_ok) {

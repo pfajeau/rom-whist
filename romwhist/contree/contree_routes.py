@@ -132,6 +132,7 @@ def contree_play():
             if len(game.get_playing_players()) >= 4:
                 socketio.emit("alert", _("game_already_has_4_players"),
                               room=clients[game_id].get(player), namespace=NAMESPACE)
+                flash(_("game_already_has_4_players"))
             else:
                 common_routes.add_ai_player(len(game.players),
                                             game_id, NAMESPACE_AI)

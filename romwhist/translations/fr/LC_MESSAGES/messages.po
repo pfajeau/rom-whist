@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-05-02 13:54-0700\n"
+"POT-Creation-Date: 2021-05-03 12:16-0700\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -46,7 +46,7 @@ msgstr "Ce jeu a déjà un joueur avec le même nom"
 msgid "game_already_started"
 msgstr "Ce jeu a déjà commencé. Il n'est pas possible de joindre unn jeu en cours"
 
-#: forms.py:27 i18n_strings.py:68
+#: forms.py:27 i18n_strings.py:70
 msgid "game_id"
 msgstr "Identifiant Jeu"
 
@@ -80,12 +80,12 @@ msgid "wins"
 msgstr "Plis"
 
 #: i18n_strings.py:15 ui/templates/belote.html:299
-#: ui/templates/contree.html:374
+#: ui/templates/contree.html:380
 msgid "points"
 msgstr "Points"
 
 #: i18n_strings.py:16 ui/templates/belote.html:309
-#: ui/templates/contree.html:384 ui/templates/ohell.html:255
+#: ui/templates/contree.html:390 ui/templates/ohell.html:255
 msgid "score"
 msgstr "Score"
 
@@ -149,7 +149,7 @@ msgstr "avec"
 msgid "winner"
 msgstr "Gagnant"
 
-#: i18n_strings.py:37 ui/templates/contree.html:399 ui/templates/ohell.html:270
+#: i18n_strings.py:37 ui/templates/ohell.html:270
 msgid "trump"
 msgstr "Atout"
 
@@ -162,7 +162,7 @@ msgid "left_game"
 msgstr "quitté la partie"
 
 #: i18n_strings.py:43 ui/templates/belote.html:282
-#: ui/templates/contree.html:352 ui/templates/contree.html:362
+#: ui/templates/contree.html:358 ui/templates/contree.html:368
 msgid "select"
 msgstr "Choisir"
 
@@ -186,99 +186,107 @@ msgstr "Trèfle"
 msgid "pass"
 msgstr "Passe"
 
-#: contree/contree.py:38 i18n_strings.py:49 ui/templates/contree.html:402
+#: contree/contree.py:38 i18n_strings.py:49
 msgid "contre"
 msgstr "Contre"
 
-#: contree/contree.py:39 i18n_strings.py:50 ui/templates/contree.html:404
+#: contree/contree.py:39 i18n_strings.py:50
 msgid "surcontre"
 msgstr "Surcontre"
 
-#: i18n_strings.py:53
+#: i18n_strings.py:51 ui/templates/contree.html:411
+msgid "contré"
+msgstr "Contré"
+
+#: i18n_strings.py:52 ui/templates/contree.html:413
+msgid "surcontré"
+msgstr "Surcontré"
+
+#: i18n_strings.py:55
 msgid "two"
 msgstr "Deux"
 
-#: i18n_strings.py:54
+#: i18n_strings.py:56
 msgid "three"
 msgstr "Trois"
 
-#: i18n_strings.py:55
+#: i18n_strings.py:57
 msgid "four"
 msgstr "Quatre"
 
-#: i18n_strings.py:56
+#: i18n_strings.py:58
 msgid "five"
 msgstr "Cinq"
 
-#: i18n_strings.py:57
+#: i18n_strings.py:59
 msgid "six"
 msgstr "Six"
 
-#: i18n_strings.py:58
+#: i18n_strings.py:60
 msgid "seven"
 msgstr "Sept"
 
-#: i18n_strings.py:59
+#: i18n_strings.py:61
 msgid "eight"
 msgstr "Huit"
 
-#: i18n_strings.py:60
+#: i18n_strings.py:62
 msgid "nine"
 msgstr "Neuf"
 
-#: i18n_strings.py:61
+#: i18n_strings.py:63
 msgid "ten"
 msgstr "Dix"
 
-#: i18n_strings.py:62
+#: i18n_strings.py:64
 msgid "jack"
 msgstr "Valet"
 
-#: i18n_strings.py:63
+#: i18n_strings.py:65
 msgid "queen"
 msgstr "Dame"
 
-#: i18n_strings.py:64
+#: i18n_strings.py:66
 msgid "king"
 msgstr "Roi"
 
-#: i18n_strings.py:65
+#: i18n_strings.py:67
 msgid "ace"
 msgstr "As"
 
-#: i18n_strings.py:67
+#: i18n_strings.py:69
 msgid "copyright"
 msgstr "Copyright"
 
-#: i18n_strings.py:69
+#: i18n_strings.py:71
 msgid "chat"
 msgstr "Chat"
 
-#: i18n_strings.py:70
+#: i18n_strings.py:72
 msgid "send"
 msgstr "Envoie"
 
-#: i18n_strings.py:72
+#: i18n_strings.py:74
 msgid "confirm_leave_game"
 msgstr "Confirmez que vous voulez quitter cetter partie"
 
-#: i18n_strings.py:73
+#: i18n_strings.py:75
 msgid "confirm_remove_player"
 msgstr "Confirmez que vous voulez enlever ce joueur de la partie"
 
-#: i18n_strings.py:74
+#: i18n_strings.py:76
 msgid "confirm_stop_game"
 msgstr "Confirmez que vous voulez arrêter  cette partie"
 
-#: i18n_strings.py:75
+#: i18n_strings.py:77
 msgid "confirm_add_ai"
 msgstr "Confirmez que vous voulez ajouter un joueur artificiel"
 
-#: i18n_strings.py:76
+#: i18n_strings.py:78
 msgid "confirm_restart_hand"
 msgstr "Confirmez que voulez voulez rejouer cette main"
 
-#: i18n_strings.py:77
+#: i18n_strings.py:79
 msgid "bet_not_allowed"
 msgstr "Le nomber de plis demandé n'est pas valide"
 
@@ -311,7 +319,7 @@ msgstr "Comptage"
 msgid "game_already_has_4_players"
 msgstr "Ce jeu a déjà 4 joueurs!"
 
-#: contree/contree_routes.py:557
+#: contree/contree_routes.py:561
 msgid "hand_to_be_replayed"
 msgstr "La main va être rejouée"
 
@@ -337,7 +345,7 @@ msgstr ""
 "Ce site a été crée pendant COVID19            &copy; Copyright 2020/2021 "
 "Philippe Fajeau"
 
-#: ui/templates/belote.html:278 ui/templates/contree.html:341
+#: ui/templates/belote.html:278 ui/templates/contree.html:347
 msgid "bid"
 msgstr "Annonce"
 

@@ -23,7 +23,6 @@
   var bool = {"True": true, "False": false}
   var i18n_json = {{ i18n|tojson }}
   var i18n = JSON.parse(i18n_json);
-  console.log(i18n)
   console.log("Contree status: " + "{{ contree_status }}")
   console.log("Current bet: " + "{{ current_bet }}")
 
@@ -36,6 +35,15 @@
 
     the_players = {{ players|safe }}
     initialize(the_players)
+
+    // If 4 players already, disable add ai button
+    if (the_players.length >= 4) {
+      $("#add_ai").prop("disabled", true)
+    }
+    else {
+      $("#add_ai").prop("disabled", false)
+    }
+
 
     console.log("player_with_belote: " + "{{ player_with_belote }}")
     console.log("belote_allowed: " + "{{ belote_allowed }}")
@@ -234,11 +242,12 @@
       if (current_bet != 'None' && current_bet != 'pass_0') {
         $("#bet_status").append('<label class="trump_caption">' + taker + " - " + current_bet["points"] + " / " + i18n[current_bet["suit"]] + '</label>')
       }
+
       if (contree_status == "Contree") {
-        $("#bet_status").append('<br><label class="trump_caption">' + i18n['contre'] + '!' + '</label>')
+        $("#bet_status").append('<br><label class="trump_caption">' + i18n['contré'] + '!' + '</label>')
       }
       else if (contree_status == "Surcontree") {
-        $("#bet_status").append('<br><label class="trump_caption">' + i18n['surcontre'] + '!' + '</label>')
+        $("#bet_status").append('<br><label class="trump_caption">' + i18n['surcontré'] + '!' + '</label>')
       }
     });
 
@@ -282,7 +291,8 @@
         id_score = "#label_score_" + player_name;
         $(id_score).parent().remove()
 
-        show_alert(i18n["user"] + " " + player_name + " " + i18n["left_game"], "Warning")      }
+        show_alert(i18n["user"] + " " + player_name + " " + i18n["left_game"], "Warning")
+      }
     });
 
     socket.on('trump suit', function(trump) {
@@ -408,9 +418,9 @@
     {% endif %}
     <br>
     {% if contree_status == "Contree" %}
-      <label class="trump_caption">{{ _('contre') }}!</label>
+      <label class="trump_caption">{{ _('contré') }}!</label>
     {% elif contree_status.value== "Surcontree" %}
-      <label class="trump_caption">{{ _('surcontre') }}!</label>
+      <label class="trump_caption">{{ _('surcontré') }}!</label>
     {% else %}
       <label class="trump_caption"></label>
     {% endif %}

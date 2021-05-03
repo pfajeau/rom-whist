@@ -100,11 +100,15 @@ class ContreeGame(BeloteGame):
                 else:
                     move_to_play_phase = True
 
-        elif bet.points == self.TOTAL_POINTS or self.next_player_to_bet(player) is None:
-            # Move to PLAY phase
+        elif bet.points == self.TOTAL_POINTS:
+            self._nb_pass_since_bet = 0
             self.current_bet = bet
-            move_to_play_phase = True
             self.taker = player
+            self.active_player = self.next_player(player)
+
+        elif self.next_player_to_bet(player) is None:
+            # Move to PLAY phase
+            move_to_play_phase = True
 
         else:
             self.active_player = self.next_player(player)
@@ -134,8 +138,14 @@ class ContreeGame(BeloteGame):
     def get_allowed_bets(self, player):
         allowed_bets_points = []
         allowed_bets_suits = []
-
-        if self.contree_status != ContreStatus.CONTREE and self.contree_status != ContreStatus.SURCONTREE:
+        if self.current_bet is None:
+            current_bet_points = 0
+        else:
+            current_bet_points = self.current_bet.points
+            
+        if self.contree_status != ContreStatus.CONTREE and \
+                self.contree_status != ContreStatus.SURCONTREE and \
+                current_bet_points != 162:
             allowed_bets_suits = copy.deepcopy(Card.SUIT_NAMES)
             if self.phase == self.GamePhase.BET:
                 if self.current_bet is None:

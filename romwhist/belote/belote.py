@@ -209,7 +209,7 @@ class BeloteGame(CardGame):
             # self.trump_card = None
             self.bets = dict()
             self.wins = dict()
-            self.init_dict(self.bets, -1)
+            self.init_bets()
             self.init_dict(self.wins, 0)
 
     def start_game(self):
