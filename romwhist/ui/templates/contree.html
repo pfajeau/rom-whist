@@ -403,7 +403,7 @@
   <div class="bottomright" id="trump_card">
   </div>
   <div class="bottomright" id="bet_status">
-    {% if current_bet != "pass_0" and current_bet is not none %}
+    {% if current_bet.suit != "pass" and current_bet is not none %}
       <label class="trump_caption">{{ taker }} - {{ _(current_bet['suit']) }} / {{ current_bet['points'] }}</label>
     {% endif %}
     <br>
