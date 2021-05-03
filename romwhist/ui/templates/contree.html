@@ -232,7 +232,7 @@
 
       $("#bet_status").html('')
       if (current_bet != 'None' && current_bet != 'pass_0') {
-        $("#bet_status").append('<label class="trump_caption">' + taker + " - " + current_bet["points"] + " / " + ii18n[current_bet["suit"]] + '</label>')
+        $("#bet_status").append('<label class="trump_caption">' + taker + " - " + current_bet["points"] + " / " + i18n[current_bet["suit"]] + '</label>')
       }
       if (contree_status == "Contree") {
         $("#bet_status").append('<br><label class="trump_caption">' + i18n['contre'] + '!' + '</label>')
