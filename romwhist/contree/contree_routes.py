@@ -172,7 +172,8 @@ def contree_play():
                                allowed_bets=game.get_allowed_bets(player),
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
                                belote_allowed=belote_enabled, player_with_belote=game.player_with_belote,
-                               contree_status=game.contree_status, i18n=json.dumps(i18n_strings.i18n()))
+                               contree_status=game.contree_status.value, current_bet=game.current_bet,
+                               taker=game.taker, i18n=json.dumps(i18n_strings.i18n()))
     else:
         return redirect_template
 
@@ -249,12 +250,13 @@ def player_bet_process(player, game_id, bet):
         try:
             game.place_bet(player, bet)
 
-            #emit("player bet", {'player': player, 'bet': bet}, room=game_id, namespace=NAMESPACE)
             # There is a case where actual_bet and bet will be different (surcontre)
             actual_bet = game.bets[player]
             common_routes.emit_to_players(
                 "player bet",
-                {'game_id': game_id, 'player': player, 'bet_suit': actual_bet.suit, 'bet_points': actual_bet.points},
+                {'game_id': game_id, 'player': player, 'bet_suit': actual_bet.suit,
+                 'bet_points': actual_bet.points, 'taker': game.taker,
+                 'current_bet': game.current_bet, 'contree_status': game.contree_status},
                 room=game_id, namespace=NAMESPACE)
 
             nplayer = game.get_active_player()

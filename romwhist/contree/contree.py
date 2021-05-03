@@ -76,8 +76,8 @@ class ContreeGame(BeloteGame):
         elif bet.suit == "surcontre":
             move_to_play_phase = True
             self.contree_status = ContreStatus.SURCONTREE
-            if player == self.taker:
-                self.bets[player] = self.current_bet
+            # if player == self.taker:
+            #     self.bets[player] = self.current_bet
 
         elif bet.suit == "pass":
             logging.info("Player passed")
@@ -90,8 +90,8 @@ class ContreeGame(BeloteGame):
             self.active_player = self.next_player(player)
 
             if next_player_to_bet is None:
-                if self.contree_status == ContreStatus.CONTREE and self.taker == player:
-                    self.bets[player] = self.current_bet
+                # if self.contree_status == ContreStatus.CONTREE and self.taker == player:
+                #     self.bets[player] = self.current_bet
 
                 if self.bets[next_player].suit == "pass":
                     self.init_bets()

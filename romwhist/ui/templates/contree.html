@@ -24,11 +24,11 @@
   var i18n_json = {{ i18n|tojson }}
   var i18n = JSON.parse(i18n_json);
   console.log(i18n)
+  console.log("Contree status: " + "{{ contree_status }}")
+  console.log("Current bet: " + "{{ current_bet }}")
 
   populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
                    "{{ url_for('static', filename='img/contree.jpg') }}")
-
-  console.log("Contree status: " + "{{ contree_status.value }}")
 
   document.addEventListener('DOMContentLoaded', () => {
 
@@ -210,6 +210,10 @@
       player_name = data['player']
       bet_suit = data['bet_suit']
       bet_points = data['bet_points']
+      current_bet = data['current_bet']
+      contree_status = data['contree_status']
+      taker = data['taker']
+
       console.log("bet is: " + bet_suit)
       let id_bet_suit = "#bets_suit_" + player_name
       let id_bet_points = "#bets_points_" + player_name
@@ -224,11 +228,18 @@
       $(id_bet_suit).removeClass("highlighted_field");
       $(id_bet_points).removeClass("highlighted_field");
 
-      {% if contree_status.value == "Contree" %}
-        $("#contree_status").append('<label class="trump_caption">' + i18n['contre'] + '!' + '</label>')
-      {% elif contree_status .value== "Surcontree" %}
-        $("#contree_status").append('<label class="trump_caption">' + i18n['surcontre'] + '!' + '</label>')
-      {% endif %}
+      console.log (contree_status)
+
+      $("#bet_status").html('')
+      if (current_bet != 'None' && current_bet != 'pass_0') {
+        $("#bet_status").append('<label class="trump_caption">' + taker + " - " + current_bet["points"] + " / " + current_bet["suit"] + '</label>')
+      }
+      if (contree_status == "Contree") {
+        $("#bet_status").append('<br><label class="trump_caption">' + i18n['contre'] + '!' + '</label>')
+      }
+      else if (contree_status == "Surcontree") {
+        $("#bet_status").append('<br><label class="trump_caption">' + i18n['surcontre'] + '!' + '</label>')
+      }
     });
 
     socket.on('player to play', function(data) {
@@ -278,8 +289,8 @@
       console.log("trump suit event received");
         // Update trump_suit
         trump_suit = trump
-        $('#trump_card').html('')
-        $("#trump_card").append('<label class="trump_caption">' + i18n['trump'] + ': ' + i18n[trump_suit] + '</label>')
+        // $('#trump_card').html('')
+        // $("#trump_card").append('<label class="trump_caption">' + i18n['trump'] + ': ' + i18n[trump_suit] + '</label>')
     })
 
     socket.on('round ended', function(data) {
@@ -390,16 +401,20 @@
 </div>
 <div id="card-table-burgundy" class="container">
   <div class="bottomright" id="trump_card">
-    {% if game_phase == "PLAY" %}
-      <label class="trump_caption">{{ _('trump') }} : {{ _(trump_suit) }}</label>
-    {% endif %}
   </div>
-  <div class="bottomright" id="contree_status">
-    {% if contree_status.value == "Contree" %}
-      <label class="trump_caption">{{ _('contre') }}!</label>
-    {% elif contree_status .value== "Surcontree" %}
-      <label class="trump_caption">{{ _('surcontre') }}!</label>
+  <div class="bottomright" id="bet_status">
+    {% if current_bet != "pass_0" and current_bet is not none %}
+      <label class="trump_caption">{{ taker }} - {{ _(current_bet['suit']) }} / {{ current_bet['points'] }}</label>
     {% endif %}
+    <br>
+    {% if contree_status == "Contree" %}
+      <label class="trump_caption">{{ _('contre') }}!</label>
+    {% elif contree_status.value== "Surcontree" %}
+      <label class="trump_caption">{{ _('surcontre') }}!</label>
+    {% else %}
+      <label class="trump_caption"></label>
+    {% endif %}
+
   </div>
   <div id="cards_played">
   </div>

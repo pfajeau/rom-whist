@@ -71,7 +71,7 @@ def main():
     assert contree.active_player == "Joe", contree.active_player
     contree.place_bet("Joe", bet)
     assert contree.phase == BeloteGame.GamePhase.PLAY, contree.phase
-    assert contree.bets["Joe"].suit == "spade", contree.bets["Joe"].suit
+    assert contree.bets["Joe"].suit == "pass", contree.bets["Joe"].suit
 
     # Similar test but Joe surcontre at the end
     contree = ContreeGame("Joe")
@@ -93,8 +93,7 @@ def main():
     bet = Announce("surcontre", 0)
     contree.place_bet("Joe", bet)
     assert contree.phase == BeloteGame.GamePhase.PLAY, contree.phase
-    assert contree.bets["Joe"].suit == "spade", contree.bets["Joe"].suit
-
+    assert contree.bets["Joe"].suit == "surcontre", contree.bets["Joe"].suit
 
 
 
