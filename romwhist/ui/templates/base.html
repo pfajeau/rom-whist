@@ -4,10 +4,12 @@
 {% extends "bootstrap/base.html" %}
 
 {% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-grid.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-ui.min.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/alertify.min.css') }}"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <!-- include a theme  for alertify-->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/default.min.css') }}"/>
   <meta name="google-site-verification" content="Dt6SYFK7D7hqlxV-lPFrRWziscSMbsCvtaiXzikjFrI" />
@@ -19,12 +21,14 @@
   <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/alertify.min.js') }}"></script>
+{% endblock %}Home{% block title %}
 {% endblock %}
-{% block title %}Home{% endblock %}
 
 {% block navbar %}
 <span id="topnav">
-    <a class="active" href="/">Home</a>
+    <a class="active" href="/"><span class="material-icons md-48 black">
+    home
+    </span></a>
 </span>
 {% endblock %}
 
@@ -41,8 +45,7 @@
 {% block content %}
 {% block footer %}
 <div id="footer">
-  <p>This site was created during COVID 19.
-  &copy; Copyright 2020 by Philippe Fajeau</p>
+  <p>{{ _('copyright_notice') }}</p>
 </div>
 {% endblock %}
 {% endblock %}

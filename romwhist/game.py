@@ -39,7 +39,7 @@ class CardGame:
         self.scoresheet = []
         self._player_status = dict()
         self.init_dict(self._player_status, 1)
-        self.trump_suit = None  # E.g. "Spade", or "Heart"
+        self.trump_suit = None  # E.g. "spade", or "heart"
         self.rounds = []  # The rounds for the hand
         self.__id = id
         self.deck = None
@@ -114,6 +114,7 @@ class CardGame:
         self.dealer = state_copy.dealer
         self.hand_points = copy.deepcopy(state.hand_points)
         self.soft_init_dict(self.hand_points,0)
+        self.active_player = state.active_player
 
 
         # Create hands

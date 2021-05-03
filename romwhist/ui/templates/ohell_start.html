@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+  <img border="0" alt="Play Ohell" src="{{ url_for('static', filename='') }}img/{{ _('ohell_image') }}" height="100" align="right"></a>
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
 
   {% if error %}
@@ -40,175 +42,70 @@
 </script>
 
   <p><p>
-    <img border="0" alt="Play Oh Hell" src="{{ url_for('static', filename='') }}img/ohell.png" width="200"></a>
-  <br>
+  <h2>{% trans %}welcome_play_ohell{% endtrans %}</h2>
+  <br><br>
 
-    <h2>Welcome to a place to play Oh Hell (also called Romanian Whist or Ascenseur) with your friends!!! </h2>
-    <p>Oh Hell! is a fun card game that can be played by 3 to 6 players</p>
-    <p>The <a href="#rules">rules</a> are fairly simple, it is a perfect game to spend some time with family and friends</p>
-    See <a href="#user_guide">user guide</a> for instructions on how to start or join a game.
-    <br><br>
+  <form action="" method="post" novalidate  align="left">
+      {{ form.hidden_tag() }}
 
-    <form action="" method="post" novalidate  align="left">
-        {{ form.hidden_tag() }}
-
-      <div class="container">
-        <h3>Enter your alias for the game</h3>
-        <div class="row">
-          <div class="col-12">
-            {{ form.user_name.label }}
-            {{ form.user_name(size=10) }}
-          </div>
-        </div>
-        <br><br>
-        <h3>Then choose one of the following options:</h3>
-        <br>
-        <div class="row">
-          <br/>
-          <div class="col-4 data_block">
-            <h2>Join a game</h2>
-            <br/>
-            {{ form.game_id.label }}
-            {{ form.game_id(size=5) }}
-            <br><br>
-            {{ form.join_game(class="btn btn-primary") }}
-          </div>
-          <div class="col-2">
-            <br><h3>&nbsp &nbsp or</h3>
-          </div>
-          <!-- <h3>or</h3> -->
-          <div class="col-5 data_block">
-            <div id="create_div">
-              <h2>Create a new game</h2>
-              <br/>
-              <div id="create_options">
-                {{ form.multiple_one_card.label }}
-                {{ form.multiple_one_card }}
-                <br>
-                {{ form.multiple_no_trump.label }}
-                {{ form.multiple_no_trump }}
-                <br>
-                {{ form.increment.label }}
-                {{ form.increment(size=1) }}
-              </div>
-            </div>
-            <br>
-          {{ form.start_game(class="btn btn-primary") }}
-          </div>
+    <div class="container">
+      <h3>{% trans %}enter_alias{% endtrans %}</h3>
+      <div class="row">
+        <div class="col-12">
+          {{ form.user_name.label }}
+          {{ form.user_name(size=10) }}
         </div>
       </div>
-    </form>
-    <br><br>
-    <div id="user_guide">
-      <h2>User Guide</h2>
-      <h3> Creating and joining a game</h3>
-      You can either create a new game, or join an existing game. Somebody first need to create a game.
-      Then the game creator has to inform other players of the game id so they can join the newly
-      created game. When creating the game, you pick the deck size, and there are a few options
-      for the card distribution pattern (dealing). Either the computer deals, following the
-      pattern you define with the options available, or the players manually
-      choose how many cards to deal at each hand. The options available when the computer deals are:
-      <ul>
-        <li>Whether to play multiple hands with just one card (multiple means as many as there are players)</li>
-        <li>Whether to play multiple hands with no trump (no trump happens when the maximum number of cards have been dealt -
-          so for instance if there are 4 players and you chose a 32 cards deck, no trump will be when each player gets 8 cards)</li>
-        <li>The increment to use when increasing/decreasing the number of cards being dealt. </li>
-      </ul>
-      <p>For instance choosing an increment of 1, just one hand with one card and multiple hands with no trump, the distribution pattern will be:
-      1, 2, 3, 4, 5, 6, 7, 8, 8, 8, 8, 7, 6, 5, 4, 3, 2, 1    (4 players, 32 cards) </p>
-
-      <p>If you want a shorter game, you can set the increment to 2, and the distribution pattern will be:
-        1, 3, 5, 7, 8, 8, 8, 8, 7, 5, 3, 1 </p>
-
-      <p>When creating or joining a game, each player has to specify their alias for the game. The computer does not play, so all
-      players have to be 'real'</p>
-
-      <h3>Playing</h3>
-      Playing involves three phases: dealing cards, betting, and playing rounds for each hand. If dealing is performed by the computer,
-      players do not have to do anything for that phase. Whenever a player has to do something (e.g. deal, bet, or play), the player alias
-      flashes to remind the player that they have to do something. Remember when betting that the last player to bet may be restricted as
-      the total number of bets cannot be equal to the number of cards that have been dealt.
-      To play a card, just clik that card. Cards that can be played have a green border.
-    </div>
-    <div id="rules">
-      <h2>Rules of game</h2>
-        <p>
-          Romanian whist is a game for 3 to 7 players (best for 4 to 5). Each player plays alone.<br>
-          The cards rank as follows: A, K, Q, J, 10, 9, and so on. They have no value, because it is a game for tricks only.
-          </p>
-          <h3>Deal</h3>
-          The first dealer is chosen at random.<br>
-          The number of cards dealt to each player varies during the game.<br>
-          It start with only one card. After this the number of cards dealt to each player increases<br>
-          with every deal until eventually all the cards are dealt.<br>
-          Then as many deals are played with all cards used (using no trump) than there are players.<br><br>
-
-          Then the number of cards dealt decreases again until every player gets only one card.<br>
-
-          Example: With 4 players the whole game could consist of deals with the following number of cards:<br>
-          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 13, 13, 13, 12, 11, 10, 9, 8, 8, 7, 6, 5, 4, 3, 2, 1<br><br>
-
-          To speed things us, the increment could be set to 2, which would result in the following deal pattern:<br>
-          1, 3, 5, 7, 9, 11, 13, 13, 13, 13, 11, 9, 7, 5, 3, 1<br><br>
-
-          <i>This application lets you decide how many cards to deal for each hand so you can choose the pattern you want.</i><br><br>
-
-          After the cards are dealt, the next card is put face up (if trump is used); the suit of this card is the trump suit.<br>
-         <br>
-         <h3>Bidding</h3>
-         Each player in order, beginning with the player to dealer's left, bids how many tricks they think they will take.<br>
-         All bids are final and cannot be changed afterwards.<br>
-         To ensure that not everyone will succeed in their bid, the sum of all tricks bid must not be the same as the number of cards dealt to each player.<br>
-         (Example: game with six cards, three players: The first player bids "3", the next "1".<br>
-         The last player cannot bid "2", as this would make the sum of the tricks equal to 6.<br>
-         In this case, the last bidder must bid 0, 1, 3, 4, 5 or 6).<br>
-         This rule puts the last bidder (the dealer) at a disadvantage.<br><br>
-
-         The player to dealer's left plays the first card.<br>
-         <h3>Playing</h3>
-         The other players must play a card of the same suit if possible.<br>
-         Any player who has no card of the suit led may play a trump or any other card<br>
-         The trick is won by whoever played the highest trump, or if no trump was played, by whoever played the highest card of the suit led.<br>
-         The winner of the trick leads to the next.<br><br>
-
-         The objective is to win exactly the number of tricks you said you would win.<br><br>
-
-         The hand ends when all cards are played.<br>
-
-         <h3>Scoring</h3>
-         Players who made their contract (exactly) get bonus points plus the number of tricks they made.<br><br>
-         <i>The bonus points set to 1 for now.</i><br><br>
-         Players who took fewer tricks than their bid lose one point for each under-trick.<br>
-         Players who took more tricks than their bid lose one point for each over-trick.<br><br>
-
-         Examples: Suppose you bid 3 tricks. If you take exactly 3 you will win 8 points (5+3).<br>
-         If you take only two tricks you lose 1 point; the same if you take 4 tricks.<br>
-         If you take 1 or 5 tricks (two off from your bid) you will lose 2 points;<br>
-         if you take no tricks or 6 tricks you will lose 3.<br>
-    </div>
-    <div>
-      <h3> References</h3>
-      <a href="https://en.wikipedia.org/wiki/Romanian_whist"> Wikipedia page on Romanian Whist</a><br><br>
-
-
-    <!-- <form action="" method="post" novalidate>
-        {{ form.hidden_tag() }}
-        <div class="col-md-4">
-          <div class="form-group">
-            {{ form.user_name.label }}
-            {{ form.user_name(size=10) }}
-          </div>
+      <br><br>
+      <h3>{% trans %}choose_option{% endtrans %}</h3>
+      <br>
+      <div class="row">
+        <br/>
+        <div class="col-4 data_block">
+          <h2>{% trans %}join_a_game{% endtrans %}</h2>
+          <br/>
+          {{ form.game_id.label }}
+          {{ form.game_id(size=5) }}
+          <br><br>
+          {{ form.join_game(class="btn btn-primary") }}
         </div>
-
-          <div class="col-md-4">
-            <div class="input submit">
-                {{ form.start_game() }}
-                {{ form.join_game() }}
+        <div class="col-2">
+          <br><h3>&nbsp &nbsp or</h3>
+        </div>
+        <!-- <h3>or</h3> -->
+        <div class="col-5 data_block">
+          <div id="create_div">
+            <h2>{{ _("create_new_game") }}</h2>
+            <br/>
+            <div id="create_options">
+              {{ form.multiple_one_card.label }}
+              {{ form.multiple_one_card }}
+              <br>
+              {{ form.multiple_no_trump.label }}
+              {{ form.multiple_no_trump }}
+              <br>
+              {{ form.increment.label }}
+              {{ form.increment(size=1) }}
             </div>
           </div>
-    </form> -->
-    {% block footer %}
-    {{ super() }}
-    {% endblock %}
+          <br>
+        {{ form.start_game(class="btn btn-primary") }}
+        </div>
+      </div>
+    </div>
+  </form>
+  <br><br>
 
+  {% if locale == "fr" %}
+    {% include 'ohell_guide_fr.html' %}
+  {% else %}
+    {% include 'ohell_guide.html' %}
+  {% endif %}
+
+  <div>
+    <h3>{% trans %}references{% endtrans %}: </h3>
+    <a href="https://en.wikipedia.org/wiki/Romanian_whist">Wikipedia</a><br><br>
+  {% block footer %}
+    {{ super() }}
+  {% endblock %}
 {% endblock %}

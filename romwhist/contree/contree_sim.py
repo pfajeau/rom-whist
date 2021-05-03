@@ -12,6 +12,11 @@ class ContreeSim(BeloteSim, ContreeGame):
         ContreeGame.__init__(self, state.owner, id=state.game_id)
         BeloteSim.__init__(self, agent, other_agent, sim_player, state, starting_action)
 
+        # Required because BeloteSim.__init__ calls BeloteGame.__init__,
+        # which sets those to the belote values rather than the contree values
+        self.nb_cards_first_deal = {1: 8, 2: 8, 3: 8, 4: 8}
+        self.BONUS_CAPOT = 250
+
 
     def sim_player_won(self):
         logging.debug("Bet for %s: %s", self.sim_player, self.bets[self.sim_player])

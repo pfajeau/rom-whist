@@ -8,8 +8,10 @@ import logging
 from random import randint
 
 import unidecode
-from flask import render_template, session, url_for, redirect
+from flask import render_template, session, url_for, flash, redirect, request
 # from flask import Blueprint
+from flask_babel import gettext as _
+
 from flask_login import current_user, login_user
 from romwhist import socketio
 from romwhist.belote import belote_routes
@@ -17,7 +19,13 @@ from romwhist.extensions import db
 from romwhist.forms import LoginForm
 from romwhist.models import User
 from romwhist.ohell import ohell_routes
+from romwhist import app
+from romwhist import i18n_strings
 
+
+def get_locale(request):
+    print(app.config['LANGUAGES'])
+    return request.accept_languages.best_match(app.config['LANGUAGES'])
 
 # TODO: separate from this file to remove circular dependency between
 #  game specific routes modules and this module
@@ -25,8 +33,15 @@ def admin():
     return render_template('admin.html', nb_belote_games = len(belote_routes.games),
                            nb_whist_games =len(ohell_routes.games))
 
+
 def home():
-    return render_template("home.html")
+    locale = get_locale(request)
+    return render_template("home.html", locale=locale)
+
+
+#@app.route("/base")
+def base():
+    return render_template("base.html")
 
 
 # @app.route("/login",methods=['GET', 'POST'])
@@ -45,6 +60,67 @@ def login():
         logging.debug ("current user: " + session['username'])
         return redirect(url_for('index'))
     return render_template('login.html', title='Sign In', form=form)
+
+
+def redirect_game_start(games, action, template_to_render):
+    player = session.get('username')
+    if player is None:
+        logging.error("Unknown player in session")
+        flash(_('session_has_expired'))
+        return redirect(url_for(template_to_render))
+
+    game_id = session.get('game_id')
+    if game_id is None:
+        logging.error("Unknown game id: %s", game_id)
+        flash(_("game_does_not_exist"))
+        return redirect(url_for(template_to_render))
+
+    game = games.get(game_id)
+    if game is None:
+        logging.error("Unknown game: %s", game_id)
+        flash(_("game_does_not_exist"))
+        return redirect(url_for(template_to_render))
+
+    if request.method == 'POST':
+        # logging.info (request.form)
+
+        # if "stop_game" in request.form:
+        if action == "stop_game":
+            socketio.emit(_("game_over"), game.get_highest_score_player(), room=game_id, namespace=NAMESPACE)
+            clean_game_data(game_id)
+            return redirect(url_for(template_to_render))
+
+        # if "leave_game" in request.form:
+        if request.form['action_game'] == "leave_game":
+            remove_player(game_id, session['username'])
+            return redirect(url_for(template_to_render))
+
+    return None
+
+
+def remove_player(game_id, games, clients, player, namespace):
+    # game_id = session.get('game_id')
+    if not game_id is None:
+        game = games.get(game_id)
+        if not game is None:
+            if game.started:
+                game.disable_player(player)
+            else:
+                game.remove_player(player)
+                if player in clients[game_id]:
+                    del clients[game_id][player]
+
+        socketio.emit("player left", player, room=game_id, namespace=namespace)
+        socketio.emit("clear round", room=game_id, namespace=namespace)
+    return
+
+
+def clean_game_data(game_id, games, clients):
+    game = games.get(game_id)
+    if game is None:
+        return
+    del games[game_id]
+    del clients[game_id]
 
 
 def post_msg(msg, sender, room, namespace):
@@ -83,7 +159,7 @@ def sanitize_username(username1):
 def join_game(games, game_id, username, start_page, play_page, namespace, form):
     logging.debug("game id: " + game_id)
     if not game_id in games:
-        error = "This game has not been created yet"
+        error = _("game_not_created")
         logging.error(error)
         return render_template(start_page, error=error, form=form)
 
@@ -92,14 +168,14 @@ def join_game(games, game_id, username, start_page, play_page, namespace, form):
     # and game has not started. If game has started, assume player
     # is trying to reconnect after having lost a connection
     if username in game.get_players() and not game.started:
-        error = "The game already has a user with the same name"
+        error = _("game_has_user_with_same_name")
         logging.info(error)
         return render_template(start_page, error=error, form=form)
 
     # Not allowed to connect to a game already started unless the player
     # is already an existing player (same alias)
     if game.started and not username in game.get_players():
-        error = "This game has already started! You cannot join a game in progress"
+        error = _("game_already_started")
         logging.info(error)
         return render_template(start_page, error=error, form=form)
 

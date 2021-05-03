@@ -1,26 +1,23 @@
-class Card(object):
+from flask_babel import gettext as _
+from flask_babel import lazy_gettext as _l
 
-    # class SuitName(Enum):
-    #     CLUB = "Club"
-    #     DIAMOND = "Diamond"
-    #     HEART = "Heart"
-    #     SPADE = "Spade"
+class Card(object):
 
     SUITS = 'cdhs'
 
-    SUIT_NAMES = ["Club", "Diamond", "Heart", "Spade"]
+    SUIT_NAMES = ["club", "diamond", "heart", "spade"]
 
     NUMBERS = list(range(2, 15))
-    CARD_NAMES = ['Two', 'Three', 'Four', 'Five', 'Six',
-                  'Seven', 'Eight', 'Nine', 'Ten',
-                  'Jack', 'Queen', 'King', 'Ace']
+    CARD_NAMES = ['two', 'three', 'four', 'five',
+                  'six', 'seven', 'eight', 'nine',
+                  'ten', 'jack', 'queen', 'king', 'ace']
 
     SUIT_NAMES_BY_INITIAL = {
-        'c': "Club",
-        'd': "Diamond",
-        'h': "Heart",
-        's': "Spade"
-    }
+        'c': "club",
+        'd': "diamond",
+        'h': "heart",
+        's': "spade"}
+    
 
     def __init__(self, card_number, suit):
         self.card_num = card_number
@@ -56,10 +53,10 @@ class Card(object):
         return self.CARD_NAMES[index]
 
     def __lt__(self, other):
-         return self.rank < other.rank
+        return self.rank < other.rank
 
     def __gt__(self, other):
-         return self.rank > other.rank
+        return self.rank > other.rank
 
     def __eq__(self, other):
         return str(self) == str(other)
@@ -69,4 +66,5 @@ class Card(object):
         #return self.rankName() + ' of ' + self.suitName()
 
     def desc(self):
-        return self.get_card_name() + ' of ' + self.get_suit_name()
+        return _l(self.get_card_name()) + " " + _('of') + \
+                  " " + _l(self.get_suit_name())

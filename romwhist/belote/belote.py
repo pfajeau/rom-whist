@@ -1,6 +1,7 @@
 import copy
 import logging
 from enum import Enum
+from flask_babel import gettext as _
 
 from romwhist.card import Card
 from romwhist.deck import Deck
@@ -10,6 +11,8 @@ from romwhist.belote.belote_state import BeloteState
 
 
 class BeloteGame(CardGame):
+    TOTAL_POINTS = 162
+
     class GamePhase(str, Enum):
         DEAL = "Deal"
         DEAL2 = "Deal2"
@@ -31,16 +34,6 @@ class BeloteGame(CardGame):
         Rebelote_Played = 6
         Lost = 7
 
-    # Number of cards to deal depending on number of players
-    nb_cards_first_deal = {1: 6, 2: 6, 3: 6, 4: 5}
-    nb_cards_second_deal = {1: 3, 2: 3, 3: 3, 4: 3}
-
-    # Total number of points
-    TOTAL_POINTS = 162
-    BONUS_CAPOT = 100
-    DIX_DE_DER = 10
-    BELOTE_REBELOTE = 20
-
     def __init__(self, game_creator="", id=0):
         CardGame.__init__(self, game_creator=game_creator, deck_size=0, id=id)
         self.taker = None
@@ -56,6 +49,16 @@ class BeloteGame(CardGame):
         self._nb_pass_since_bet = 0
 
         self.reset_card_ranks_and_points()
+
+        # Number of cards to deal depending on number of players
+        self.nb_cards_first_deal = {1: 6, 2: 6, 3: 6, 4: 5}
+        self.nb_cards_second_deal = {1: 3, 2: 3, 3: 3, 4: 3}
+
+        # Total number of points
+        self.TOTAL_POINTS = BeloteGame.TOTAL_POINTS
+        self.BONUS_CAPOT = 100
+        self.DIX_DE_DER = 10
+        self.BELOTE_REBELOTE = 20
 
     def reset_card_ranks_and_points(self):
         # Points and ranks will change for the trump suit once it is known
@@ -206,7 +209,7 @@ class BeloteGame(CardGame):
             # self.trump_card = None
             self.bets = dict()
             self.wins = dict()
-            self.init_dict(self.bets, -1)
+            self.init_bets()
             self.init_dict(self.wins, 0)
 
     def start_game(self):
@@ -214,11 +217,11 @@ class BeloteGame(CardGame):
         self.deck_size = 32
         self.phase = BeloteGame.GamePhase.BET
 
-    def place_bet(self, player, bet):
+    def place_bet(self, player, bet, ai=False):
         logging.info("Player " + player + "bid: " + bet)
         self.bets[player] = bet
 
-        if bet == "Pass":
+        if bet == "pass":
             logging.info("Player passed")
             self._nb_pass_since_bet += 1
 
@@ -263,9 +266,9 @@ class BeloteGame(CardGame):
         # if self.hands.get(player) is None:
         #     allowed_bets = []  # No hand yet
         if self.phase == self.GamePhase.BET:
-            allowed_bets = ['Pass', str(self.trump_card.get_suit_name())]
+            allowed_bets = ['pass', str(self.trump_card.get_suit_name())]
         elif self.phase == self.GamePhase.BET2:
-            allowed_bets = ['Pass']
+            allowed_bets = ['pass']
             for suit in Card.SUIT_NAMES:
                 if suit != self.trump_card.get_suit_name():
                     allowed_bets.append(suit)
@@ -295,6 +298,7 @@ class BeloteGame(CardGame):
             higher_trump = False
             logging.debug("Player %s hand is: %s ", player, self.hands[player].serialize())
             logging.debug("Asked suit is %s", asked_suit)
+            logging.debug("Trump suit is  %s", self.trump_suit)
             for card in self.hands[player].get_cards():
                 if card.get_suit_name() == asked_suit:
                     if trump_asked:
@@ -377,7 +381,7 @@ class BeloteGame(CardGame):
             if self.belote_state == BeloteGame.BeloteState.Rebelote_Played and \
                     self.player_with_belote == players[i]:
                 logging.info("In update_scores, adding belote / rebelote points to " + players[i])
-                player_points[i] += BeloteGame.BELOTE_REBELOTE
+                player_points[i] += self.BELOTE_REBELOTE
                 self.hand_points[players[i]] = player_points[i]
 
         if nb_players == 2:
@@ -398,9 +402,9 @@ class BeloteGame(CardGame):
 
             # Capot
             if self.wins[players[1]] == 0:
-                self.scores[players[0]] += BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
+                self.scores[players[0]] += self.BONUS_CAPOT - self.DIX_DE_DER
             elif self.wins[players[0]] == 0:
-                self.scores[players[1]] += BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
+                self.scores[players[1]] += self.BONUS_CAPOT - self.DIX_DE_DER
 
         elif nb_players == 3:
             if player_points[0] > player_points[1] and player_points[0] > player_points[2]:
@@ -429,14 +433,14 @@ class BeloteGame(CardGame):
                     nnp = self.next_player(players[np])
                     if self.wins[np] == 0:
                         # nnp gets the entire bonus
-                        self.scores[nnp] += BeloteGame.BONUS_CAPOT
+                        self.scores[nnp] += self.BONUS_CAPOT
                     elif self.wins[nnp] == 0:
                         # np gets the entire bonus
-                        self.scores[np] += BeloteGame.BONUS_CAPOT
+                        self.scores[np] += self.BONUS_CAPOT
                     else:
                         # np and nnp share the bonus
-                        self.scores[np] += BeloteGame.BONUS_CAPOT / 2
-                        self.scores[nnp] += BeloteGame.BONUS_CAPOT / 2
+                        self.scores[np] += self.BONUS_CAPOT / 2
+                        self.scores[nnp] += self.BONUS_CAPOT / 2
 
         elif nb_players == 4:
             if self.player_with_belote is not None:
@@ -454,7 +458,7 @@ class BeloteGame(CardGame):
                 self._hand_winner.append(players[2])
 
             elif player_points[1] + player_points[3] > player_points[0] + player_points[2]:
-                self.scores[players[1]] += BeloteGame.TOTAL_POINTS + self.bonus_litige
+                self.scores[players[1]] += self.TOTAL_POINTS + self.bonus_litige
                 self.scores[players[3]] = self.scores[players[1]]
                 self.bonus_litige = 0
                 self._hand_winner.append(players[1])
@@ -468,7 +472,7 @@ class BeloteGame(CardGame):
                 self._hand_winner.append("")
 
             # Capot
-            points_capot = BeloteGame.BONUS_CAPOT - BeloteGame.DIX_DE_DER
+            points_capot = self.BONUS_CAPOT - self.DIX_DE_DER
             if self.wins[players[1]] + self.wins[players[3]] == 0:
                 self.scores[players[0]] += points_capot
                 self.scores[players[2]] = self.scores[players[0]]
@@ -482,7 +486,7 @@ class BeloteGame(CardGame):
 
     # Initial deal
     def deal(self, dealer=""):
-        hands = self.deal_cards(BeloteGame.nb_cards_first_deal[len(self.players)], dealer=dealer)
+        hands = self.deal_cards(self.nb_cards_first_deal[len(self.players)], dealer=dealer)
         # Pick up trump card
         self.trump_card = self.deck.deal()
         return hands
@@ -523,7 +527,7 @@ class BeloteGame(CardGame):
     def deal_2(self, dealer=""):
         logging.debug("In deal_2")
 
-        nb_cards = BeloteGame.nb_cards_second_deal[len(self.players)]
+        nb_cards = self.nb_cards_second_deal[len(self.players)]
 
         # Taker takes the top card then two more
         self.hands[self.taker].add(self.trump_card)

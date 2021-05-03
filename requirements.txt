@@ -19,7 +19,8 @@ greenlet==1.0.0
 gunicorn==20.0.4
 idna==2.10
 itsdangerous==1.1.0
-numpy
+flask-babel
+numpy~=1.20.1
 Jinja2==2.11.3
 MarkupSafe==1.1.1
 packaging==20.9

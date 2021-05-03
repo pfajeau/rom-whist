@@ -8,10 +8,11 @@ import numpy as np
 from romwhist.card import Card
 from romwhist.game_state import GameState
 
-# Do not remove the following imports, those classes are instantiated by name
+# Do not remove the following imports, those classes are instantiated by name ar runtime
 from romwhist.belote.belote_sim import BeloteSim
 from romwhist.ohell.ohell_sim import OhellSim
 from romwhist.contree.contree_sim import ContreeSim
+
 
 def lookup(name, namespace):
     """
@@ -35,6 +36,7 @@ def lookup(name, namespace):
         if len(options) > 1:
             raise Exception('Name conflict for %s')
         raise Exception('%s not found as a method or class' % name)
+
 
 class IAgent(ABC):
     """ Interface for playing agents."""
@@ -225,7 +227,7 @@ class SimpleMCTSAgent(IAgent):
 
         self.run_simulation(games, len(rollout_bets))
         for game in games:
-            bet = game.get_state().bets[self.ai_player]
+            bet = game.get_state().current_bet
             if game.sim_player_won():
                 self.action_value[bet] += 1
             self.action_points[bet] += game.hand_points[self.ai_player]
@@ -289,7 +291,7 @@ class SimpleMCTSAgent(IAgent):
     def compute_best_action(self, legal_actions):
         logging.info("action_value: %s", self.action_value)
         logging.info("action_points: %s", self.action_points)
-        logging.debug("Nb simulaitons per action %s", str(self.num_simulations_per_action))
+        logging.debug("Nb simulations per action %s", str(self.num_simulations_per_action))
 
         # Choose best action - start with
         best_action = list(self.action_value.keys())[0]

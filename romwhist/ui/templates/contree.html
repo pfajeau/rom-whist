@@ -4,13 +4,12 @@
 {% block content %}
 <script type="text/javascript" src="https://cdn.socket.io/3.1.1/socket.io.min.js"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/game_common.js') }}"></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
+<script type="text/javascript" src="{{ url_for('static', filename='js/belote.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/belote.css') }}"/>
 <script type="text/javascript">
 
   // Note that js cannot be separated from html as JINJA2 expressions are not
   // processed then during rendering
-  //  TODO: Need to add the buttons to CONTRER ou RECONTRER
 
   var socket;
   var username = "{{ session['username'] }}";
@@ -22,25 +21,29 @@
   var trump_suit = ""
   var the_players
   var bool = {"True": true, "False": false}
+  var i18n_json = {{ i18n|tojson }}
+  var i18n = JSON.parse(i18n_json);
+  console.log("Contree status: " + "{{ contree_status }}")
+  console.log("Current bet: " + "{{ current_bet }}")
 
-  // $("#topnav").last().after("<p class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</p>")
-  let html_frag = ''
-  html_frag = html_frag.concat("<span class='game_page_title'>")
-  html_frag = html_frag.concat(" Game ID: {{ session['game_id'] }}")
-  html_frag = html_frag.concat(" - {{ session['username'] }}</span>")
-  html_frag = html_frag.concat("<span class='game_page_title'><a href='#scoresheet_div'>Scoresheet</a></span>")
-  html_frag = html_frag.concat("<span class='logo_game'><img border='0' alt='Belote' src='{{ url_for('static', filename='') }}img/contree.jpg' width='80'></a> </span>")
-  $("#topnav").last().after(html_frag);
-  // $("#topnav").last().after("<card_playedspan class='game_page_title'>Game ID: "  + "{{ session['game_id'] }}" + " - You are: " + "{{ session['username'] }}"+ "</span>")
-  // $("#topnav").last().after("<span class='game_page_title'><a href='#scoresheet_div'>"  + "Scoresheet" + "</a>"+ "</span>")
+  populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
+                   "{{ url_for('static', filename='img/contree.jpg') }}")
 
   document.addEventListener('DOMContentLoaded', () => {
 
-    the_players = []
-    {% for the_player in players -%}
-       the_players.push("{{ the_player }}")
-    {% endfor %}
+    setup_alertify()
+
+    the_players = {{ players|safe }}
     initialize(the_players)
+
+    // If 4 players already, disable add ai button
+    if (the_players.length >= 4) {
+      $("#add_ai").prop("disabled", true)
+    }
+    else {
+      $("#add_ai").prop("disabled", false)
+    }
+
 
     console.log("player_with_belote: " + "{{ player_with_belote }}")
     console.log("belote_allowed: " + "{{ belote_allowed }}")
@@ -70,20 +73,18 @@
       make_player_play("{{ active_player }}", "{{ allowed_cards }}");
     }
 
-    document.getElementById("post").onclick = function() {
-      post_msg();
-    }
-
     // Register action for bet suit input field
     id_bet_suit = "#bets_suit_" + username
+
     $(id_bet_suit).change(function() {
-      bet_suit = $(id_bet_suit + " option:selected").text();
-      if (bet_suit == "Pass" || bet_suit == "Contre" || bet_suit == "Surcontre"){
+      bet_suit = $(id_bet_suit + " option:selected").val();
+      console.log("Bet suit: " + bet_suit)
+      if (bet_suit == "pass" || bet_suit == "contre" || bet_suit == "surcontre"){
         socket.emit("player bet", bet_suit, 0);
       }
-      else if (bet_suit != "Select") {
-        console.log("Bet:" + bet_suit)
-        $(id_bet_points).prop("enabled", true)
+      else if (bet_suit != "select") {
+        id_bet_points = "#bets_points_" + username
+        $(id_bet_points).prop("disabled", false)
       }
       return
     });
@@ -91,9 +92,10 @@
     // Register action for bet points input field
     id_bet_points = "#bets_points_" + username
     $(id_bet_points).change(function() {
-      bet_points = $(id_bet_points + " option:selected").text();
-      if (bet_points != "Select") {
-        bet_suit = $(id_bet_suit + " option:selected").text();
+      id_bet_points = "#bets_points_" + username
+      bet_points = $(id_bet_points + " option:selected").val();
+      if (bet_points != "select") {
+        bet_suit = $(id_bet_suit + " option:selected").val();
         console.log("Bet:" + bet_points)
         socket.emit("player bet", bet_suit, bet_points);
         //$(id_bet + " [readonly=readonly] option:not(:selected)").prop('disabled', true);
@@ -105,7 +107,7 @@
 
     enable_start_game();
     // Allow start button when numbe of players is between 2 and 4
-    if (the_players.length < 2 || the_players.length > 4) {
+    if (the_players.length != 4) {
       $("#start_game").prop('disabled', true);
     }
 
@@ -136,61 +138,19 @@
     });
 
     socket.on('sc game started', function(data) {
-      console.log("game started event received")
-      console.log(data)
-      $("input[name='rounds']").val(0);
-      $("input[name='score']").val(0);
-
-      nb_cards_to_deal = data['nb_cards']
-      $('#cards').html('');
-      $('#cards_played').empty()
-      $('#trump_card').empty()
-      $('#button').remove()
-      $('#msg_div').empty()
-
-      // Add scoresheet
-      $("#scoresheet_div").append("<td>")
+      game_started(data)
     });
 
     socket.on('new hand', function(data) {
-      console.log("new hand event received");
-      make_players_inactive();
-      $('#cards').html('');
-      $('#cards_played').empty()
-      $("#nb_cards").removeClass("highlighted_field");
-      $('#msg_div').empty()
-      cards = data['cards']
+      console.log("new hand event received")
+      new_hand(data, "{{ url_for('static', filename='') }}")
+      $("input[name='bets_points']").html('')
+      $("input[name='bets_suit']").html('')
+    });
 
-      // $('#cards').append('<ul>');
-      for (var card_index in cards) {
-        // $('#cards').append('<br>' + data[card])
-        let card =cards[card_index]
-        let image = 'img/' + card + ".svg"
-        // let card = data[card]
-        $('#cards').append('<td>'+
-          "<img id=" + card + " src={{ url_for('static', filename='') }}" +
-          image + ' alt=' + card + ' class="card_hand"' + '>' + '</td>')
-
-          $('#rounds input').val(0);
-          // $('#bets input').html('');
-        }
-      });
-
-      socket.on('belote announced', function(data) {
-        // Add Belote/Rebelote button
-        console.log("belote announced event received")
-        announce_player = data['player']
-        announce = data['announced']
-        // if (username != announce_player) {
-        //   show_alert("Player " + announce_player + " annouced " + data['announced'], data['announced'])
-        // }
-        $("#msg_div").text(announce_player + " announce " + announce)
-        fade_msg()
-        if (announce == "Rebelote" && announce_player == username) {
-          // Disable Belote button
-          $("#belote").remove()
-        }
-      });
+    socket.on('belote announced', function(data) {
+      belote_announced(data)
+    });
 
     socket.on('belote rebelote enabled', function(data) {
       // Add Belote/Rebelote button
@@ -209,13 +169,8 @@
     });
 
     socket.on('belote lost', function(data) {
-      // Disable Belote/Rebelote button
-      $("#belote").remove()
-      show_alert("Belote points lost", "Belote or rebelote not announced!")
-      $("#msg_div").text("Belote points lost", "Belote or rebelote not announced!")
-      fade_msg()
+      belote_lost(i18n["belote_points_lost"])
     });
-
 
     socket.on('player to bet', function(data) {
       console.log("player to bet event received")
@@ -231,10 +186,12 @@
       make_player_active(player_name);
       make_player_the_better(player_name, "#bets_suit_", "#bets_points_")
 
-      // $(id_bet).empty();
+      $(id_bet_suit).empty();
+      $(id_bet_points).empty()
+
       let html = ""
       html = html.concat('<select name="bets_points" id="bets_points_{{ player }}">')
-      html = html.concat('<option value="select" selected>Select</option>')
+      html = html.concat('<option value="select" selected>' + i18n["select"] + '</option>')
       for (i in allowed_bet_points) {
         html = html.concat('<option value="' + allowed_bet_points[i] + '">' + allowed_bet_points[i] + '</option>')
       }
@@ -243,9 +200,9 @@
 
       html = ""
       html = html.concat('<select name="bets_suit" id="bets_suit_{{ player }}">')
-      html = html.concat('<option value="select" selected>Select</option>')
+      html = html.concat('<option value="select" selected>' + i18n["select"] + '</option>')
       for (i in allowed_bets_suits) {
-        html = html.concat('<option value="' + allowed_bets_suits[i] + '">' + allowed_bets_suits[i] + '</option>')
+        html = html.concat('<option value="' + allowed_bets_suits[i] + '">' + i18n[allowed_bets_suits[i]] + '</option>')
       }
       html = html.concat('</select>')
       $(id_bet_suit).html(html)
@@ -261,6 +218,10 @@
       player_name = data['player']
       bet_suit = data['bet_suit']
       bet_points = data['bet_points']
+      current_bet = data['current_bet']
+      contree_status = data['contree_status']
+      taker = data['taker']
+
       console.log("bet is: " + bet_suit)
       let id_bet_suit = "#bets_suit_" + player_name
       let id_bet_points = "#bets_points_" + player_name
@@ -274,36 +235,31 @@
       make_player_inactive(player_name);
       $(id_bet_suit).removeClass("highlighted_field");
       $(id_bet_points).removeClass("highlighted_field");
-      //$(id_bet).prop('readonly', true);
-      // $(id_bet).prop("disabled", true)
-    });
 
+      console.log (contree_status)
+
+      $("#bet_status").html('')
+      if (current_bet != 'None' && current_bet != 'pass_0') {
+        $("#bet_status").append('<label class="trump_caption">' + taker + " - " + current_bet["points"] + " / " + i18n[current_bet["suit"]] + '</label>')
+      }
+
+      if (contree_status == "Contree") {
+        $("#bet_status").append('<br><label class="trump_caption">' + i18n['contré'] + '!' + '</label>')
+      }
+      else if (contree_status == "Surcontree") {
+        $("#bet_status").append('<br><label class="trump_caption">' + i18n['surcontré'] + '!' + '</label>')
+      }
+    });
 
     socket.on('player to play', function(data) {
       player_to_play(data)
     })
 
     socket.on('hand completed', function(data) {
-      console.log("hand completed event received");
-
-      let scores=data['scores']
-      let wins = data['wins']
-      let hand_nb=data['hand_nb']
-      let score_row_id = "#hand_score_nb" + hand_nb
-      let winners = data['winners']
-      let html = "<tr>"
-      // $("#scoresheet_body").append ("<tr id=" + score_row_id + ">/tr")
+      hand_completed(data)
 
       for (var i in the_players) {
         let player = the_players[i]
-        score = scores[player];
-        bet=bets[player]
-        win=wins[player]
-        let id_score = "#score_" + player
-        $(id_score).val(score);
-        html = html.concat("<td><table class='padding-between-cols'><tr>")
-        html = html.concat("<td class='scoresheet_nb'>" + score + "</td></tr></table></td>")
-
         // Reset the bid selection list
         let bet_id_suit = "#bets_suit_" + player
         idx = $(id_bet_suit).find('option[value="Select"]').index()
@@ -313,35 +269,10 @@
         bet_id_points = "#bets_points_" + player
         $(bet_id_points).empty()
       }
-
-      html = html.concat("</tr>")
-      $("#scoresheet_body").append(html)
-
-      // TODO: message indicating who won the hand
-      if (winners[0] == "") {
-         msg = "It's a tie! Points of team who took will be given to next hand winner"
-      }
-      else {
-        msg = "Winner(s) of this hand: "
-        for (i in winners) {
-          if (i == 0) {
-            msg = msg + winners[i]
-          }
-          else {
-            msg = msg + ", and " + winners[i]
-          }
-        }
-      }
-
-      $("#msg_div").append("<p>" + msg + "</p>")
-      fade_msg()
-
-      let image = 'img/' + trump_card + ".svg"
-      $('#trump_card').html('')
-      $('#cards_played').empty()
     });
 
     socket.on('card played', function(data) { card_played_event(data) })
+
     socket.on('new player', function(player_name) { new_player(player_name) })
 
     socket.on('player left', function(player_name) {
@@ -360,17 +291,16 @@
         id_score = "#label_score_" + player_name;
         $(id_score).parent().remove()
 
-        show_alert("User " + player_name + " left the game!", "Warning")
+        show_alert(i18n["user"] + " " + player_name + " " + i18n["left_game"], "Warning")
       }
     });
 
-    socket.on('trump card', function(data) { trump_card_received(data, "") })
     socket.on('trump suit', function(trump) {
       console.log("trump suit event received");
         // Update trump_suit
         trump_suit = trump
-        $('#trump_card').html('')
-        $("#trump_card").append('<label class="trump_caption">Trump:' + trump_suit + '</label>')
+        // $('#trump_card').html('')
+        // $("#trump_card").append('<label class="trump_caption">' + i18n['trump'] + ': ' + i18n[trump_suit] + '</label>')
     })
 
     socket.on('round ended', function(data) {
@@ -385,7 +315,9 @@
     });
 
     socket.on('clear round', function() { clear_round() });
+
     socket.on('game over', function(winners) { game_over(winners) })
+
     socket.on('msg posted', function(data) { msg_posted(data) });
 
     socket.on('alert', function(msg) {
@@ -422,36 +354,31 @@
     <tr id="bets">
       {% for player in players -%}
       <td class="td_player_info_label">
-        <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">Bid</label>
+        <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">{{ _('bid') }}</label>
       </td>
       <td class="td_player_info">
         <script>
-          console.log("{{ bets_suit[player] }}")
-          console.log("{{ bets_points[player] }}")
+<!--          console.log("{{ bets_suit[player] }}")-->
+<!--          console.log("{{ bets_points[player] }}")-->
         </script>
         <select name="bets_suit" id="bets_suit_{{ player }}" disabled>
           {% if bets_suit[player] != "" %}
-            <option value="{{ bets_suit[player] }}" selected>{{ bets_suit[player] }}</option>
+            <option value="{{ bets_suit[player] }}" selected>{{ _(bets_suit[player]) }}</option>
           {% else %}
-            <option value="select" selected>Select</option>
+            <option value="select" selected>{{ _("select") }}</option>
           {% endif %}
-            <!-- <option value="Pass">Pass</option>
-            <option value="Spade">Spade</option>
-            <option value="Heart">Heart</option>
-            <option value="Diamond">Diamond</option>
-            <option value="Club">Club</option>  -->
-            {% for bet in allowed_bets[0] -%}
-                <option value="{{ bet }}">{{ bet }}</option>
-            {% endfor %}
+          {% for bet in allowed_bets[0] -%}
+              <option value="{{ bet }}">{{ _(bet) }}</option>
+          {% endfor %}
         </select>
         <select name="bets_points" id="bets_points_{{ player }}" disabled>
           {% if bets_points[player] != "" %}
-            <option value="{{ bets_points[player] }}" selected>{{ bets_points[player] }}</option>
+            <option value="{{ bets_points[player] }}" selected>{{ _(bets_points[player]) }}</option>
           {% else %}
-            <option value="select" selected>Select</option>
+            <option value="select" selected>{{ _("select") }}</option>
           {% endif %}
           {% for bet in allowed_bets[1] -%}
-              <option value="{{ bet }}">{{ bet }}</option>
+              <option value="{{ bet }}">{{ _(bet) }}</option>
           {% endfor %}
         </select>
       </td>
@@ -460,7 +387,7 @@
     <tr id="rounds">
       {% for player in players -%}
       <td class="td_player_info_label" >
-        <label for="rounds_{{ player }}"  id="label_rounds_{{ player }}" class="player_info">Points</label>
+        <label for="rounds_{{ player }}"  id="label_rounds_{{ player }}" class="player_info">{{ _('points') }}</label>
       </td>
       <td class="td_player_info" >
         <input type="number" id="rounds_{{ player }}" name="rounds" class="player_info" min=0 max=18 readonly value={{ wins[player] }}>
@@ -470,7 +397,7 @@
     <tr id=scores>
       {% for player in players -%}
       <td class="td_player_info_label" >
-        <label for="score_{{ player }}"  id="label_score_{{ player }}" class="player_info">Score</label>
+        <label for="score_{{ player }}"  id="label_score_{{ player }}" class="player_info">{{ _('score') }}</label>
       </td>
       <td class="td_player_info" >
         <input type="number" id="score_{{ player }}" name="score" class="player_info" min=0 max=99 readonly value={{ scores[player] }}>
@@ -484,27 +411,26 @@
 </div>
 <div id="card-table-burgundy" class="container">
   <div class="bottomright" id="trump_card">
-    {% if game_phase != "PLAY" and trump != None %}
-      <figure>
-        <img src="{{ url_for('static', filename='') }}img/{{ trump }}.svg" alt=trump width=80 height=80>
-<!--        - <figcaption><h3 class='trump_caption'>Trump</h3></figcaption> -->
-      </figure>
-    {% elif game_phase == "PLAY" %}
-      <label class="trump_caption">Trump: {{ trump_suit }}<label>
+  </div>
+  <div class="bottomright" id="bet_status">
+    {% if current_bet.suit != "pass" and current_bet is not none %}
+      <label class="trump_caption">{{ taker }} - {{ current_bet['points'] }} / {{ _(current_bet['suit']) }}</label>
     {% endif %}
+    <br>
+    {% if contree_status == "Contree" %}
+      <label class="trump_caption">{{ _('contré') }}!</label>
+    {% elif contree_status.value== "Surcontree" %}
+      <label class="trump_caption">{{ _('surcontré') }}!</label>
+    {% else %}
+      <label class="trump_caption"></label>
+    {% endif %}
+
   </div>
   <div id="cards_played">
   </div>
 </div>
 
-<!-- Belote / Rebelote and message sections -->
-<div id="msg_container">
-  <br>
-  <div id="belote_button_div">
-  </div>
-  <div id="msg_div">
-  </div>
-</div>
+{% include 'msg_container.html' %}
 
 <!-- Player cards section-->
 <div>
@@ -514,28 +440,29 @@
     <input type="hidden" id="action_game" name="action_game" value="">
     <div>
       <div class="col-md-12" id="cards">
-        <br>
-        <!-- <tr id="cards"></tr> -->
-        {% for card in hand -%}
-        <td>
-          <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" class="card_hand">
-          <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
-        </td>
-        {% endfor %}
+        <table>
+          <br>
+         <tr>
+          <!-- <tr id="cards"></tr> -->
+          {% for card in hand -%}
+          <td>
+            <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" class="card_hand">
+            <!-- <img id= "{{ card }}" src="{{ url_for('static', filename='') }}img/{{ card }}.svg" onclick=card_played({{ card }})> -->
+          </td>
+          {% endfor %}
+          </tr>
+          </table>
       </div>
     </div>
-    <div class="chat" id="chat">
-      <br/>
-      <h4 class="div_title">Chat</h4>
-      <textarea id="chat_text" rows=5 cols=80 readonly></textarea><br>
-      <input type="text" id="chat_input" class = "chat_input" size=77></input>
-      <button id="post" class="btn btn-primary" name="post" type="button">Send</button>
-    </div>
+
+    {% include 'chat.html' %}
+
     <div>
       <div id="game_action_buttons" class="btn-toolbar">
         <p><br>
       </div>
     </div>
+
     <div id="scoresheet_div">
       <br/>
       <h4 class="div_title">Scoresheet</h4>
@@ -549,21 +476,21 @@
             {% endfor %}
           </tr>
         </thead>
-       <tbody id="scoresheet_body">
-    {% for scores_hand in scoresheet -%}
-    <tr>
-      {% for player in players -%}
-      <td>
-        <table>
-          <tr>
-            <td class="scoresheet_nb">{{scores_hand[player]}}</td>
+        <tbody id="scoresheet_body">
+        {% for scores_hand in scoresheet -%}
+        <tr>
+          {% for player in players -%}
+          <td>
+            <table>
+              <tr>
+                <td class="scoresheet_nb">{{scores_hand[player]}}</td>
+              </tr>
+            </table>
+            </td>
+            {% endfor %}
           </tr>
-        </table>
-        </td>
-        {% endfor %}
-      </tr>
-      {% endfor %}
-          </tbody>
+          {% endfor %}
+       </tbody>
       </table>
     </div>
   </form>

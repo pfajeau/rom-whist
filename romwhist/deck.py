@@ -35,18 +35,30 @@ class Deck(object):
     def shuffle(self):
         random.shuffle(self.cards)
 
-    def addTop(self,card):
-        self.cards.append(card)
-        self._size += 1
+    def add_top(self, card):
+        if card is None:
+            return
+        else:
+            self.cards.append(card)
+            self._size += 1
+            return
 
-    def addRandom(self,card):
-        place = random.randint(0,self._size) # getting a random position for the card to be place into
-        self.cards.insert(place,card) # putting the card into place position in the deck
-        self._size += 1 # incrementing the size of the deck
+    def add_random(self, card):
+        if card is None:
+            return
+        else:
+            place = random.randint(0,self._size) # getting a random position for the card to be place into
+            self.cards.insert(place,card) # putting the card into place position in the deck
+            self._size += 1 # incrementing the size of the deck
+            return
 
-    def addBottom(self,card):
-        self.cards.insert(0,card) # put the card to the bottom of the deck
-        self._size += 1 # increment size of the deck
+    def add_bottom(self, card):
+        if card is None:
+            return
+        else:
+            self.cards.insert(0,card) # put the card to the bottom of the deck
+            self._size += 1 # increment size of the deck
+            return
 
     def remove_card(self, card):
         if card in self.cards:
