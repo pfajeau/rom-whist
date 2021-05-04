@@ -170,7 +170,7 @@ Add footer / contact info
        show_alert(i18n["user"] + " " + player_name + " " + i18n["left_game"],
                   "Warning", cancel=false, refresh_display)
        }
-    });
+    );
 
     socket.on('trump card', function(data) { trump_card_received(data, i18n['trump']) })
 

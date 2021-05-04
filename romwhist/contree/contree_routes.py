@@ -45,6 +45,7 @@ clients = dict()
 def contree_start():
     form = ContreeStartForm()
     locale = common_routes.get_locale(request)
+    logging.info("Language set to: %s", locale)
 
     if form.validate_on_submit():
         # Sanitize the username (as it isued as IDs in the html)
