@@ -32,6 +32,7 @@ def i18n():
     __i18n["cancel"] = _("cancel")
     __i18n["round_winner"] = _("round_winner")
     __i18n["with_the"] = _("with_the")
+    __i18n["winner"] = _("winner")
 
     __i18n["trump"] = _("trump")
     __i18n["user"] = _("user")
@@ -39,12 +40,17 @@ def i18n():
 
 
     # This block may not be required
+    __i18n["select"] = _("select")
     __i18n["spade"] = _("spade")
     __i18n["heart"] = _("heart")
     __i18n["diamond"] = _("diamond")
     __i18n["club"] = _("club")
     __i18n["pass"] = _("pass")
-    
+    __i18n["contre"] = _("contre")
+    __i18n["surcontre"] = _("surcontre")
+    __i18n["contré"] = _("contré")
+    __i18n["surcontré"] = _("surcontré")
+
     # This block may not be required
     __i18n["two"] = _("two")
     __i18n["three"] = _("three")
@@ -70,6 +76,7 @@ def i18n():
     __i18n["confirm_stop_game"] = _("confirm_stop_game")
     __i18n["confirm_add_ai"] = _("confirm_add_ai")
     __i18n["confirm_restart_hand"] = _("confirm_restart_hand")
+    __i18n["bet_not_allowed"] = _("bet_not_allowed")
 
     return __i18n
 

@@ -8,6 +8,8 @@ from romwhist.ohell.ohell_state import OhellState
 
 class OhellGame(CardGame):
 
+    MAX_PLAYERS = 6
+
     def __init__(self, game_creator="", bonus_win=1, deck_size=0, id=0):
         CardGame.__init__(self, game_creator, deck_size, id)
         self.bonus_win = bonus_win

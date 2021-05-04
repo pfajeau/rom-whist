@@ -18,6 +18,7 @@ from wtforms import SelectField
 from flask_login import current_user, login_user
 from flask_socketio import emit
 from flask_socketio import join_room, leave_room
+
 from romwhist import common_routes
 from romwhist import socketio
 from romwhist.contree.contree import ContreeGame, CountingMethod
@@ -44,6 +45,7 @@ clients = dict()
 def contree_start():
     form = ContreeStartForm()
     locale = common_routes.get_locale(request)
+    logging.info("Language set to: %s", locale)
 
     if form.validate_on_submit():
         # Sanitize the username (as it isued as IDs in the html)
@@ -59,7 +61,7 @@ def contree_start():
             session['game_id'] = game_id
             return common_routes.join_game(games, game_id, username,
                                            'contree_start.html', 'contree_play',
-                                           NAMESPACE, form)
+                                           NAMESPACE, form, max_players=4)
 
         elif form.start_game.data:
             logging.info("start game")
@@ -99,13 +101,17 @@ def contree_start():
 # @app.route("/contree_play", methods=['GET', 'POST'])
 def contree_play():
     logging.info("In contree_play route")
-    locale = common_routes.get_locale(request)
     form = GameForm()
     player = session.get('username')
     game_id = session.get('game_id')
     game = games.get(game_id)
 
-    redirect_template = common_routes.redirect_game_start(games, request.form.get('action_game'), 'contree_start')
+    redirect_template = common_routes.redirect_game_start(
+        games,
+        clients,
+        request.form.get('action_game'),
+        'contree_start',
+        namespace=NAMESPACE)
 
     if redirect_template is None and request.method == 'POST':
         if request.form['action_game'] == "remove_player":
@@ -121,8 +127,13 @@ def contree_play():
             return redirect(url_for('contree_play'))
 
         if request.form['action_game'] == "add_ai":
-            common_routes.add_ai_player(len(game.players),
-                                        game_id, NAMESPACE_AI)
+            if len(game.get_playing_players()) >= BeloteGame.MAX_PLAYERS:
+                socketio.emit("alert", _("game_already_has_max_players"),
+                              room=clients[game_id].get(player), namespace=NAMESPACE)
+                flash(_("game_already_has_max_players"))
+            else:
+                common_routes.add_ai_player(len(game.players),
+                                            game_id, NAMESPACE_AI)
             return redirect(url_for('contree_play'))
 
     elif redirect_template is None:
@@ -134,7 +145,6 @@ def contree_play():
 
         cards_played = game.get_cards_played_current_round()
 
-        logging.debug("Active Player: " + str(game.get_active_player()))
         logging.debug("Game Phase: " + game.phase.name)
         active_player = game.get_active_player()
 
@@ -161,7 +171,8 @@ def contree_play():
                                allowed_bets=game.get_allowed_bets(player),
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
                                belote_allowed=belote_enabled, player_with_belote=game.player_with_belote,
-                               i18n=json.dumps(i18n_strings.i18n()))
+                               contree_status=game.contree_status.value, current_bet=game.current_bet,
+                               taker=game.taker, i18n=json.dumps(i18n_strings.i18n()))
     else:
         return redirect_template
 
@@ -238,10 +249,13 @@ def player_bet_process(player, game_id, bet):
         try:
             game.place_bet(player, bet)
 
-            #emit("player bet", {'player': player, 'bet': bet}, room=game_id, namespace=NAMESPACE)
+            # There is a case where actual_bet and bet will be different (surcontre)
+            actual_bet = game.bets[player]
             common_routes.emit_to_players(
                 "player bet",
-                {'game_id': game_id, 'player': player, 'bet_suit': bet.suit, 'bet_points': bet.points},
+                {'game_id': game_id, 'player': player, 'bet_suit': actual_bet.suit,
+                 'bet_points': actual_bet.points, 'taker': game.taker,
+                 'current_bet': game.current_bet, 'contree_status': game.contree_status},
                 room=game_id, namespace=NAMESPACE)
 
             nplayer = game.get_active_player()
@@ -543,7 +557,7 @@ def restart_hand(game_id):
     game = games.get(game_id)
     if game is None:
         return
-    socketio.emit("alert", "Hand to be replayed", room=game_id, namespace=NAMESPACE)
+    socketio.emit("alert", _("hand_to_be_replayed"), room=game_id, namespace=NAMESPACE)
     if game.started:
         # Deal another hand
         game._current_hand_nb = game._current_hand_nb - 1
@@ -554,11 +568,15 @@ def restart_hand(game_id):
 def add_player(player, game_id):
     game = games.get(game_id)
     if not game is None:
-        session['game_id'] = game.id
-        common_routes.add_player(player, game, NAMESPACE)
-        if game.started:
-            restart_hand(game_id)
-
+        if len(game.get_playing_players()) >= 4:
+            logging.error("Max number of players reached")
+            return None
+        else:
+            session['game_id'] = game.id
+            common_routes.add_player(player, game, NAMESPACE)
+            if game.started:
+                restart_hand(game_id)
+            return player
 
 def remove_player(game_id, player):
     common_routes.remove_player(game_id, games, clients, player, NAMESPACE)

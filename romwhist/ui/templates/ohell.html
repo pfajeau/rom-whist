@@ -39,6 +39,7 @@ Add footer / contact info
 
   document.addEventListener('DOMContentLoaded', () => {
 
+    setup_alertify()
     allowed_bets = {{ allowed_bets }}
 
     the_players = {{ players|safe }}
@@ -78,7 +79,7 @@ Add footer / contact info
         return
       }
       else {
-        show_alert ("This bet is not allowed.", "Error");
+        show_alert (i18n["bet_not_allowed"], "Error");
         return;
       }
     });
@@ -106,6 +107,7 @@ Add footer / contact info
 
     socket.on('new hand', function(data) {
       new_hand(data, "{{ url_for('static', filename='') }}")
+      $("input[name='bets']").val('')
       $('#trump_card').html('')
     });
 
@@ -165,29 +167,10 @@ Add footer / contact info
     socket.on('new player', function(player_name) { new_player(player_name) })
 
     socket.on('player left', function(player_name) {
-      if (player_name.localeCompare(username) != 0) {
-
-        $("#" + player_name).remove();
-        $("#label_" + player_name).remove();
-
-        let id_bet = "#bets_" + player_name;
-        $(id_bet).parent().remove();
-        id_bet = "#label_bets_" + player_name;
-        $(id_bet).parent().remove();
-
-        let id_round = "#rounds_" + player_name;
-        $(id_round).parent().remove()
-        id_round = "#label_rounds_" + player_name;
-        $(id_round).parent().remove();
-
-        let id_score = "#score_" + player_name;
-        $(id_score).parent().remove()
-        id_score = "#label_score_" + player_name;
-        $(id_score).parent().remove()
-
-        show_alert(i18n["user"] + " " + player_name + " " + i18n["left_game"], "Warning")
-      }
-    });
+       show_alert(i18n["user"] + " " + player_name + " " + i18n["left_game"],
+                  "Warning", cancel=false, refresh_display)
+       }
+    );
 
     socket.on('trump card', function(data) { trump_card_received(data, i18n['trump']) })
 

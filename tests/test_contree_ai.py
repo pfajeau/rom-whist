@@ -25,9 +25,9 @@ def main():
                  'jim': ["s8", "d13", "d11", "d14", "c11", "c13", "h7", "h13"]}
 
     #allowed_bets = ['80', '90','100','Capot']
-    allowed_bets_suits = ["Pass"]
-    allowed_bets_suits.extend(Card.SUIT_NAMES)
-    allowed_bets_points = ['80', '90','100','Capot']
+    allowed_bets_suits = ["pass", "spade", "heart", "diamond","club"]
+    allowed_bets_suits.append( 'contre')
+    allowed_bets_points = ['80', '90','100','162']
     allowed_bets = [allowed_bets_suits, allowed_bets_points]
 
     # Create a game state
@@ -38,8 +38,9 @@ def main():
     contree_ai.game_state.hand_cards = all_cards
     contree_ai.game_state.phase = ContreeGame.GamePhase.BET
     contree_ai.game_state.active_player = "AI1"
-    contree_ai.game_state.bets = {"joe": "Pass_0", "jack":"Pass_0", "AI1": "Pass_0", "jim":"Pass_0"}
-
+    contree_ai.game_state.bets = {"joe": "pass_0", "jack":"heart_80", "AI1": "pass_0", "jim":"pass_0"}
+    contree_ai.game_state.trump = "heart"
+    contree_ai.game_state.current_bet = "heart_80"
     state_snapshop = copy.deepcopy(contree_ai.game_state)
 
     #Test serialization
@@ -51,13 +52,14 @@ def main():
     logging.debug("Game state from JSON as dict: %s", game_state.__dict__)
 
     bet = contree_ai.player_to_bet(allowed_bets, json.dumps(contree_ai.game_state.__dict__))
+    print ("Computed bet %s", bet)
     logging.info("bet = %s", bet)
-    assert bet.suit == "Spade", bet.suit
+    assert bet.suit == "spade", bet.suit
 
     # Test playing
     contree_ai.game_state = copy.deepcopy(state_snapshop)
     contree_ai.game_state.phase = ContreeGame.GamePhase.PLAY
-    contree_ai.game_state.trump = "Spade"
+    contree_ai.game_state.trump = "spade"
     contree_ai.game_state.active_player = "AI1"
     contree_ai.game_state.taker = "joe"
     contree_ai.game_state.allowed_cards = ["s12", "s13", "d13", "d12", "c10", "c14", "h10", "h11"]
@@ -66,15 +68,12 @@ def main():
                  'AI1': ["s12", "s13", "d13", "d12", "c10", "c14", "h10", "h11"],
                  'jim': ["s8", "s14", "d11", "d14", "c11", "c13", "h13", "h14"]}
     contree_ai.game_state.hand_cards = all_cards
-    contree_ai.game_state.bets = {"joe":"Spade_80", "jack":"Pass_0", "AI1":"Pass_0", "jim":"Pass_0"}
-    contree_ai.game_state.current_bet = "Spade_80"
+    contree_ai.game_state.bets = {"joe":"spade_80", "jack":"pass_0", "AI1":"pass_0", "jim":"pass_0"}
+    contree_ai.game_state.current_bet = "spade_80"
 
     card = contree_ai.player_to_play("", contree_ai.game_state.toJson())
     logging.debug("AI played card: " + card)
     #assert card in ["s9", "s11", "d13", "h12"], card
-    logging.info("Trump is: Heart")
-    logging.info("AI cards: %s %s %s %s %s %s %s %s", "s12", "s13", "d13", "d12", "c10", "c14", "h10", "h11")
-    logging.info("Card chosen to start is: %s", card)
 
 
 if __name__ == '__main__':

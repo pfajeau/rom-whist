@@ -21,11 +21,11 @@ def main():
                  'AI1': ["s9", "s11", "d13", "h12", "c10"],
                  'jim': ["s8", "s14", "d11", "d14", "c11"]}
 
-    allowed_bets = ['Pass', 'Spade']
+    allowed_bets = ['Pass', 'spade']
     # Create a game state
     game_state = BeloteState("test", "AI1", deck_size=32, dealer="joe", players=["joe", "jack", "AI1", "jim"])
     belote_ai.game_state = copy.deepcopy(game_state)
-    belote_ai.game_state.allowed_bets = ['Pass', 'Spade']
+    belote_ai.game_state.allowed_bets = ['Pass', 'spade']
     belote_ai.game_state.hand_cards = all_cards
     belote_ai.game_state.phase = BeloteGame.GamePhase.BET
     belote_ai.game_state.trump_card = "s10"
@@ -35,16 +35,16 @@ def main():
 
     belote_ai.game_state = copy.deepcopy(state_snapshop)
     belote_ai.game_state.phase = BeloteGame.GamePhase.BET2
-    belote_ai.game_state.allowed_bets = ['Pass', 'Club', 'Heart', 'Diamond', 'Spade']
+    belote_ai.game_state.allowed_bets = ['Pass', 'club', 'heart', 'diamond', 'spade']
     belote_ai.game_state.trump_card = "h7"
-    bet = belote_ai.player_to_bet(['Pass', 'Club', 'Heart', 'Diamond', 'Spade'], json.dumps(belote_ai.game_state.__dict__))
+    bet = belote_ai.player_to_bet(['pass', 'club', 'heart', 'diamond', 'spade'], json.dumps(belote_ai.game_state.__dict__))
     logging.info("bet = %s", bet)
 
     # Test playing
     belote_ai.game_state = copy.deepcopy(state_snapshop)
     belote_ai.game_state.phase = BeloteGame.GamePhase.PLAY
     belote_ai.game_state.trump_card = "h7"
-    belote_ai.game_state.trump = "Heart"
+    belote_ai.game_state.trump = "heart"
     belote_ai.game_state.active_player = "AI1"
     belote_ai.game_state.taker = "AI1"
     belote_ai.game_state.allowed_cards = ["s9", "s11", "d8", "d9", "c7", "c18", "h7", "h9"]

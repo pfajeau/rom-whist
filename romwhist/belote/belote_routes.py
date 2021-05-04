@@ -10,10 +10,12 @@ import json
 from random import randint
 
 from flask import render_template, request, flash, session, url_for, redirect
+from flask_babel import gettext as _
 # from flask import Blueprint
 from flask_login import current_user, login_user
 from flask_socketio import emit
 from flask_socketio import join_room, leave_room
+
 from romwhist import common_routes
 from romwhist import socketio
 from romwhist.belote.belote import BeloteGame
@@ -55,7 +57,7 @@ def belote_start():
             session['game_id'] = game_id
             return common_routes.join_game(games, game_id, username,
                                            'belote_start.html', 'belote_play',
-                                           NAMESPACE, form)
+                                           NAMESPACE, form,  max_players=BeloteGame.MAX_PLAYERS)
 
         elif form.start_game.data:
             logging.info("start game")
@@ -91,46 +93,19 @@ def belote_start():
 def belote_play():
 
     logging.info("In belote_play route")
-    locale = common_routes.get_locale(request)
-
     form = GameForm()
     player = session.get('username')
-    if player is None:
-        logging.error("Unknow player in session")
-        flash("Session has expired")
-        return redirect(url_for('belote_start'))
-
     game_id = session.get('game_id')
-    if game_id is None:
-        logging.error("Unknow game id: %s", game_id)
-        flash("Game does not exist")
-        return redirect(url_for('belote_start'))
-
     game = games.get(game_id)
-    if game is None:
-        logging.error("Unknow game: %s", game_id)
-        flash("Game does not exist")
-        return redirect(url_for('belote_start'))
 
-    if request.method == 'POST':
+    redirect_template = common_routes.redirect_game_start(
+        games,
+        clients,
+        request.form.get('action_game'),
+        'belote_start',
+        namespace=NAMESPACE)
 
-        # logging.info (request.form)
-        if game_id is None:
-            error = "Could not find game_id in session"
-            logging.error(error)
-            return render_template('belote_start.html', error=error, locale=locale)
-
-        # if "stop_game" in request.form:
-        if request.form['action_game'] == "stop_game":
-            socketio.emit("game over", game.get_highest_score_player(), room=game_id, namespace=NAMESPACE)
-            clean_game_data(game_id)
-            return redirect(url_for('belote_start'))
-
-        # if "leave_game" in request.form:
-        if request.form['action_game'] == "leave_game":
-            remove_player(game_id, session['username'])
-            return redirect(url_for('belote_start'))
-
+    if redirect_template is None and request.method == 'POST':
         if request.form['action_game'] == "remove_player":
             logging.info("Remove Player button pressed")
             rplayer = request.form['player_list']
@@ -144,11 +119,16 @@ def belote_play():
             return redirect(url_for('belote_play'))
 
         if request.form['action_game'] == "add_ai":
-            common_routes.add_ai_player(len(game.players),
-                                        game_id, NAMESPACE_AI)
+            if len(game.get_playing_players()) >= 4:
+                socketio.emit("alert", _("game_already_has_max_players"),
+                              room=clients[game_id].get(player), namespace=NAMESPACE)
+                flash(_("game_already_has_max_players"))
+            else:
+                common_routes.add_ai_player(len(game.players),
+                                            game_id, NAMESPACE_AI)
             return redirect(url_for('belote_play'))
 
-    else:
+    elif redirect_template is None:
         hand = game.get_hands().get(player)
         if hand is None:
             hand = []
@@ -158,7 +138,6 @@ def belote_play():
 
         cards_played = game.get_cards_played_current_round()
 
-        logging.debug("Active Player: " + game.get_active_player())
         logging.debug("Game Phase: " + game.phase.name)
         active_player = game.get_active_player()
 
@@ -178,6 +157,8 @@ def belote_play():
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
                                belote_allowed=belote_enabled, player_with_belote=game.player_with_belote, i18n=json.dumps(i18n_strings.i18n()))
 
+    else:
+        return redirect_template
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
@@ -211,7 +192,7 @@ def message(data):
 @socketio.on("cs game started", namespace=NAMESPACE)
 def game_started():
     game_id = session.get('game_id')
-    if not game_id is None:
+    if game_id is not None:
         game = games.get(game_id)
         if not game is None:
             # In automated dealing, call start_hands with computed nb of cards and trump
@@ -247,6 +228,7 @@ def player_bet(bet):
     player_bet_process(player, game_id, bet)
     return
 
+
 def player_bet_process(player, game_id, bet):
     if game_id is None:
         logging.error("ERROR: Game not found!!!")
@@ -277,7 +259,7 @@ def player_bet_process(player, game_id, bet):
             elif game.phase == BeloteGame.GamePhase.PLAY:
                 hands = game.deal_2(game.dealer)
                 logging.debug("After deal_2")
-                round = game.create_round()
+                game.create_round()
                 # Distribute cards to each players
                 for player in game.get_playing_players():
                     cards = hands[player].serialize()

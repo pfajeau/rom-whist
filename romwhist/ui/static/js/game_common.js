@@ -1,3 +1,8 @@
+function setup_alertify() {
+  // Override glossary values
+  alertify.defaults.glossary.ok = i18n['ok'];
+  alertify.defaults.glossary.cancel = i18n['cancel'];
+}
 
 function play_sound(audio_file) {
   const sound = new Audio()
@@ -65,7 +70,7 @@ function initialize(players) {
     '<button id="stop_game" type="button" class="btn btn-warning" name="stop_game">' +
     i18n["stop_game"] + '</button>');
     document.getElementById("stop_game").onclick = function() {
-      show_alert(i18n["confirm_stop_game"], cancel=true, callback_ok=submit_form, action="stop_game");
+      show_alert(i18n["confirm_stop_game"], "Warning", cancel=true, callback_ok=submit_form, action="stop_game");
     }
   }
 
@@ -155,7 +160,7 @@ function start_game() {
   //disable_start_game();
 }
 
-function game_stated(data) {
+function game_started(data) {
   console.log("game started event received")
   console.log(data)
   $("input[name='rounds']").val(0);
@@ -235,7 +240,6 @@ function make_player_play(player_name, allowed_cards) {
 function make_player_the_better(player_name, bet1="#bets_", bet2="") {
   let id_bet = bet1 + player_name
   if (player_name == username) {
-    //play_sound("bicycle_bell.wav")
     $(id_bet).prop('readonly', false);
     $(id_bet).prop('disabled', false);
     $(id_bet).addClass("highlighted_field");
@@ -244,9 +248,8 @@ function make_player_the_better(player_name, bet1="#bets_", bet2="") {
   if (bet2 != "") {
     let id_bet2 = bet2 + player_name
     if (player_name == username) {
-      //play_sound("bicycle_bell.wav")
-      $(id_bet2).prop('readonly', false);
-      $(id_bet2).prop('disabled', false);
+      // $(id_bet2).prop('readonly', false);
+      // $(id_bet2).prop('disabled', false);
       $(id_bet2).addClass("highlighted_field");
     }
   }
@@ -360,7 +363,7 @@ function game_over(winners) {
     winner_list = winner_list.concat(item, " ");
   });
 
-  show_alert(i18n['game_over'] + " - Winner: " + winner_list);
+  show_alert(i18n['game_over'] + " - " + ii18n['winner'] + ": " + winner_list);
   play_sound("applause2_x.wav")
 }
 
@@ -401,16 +404,20 @@ function show_alert(msg, title, cancel=false, callback_ok, action="") {
       }
     }, function(){});
   }
-
   else {
     alertify.alert(title, msg, function() {
       if (callback_ok) {
-        $("#action_game").val(action);
+        // $("#action_game").val(action);
         callback_ok();
       }
     });
   }
 }
+
+function refresh_display() {
+   window.location.reload(false);
+}
+
 
 function show_dialog_ok(title,text,ok_function, action="") {
   console.log("In show_dialog_ok...")

@@ -36,6 +36,8 @@ Add footer / contact info
 
   document.addEventListener('DOMContentLoaded', () => {
 
+    setup_alertify()
+
     the_players = {{ players|safe }}
     initialize(the_players)
 
@@ -109,6 +111,7 @@ Add footer / contact info
     socket.on('new hand', function(data) {
       new_hand(data, "{{ url_for('static', filename='') }}")
       $('#trump_card').html('')
+      $("input[name='bets']").val('')
     });
 
     socket.on('belote announced', function(data) {
@@ -149,7 +152,7 @@ Add footer / contact info
 
       $(id_bet).empty();
       let html = ""
-      html = html.concat('<option value="select" selected>i18n["select"]</option>')
+      html = html.concat('<option value="select" selected>' + i18n["select"] + '</option>')
       for (bet in allowed_bets) {
         html = html.concat('<option value="' + allowed_bets[bet] + '">' + i18n[allowed_bets[bet]] + '</option>')
       }
@@ -194,22 +197,9 @@ Add footer / contact info
 
     socket.on('player left', function(player_name) {
       if (player_name.localeCompare(username) != 0) {
-
-        $("#" + player_name).remove();
-        $("#label_" + player_name).remove();
-
-        let id_round = "#rounds_" + player_name;
-        $(id_round).parent().remove()
-        id_round = "#label_rounds_" + player_name;
-        $(id_round).parent().remove();
-
-        let id_score = "#score_" + player_name;
-        $(id_score).parent().remove()
-        id_score = "#label_score_" + player_name;
-        $(id_score).parent().remove()
-
-        show_alert(i18n['user'] : " " + player_name + " " + i18n['left_game'], "Warning")
-      }
+        show_alert(i18n["user"] + " " + player_name + " " + i18n["left_game"],
+                  "Warning", cancel=false, refresh_display)
+     }
     });
 
     socket.on('trump card', function(data) { trump_card_received(data, "") })
@@ -219,7 +209,7 @@ Add footer / contact info
         // Update trump_suit
         trump_suit = trump
         $('#trump_card').html('')
-        $("#trump_card").append('<label class="trump_caption">Trump:' + trump_suit + '</label>')
+        $("#trump_card").append('<label class="trump_caption">' + i18n['trump'] + ': ' + i18n[trump_suit] + '</label>')
     })
 
     socket.on('round ended', function(data) {
@@ -280,7 +270,7 @@ Add footer / contact info
           <option value="select" selected>{{ _("select") }}</option>
           {% if allowed_bets|length == 0 %}
             {% if bets[player] != "" %}
-            <option value="{{ bets[player] }}" selected>{{ _l(bets[player]) }}</option>
+            <option value="{{ bets[player] }}" selected>{{ _(bets[player]) }}</option>
             {% endif %}
           {% else %}
             {% for bet in allowed_bets -%}
