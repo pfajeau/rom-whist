@@ -18,6 +18,7 @@ from wtforms import SelectField
 from flask_login import current_user, login_user
 from flask_socketio import emit
 from flask_socketio import join_room, leave_room
+
 from romwhist import common_routes
 from romwhist import socketio
 from romwhist.contree.contree import ContreeGame, CountingMethod
@@ -56,18 +57,10 @@ def contree_start():
         session['username'] = username
         if form.join_game.data:
             game_id = request.form['game_id']
-            game = games.get(game_id)
-
             session['game_id'] = game_id
-            if len(game.get_playing_players()) >= 4:
-                flash(_("game_already_has_4_players"))
-                return render_template('contree_start.html',
-                                       error=_("game_already_has_4_players"),
-                                       form=form, locale=locale)
-            else:
-                return common_routes.join_game(games, game_id, username,
+            return common_routes.join_game(games, game_id, username,
                                            'contree_start.html', 'contree_play',
-                                           NAMESPACE, form)
+                                           NAMESPACE, form, max_players=4)
 
         elif form.start_game.data:
             logging.info("start game")
@@ -107,13 +100,16 @@ def contree_start():
 # @app.route("/contree_play", methods=['GET', 'POST'])
 def contree_play():
     logging.info("In contree_play route")
-    locale = common_routes.get_locale(request)
     form = GameForm()
     player = session.get('username')
     game_id = session.get('game_id')
     game = games.get(game_id)
 
-    redirect_template = common_routes.redirect_game_start(games, request.form.get('action_game'), 'contree_start')
+    redirect_template = common_routes.redirect_game_start(
+        games,
+        request.form.get('action_game'),
+        'contree_start',
+        NAMESPACE)
 
     if redirect_template is None and request.method == 'POST':
         if request.form['action_game'] == "remove_player":
@@ -129,10 +125,10 @@ def contree_play():
             return redirect(url_for('contree_play'))
 
         if request.form['action_game'] == "add_ai":
-            if len(game.get_playing_players()) >= 4:
-                socketio.emit("alert", _("game_already_has_4_players"),
+            if len(game.get_playing_players()) >= BeloteGame.MAX_PLAYERS:
+                socketio.emit("alert", _("game_already_has_max_players"),
                               room=clients[game_id].get(player), namespace=NAMESPACE)
-                flash(_("game_already_has_4_players"))
+                flash(_("game_already_has_max_players"))
             else:
                 common_routes.add_ai_player(len(game.players),
                                             game_id, NAMESPACE_AI)

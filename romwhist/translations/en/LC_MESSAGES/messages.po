@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-05-03 12:16-0700\n"
+"POT-Creation-Date: 2021-05-03 15:57-0700\n"
 "PO-Revision-Date: 2021-04-22 16:30-0700\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -46,6 +46,15 @@ msgstr "The game already has a user with the same name"
 msgid "game_already_started"
 msgstr "This game has already started! You cannot join a game in progress"
 
+#: common_routes.py:187
+msgid "game_already_has_4_players"
+msgstr "Game already has 4 players - Cannot add another one"
+
+#: belote/belote_routes.py:118 belote/belote_routes.py:120 common_routes.py:189
+#: contree/contree_routes.py:125 contree/contree_routes.py:127
+msgid "game_already_has_max_players"
+msgstr "The game has already reached its maximum number of players"
+
 #: forms.py:27 i18n_strings.py:70
 msgid "game_id"
 msgstr "Game ID"
@@ -80,12 +89,12 @@ msgid "wins"
 msgstr "Wins"
 
 #: i18n_strings.py:15 ui/templates/belote.html:299
-#: ui/templates/contree.html:380
+#: ui/templates/contree.html:390
 msgid "points"
 msgstr "Points"
 
 #: i18n_strings.py:16 ui/templates/belote.html:309
-#: ui/templates/contree.html:390 ui/templates/ohell.html:255
+#: ui/templates/contree.html:400 ui/templates/ohell.html:255
 msgid "score"
 msgstr "Score"
 
@@ -162,7 +171,7 @@ msgid "left_game"
 msgstr "left the game"
 
 #: i18n_strings.py:43 ui/templates/belote.html:282
-#: ui/templates/contree.html:358 ui/templates/contree.html:368
+#: ui/templates/contree.html:368 ui/templates/contree.html:378
 msgid "select"
 msgstr "Select"
 
@@ -182,24 +191,23 @@ msgstr "Diamond"
 msgid "club"
 msgstr "Club"
 
-#: contree/contree.py:37 i18n_strings.py:48
+#: contree/contree.py:38 i18n_strings.py:48
 msgid "pass"
 msgstr "Pass"
 
-#: contree/contree.py:38 i18n_strings.py:49
+#: contree/contree.py:39 i18n_strings.py:49
 msgid "contre"
 msgstr "Contre"
 
-#: contree/contree.py:39 i18n_strings.py:50
+#: contree/contree.py:40 i18n_strings.py:50
 msgid "surcontre"
 msgstr "Surcontre"
 
-#: i18n_strings.py:51 ui/templates/contree.html:411
+#: i18n_strings.py:51 ui/templates/contree.html:421
 msgid "contré"
 msgstr "Contré"
-"
 
-#: i18n_strings.py:52 ui/templates/contree.html:413
+#: i18n_strings.py:52 ui/templates/contree.html:423
 msgid "surcontré"
 msgstr "Surcontré"
 
@@ -299,15 +307,15 @@ msgstr "Stop game after player/team reaches"
 msgid "number_between_500_and_2000"
 msgstr "Enter a number between 500 and 2000"
 
-#: contree/contree.py:40
+#: contree/contree.py:41
 msgid "points_bid"
 msgstr "Points Bid"
 
-#: contree/contree.py:41
+#: contree/contree.py:42
 msgid "points_achieved"
 msgstr "Points Achieved"
 
-#: contree/contree.py:42
+#: contree/contree.py:43
 msgid "points_achieved_bid"
 msgstr "Points Achieved + Bid"
 
@@ -315,12 +323,7 @@ msgstr "Points Achieved + Bid"
 msgid "counting"
 msgstr "Counting"
 
-#: contree/contree_routes.py:63 contree/contree_routes.py:65
-#: contree/contree_routes.py:133
-msgid "game_already_has_4_players"
-msgstr "Game already has 4 players - Cannot add another one"
-
-#: contree/contree_routes.py:561
+#: contree/contree_routes.py:554
 msgid "hand_to_be_replayed"
 msgstr "Hand to be replayed"
 
@@ -344,7 +347,7 @@ msgstr "Enter Increment (between 1 and 5)"
 msgid "copyright_notice"
 msgstr "This site was created during COVID 19"
 
-#: ui/templates/belote.html:278 ui/templates/contree.html:347
+#: ui/templates/belote.html:278 ui/templates/contree.html:357
 msgid "bid"
 msgstr "Bid"
 

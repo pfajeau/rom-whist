@@ -62,7 +62,7 @@ def login():
     return render_template('login.html', title='Sign In', form=form)
 
 
-def redirect_game_start(games, action, template_to_render):
+def redirect_game_start(games, action, template_to_render, namespace):
     player = session.get('username')
     if player is None:
         logging.error("Unknown player in session")
@@ -86,7 +86,7 @@ def redirect_game_start(games, action, template_to_render):
 
         # if "stop_game" in request.form:
         if action == "stop_game":
-            socketio.emit(_("game_over"), game.get_highest_score_player(), room=game_id, namespace=NAMESPACE)
+            socketio.emit(_("game_over"), game.get_highest_score_player(), room=game_id, namespace=namespace)
             clean_game_data(game_id)
             return redirect(url_for(template_to_render))
 
@@ -156,7 +156,7 @@ def sanitize_username(username1):
     return username
 
 
-def join_game(games, game_id, username, start_page, play_page, namespace, form):
+def join_game(games, game_id, username, start_page, play_page, namespace, form, max_players=6):
     logging.debug("game id: " + game_id)
     if not game_id in games:
         error = _("game_not_created")
@@ -182,6 +182,12 @@ def join_game(games, game_id, username, start_page, play_page, namespace, form):
     # Remove player from game if that player was already in the games
     # if previous_alias in players[game_id]:
     #     remove_player(game_id, previous_alias)
+
+    if len(game.get_playing_players()) >= max_players:
+        flash(_("game_already_has_4_players"))
+        return render_template('contree_start.html',
+                               error=_("game_already_has_max_players"),
+                               form=form, locale=get_locale(request))
 
     session['ownername'] = game.owner
     add_player(username, game, namespace)

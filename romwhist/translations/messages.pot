@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-05-03 12:16-0700\n"
+"POT-Creation-Date: 2021-05-03 15:57-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,6 +45,15 @@ msgstr ""
 msgid "game_already_started"
 msgstr ""
 
+#: common_routes.py:187
+msgid "game_already_has_4_players"
+msgstr ""
+
+#: belote/belote_routes.py:118 belote/belote_routes.py:120 common_routes.py:189
+#: contree/contree_routes.py:125 contree/contree_routes.py:127
+msgid "game_already_has_max_players"
+msgstr ""
+
 #: forms.py:27 i18n_strings.py:70
 msgid "game_id"
 msgstr ""
@@ -79,12 +88,12 @@ msgid "wins"
 msgstr ""
 
 #: i18n_strings.py:15 ui/templates/belote.html:299
-#: ui/templates/contree.html:380
+#: ui/templates/contree.html:390
 msgid "points"
 msgstr ""
 
 #: i18n_strings.py:16 ui/templates/belote.html:309
-#: ui/templates/contree.html:390 ui/templates/ohell.html:255
+#: ui/templates/contree.html:400 ui/templates/ohell.html:255
 msgid "score"
 msgstr ""
 
@@ -161,7 +170,7 @@ msgid "left_game"
 msgstr ""
 
 #: i18n_strings.py:43 ui/templates/belote.html:282
-#: ui/templates/contree.html:358 ui/templates/contree.html:368
+#: ui/templates/contree.html:368 ui/templates/contree.html:378
 msgid "select"
 msgstr ""
 
@@ -181,23 +190,23 @@ msgstr ""
 msgid "club"
 msgstr ""
 
-#: contree/contree.py:37 i18n_strings.py:48
+#: contree/contree.py:38 i18n_strings.py:48
 msgid "pass"
 msgstr ""
 
-#: contree/contree.py:38 i18n_strings.py:49
+#: contree/contree.py:39 i18n_strings.py:49
 msgid "contre"
 msgstr ""
 
-#: contree/contree.py:39 i18n_strings.py:50
+#: contree/contree.py:40 i18n_strings.py:50
 msgid "surcontre"
 msgstr ""
 
-#: i18n_strings.py:51 ui/templates/contree.html:411
+#: i18n_strings.py:51 ui/templates/contree.html:421
 msgid "contré"
 msgstr ""
 
-#: i18n_strings.py:52 ui/templates/contree.html:413
+#: i18n_strings.py:52 ui/templates/contree.html:423
 msgid "surcontré"
 msgstr ""
 
@@ -297,15 +306,15 @@ msgstr ""
 msgid "number_between_500_and_2000"
 msgstr ""
 
-#: contree/contree.py:40
+#: contree/contree.py:41
 msgid "points_bid"
 msgstr ""
 
-#: contree/contree.py:41
+#: contree/contree.py:42
 msgid "points_achieved"
 msgstr ""
 
-#: contree/contree.py:42
+#: contree/contree.py:43
 msgid "points_achieved_bid"
 msgstr ""
 
@@ -313,12 +322,7 @@ msgstr ""
 msgid "counting"
 msgstr ""
 
-#: contree/contree_routes.py:63 contree/contree_routes.py:65
-#: contree/contree_routes.py:133
-msgid "game_already_has_4_players"
-msgstr ""
-
-#: contree/contree_routes.py:561
+#: contree/contree_routes.py:554
 msgid "hand_to_be_replayed"
 msgstr ""
 
@@ -342,7 +346,7 @@ msgstr ""
 msgid "copyright_notice"
 msgstr ""
 
-#: ui/templates/belote.html:278 ui/templates/contree.html:347
+#: ui/templates/belote.html:278 ui/templates/contree.html:357
 msgid "bid"
 msgstr ""
 

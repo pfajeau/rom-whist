@@ -10,10 +10,12 @@ import json
 from random import randint
 
 from flask import render_template, request, flash, session, url_for, redirect
+from flask_babel import gettext as _
 # from flask import Blueprint
 from flask_login import current_user, login_user
 from flask_socketio import emit
 from flask_socketio import join_room, leave_room
+
 from romwhist import common_routes
 from romwhist import socketio, app
 from romwhist.extensions import db
@@ -68,7 +70,7 @@ def ohell_start():
             session['game_id'] = game_id
             return common_routes.join_game(games, game_id, username,
                                            'ohell_start.html', 'ohell_play',
-                                           NAMESPACE, form)
+                                           NAMESPACE, form, max_players=6)
 
         elif form.start_game.data:
             logging.info("start game")
@@ -105,46 +107,17 @@ def ohell_start():
 def ohell_play():
     logging.debug("In ohell_play route")
     form = GameForm()
-    locale = common_routes.get_locale(request)
-
     player = session.get('username')
-    logging.debug("Player name: " + player)
-    if player is None:
-        flash("Session has expired")
-        return redirect(url_for('ohell_start'))
-
     game_id = session.get('game_id')
-    if game_id is None:
-        flash("Game does not exist")
-        return redirect(url_for('ohell_start'))
-
     game = games.get(game_id)
-    if game is None:
-        flash("Game does not exist")
-        return redirect(url_for('ohell_start'))
 
-    if request.method == 'POST':
-        # logging.debug (request.form)
-        if game_id is None:
-            error = "Could not find game_id in session"
-            logging.debug(error)
-            return render_template('ohell_start.html',
-                                   error=error, locale=locale)
+    redirect_template = common_routes.redirect_game_start(
+        games,
+        request.form.get('action_game'),
+        'ohell_start',
+        NAMESPACE)
 
-        # if "stop_game" in request.form:
-        if request.form['action_game'] == "stop_game":
-            common_routes.emit_to_players(
-                "game over",
-                game.get_highest_score_player(), game_id=game_id,
-                room=game_id, namespace=NAMESPACE)
-            clean_game_data(game_id)
-            return redirect(url_for('ohell_start'))
-
-        # if "leave_game" in request.form:
-        if request.form['action_game'] == "leave_game":
-            remove_player(game_id, session['username'])
-            return redirect(url_for('ohell_start'))
-
+    if redirect_template is None and request.method == 'POST':
         if request.form['action_game'] == "remove_player":
             logging.info("Remove Player button pressed")
             rplayer = request.form['player_list']
@@ -158,10 +131,16 @@ def ohell_play():
             return redirect(url_for('ohell_play'))
 
         if request.form['action_game'] == "add_ai":
-            common_routes.add_ai_player(len(game.players),
-                                        game_id, NAMESPACE_AI)
-            return redirect(url_for('ohell_play'))
-    else:
+            if len(game.get_playing_players()) >= OhellGame.MAX_PLAYERS:
+                socketio.emit("alert", _("game_already_has_max_players"),
+                              room=clients[game_id].get(player), namespace=NAMESPACE)
+                flash(_("game_already_has_max_players"))
+            else:
+                common_routes.add_ai_player(len(game.players),
+                                            game_id, NAMESPACE_AI)
+        return redirect(url_for('ohell_play'))
+
+    elif redirect_template is None:
         hand = game.get_hands().get(player)
         if hand is None:
             hand = []
@@ -183,6 +162,8 @@ def ohell_play():
                                allowed_bets=game.get_allowed_bets(player), game_phase=game.phase.name,
                                hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet,
                                i18n=json.dumps(i18n_strings.i18n()))
+    else:
+        return redirect_template
 
 
 # @app.route("/login",methods=['GET', 'POST'])

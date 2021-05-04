@@ -144,8 +144,9 @@
     socket.on('new hand', function(data) {
       console.log("new hand event received")
       new_hand(data, "{{ url_for('static', filename='') }}")
-      $("input[name='bets_points']").html('')
-      $("input[name='bets_suit']").html('')
+
+      // Required to properly refresh the bet fields
+      window.location.reload(false);
     });
 
     socket.on('belote announced', function(data) {
@@ -236,7 +237,8 @@
       $(id_bet_suit).removeClass("highlighted_field");
       $(id_bet_points).removeClass("highlighted_field");
 
-      console.log (contree_status)
+      console.log ("Contree status: " + contree_status)
+      console.log ("Current bet: " + current_bet)
 
       $("#bet_status").html('')
       if (current_bet != 'None' && current_bet != 'pass_0') {

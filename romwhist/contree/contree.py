@@ -20,6 +20,7 @@ class CountingMethod(str, Enum):
 class ContreeGame(BeloteGame):
 
     all_bet_points = [80, 90, 100, 110, 120, 130, 140, 150, 162]
+    MAX_PLAYERS = 4
 
     def __init__(self, game_creator="", id=0, counting=CountingMethod.POINTS_BID):
         BeloteGame.__init__(self, game_creator, id)

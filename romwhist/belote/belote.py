@@ -12,6 +12,7 @@ from romwhist.belote.belote_state import BeloteState
 
 class BeloteGame(CardGame):
     TOTAL_POINTS = 162
+    MAX_PLAYERS = 4
 
     class GamePhase(str, Enum):
         DEAL = "Deal"
@@ -254,7 +255,7 @@ class BeloteGame(CardGame):
     def next_player_to_bet(self, player, no_bet_string=""):
         logging.debug("Next player to bet after: " + player)
         next_player = self.next_player(player)
-        if str(self.bets[next_player]) == no_bet_string or self._nb_pass_since_bet < len(self.players):
+        if str(self.bets[next_player]) == no_bet_string or self._nb_pass_since_bet < len(self.players) - 1:
             logging.debug("Next player to bet after " + player + " is: " + next_player)
             return next_player
         else:
