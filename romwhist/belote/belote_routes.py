@@ -100,9 +100,10 @@ def belote_play():
 
     redirect_template = common_routes.redirect_game_start(
         games,
+        clients,
         request.form.get('action_game'),
         'belote_start',
-        NAMESPACE)
+        namespace=NAMESPACE)
 
     if redirect_template is None and request.method == 'POST':
         if request.form['action_game'] == "remove_player":
@@ -127,7 +128,7 @@ def belote_play():
                                             game_id, NAMESPACE_AI)
             return redirect(url_for('belote_play'))
 
-    else:
+    elif redirect_template is None:
         hand = game.get_hands().get(player)
         if hand is None:
             hand = []
@@ -156,6 +157,8 @@ def belote_play():
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
                                belote_allowed=belote_enabled, player_with_belote=game.player_with_belote, i18n=json.dumps(i18n_strings.i18n()))
 
+    else:
+        return redirect_template
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
@@ -189,7 +192,7 @@ def message(data):
 @socketio.on("cs game started", namespace=NAMESPACE)
 def game_started():
     game_id = session.get('game_id')
-    if not game_id is None:
+    if game_id is not None:
         game = games.get(game_id)
         if not game is None:
             # In automated dealing, call start_hands with computed nb of cards and trump
@@ -225,6 +228,7 @@ def player_bet(bet):
     player_bet_process(player, game_id, bet)
     return
 
+
 def player_bet_process(player, game_id, bet):
     if game_id is None:
         logging.error("ERROR: Game not found!!!")
@@ -255,7 +259,7 @@ def player_bet_process(player, game_id, bet):
             elif game.phase == BeloteGame.GamePhase.PLAY:
                 hands = game.deal_2(game.dealer)
                 logging.debug("After deal_2")
-                round = game.create_round()
+                game.create_round()
                 # Distribute cards to each players
                 for player in game.get_playing_players():
                     cards = hands[player].serialize()

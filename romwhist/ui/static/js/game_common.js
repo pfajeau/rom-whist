@@ -407,12 +407,17 @@ function show_alert(msg, title, cancel=false, callback_ok, action="") {
   else {
     alertify.alert(title, msg, function() {
       if (callback_ok) {
-        $("#action_game").val(action);
+        // $("#action_game").val(action);
         callback_ok();
       }
     });
   }
 }
+
+function refresh_display() {
+   window.location.reload(false);
+}
+
 
 function show_dialog_ok(title,text,ok_function, action="") {
   console.log("In show_dialog_ok...")

@@ -113,9 +113,10 @@ def ohell_play():
 
     redirect_template = common_routes.redirect_game_start(
         games,
+        clients,
         request.form.get('action_game'),
         'ohell_start',
-        NAMESPACE)
+        namespace=NAMESPACE)
 
     if redirect_template is None and request.method == 'POST':
         if request.form['action_game'] == "remove_player":
