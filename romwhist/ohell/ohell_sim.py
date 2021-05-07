@@ -16,7 +16,6 @@ class OhellSim(OhellGame):
                  state: OhellState = None, starting_action=None):
         OhellGame.__init__(self, state.owner, id=state.game_id)
         self.sim_player = sim_player
-
         self.starting_action = starting_action
         self.first_play = True
         self.agent = agent
@@ -27,6 +26,7 @@ class OhellSim(OhellGame):
         if state is not None:
             state_copy = copy.deepcopy(state)
             self.set_state(state_copy)
+            self.bets[sim_player] = int(state.bets[sim_player])
 
     def play_single_move(self):
         logging.debug("Playing single move")

@@ -48,7 +48,7 @@ class OhellAiPlayer(AiPlayer):
         # Select the bet which result in the most points
         # as there could be cases where no card leads to a win
         best_avg_points = 0
-        for bet in game_state.allowed_bets:
+        for bet in game_state.get_legal_bets():
             points_for_bet = self.__agent2.action_points.get(bet)
             avg_points_for_bet = 0
             if self.__agent2.num_simulations_per_action.get(bet) > 0:

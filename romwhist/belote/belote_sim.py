@@ -69,7 +69,6 @@ class BeloteSim(BeloteGame):
             self.deal_2()
         else:
             # Remove from deck all cards that have been played
-            # TODO except the ones played in current round as those need to be part
             # of the simulation
             cards_played_per_player = current_state.cards_played_per_player
             for player in self.players:
@@ -78,9 +77,10 @@ class BeloteSim(BeloteGame):
                     for card in cards_played:
                         self.deck.remove_card(Card.card_from_value(card))
 
-            cards_current_round = self.current_round.get_cards_played()
-            for card in cards_current_round:
-                self.deck.add_top(card)
+            # cards_current_round = self.current_round.get_cards_played()
+            # for card in cards_current_round:
+            #     if card is not None:
+            #         self.deck.add_top(card)
 
             for player in self.players:
                 if player != self.sim_player:
