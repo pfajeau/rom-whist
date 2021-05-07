@@ -65,8 +65,6 @@ class ContreeGame(BeloteGame):
         self.bets[player] = bet
         move_to_play_phase = False
 
-        logging.info("Player bet: %s", bet.suit)
-
         if bet.suit == "contre":
             self.contree_status = ContreStatus.CONTREE
             next_player_to_bet = self.next_player(player)
@@ -107,10 +105,6 @@ class ContreeGame(BeloteGame):
             self.taker = player
             self.active_player = self.next_player(player)
 
-        elif self.next_player_to_bet(player) is None:
-            # Move to PLAY phase
-            move_to_play_phase = True
-
         else:
             self.active_player = self.next_player(player)
 
@@ -122,6 +116,7 @@ class ContreeGame(BeloteGame):
                 self.current_bet = bet
                 self.trump_suit = bet.suit    # Required for AI
                 self.taker = player
+
             else:
                 logging.error("Invalid Bet: %s", bet)
                 logging.error("self.current_bet: %s", self.current_bet)
