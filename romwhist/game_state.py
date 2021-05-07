@@ -34,7 +34,11 @@ class GameState:
         return self.allowed_cards
 
     def get_legal_bets(self):
-        return self.allowed_bets
+        allowed_bets = []
+        for bet in self.allowed_bets:
+            allowed_bets.append(str(bet))
+
+        return allowed_bets
 
     def toJson(self):
         return json.dumps(self.__dict__)

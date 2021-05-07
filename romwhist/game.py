@@ -88,8 +88,9 @@ class CardGame:
         for player in self.hands:
             state.hand_cards[player] = self.hands[player].serialize()
 
-        if self.current_round is None:
-            self.create_round()
+        # if self.current_round is None:
+        #     state.current_round = self.create_round()
+
         state.allowed_cards = self.get_allowed_cards(state.active_player)
         logging.debug("state.allowed_cards: %s", state.allowed_cards)
 
@@ -128,8 +129,9 @@ class CardGame:
             round = Round(state_copy.players, state_copy.trump)
             for player in state_copy.cards_played_per_round[round_nb]:
                 card_str = state_copy.cards_played_per_round[round_nb].get(player)
-                round.card_played(player,
-                              Card.card_from_value(card_str))
+                if card_str != 'None':
+                    round.card_played(player,
+                                      Card.card_from_value(card_str))
             self.rounds.append(round)
             self.current_round = round
         if self.current_round is None:

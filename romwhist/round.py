@@ -20,7 +20,7 @@ class Round:
     # Return the number of players left to play for the Round
     # when last player has played, return 0
     def card_played(self, player, card):
-        if not self.round_started:
+        if not self.round_started and card is not None:
             # First card played
             self.first_player = player
             self.first_card_played = card
