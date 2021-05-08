@@ -12,7 +12,7 @@ from romwhist.ai.ai_player import AiPlayer
 # TODO: factorize with OhellAIPlayer
 class ContreeAiPlayer(BeloteAiPlayer):
 
-    CORRECTION_FACTOR = 1.2    # Because simulations are pessimistic in outcome
+    CORRECTION_FACTOR = 1.0    # Because simulations are pessimistic in outcome
 
     def __init__(self, name, game_id):
         AiPlayer.__init__(self, name, game_id)

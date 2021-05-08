@@ -52,7 +52,7 @@ def main():
     belote.deal_2(dealer="joe")
     belote.play_card("jack", "d7")
     belote_ai.game_state = belote.get_state()
-    all_cards = {'joe': ["s9", "s11", "d8", "d9", "c7", "c18", "h7", "h9"],
+    all_cards = {'joe': ["s9", "s11", "d8", "d9", "c7", "c8", "h7", "h9"],
                  'jack': ["s7", "s10", "d10", "c9", "c12", "h8", "h12"],
                  'AI1': ["s12", "s13", "d13", "d12", "c10", "c14", "h10", "h11"],
                  'jim': ["s8", "s14", "d11", "d14", "c11", "c13", "h13", "h14"]}

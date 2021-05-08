@@ -326,7 +326,7 @@ def hand_completed(game_id, username):
     socketio.emit("hand completed", {'scores': scores, 'wins': game.hand_points,
                                      'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal(),
                                      'winners': game.hand_winner},
-                room=game_id, namespace=NAMESPACE)
+                  room=game_id, namespace=NAMESPACE)
 
     if game.is_game_over():
         logging.debug("Game " + str(game_id) + " is over")
@@ -335,7 +335,11 @@ def hand_completed(game_id, username):
             game.get_highest_score_player(), game_id=game_id,
             room=game_id, namespace=NAMESPACE)
         logging.debug("Game " + str(game_id) + " is over")
-        clean_game_data(game_id)
+
+        # Need a timer here so that game is cleared after a bit
+        timer = threading.Timer(5.0, clean_game_data, [game_id])
+        timer.start()
+        # clean_game_data(game_id)
 
     else:
         generate_hands(game_id, "")

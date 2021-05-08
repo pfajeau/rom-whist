@@ -275,6 +275,7 @@ class SimpleMCTSAgent(IAgent):
         return rollout_actions
 
     def run_simulation(self, games, num_simulations_per_action):
+        logging.info("starting simulation")
         futures = [self.executor.submit(game.run) for game in games]
         futures_queue = Queue(len(games))
         for future in futures:
@@ -289,6 +290,8 @@ class SimpleMCTSAgent(IAgent):
             else:
                 assert future.result()
 
+        logging.info("simulation ended")
+
     def compute_best_action(self, legal_actions):
         logging.info("action_value: %s", self.action_value)
         logging.info("action_points: %s", self.action_points)
@@ -297,8 +300,8 @@ class SimpleMCTSAgent(IAgent):
         # Choose best action - start with
         best_action = list(self.action_value.keys())[0]
         for action in self.action_value:
-            logging.debug("action: %s, action has value %s", action, self.action_value[action])
-            logging.debug("action: %s, action has points %s", action, self.action_points[action])
+            logging.info("action: %s, action has value %s", action, self.action_value[action])
+            logging.info("action: %s, action has points %s", action, self.action_points[action])
             action_avg = float(self.action_points[action]) / float(self.num_simulations_per_action[action])
             best_action_avg =  float(self.action_points[best_action]) / float(self.num_simulations_per_action[best_action])
             if action_avg > best_action_avg:

@@ -124,7 +124,7 @@ class ContreeGame(BeloteGame):
         if self.current_bet is not None:
             self.trump_suit = self.current_bet.suit
 
-        if move_to_play_phase:
+        if move_to_play_phase or ai:
             self.phase = BeloteGame.GamePhase.PLAY
             self.set_cards_rank_and_value()
             self.active_player = self.next_player(self.dealer)
@@ -223,7 +223,7 @@ class ContreeGame(BeloteGame):
         players.append(self.taker)
         player_points = []
         player_points.append(self.hand_points[self.taker])
-        self.__hand_winner = []
+        self._hand_winner = []
 
         for i in range(1, nb_players):
             players.append(self.next_player(players[i - 1]))
@@ -236,77 +236,75 @@ class ContreeGame(BeloteGame):
                 player_points[i] += self.BELOTE_REBELOTE
                 self.hand_points[players[i]] = player_points[i]
 
-        # TODO: remove test (always 4 players) and add support for contree / surcontree
-        if nb_players == 4:
-            logging.debug("Bet points: %s", self.bets[players[0]].points)
+        logging.debug("Bet points: %s", self.bets[players[0]].points)
 
-            # Required, as AI needs to know the team score for the hand
-            self.hand_points[players[0]] = self.hand_points[players[0]] + self.hand_points[players[2]]
-            self.hand_points[players[1]] = self.hand_points[players[1]] + self.hand_points[players[3]]
+        # Required, as AI needs to know the team score for the hand
+        self.hand_points[players[0]] = self.hand_points[players[0]] + self.hand_points[players[2]]
+        self.hand_points[players[1]] = self.hand_points[players[1]] + self.hand_points[players[3]]
 
-            if self.player_with_belote is not None:
-                # set score of partner of player who may have gotten
-                # the belote points to be the same
-                partner = self.next_player(self.next_player(self.player_with_belote))
-                self.scores[partner] = self.scores[self.player_with_belote]
+        if self.player_with_belote is not None:
+            # set score of partner of player who may have gotten
+            # the belote points to be the same
+            partner = self.next_player(self.next_player(self.player_with_belote))
+            self.scores[partner] = self.scores[self.player_with_belote]
 
-            score_winners = 0
-            score_losers = 0
-            if player_points[0] + player_points[2] >= self.bets[players[0]].points:
-                if self.counting == CountingMethod.POINTS_ACHIEVED:
-                    score_winners = round(player_points[0] + player_points[2])
-                    score_losers = round(player_points[1] + player_points[3])
-                elif self.counting == CountingMethod.POINTS_BID:
-                    score_winners = round(player_points[0] + player_points[2])
-                    score_losers = 0
-                elif self.counting == CountingMethod.POINTS_ACHIEVED_PLUS_BID:
-                    score_winners = round(player_points[0] + player_points[2] + self.current_bet.points, -1)
-                    score_losers = player_points[1] + player_points[3]
+        score_winners = 0
+        score_losers = 0
+        if player_points[0] + player_points[2] >= self.bets[players[0]].points:
+            if self.counting == CountingMethod.POINTS_ACHIEVED:
+                score_winners = round(player_points[0] + player_points[2], -1)
+                score_losers = round(player_points[1] + player_points[3], -1)
+            elif self.counting == CountingMethod.POINTS_BID:
+                score_winners = round(player_points[0] + player_points[2], -1)
+                score_losers = 0
+            elif self.counting == CountingMethod.POINTS_ACHIEVED_PLUS_BID:
+                score_winners = round(player_points[0] + player_points[2] + self.current_bet.points, -1)
+                score_losers = round(player_points[1] + player_points[3], -1)
 
-                self._hand_winner.append(players[0])
-                self._hand_winner.append(players[2])
+            self._hand_winner.append(players[0])
+            self._hand_winner.append(players[2])
 
-                # Contree
-                if self.contree_status == ContreStatus.CONTREE:
-                    score_winners = 2 * score_winners
-                elif self.contree_status == ContreStatus.SURCONTREE:
-                    score_winners = 4 * score_winners
+            # Contree
+            if self.contree_status == ContreStatus.CONTREE:
+                score_winners = 2 * score_winners
+            elif self.contree_status == ContreStatus.SURCONTREE:
+                score_winners = 4 * score_winners
 
-                self.scores[players[0]] += score_winners
-                self.scores[players[2]] = self.scores[players[0]]
-                self.scores[players[1]] += score_losers
-                self.scores[players[3]] += self.scores[players[1]]
+            self.scores[players[0]] += score_winners
+            self.scores[players[2]] = self.scores[players[0]]
+            self.scores[players[1]] += score_losers
+            self.scores[players[3]] += self.scores[players[1]]
 
+        else:
+            score_winners = round(self.TOTAL_POINTS, -1)
+            if self.contree_status == ContreStatus.CONTREE:
+                score_winners = 2 * score_winners
+            elif self.contree_status == ContreStatus.SURCONTREE:
+                score_winners = 4 * score_winners
+
+            self.scores[players[1]] = score_winners
+            self.scores[players[3]] = self.scores[players[1]]
+            self._hand_winner.append(players[1])
+            self._hand_winner.append(players[3])
+
+        # Capot
+        if self.counting == CountingMethod.POINTS_ACHIEVED or \
+           self.counting == CountingMethod.POINTS_ACHIEVED_PLUS_BID or \
+           self.counting == CountingMethod.POINTS_BID and self.current_bet.points == self.TOTAL_POINTS:
+
+            if self.contree_status == ContreStatus.CONTREE:
+                points_capot = self.BONUS_CAPOT * 2
+            elif self.contree_status == ContreStatus.SURCONTREE:
+                points_capot = self.BONUS_CAPOT * 4
             else:
-                score_winners = round(self.TOTAL_POINTS, -1)
-                if self.contree_status == ContreStatus.CONTREE:
-                    score_winners = 2 * score_winners
-                elif self.contree_status == ContreStatus.SURCONTREE:
-                    score_winners = 4 * score_winners
+                points_capot = self.BONUS_CAPOT
 
-                self.scores[players[1]] = score_winners
+            if self.wins[players[1]] + self.wins[players[3]] == 0:
+                self.scores[players[0]] += points_capot
+                self.scores[players[2]] = self.scores[players[0]]
+            elif self.wins[players[0]] + self.wins[players[2]] == 0:
+                self.scores[players[1]] += points_capot
                 self.scores[players[3]] = self.scores[players[1]]
-                self._hand_winner.append(players[1])
-                self._hand_winner.append(players[3])
-
-            # Capot
-            if self.counting == CountingMethod.POINTS_ACHIEVED or \
-               self.counting == CountingMethod.POINTS_ACHIEVED_PLUS_BID or \
-               self.counting == CountingMethod.POINTS_BID and self.current_bet.points == self.TOTAL_POINTS:
-
-                if self.contree_status == ContreStatus.CONTREE:
-                    points_capot = self.BONUS_CAPOT * 2
-                elif self.contree_status == ContreStatus.SURCONTREE:
-                    points_capot = self.BONUS_CAPOT * 4
-                else:
-                    points_capot = self.BONUS_CAPOT
-
-                if self.wins[players[1]] + self.wins[players[3]] == 0:
-                    self.scores[players[0]] += points_capot
-                    self.scores[players[2]] = self.scores[players[0]]
-                elif self.wins[players[0]] + self.wins[players[2]] == 0:
-                    self.scores[players[1]] += points_capot
-                    self.scores[players[3]] = self.scores[players[1]]
 
         logging.debug("Bet %s", self.current_bet)
         logging.debug("Player points: %s", player_points)

@@ -34,6 +34,8 @@ def i18n():
     __i18n["with_the"] = _("with_the")
     __i18n["winner"] = _("winner")
 
+    __i18n["winners_hand"] = _("winners_hand")
+
     __i18n["trump"] = _("trump")
     __i18n["user"] = _("user")
     __i18n["left_game"] = _("left_game")
