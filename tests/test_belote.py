@@ -97,8 +97,9 @@ def main():
     print("Points collected for hand: ")
     for player in players:
         print(player + ": " + format(belote.hand_points[player]))
-        total_points += belote.hand_points[player]
-    assert total_points == BeloteGame.TOTAL_POINTS
+
+    total_points = belote.hand_points["Joe"] + belote.hand_points["Jack"]
+    assert total_points == BeloteGame.TOTAL_POINTS, total_points
 
     print("Scores: ")
     for player in players:
@@ -202,7 +203,8 @@ def main():
     total_points = 0
     for player in players:
         print(player + ": " + format(belote.hand_points[player]))
-        total_points += belote.hand_points[player]
+
+    total_points = belote.hand_points["Joe"] + belote.hand_points["Jack"]
     assert total_points == belote.TOTAL_POINTS + belote.BELOTE_REBELOTE, total_points
 
     print("Scores: ")

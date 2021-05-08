@@ -7,6 +7,10 @@ from tests import test_common
 
 
 def main():
+    logging.basicConfig(filename='test_contree.log',
+                        format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
+                        level=logging.DEBUG)
+
     players = ["Joe", "Jack", "Jim", "Johnny"]
     contree = ContreeGame("Joe")
     for player in players:
@@ -112,8 +116,4 @@ def main():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='test_belote.log',
-                        format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
-                        level=logging.DEBUG)
-
     main()

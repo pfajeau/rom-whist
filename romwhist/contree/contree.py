@@ -240,7 +240,9 @@ class ContreeGame(BeloteGame):
 
         # Required, as AI needs to know the team score for the hand
         self.hand_points[players[0]] = self.hand_points[players[0]] + self.hand_points[players[2]]
+        self.hand_points[players[2]] = self.hand_points[players[0]]
         self.hand_points[players[1]] = self.hand_points[players[1]] + self.hand_points[players[3]]
+        self.hand_points[players[3]] = self.hand_points[players[1]]
 
         if self.player_with_belote is not None:
             # set score of partner of player who may have gotten

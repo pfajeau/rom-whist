@@ -446,13 +446,16 @@ class BeloteGame(CardGame):
         elif nb_players == 4:
             # Required, as AI needs to know the team score for the hand
             self.hand_points[players[0]] = self.hand_points[players[0]] + self.hand_points[players[2]]
+            self.hand_points[players[2]] = self.hand_points[players[0]]
             self.hand_points[players[1]] = self.hand_points[players[1]] + self.hand_points[players[3]]
+            self.hand_points[players[3]] = self.hand_points[players[1]]
 
             if self.player_with_belote is not None:
                 # set score of partner of player who may have gotten
                 # the belote points to be the same
                 partner = self.next_player(self.next_player(self.player_with_belote))
                 self.scores[partner] = self.scores[self.player_with_belote]
+
             if player_points[0] + player_points[2] > player_points[1] + player_points[3]:
                 self.scores[players[0]] += player_points[0] + player_points[2] + self.bonus_litige
                 self.scores[players[2]] = self.scores[players[0]]
