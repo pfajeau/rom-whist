@@ -66,5 +66,5 @@ class Card(object):
         #return self.rankName() + ' of ' + self.suitName()
 
     def desc(self):
-        return _l(self.get_card_name()) + " " + _('of') + \
-                  " " + _l(self.get_suit_name())
+        return _(self.get_card_name()) + " " + _('of') + \
+                  " " + _(self.get_suit_name())

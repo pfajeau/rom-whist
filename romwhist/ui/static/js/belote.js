@@ -70,7 +70,8 @@ function hand_completed(data) {
      msg = "It's a tie! Points of team who took will be given to next hand winner"
   }
   else {
-    msg = "Winner(s) of this hand: "
+    // TODO: need to translate
+    msg = i18n["winners_hand"] + ": "
     for (i in winners) {
       if (i == 0) {
         msg = msg + winners[i]

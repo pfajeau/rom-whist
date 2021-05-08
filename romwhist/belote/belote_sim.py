@@ -57,8 +57,7 @@ class BeloteSim(BeloteGame):
 
         if self.phase == BeloteGame.GamePhase.BET or self.phase == BeloteGame.GamePhase.BET2:
             self.place_bet(self.sim_player, self.bets[self.sim_player], ai=True)
-            self.taker = self.sim_player
-            self.current_bet = self.bets[self.sim_player]
+            self.set_cards_rank_and_value()
 
             # Re-create hands from deck for other players for the simulation
             self.deck.remove_card(self.trump_card)
@@ -68,6 +67,9 @@ class BeloteSim(BeloteGame):
 
             self.deal_2()
         else:
+            # Not sure it is done otherwise... TODO: need to check
+            self.set_cards_rank_and_value()
+
             # Remove from deck all cards that have been played
             # of the simulation
             cards_played_per_player = current_state.cards_played_per_player

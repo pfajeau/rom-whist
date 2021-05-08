@@ -41,6 +41,8 @@ def main():
     contree_ai.game_state.bets = {"joe": "pass_0", "jack":"heart_80", "AI1": "pass_0", "jim":"pass_0"}
     contree_ai.game_state.trump = "heart"
     contree_ai.game_state.current_bet = "heart_80"
+    contree_ai.game_state.taker = "jack"
+
     state_snapshop = copy.deepcopy(contree_ai.game_state)
 
     #Test serialization

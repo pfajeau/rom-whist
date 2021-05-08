@@ -363,7 +363,7 @@ function game_over(winners) {
     winner_list = winner_list.concat(item, " ");
   });
 
-  show_alert(i18n['game_over'] + " - " + ii18n['winner'] + ": " + winner_list);
+  show_alert(i18n['game_over'] + " - " + i18n['winner'] + ": " + winner_list);
   play_sound("applause2_x.wav")
 }
 

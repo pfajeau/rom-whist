@@ -13,6 +13,7 @@ from flask import Flask
 from flask import request
 from flask_login import LoginManager
 from flask_babel import Babel
+from flask_babel import refresh
 
 import logging
 import logging.handlers
@@ -85,6 +86,7 @@ def create_app():
     @babel.localeselector
     def get_locale():
         # print(app.config['LANGUAGES'])
+        refresh()
         return request.accept_languages.best_match(app.config['LANGUAGES'])
 
     with app.app_context():

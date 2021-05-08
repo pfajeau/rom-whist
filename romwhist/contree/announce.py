@@ -1,9 +1,10 @@
 from enum import Enum
 import logging
 
+
 class Announce(dict):
     def __init__(self, suit, points):
-        dict.__init__(self, suit=suit, points=points)
+        dict.__init__(self, suit=suit, points=int(points))
         self.suit = suit
         if points == "Capot":
             # TODO: constant should be defined in another module
