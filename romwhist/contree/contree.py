@@ -275,7 +275,7 @@ class ContreeGame(BeloteGame):
             self.scores[players[0]] += score_winners
             self.scores[players[2]] = self.scores[players[0]]
             self.scores[players[1]] += score_losers
-            self.scores[players[3]] += self.scores[players[1]]
+            self.scores[players[3]] = self.scores[players[1]]
 
         else:
             score_winners = round(self.TOTAL_POINTS, -1)
