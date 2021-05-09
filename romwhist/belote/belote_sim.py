@@ -67,7 +67,7 @@ class BeloteSim(BeloteGame):
 
             self.deal_2()
         else:
-            # Not sure it is done otherwise... TODO: need to check
+            # Required
             self.set_cards_rank_and_value()
 
             # Remove from deck all cards that have been played
