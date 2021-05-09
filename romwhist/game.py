@@ -134,6 +134,7 @@ class CardGame:
                                       Card.card_from_value(card_str))
             self.rounds.append(round)
             self.current_round = round
+
         if self.current_round is None:
             self.current_round = self.create_round()
 

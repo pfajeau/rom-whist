@@ -1,5 +1,5 @@
 import logging
-from romwhist.contree.contree import ContreeGame
+from romwhist.contree.contree import ContreeGame, CountingMethod
 from romwhist.belote.belote import BeloteGame
 from romwhist.contree.announce import Announce, ContreStatus
 
@@ -99,8 +99,6 @@ def main():
     assert contree.phase == BeloteGame.GamePhase.PLAY, contree.phase
     assert contree.bets["Joe"].suit == "surcontre", contree.bets["Joe"].suit
 
-
-
     # Simulate a game and check scoring works
     # First use a pre-defined set of cards for each player
     cards_as_str = dict()
@@ -113,6 +111,72 @@ def main():
 
     # Set card values (were overwritten by new cards since they are different objects)
     contree.set_cards_rank_and_value()
+    for i in range(1,9):
+        print("Creating new round")
+        a_round = contree.create_round()
+        winner = test_common.play_round(contree, a_round)
+        print("Winner for round " + str(i) + " is " + contree.current_round.winning_player)
+
+        cards_played = contree.get_cards_played_current_round()
+        print("Displaying last round cards")
+        for player in cards_played:
+            print(player + " played: " + str(cards_played[player]))
+
+    contree.hand_completed()
+    scores = contree.get_scores()
+    print ("Scores: ", str(scores))
+
+    contree = ContreeGame("Joe", counting=CountingMethod.POINTS_BID)
+    for player in players:
+        contree.add_player(player)
+    contree.start_game()
+    contree.deal(dealer="Johnny")
+    bet = Announce("spade", 80)
+    contree.place_bet("Joe", bet)
+    bet = Announce("contre", 0)
+    contree.place_bet("Jack", bet)
+    bet = Announce("pass", 0)
+    contree.place_bet("Jim", bet)
+    bet = Announce("pass", 0)
+    contree.place_bet("Jim", bet)
+    contree.place_bet("Johnny", bet)
+    assert contree.active_player == "Joe", contree.active_player
+    contree.place_bet("Joe", bet)
+    assert contree.phase == BeloteGame.GamePhase.PLAY, contree.phase
+    assert contree.bets["Joe"].suit == "pass", contree.bets["Joe"].suit
+
+    test_common.create_hands(contree, cards_as_str)
+    # Set card values (were overwritten by new cards since they are different objects)
+    contree.set_cards_rank_and_value()
+    for i in range(1,9):
+        print("Creating new round")
+        a_round = contree.create_round()
+        winner = test_common.play_round(contree, a_round)
+        print("Winner for round " + str(i) + " is " + contree.current_round.winning_player)
+
+        cards_played = contree.get_cards_played_current_round()
+        print("Displaying last round cards")
+        for player in cards_played:
+            print(player + " played: " + str(cards_played[player]))
+
+    for player in players:
+        print ("Player hand points for " + player + ": " + str(contree.hand_points[player]))
+        print("Player total points for " + player + ": " + str(contree.get_scores()[player]))
+    hand_points_joe = contree.hand_points["Joe"]
+    total_points_joe = contree.scores["Joe"]
+    hand_points_jack = contree.hand_points["Jack"]
+    total_points_jack = contree.scores["Jack"]
+    contree.hand_completed()
+    for player in players:
+        print ("Player hand points for " + player + ": " + str(contree.hand_points[player]))
+        print("Player total points for " + player + ": " + str(contree.get_scores()[player]))
+    scores = contree.get_scores()
+    assert scores["Joe"] == 80 *2 + total_points_joe, scores["Joe"]
+    assert scores["Jack"] == 0, scores["Jack"]
+    assert scores["Jim"] == scores["Joe"], scores["Jim"]
+    assert scores["Johnny"] == scores["Jack"] , scores["Johnny"]
+
+    print ("Scores: ", str(scores))
 
 
 if __name__ == '__main__':

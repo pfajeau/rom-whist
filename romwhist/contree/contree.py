@@ -236,7 +236,7 @@ class ContreeGame(BeloteGame):
                 player_points[i] += self.BELOTE_REBELOTE
                 self.hand_points[players[i]] = player_points[i]
 
-        logging.debug("Bet points: %s", self.bets[players[0]].points)
+        logging.debug("Bet points: %s", self.bets[self.taker].points)
 
         # Required, as AI needs to know the team score for the hand
         self.hand_points[players[0]] = self.hand_points[players[0]] + self.hand_points[players[2]]
@@ -252,12 +252,12 @@ class ContreeGame(BeloteGame):
 
         score_winners = 0
         score_losers = 0
-        if player_points[0] + player_points[2] >= self.bets[players[0]].points:
+        if player_points[0] + player_points[2] >= self.bets[self.taker].points:
             if self.counting == CountingMethod.POINTS_ACHIEVED:
                 score_winners = round(player_points[0] + player_points[2], -1)
                 score_losers = round(player_points[1] + player_points[3], -1)
             elif self.counting == CountingMethod.POINTS_BID:
-                score_winners = round(player_points[0] + player_points[2], -1)
+                score_winners = round(self.current_bet.points, -1)
                 score_losers = 0
             elif self.counting == CountingMethod.POINTS_ACHIEVED_PLUS_BID:
                 score_winners = round(player_points[0] + player_points[2] + self.current_bet.points, -1)
@@ -275,7 +275,7 @@ class ContreeGame(BeloteGame):
             self.scores[players[0]] += score_winners
             self.scores[players[2]] = self.scores[players[0]]
             self.scores[players[1]] += score_losers
-            self.scores[players[3]] += self.scores[players[1]]
+            self.scores[players[3]] = self.scores[players[1]]
 
         else:
             score_winners = round(self.TOTAL_POINTS, -1)
@@ -284,7 +284,7 @@ class ContreeGame(BeloteGame):
             elif self.contree_status == ContreStatus.SURCONTREE:
                 score_winners = 4 * score_winners
 
-            self.scores[players[1]] = score_winners
+            self.scores[players[1]] += score_winners
             self.scores[players[3]] = self.scores[players[1]]
             self._hand_winner.append(players[1])
             self._hand_winner.append(players[3])
