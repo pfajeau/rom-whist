@@ -190,7 +190,7 @@ class SimpleMCTSAgent(IAgent):
             sim_game_class = globals()[self.sim_game_class_name]
             games.append(sim_game_class(SimpleAgent(self.action_chooser_function),
                                          SimpleAgent(random_action), self.ai_player,
-                                         state, action)
+                                         state, action))
 
         self.run_simulation(games, len(legal_actions))
         for game in games:
