@@ -8,9 +8,11 @@ from romwhist.contree.contree_state import ContreeState
 class ContreeSim(BeloteSim, ContreeGame):
 
     def __init__(self, agent, other_agent, sim_player,
-                 state: ContreeState = None, starting_action=None):
+                 state: ContreeState = None, starting_action=None,
+                 one_round_only= False):
         ContreeGame.__init__(self, state.owner, id=state.game_id)
-        BeloteSim.__init__(self, agent, other_agent, sim_player, state, starting_action)
+        BeloteSim.__init__(self, agent, other_agent, sim_player, state,
+                           starting_action, one_round_only)
 
         # Required because BeloteSim.__init__ calls BeloteGame.__init__,
         # which sets those to the belote values rather than the contree values

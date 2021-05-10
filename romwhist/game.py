@@ -102,7 +102,7 @@ class CardGame:
         self.reset()
 
         state_copy = copy.deepcopy(state)
-        self.game_id = state_copy.game_id
+        self.__id = state_copy.game_id
         self.players = state_copy.players
         for player in state_copy.players:
             self._player_status[player] = 1
@@ -132,11 +132,13 @@ class CardGame:
                 if card_str != 'None':
                     round.card_played(player,
                                       Card.card_from_value(card_str))
+            round.trump_suit = state.trump
             self.rounds.append(round)
             self.current_round = round
 
         if self.current_round is None:
             self.current_round = self.create_round()
+            self.current_round.trump_suit = state.trump
 
         self.active_player = state_copy.active_player
         self.bets = state_copy.bets

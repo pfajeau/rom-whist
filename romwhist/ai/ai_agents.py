@@ -143,6 +143,9 @@ class SimpleMCTSAgent(IAgent):
             if config.has_option('ai', 'max_thread_number_for_simulation'):
                 max_threads = int(ai_config['max_thread_number_for_simulation'])
 
+            if config.has_option('ai', 'wins_thresholds_for_action'):
+                win_threshold = float(ai_config['wins_thresholds_for_action'])
+
         self.action_chooser_function = lookup(action_chooser_function,
                                               globals())
         self.num_simulations_total = 0
@@ -153,6 +156,8 @@ class SimpleMCTSAgent(IAgent):
         self.executor = ThreadPoolExecutor(max_workers=max_threads)
         self.sim_game_class_name = sim_game_class_name
         self.action_points = dict()
+        self.win_threshold = win_threshold
+
         super().__init__(ai_player)
 
     def reset_data(self):
@@ -190,7 +195,7 @@ class SimpleMCTSAgent(IAgent):
             sim_game_class = globals()[self.sim_game_class_name]
             games.append(sim_game_class(SimpleAgent(self.action_chooser_function),
                                          SimpleAgent(random_action), self.ai_player,
-                                         state, action))
+                                         state, action, True))
 
         self.run_simulation(games, len(legal_actions))
         for game in games:
@@ -299,13 +304,23 @@ class SimpleMCTSAgent(IAgent):
 
         # Choose best action - start with
         best_action = list(self.action_value.keys())[0]
+        best_action_avg = float(self.action_points[best_action]) / float(self.num_simulations_per_action[best_action])
         for action in self.action_value:
             logging.info("action: %s, action has value %s", action, self.action_value[action])
             logging.info("action: %s, action has points %s", action, self.action_points[action])
             action_avg = float(self.action_points[action]) / float(self.num_simulations_per_action[action])
-            best_action_avg =  float(self.action_points[best_action]) / float(self.num_simulations_per_action[best_action])
             if action_avg > best_action_avg:
                 best_action = action
+                best_action_avg = action_avg
+
+        logging.info("In compute_best_action, best_action_avg: %s", best_action_avg)
+        logging.info("In compute_best_action, best action value: %s", self.action_value[best_action])
+        # Return None if no action is good (less than half win).
+        # Let the AI player decide what to do next
+        if self.action_value[best_action] < self.num_simulations_per_action[best_action] \
+                                           * self.win_threshold:
+            logging.info("No good action found - returning None")
+            return None
 
         return best_action
 

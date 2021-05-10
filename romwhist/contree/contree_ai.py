@@ -1,6 +1,7 @@
 import json
 import logging
-
+from contree.contree import ContreeGame
+from deck import Deck
 from romwhist.belote.belote import BeloteGame
 from romwhist.contree.announce import Announce
 from romwhist.contree.contree_state import ContreeState
@@ -12,7 +13,7 @@ from romwhist.ai.ai_player import AiPlayer
 # TODO: factorize with OhellAIPlayer
 class ContreeAiPlayer(BeloteAiPlayer):
 
-    CORRECTION_FACTOR = 1.0    # Because simulations are pessimistic in outcome
+    CORRECTION_FACTOR = 0.9    # Because simulations are optimistic in outcome
 
     def __init__(self, name, game_id):
         AiPlayer.__init__(self, name, game_id)
@@ -35,12 +36,30 @@ class ContreeAiPlayer(BeloteAiPlayer):
 
         # If only one action possible return it right away
         if len(self.game_state.allowed_cards) == 1:
+            logging.info("Only one card allowed: %s", self.game_state.allowed_cards[0] )
             return self.game_state.allowed_cards[0]
 
         if len(self.game_state.allowed_cards) == 0:
             raise RuntimeError("Allowed cards is empty!")
 
         best_card = self._agent.get_action(self.game_state)
+
+        if best_card is None:
+            fake_game = ContreeGame("")
+            fake_game.trump_suit = self.game_state.trump
+            fake_game.deck = Deck(self.game_state.deck_size)
+
+            fake_game.set_cards_rank_and_value()
+
+            # Return weakest card from allowed cards
+            best_card = str(self.game_state.allowed_cards[0])
+            min_points = fake_game.card_points[best_card]
+            for card in self.game_state.allowed_cards:
+                if fake_game.card_points[str(card)] < min_points:
+                    best_card = card
+                    min_points = fake_game.card_points[str(card)]
+            logging.info ("No good card to play - Best card is: " + str(best_card))
+            return best_card
 
         # Select the card which result in the most points
         best_avg_points = 0
@@ -79,6 +98,9 @@ class ContreeAiPlayer(BeloteAiPlayer):
             bet_as_str = self._agent2.get_bet(self.game_state)
 
         logging.info("Agent calculated bet: %s", bet_as_str)
+        if bet_as_str is None:
+            return Announce("pass", 0)
+
         bet_points = -999
         if len(self.game_state.allowed_bets) == 1:
             print ("no allowed game points")
@@ -88,14 +110,19 @@ class ContreeAiPlayer(BeloteAiPlayer):
             avg_points_for_bet = self._agent2.action_points[bet_as_str] / nb_simulations
             # Bet on avg_points_per_bet
             bet_points = round(avg_points_for_bet * ContreeAiPlayer.CORRECTION_FACTOR, -1)
-            if bet_as_str == "contre_80" or bet_as_str == "surcontre_80":
-                if bet_points < self.game_state.BONUS_CAPOT / 2:
+            current_bet = Announce.from_str(self.game_state.current_bet)
+            if bet_as_str == "contre_80":
+                if bet_points < BeloteGame.TOTAL_POINTS - current_bet.points:
+                    bet_points = 0
+                    bet_as_str = "pass_0"
+            elif bet_as_str == "surcontre_80":
+                if bet_points < current_bet.points:
                     bet_points = 0
                     bet_as_str = "pass_0"
             elif bet_points < int(self.game_state.allowed_bets[1][0]):
                 bet_points = 0
                 bet_as_str = "pass_0"
-            elif bet_points > float(self.game_state.allowed_bets[1][len(self.game_state.allowed_bets[1]) - 2]):
+            elif bet_points > BeloteGame.TOTAL_POINTS:
                 bet_points = BeloteGame.TOTAL_POINTS
 
             logging.info("Avg points for bet: %s", avg_points_for_bet)

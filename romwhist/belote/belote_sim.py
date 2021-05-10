@@ -11,7 +11,7 @@ from romwhist.hand import Hand
 class BeloteSim(BeloteGame):
 
     def __init__(self, agent, other_agent, sim_player,
-                 state: BeloteState = None, starting_action=None):
+                 state: BeloteState = None, starting_action=None, one_round_only= False):
         BeloteGame.__init__(self, state.owner, id=state.game_id)
         self.sim_player = sim_player
 
@@ -20,6 +20,8 @@ class BeloteSim(BeloteGame):
         self.agent = agent
         self.other_agent = other_agent
         self.games_counter = [0, 0]
+        self.one_round_only = one_round_only
+        self.active_player = self.sim_player
 
         if state is not None:
             state_copy = copy.deepcopy(state)
@@ -29,7 +31,7 @@ class BeloteSim(BeloteGame):
             logging.debug("In BeloteSim, state is %s:", state_copy.toJson())
 
     def play_single_move(self):
-        logging.debug("Playing single move")
+        logging.debug("Simulating single move for player %s", self.active_player)
         #current_state = BeloteState(self.id, self.sim_player)
         current_state = self.get_state()
         #the_state = self.get_state(self.initial_state)
@@ -42,10 +44,14 @@ class BeloteSim(BeloteGame):
         else:
             card = self.other_agent.get_action(current_state)
 
+        logging.debug("Player %s plays %s", self.active_player, str(card))
         winner = self.play_card(self.active_player, card)
+        if winner is not None:
+            logging.debug("Winner round: %s", winner)
         return winner
 
     def game_loop(self) -> None:
+        logging.debug("Starting game_loop. Acive player is %s", self.active_player)
         logging.debug("Game phase is %s", self.phase)
         current_state = self.get_state()
         self.deck = Deck(self.deck_size)
@@ -67,9 +73,6 @@ class BeloteSim(BeloteGame):
 
             self.deal_2()
         else:
-            # Required
-            self.set_cards_rank_and_value()
-
             # Remove from deck all cards that have been played
             # of the simulation
             cards_played_per_player = current_state.cards_played_per_player
@@ -89,20 +92,48 @@ class BeloteSim(BeloteGame):
                     self.hands[player] = Hand(self.deck, len(self.hands[player].cards))
                 logging.debug("In sim, Hand for player %s: %s", player, self.hands[player].serialize())
 
+            # Required
+            self.set_cards_rank_and_value()
+
+        # Determine of AI player is first to play i current round
+        ai_player_is_first_to_play = True
+        for player in self.players:
+            if self.current_round.cards_played.get(player) is not None:
+                ai_player_is_first_to_play = False
+
         winner = None
         if self.current_round is None:
-            self.create_round()
+            logging.debug("Creating current round")
+            round = self.create_round()
+            round.trump_suit = self.trump_suit
 
         self.phase = BeloteGame.GamePhase.PLAY
+
+        # Play the current round
+        logging.debug("PLaying current round")
         while winner is None:
+            logging.debug ("Current round cards played: %s", self.current_round.get_cards_played())
             winner = self.play_single_move()
 
-        # Play rounds until end of hand
-        while not self.is_hand_completed():
-            round = self.create_round()
-            self.play_round(round)
+        # In this case we simulate the entire hand instead of just one round
+        if not self.one_round_only:  #or ai_player_is_first_to_play:
+            # Play other rounds until end of hand
+            logging.debug("Playing other rounds in hand")
+            while not self.is_hand_completed():
+                round = self.create_round()
+                self.play_round(round)
+            self.hand_completed()
 
-        self.hand_completed()
+        else:
+            # Hand points need to be made equal to the round points for the simulation
+            # to select the right action
+            hand_points_round_winner = self.hand_points[winner]
+            self.hand_completed()
+            round_points = self.hand_points[winner] - hand_points_round_winner
+            self.hand_winner.clear()
+            if self.sim_player == winner or self.next_player(self.next_player(self.sim_player)) == winner:
+                self.hand_points[self.sim_player] = round_points
+                self.hand_winner.append(self.sim_player)
         logging.debug("Hand completed")
         return
 
