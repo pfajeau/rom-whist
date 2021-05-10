@@ -116,6 +116,10 @@ class OhellAiPlayer(AiPlayer):
 
         best_card = self.__agent.get_action(self.game_state)
 
+        if best_card is None:
+            # Pick a card at random from allowed cards
+            return self.game_state.allowed_cards[0]
+
         # Select the card which result in the most points
         # as there could be cases where no card leads to a win
         # TODO: criteria should be to optimize the number of points between

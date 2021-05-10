@@ -145,6 +145,8 @@ class SimpleMCTSAgent(IAgent):
 
             if config.has_option('ai', 'wins_thresholds_for_action'):
                 win_threshold = float(ai_config['wins_thresholds_for_action'])
+            else:
+                win_threshold = 0.6
 
         self.action_chooser_function = lookup(action_chooser_function,
                                               globals())

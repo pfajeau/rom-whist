@@ -13,7 +13,8 @@ from romwhist.hand import Hand
 class OhellSim(OhellGame):
 
     def __init__(self, agent, other_agent, sim_player,
-                 state: OhellState = None, starting_action=None):
+                 state: OhellState = None, starting_action=None,
+                 one_round_only= False):
         OhellGame.__init__(self, state.owner, id=state.game_id)
         self.sim_player = sim_player
         self.starting_action = starting_action

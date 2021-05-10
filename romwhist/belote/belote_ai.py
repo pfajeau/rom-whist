@@ -1,6 +1,8 @@
 import json
 import logging
 
+from belote.belote import BeloteGame
+from deck import Deck
 from romwhist.ai.ai_agents import SimpleMCTSAgent
 from romwhist.ai.ai_player import AiPlayer
 from romwhist.belote.belote_state import BeloteState
@@ -23,17 +25,37 @@ class BeloteAiPlayer(AiPlayer):
 
     def player_to_play(self, allowed_cards, game_state_json):
         game_state = BeloteState(**json.loads(game_state_json))
+        return self.player_to_play_from_state(game_state)
+
+    def player_to_play_from_state(self, game_state):
         self.game_state = game_state
-        #self.game_state.allowed_cards = allowed_cards  # Unecessary
 
         # If only one action possible return it right away
         if len(self.game_state.allowed_cards) == 1:
+            logging.debug("Only one card allowed: %s", self.game_state.allowed_cards[0] )
             return self.game_state.allowed_cards[0]
 
         if len(self.game_state.allowed_cards) == 0:
             raise RuntimeError("Allowed cards is empty!")
 
         best_card = self._agent.get_action(self.game_state)
+
+        if best_card is None:
+            fake_game = BeloteGame("")
+            fake_game.trump_suit = self.game_state.trump
+            fake_game.deck = Deck(self.game_state.deck_size)
+
+            fake_game.set_cards_rank_and_value()
+
+            # Return weakest card from allowed cards
+            best_card = str(self.game_state.allowed_cards[0])
+            min_points = fake_game.card_points[best_card]
+            for card in self.game_state.allowed_cards:
+                if fake_game.card_points[str(card)] < min_points:
+                    best_card = card
+                    min_points = fake_game.card_points[str(card)]
+            logging.info ("No good card to play - Best card is: " + str(best_card))
+            return best_card
 
         # Select the card which result in the most points
         best_avg_points = 0
