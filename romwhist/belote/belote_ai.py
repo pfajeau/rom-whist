@@ -1,11 +1,11 @@
 import json
 import logging
 
-from belote.belote import BeloteGame
-from deck import Deck
 from romwhist.ai.ai_agents import SimpleMCTSAgent
 from romwhist.ai.ai_player import AiPlayer
+from romwhist.deck import Deck
 from romwhist.belote.belote_state import BeloteState
+from romwhist.belote.belote import BeloteGame
 
 
 # TODO: factorize with OhellAIPlayer

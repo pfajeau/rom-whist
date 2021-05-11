@@ -1,7 +1,5 @@
 import json
 import logging
-from contree.contree import ContreeGame
-from deck import Deck
 from romwhist.belote.belote import BeloteGame
 from romwhist.contree.announce import Announce
 from romwhist.contree.contree_state import ContreeState
