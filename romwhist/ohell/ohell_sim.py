@@ -85,7 +85,8 @@ class OhellSim(OhellGame):
 
         winner = None
         if self.current_round is None:
-            self.create_round()
+            rond = self.create_round()
+            round.trump_suit = self.trump_suit
 
         while winner is None:
             winner = self.play_single_move()
@@ -93,6 +94,7 @@ class OhellSim(OhellGame):
         # Play rounds until end of hand
         while not self.is_hand_completed():
             round = self.create_round()
+            round.trump_suit = self.trump_suit
             self.play_round(round)
 
         self.hand_completed()
