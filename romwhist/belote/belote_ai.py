@@ -90,6 +90,9 @@ class BeloteAiPlayer(AiPlayer):
 
         bet = self._agent2.get_bet(self.game_state)
 
+        if bet is None:
+            return "pass"
+
         nb_simulations = self._agent2.num_simulations_per_action[bet]
         nb_wins_for_best_bet = self._agent2.action_value[bet]
         ratio_win = 0
@@ -103,7 +106,7 @@ class BeloteAiPlayer(AiPlayer):
         if ratio_win > 0.75:
             return bet
         else:
-            return "Pass"
+            return "pass"
 
 
     def compute_bet_agent(self):

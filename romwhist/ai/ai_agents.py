@@ -125,6 +125,7 @@ class SimpleMCTSAgent(IAgent):
         :param int num_simulations: How many simulations for rollout
         """
         max_threads = None
+        self.best_action = None
 
         # Read nb simulation from config file
         config = configparser.ConfigParser()
@@ -314,6 +315,8 @@ class SimpleMCTSAgent(IAgent):
             if action_avg > best_action_avg:
                 best_action = action
                 best_action_avg = action_avg
+
+        self.best_action = best_action
 
         logging.info("In compute_best_action, best_action_avg: %s", best_action_avg)
         logging.info("In compute_best_action, best action value: %s", self.action_value[best_action])

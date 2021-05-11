@@ -158,7 +158,6 @@ def contree_play():
         bets_suit = dict()
         bets_points = dict()
         for player in game.get_playing_players():
-            print(str(game.bets[player]))
             bets_suit[player] = game.bets[player].suit
             bets_points[player] = game.bets[player].points
 

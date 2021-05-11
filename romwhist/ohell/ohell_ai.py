@@ -47,16 +47,16 @@ class OhellAiPlayer(AiPlayer):
 
         # Select the bet which result in the most points
         # as there could be cases where no card leads to a win
-        best_avg_points = 0
-        for bet in game_state.get_legal_bets():
-            points_for_bet = self.__agent2.action_points.get(bet)
-            avg_points_for_bet = 0
-            if self.__agent2.num_simulations_per_action.get(bet) > 0:
-                avg_points_for_bet = points_for_bet / self.__agent2.num_simulations_per_action.get(bet)
-            logging.info("Avg points for card %s: %s", bet, avg_points_for_bet)
-            if avg_points_for_bet > best_avg_points:
-                best_avg_points = max(best_avg_points, avg_points_for_bet)
-                best_bet = bet
+        # best_avg_points = 0
+        # for bet in game_state.get_legal_bets():
+        #     points_for_bet = self.__agent2.action_points.get(bet)
+        #     avg_points_for_bet = 0
+        #     if self.__agent2.num_simulations_per_action.get(bet) > 0:
+        #         avg_points_for_bet = points_for_bet / self.__agent2.num_simulations_per_action.get(bet)
+        #     logging.info("Avg points for card %s: %s", bet, avg_points_for_bet)
+        #     if avg_points_for_bet > best_avg_points:
+        #         best_avg_points = max(best_avg_points, avg_points_for_bet)
+        #         best_bet = bet
 
         logging.info("Agent calculated bet: %s", best_bet)
         return int(best_bet)
@@ -104,7 +104,11 @@ class OhellAiPlayer(AiPlayer):
         return -1
 
     def compute_bet_agent(self):
-        return self.__agent2.get_bet(self.game_state)
+        best_bet = self.__agent2.get_bet(self.game_state)
+        if best_bet is None:
+            return self.__agent2.best_action
+        else:
+            return best_bet
 
     def player_to_play(self, allowed_cards, game_state_json):
         game_state = OhellState(**json.loads(game_state_json))

@@ -351,7 +351,8 @@ function trump_card_received(data, caption) {
 function new_player(player_name) {
   console.log("new player event received");
   socket.emit('join game', player_name);
-  window.location.reload(false);
+  document.getElementById("game_form").submit();
+  // window.location.reload(false);
 }
 
 function game_over(winners) {
