@@ -113,6 +113,31 @@ Add footer / contact info
       $('#trump_card').html('')
     });
 
+    socket.on('belote announced', function(data) {
+      belote_announced(data)
+    });
+
+    socket.on('belote rebelote enabled', function(data) {
+      // Add Belote/Rebelote button
+      console.log("Belote / Rebelote possible")
+      add_belote_button(true, i18n["belote"])
+    });
+
+    socket.on('belote played', function(data) {
+      $("#belote").text("")
+      $("#belote").text(i18n["rebelote"])
+    });
+
+    socket.on('rebelote played', function(data) {
+      // Disable Belote/Rebelote button
+      $("#belote").remove()
+    });
+
+    socket.on('belote lost', function(data) {
+      belote_lost(i18n["belote_points_lost"])
+    });
+
+
     socket.on('player to bet', function(data) {
       console.log("player to bet event received")
       player_name = data['player']

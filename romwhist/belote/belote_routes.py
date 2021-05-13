@@ -5,16 +5,15 @@ author: Philippe Fajeau
 
 """
 import logging
-import threading
 import json
 from random import randint
+import threading
 
 from flask import render_template, request, flash, session, url_for, redirect
 from flask_babel import gettext as _
 # from flask import Blueprint
 from flask_login import current_user, login_user
 from flask_socketio import emit
-from flask_socketio import join_room, leave_room
 
 from romwhist import common_routes
 from romwhist import socketio
@@ -40,6 +39,7 @@ clients = dict()
 # Dictionary of messages for each game
 messages = dict()
 
+
 # @app.route("/belote_start",methods=['GET', 'POST'])
 def belote_start():
     form = BeloteStartForm()
@@ -63,7 +63,7 @@ def belote_start():
 
         elif form.start_game.data:
             logging.info("start game")
-            game_id = common_routes.generate_game_id(999,games)
+            game_id = common_routes.generate_game_id(999, games)
             if game_id is None:
                 return render_template('belote_start.html',
                                        error="No more games available!!! Please try again later",
@@ -136,20 +136,19 @@ def belote_play():
             hand = []
         else:
             hand = hand.serialize()
-        round = game.get_current_round()
 
         cards_played = game.get_cards_played_current_round()
-
         logging.debug("Game Phase: " + game.phase.name)
         active_player = game.get_active_player()
 
         # if game phase = play and user has both queen and king then enabled. If user has already play belote, then
         # enable.
         belote_enabled = False
-        if game.belote_state == BeloteGame.BeloteState.Belote_Played or game.belote_state == BeloteGame.BeloteState.Allowed:
+        if game.belote_state == BeloteGame.BeloteState.Belote_Played or \
+                game.belote_state == BeloteGame.BeloteState.Allowed:
             belote_enabled = True
 
-        if not game_id in messages:
+        if game_id not in messages:
             messages[game_id] = []
 
         # TODO: could pass the game state instead of all the parameters
@@ -166,6 +165,7 @@ def belote_play():
 
     else:
         return redirect_template
+
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
@@ -201,7 +201,7 @@ def game_started():
     game_id = session.get('game_id')
     if game_id is not None:
         game = games.get(game_id)
-        if not game is None:
+        if game is not None:
             # In automated dealing, call start_hands with computed nb of cards and trump
             # In case it is a restart
             game.reset()
@@ -290,7 +290,7 @@ def player_bet_process(player, game_id, bet):
                     room=game_id, namespace=NAMESPACE, game_state=game.get_state())
 
                 player_belote = game.player_with_belote
-                if not player_belote is None:
+                if player_belote is not None:
                     logging.debug("Player with Belote / Rebelote: " + player_belote)
                     common_routes.emit_to_players(
                         "belote rebelote enabled",
@@ -308,6 +308,7 @@ def player_bet_process(player, game_id, bet):
 
             emit("alert", "Error in place bet", room=clients[game_id].get(player), namespace=NAMESPACE)
 
+
 # TODO: this could be factorized in common routes.
 def hand_completed(game_id, username):
     game = games.get(game_id)
@@ -322,14 +323,14 @@ def hand_completed(game_id, username):
     socketio.emit("hand completed", {'scores': scores, 'wins': game.hand_points,
                                      'hand_nb': game._current_hand_nb, 'player_to_deal': game.next_player_to_deal(),
                                      'winners': game.hand_winner},
-                room=game_id, namespace=NAMESPACE)
+                  room=game_id, namespace=NAMESPACE)
 
     if game.is_game_over():
         logging.debug("Game " + str(game_id) + " is over")
         common_routes.emit_to_players(
             "game over",
             game.get_highest_score_player(), game_id=game_id,
-             room=game_id, namespace=NAMESPACE)
+            room=game_id, namespace=NAMESPACE)
         logging.debug("Game " + str(game_id) + " is over")
         clean_game_data(game_id)
 
@@ -339,7 +340,8 @@ def hand_completed(game_id, username):
 
 def next_round(game_id, nplayer, allowed_cards):
     game = games[game_id]
-    common_routes.next_round(game, nplayer,allowed_cards, hand_completed, NAMESPACE)
+    common_routes.next_round(game, nplayer, allowed_cards, hand_completed, NAMESPACE)
+
 
 @socketio.on('player played', namespace=NAMESPACE_AI)
 def player_played_ai(data):
@@ -348,6 +350,7 @@ def player_played_ai(data):
     player = data.get('player')
     game_id = data.get('game_id')
     player_played_process(game_id, player, data.get('card'))
+
 
 @socketio.on('player played', namespace=NAMESPACE)
 def player_played(card):
@@ -376,7 +379,7 @@ def player_played_process(game_id, player, card):
     belote_after = game.belote_state
 
     if belote_before != belote_after:
-        belote_state_changed(game_id, player)
+        belote_state_changed(game_id)
 
     nplayer = game.get_active_player()
 
@@ -385,8 +388,8 @@ def player_played_process(game_id, player, card):
         allowed_cards = game.get_allowed_cards(nplayer)
         common_routes.emit_to_players(
             "player to play",
-             {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
-             room=game_id, namespace=NAMESPACE, game_state=game.get_state())
+            {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
+            room=game_id, namespace=NAMESPACE, game_state=game.get_state())
     else:
         # There is a winner, so round is ended
         # game.round_ended(winner)
@@ -394,7 +397,8 @@ def player_played_process(game_id, player, card):
         winning_card = game.get_current_round().cards_played[winner]
         common_routes.emit_to_players(
             "round ended",
-            {"game_id": game_id, "winner": winner, "card": winning_card.desc(), "last_player": player, "points":game.hand_points},
+            {"game_id": game_id, "winner": winner, "card": winning_card.desc(), "last_player": player,
+             "points":game.hand_points},
             room=game_id, namespace=NAMESPACE)
 
         timer = threading.Timer(6.0, next_round, [game_id, nplayer, allowed_cards])
@@ -404,22 +408,9 @@ def player_played_process(game_id, player, card):
     return
 
 
-def belote_state_changed(game_id, player):
-    logging.info("In belote played")
+def belote_state_changed(game_id):
     game = games[game_id]
-    belote_state = game.belote_state
-    if belote_state == BeloteGame.BeloteState.Belote_Played:
-        logging.info("Belote card played")
-        socketio.emit("belote played", game.player_with_belote, room=game_id, namespace=NAMESPACE)
-
-    elif belote_state == BeloteGame.BeloteState.Rebelote_Played:
-        logging.info("Belote card played")
-        socketio.emit("rebelote played", game.player_with_belote, room=game_id, namespace=NAMESPACE)
-
-    elif belote_state == BeloteGame.BeloteState.Lost:
-        logging.info("Belote points lost")
-        socketio.emit("belote lost", game.player_with_belote, room=game_id, namespace=NAMESPACE)
-
+    common_routes.belote_state_changed(game_id, game, NAMESPACE)
     return
 
 
@@ -451,65 +442,29 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
 
     common_routes.emit_to_players(
         "player to bet",
-        {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(player)},
+        {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(nplayer)},
         room=game_id, namespace=NAMESPACE, game_state=game.get_state())
     return
 
 
 @socketio.on('belote announced', namespace=NAMESPACE)
 def belote_announced(announce):
-    logging.info("belote announced event received. Announce is: " + announce)
-    # Set in game and issue notification if applicable
-    game_id = session.get('game_id')
-    if not game_id is None:
-        player = session.get('username')
-        game = games[game_id]
-        if announce == 'Belote':
-            game.player_announced_belote(player, BeloteGame.BeloteAnnounced.BELOTE)
-        elif announce == 'Rebelote':
-            game.player_announced_belote(player, BeloteGame.BeloteAnnounced.REBELOTE)
-
-        # emit("alert", announce + " announced by " + player, room=game_id, namespace=NAMESPACE)
-        common_routes.emit_to_players(
-            "belote announced",
-            {'game_id': game_id, 'player': player, 'announced': announce},
-            room=game_id, namespace=NAMESPACE)
-        emit("msg posted", {'sender': session['username'], 'msg': announce}, room=game_id, namespace=NAMESPACE)
+    common_routes.belote_announced(announce, games, NAMESPACE)
+    return
 
 
 @socketio.on('join game', namespace=NAMESPACE)
 def on_join(data):
-    # Note that a refresh on the client side causes the socketio sid to changed
-    # so need to remove the previous sid from the room
-    logging.info("on_join")
-    game_id = session.get('game_id')
-    if not game_id is None:
-        if session['game_id'] in games:
-            # Add user to room if user is not there already
-            player = session.get('username')
-            current_client_room = clients[game_id].get(player)
+    common_routes.on_join(session.get('game_id'), games, clients, NAMESPACE)
+    return
 
-            # Adding new client room id (sid) to list of clients
-            clients[game_id][player] = request.sid
-            session['sid'] = request.sid
-            join_room(game_id)
 
-# TODO: factorize
 @socketio.on('join game ai', namespace=NAMESPACE_AI)
 def join_ai(data):
-    # Note that a refresh on the client side causes the socketio sid to changed
-    # so need to remove the previous sid from the room
-    logging.info("join_ai")
-
     game_id = str(data.get('game_id'))
-    game = games.get(game_id)
-    if game is None:
-        logging.error("Unknown game: " + repr(game_id))
-        return
-    # Add user to room if user is not there already
     player = data.get('player')
-    logging.debug("Player: " + player)
-    common_routes.add_player(player, game, NAMESPACE)
+    common_routes.join_ai(game_id, player, games, NAMESPACE)
+    return
 
 @socketio.on('client post', namespace=NAMESPACE)
 def on_post(msg):
@@ -519,15 +474,9 @@ def on_post(msg):
 
 
 @socketio.on('disconnect', namespace=NAMESPACE)
-def test_disconnect():
-    player = session.get('username')
-    game_id = session.get('game_id')
-    logging.info('Client disconnected. ' + str(player))
-    client_id = request.sid
-    if not game_id is None:
-        leave_room(game_id)
-        timer = threading.Timer(120.0, check_player_left, [player, game_id, client_id])
-        timer.start()
+def disconnect():
+    common_routes.disconnect(clients)
+    return
 
 
 def check_player_left(player, game_id, client_id):
@@ -547,6 +496,7 @@ def check_player_left(player, game_id, client_id):
     #     if current_client_id == client_id:
     # remove_player(game_id, player)
 
+
 def restart_hand(game_id):
     game = games.get(game_id)
     if game is None:
@@ -561,18 +511,19 @@ def restart_hand(game_id):
 # Add player to a game
 def add_player(player, game_id):
     game = games.get(game_id)
-    if not game is None:
+    if game is not None:
         session['game_id'] = game.id
         common_routes.add_player(player, game, NAMESPACE)
         if game.started:
             restart_hand(game_id)
 
+
 # TODO: factorize
 def remove_player(game_id, player):
     # game_id = session.get('game_id')
-    if not game_id is None:
+    if game_id is not None:
         game = games.get(game_id)
-        if not game is None:
+        if game is not None:
             if game.started:
                 game.disable_player(player)
             else:
@@ -583,6 +534,7 @@ def remove_player(game_id, player):
         socketio.emit("player left", player, room=game_id, namespace=NAMESPACE)
         socketio.emit("clear round", room=game_id, namespace=NAMESPACE)
         restart_hand(game_id)
+
 
 def clean_game_data(game_id):
     game = games.get(game_id)

@@ -1,5 +1,4 @@
 import copy
-from flask_babel import lazy_gettext as _l
 from flask_babel import gettext as _
 import logging
 from enum import Enum
@@ -42,7 +41,6 @@ class ContreeGame(BeloteGame):
         self.__POINTS_ACHIEVED = _("points_achieved")
         self.__POINTS_ACHIEVED_BID = _("points_achieved_bid")
 
-
     def get_state(self):
         state = ContreeState(self.id)
         self.populate_state(state)
@@ -54,7 +52,7 @@ class ContreeGame(BeloteGame):
         return state
 
     def set_state(self, state):
-        BeloteGame.set_state(self,state)
+        BeloteGame.set_state(self, state)
         self.contree_status = state.contree_status
         for player in self.players:
             self.bets[player] = Announce.from_str(state.bets[player])
@@ -130,7 +128,6 @@ class ContreeGame(BeloteGame):
             self.active_player = self.next_player(self.dealer)
         return
 
-
     def get_allowed_bets(self, player):
         allowed_bets_points = []
         allowed_bets_suits = []
@@ -156,10 +153,10 @@ class ContreeGame(BeloteGame):
         # Add Contree or Surcontree option
         if self.contre_enabled(player):
             allowed_bets_suits.append("contre")
-            #allowed_bets_points.append(0)
+            # allowed_bets_points.append(0)
         elif self.surcontre_enabled(player):
             allowed_bets_suits.append("surcontre")
-            #allowed_bets_points.append(0)
+            # allowed_bets_points.append(0)
 
         allowed_bets = [allowed_bets_suits, allowed_bets_points]
         logging.debug("allowed bets:%s %s", allowed_bets[0], allowed_bets[1])
@@ -212,7 +209,6 @@ class ContreeGame(BeloteGame):
     def init_bets(self):
         for player in self.players:
             self.bets[player] = Announce("", 0)
-
 
     def update_scores(self):
         # Check each player points

@@ -14,7 +14,6 @@ from flask_babel import gettext as _
 # from flask import Blueprint
 from flask_login import current_user, login_user
 from flask_socketio import emit
-from flask_socketio import join_room, leave_room
 
 from romwhist import common_routes
 from romwhist import socketio, app
@@ -435,38 +434,15 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
 
 @socketio.on('join game', namespace=NAMESPACE)
 def on_join(data):
-    # Note that a refresh on the client side causes the socketio sid to changed
-    # so need to remove the previous sid from the room
-    logging.info("on_join")
-    game_id = session.get('game_id')
-    if not game_id is None:
-        if session['game_id'] in games:
-            # Add user to room if user is not there already
-            player = session.get('username')
-            logging.debug("Player: " + player)
-            current_client_room = clients[game_id].get(player)
-
-            # Adding new client room id (sid) to list of clients
-            clients[game_id][player] = request.sid
-            session['sid'] = request.sid
-            join_room(game_id)
-
+    common_routes.on_join(session.get('game_id'), games, clients, NAMESPACE)
+    return
 
 @socketio.on('join game ai', namespace=NAMESPACE_AI)
 def join_ai(data):
-    # Note that a refresh on the client side causes the socketio sid to changed
-    # so need to remove the previous sid from the room
-    logging.info("join_ai")
-
     game_id = str(data.get('game_id'))
-    game = games.get(game_id)
-    if game is None:
-        logging.error("Unknown game: " + repr(game_id))
-        return
-    # Add user to room if user is not there already
     player = data.get('player')
-    logging.debug("Player: " + player)
-    common_routes.add_player(player, game, NAMESPACE)
+    common_routes.join_ai(game_id, player, games, NAMESPACE)
+    return
 
 
 @socketio.on('client post', namespace=NAMESPACE)
@@ -476,15 +452,9 @@ def on_post(msg):
 
 
 @socketio.on('disconnect', namespace=NAMESPACE)
-def test_disconnect():
-    player = session.get('username')
-    game_id = session.get('game_id')
-    logging.info('Client disconnected. ' + str(player))
-    client_id = request.sid
-    if not game_id is None:
-        leave_room(game_id)
-        timer = threading.Timer(120.0, check_player_left, [player, game_id, client_id])
-        timer.start()
+def disconnect():
+    common_routes.disconnect(clients)
+    return
 
 
 def check_player_left(player, game_id, client_id):

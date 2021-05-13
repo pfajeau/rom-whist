@@ -1,39 +1,43 @@
 """
-This module implements common code betwenn routes.
+This module implements common code between routes.
 
 author: Philippe Fajeau
 """
 
 import logging
 from random import randint
+import threading
 
 import unidecode
 from flask import render_template, session, url_for, flash, redirect, request
 # from flask import Blueprint
 from flask_babel import gettext as _
+from flask_socketio import join_room, leave_room
 
 from flask_login import current_user, login_user
 from romwhist import socketio
 from romwhist.belote import belote_routes
+from romwhist.contree import contree_routes
 from romwhist.extensions import db
 from romwhist.forms import LoginForm
 from romwhist.models import User
 from romwhist.ohell import ohell_routes
+from romwhist.belote.belote import BeloteGame
 from romwhist import app
-from romwhist import i18n_strings
 
-# Store chat messages. Dictionary indexed by namespace + game_id
-# messages = dict()
 
-def get_locale(request):
+def get_locale(the_request):
     print(app.config['LANGUAGES'])
-    return request.accept_languages.best_match(app.config['LANGUAGES'])
+    return the_request.accept_languages.best_match(app.config['LANGUAGES'])
+
 
 # TODO: separate from this file to remove circular dependency between
 #  game specific routes modules and this module
 def admin():
-    return render_template('admin.html', nb_belote_games = len(belote_routes.games),
-                           nb_whist_games =len(ohell_routes.games))
+    return render_template('admin.html',
+                           nb_belote_games=len(belote_routes.games),
+                           nb_whist_games=len(ohell_routes.games),
+                           nb_contree_games=len(contree_routes.games))
 
 
 def home():
@@ -41,7 +45,7 @@ def home():
     return render_template("home.html", locale=locale)
 
 
-#@app.route("/base")
+# @app.route("/base")
 def base():
     return render_template("base.html")
 
@@ -59,7 +63,7 @@ def login():
             db.session.add(user)
             db.session.commit()
         login_user(user, remember=form.remember_me.data)
-        logging.debug ("current user: " + session['username'])
+        logging.debug("current user: " + session['username'])
         return redirect(url_for('index'))
     return render_template('login.html', title='Sign In', form=form)
 
@@ -102,12 +106,12 @@ def redirect_game_start(games, clients, action, template_to_render, namespace):
 
 def remove_player(game_id, games, clients, player, namespace):
     # game_id = session.get('game_id')
-    if not game_id is None:
+    if game_id is not None:
         socketio.emit("player left", player, room=game_id,
                       skip_sid=clients[game_id][player], namespace=namespace)
 
         game = games.get(game_id)
-        if not game is None:
+        if game is not None:
             if game.started:
                 game.disable_player(player)
             else:
@@ -134,7 +138,7 @@ def post_msg(msg, sender, room, messages, namespace):
     else:
         socketio.emit("msg posted", {'sender': sender, 'msg': msg}, room=room, namespace=namespace)
         message_key = game_id
-        if not message_key in messages:
+        if message_key not in messages:
             messages[message_key] = []
         messages[message_key].append(sender + ": " + msg)
 
@@ -158,7 +162,7 @@ def add_ai_player(nb_players, game_id, namespace):
 
 
 def sanitize_username(username1):
-    # Sanitize the username (as it isued as IDs in the html)
+    # Sanitize the username (as it used as IDs in the html)
     username = unidecode.unidecode(username1)
     username = username.replace(" ", "")
     return username
@@ -166,7 +170,7 @@ def sanitize_username(username1):
 
 def join_game(games, game_id, username, start_page, play_page, namespace, form, max_players=6):
     logging.debug("game id: " + game_id)
-    if not game_id in games:
+    if game_id not in games:
         error = _("game_not_created")
         logging.error(error)
         return render_template(start_page, error=error, form=form)
@@ -182,7 +186,7 @@ def join_game(games, game_id, username, start_page, play_page, namespace, form, 
 
     # Not allowed to connect to a game already started unless the player
     # is already an existing player (same alias)
-    if game.started and not username in game.get_players():
+    if game.started and username not in game.get_players():
         error = _("game_already_started")
         logging.info(error)
         return render_template(start_page, error=error, form=form)
@@ -215,6 +219,75 @@ def generate_game_id(max_id, games):
     return game_id
 
 
+def belote_state_changed(game_id, game, namespace):
+    logging.info("In belote played")
+    belote_state = game.belote_state
+    if belote_state == BeloteGame.BeloteState.Belote_Played:
+        logging.info("Belote card played")
+        socketio.emit("belote played", game.player_with_belote, room=game_id, namespace=namespace)
+
+    elif belote_state == BeloteGame.BeloteState.Rebelote_Played:
+        logging.info("Belote card played")
+        socketio.emit("rebelote played", game.player_with_belote, room=game_id, namespace=namespace)
+
+    elif belote_state == BeloteGame.BeloteState.Lost:
+        logging.info("Belote points lost")
+        socketio.emit("belote lost", game.player_with_belote, room=game_id, namespace=namespace)
+    return
+
+
+def belote_announced(announce, games, namespace):
+    logging.info("belote announced event received. Announce is: " + announce)
+    # Set in game and issue notification if applicable
+    game_id = session.get('game_id')
+    if game_id is not None:
+        player = session.get('username')
+        game = games[game_id]
+        if announce == 'Belote':
+            game.player_announced_belote(player, BeloteGame.BeloteAnnounced.BELOTE)
+        elif announce == 'Rebelote':
+            game.player_announced_belote(player, BeloteGame.BeloteAnnounced.REBELOTE)
+
+        # emit("alert", announce + " announced by " + player, room=game_id, namespace=NAMESPACE)
+        emit_to_players(
+            "belote announced",
+            {'game_id': game_id, 'player': player, 'announced': announce},
+            room=game_id, namespace=namespace)
+        socketio.emit("msg posted", {'sender': session['username'], 'msg': announce}, room=game_id, namespace=namespace)
+    return
+
+
+def on_join(game_id, games, clients, namespace):
+    # Note that a refresh on the client side causes the socketio sid to changed
+    # so need to remove the previous sid from the room
+    logging.info("on_join")
+    if game_id is not None:
+        if session['game_id'] in games:
+            # Add user to room if user is not there already
+            player = session.get('username')
+            logging.debug("Player: " + player)
+
+            # Adding new client room id (sid) to list of clients
+            clients[game_id][player] = request.sid
+            session['sid'] = request.sid
+            join_room(game_id, namespace=namespace)
+    return
+
+
+def join_ai(game_id, player, games, namespace):
+    # Note that a refresh on the client side causes the socketio sid to changed
+    # so need to remove the previous sid from the room
+    logging.info("join_ai with player %s", player)
+
+    game = games.get(game_id)
+    if game is None:
+        logging.error("Unknown game: " + repr(game_id))
+        return
+    # Add user to room if user is not there already
+    add_player(player, game, namespace)
+    return
+
+
 def next_round(game, nplayer, allowed_cards, hand_completed_cb, namespace):
     game.create_round()
     game_id = game.id
@@ -229,12 +302,12 @@ def next_round(game, nplayer, allowed_cards, hand_completed_cb, namespace):
             room=game_id, namespace=namespace, game_state=game.get_state())
 
 
-# Utility mothod to emit an event to both real players and the ai players
+# Utility method to emit an event to both real players and the ai players
 # data must contain the game_id
 def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_state=None):
     if room is not None:
         # If room specified assumes it goes to the web clients
-        socketio.emit(event, data, game_id = game_id, room=room, namespace=namespace)
+        socketio.emit(event, data, game_id=game_id, room=room, namespace=namespace)
 
     if game_id is None:
         # In this case, the game_id has to be part of the data being passed
@@ -267,4 +340,30 @@ def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_s
         socketio.emit(event, data2, namespace=namespace+"_ai")
 
 
+def disconnect(clients):
+    player = session.get('username')
+    game_id = session.get('game_id')
+    logging.info('Client disconnected. ' + str(player))
+    client_id = request.sid
+    if game_id is not None:
+        leave_room(game_id)
+        timer = threading.Timer(120.0, check_player_left, [player, game_id, client_id, clients])
+        timer.start()
 
+
+def check_player_left(player, game_id, client_id, clients):
+    # If the player still exist with a client_id that has not changed
+    # it means that the player has closed the browser window or
+    # something similar. In this case, the player has to be removed
+    # from the game. If the client_id has changed, it just mean
+    # a refresh page has happened, so leave the player in the game
+
+    # Do nothing, let game owner remove user manually if needed
+    players = clients.get(game_id)
+    if players is None:
+        return
+
+    # if player in players:
+    #     current_client_id = clients[game_id][player]
+    #     if current_client_id == client_id:
+    # remove_player(game_id, player)

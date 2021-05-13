@@ -47,9 +47,9 @@
       $("#add_ai").prop("disabled", false)
     }
 
-
     console.log("player_with_belote: " + "{{ player_with_belote }}")
     console.log("belote_allowed: " + "{{ belote_allowed }}")
+
     belote_allowed = bool["{{ belote_allowed }}"]
 
     if (username == "{{ player_with_belote }}") {
@@ -114,20 +114,6 @@
       $("#start_game").prop('disabled', true);
     }
 
-    function add_belote_button(enabled, text) {
-      $("#belote_button_div").append('<button id="belote" type="button" class="btn-primary" name="belote">' + text + '</button>');
-      document.getElementById("belote").onclick = function() {
-        announced = $("#belote").text()
-        socket.emit('belote announced', announced);
-        console.log ("Belote announced")
-        // TODO: change allowed cards to only allow queen and king of trump?
-      }
-      console.log("In add_belote_button enabled is" + enabled)
-      if (enabled == false) {
-        $("#belote").prop("disabled", true)
-      }
-    }
-
     // Connect to websocket
     console.log("Connecting to io")
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/contree');
@@ -163,7 +149,7 @@
     });
 
     socket.on('belote played', function(data) {
-      // Add Belote/Rebelote button
+      $("#belote").text("")
       $("#belote").text("Rebelote")
     });
 
@@ -433,7 +419,7 @@
     <div>
       <div class="col-md-12" id="cards">
         <table>
-          <br>
+          <br/>
          <tr>
           <!-- <tr id="cards"></tr> -->
           {% for card in hand -%}

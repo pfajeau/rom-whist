@@ -11,13 +11,11 @@ from random import randint
 
 from flask import render_template, request, flash, session, url_for, redirect
 from flask_babel import gettext as _
-from flask_babel import lazy_gettext as _l
 # from flask import Blueprint
 from wtforms import SelectField
 
 from flask_login import current_user, login_user
 from flask_socketio import emit
-from flask_socketio import join_room, leave_room
 
 from romwhist import common_routes
 from romwhist import socketio
@@ -422,22 +420,9 @@ def player_played_process(game_id, player, card):
     return
 
 
-def belote_state_changed(game_id, player):
-    logging.info("In belote played")
+def belote_state_changed(game_id):
     game = games[game_id]
-    belote_state = game.belote_state
-    if belote_state == BeloteGame.BeloteState.Belote_Played:
-        logging.info("Belote card played")
-        socketio.emit("belote played", game.player_with_belote, room=game_id, namespace=NAMESPACE)
-
-    elif belote_state == BeloteGame.BeloteState.Rebelote_Played:
-        logging.info("Belote card played")
-        socketio.emit("rebelote played", game.player_with_belote, room=game_id, namespace=NAMESPACE)
-
-    elif belote_state == BeloteGame.BeloteState.Lost:
-        logging.info("Belote points lost")
-        socketio.emit("belote lost", game.player_with_belote, room=game_id, namespace=NAMESPACE)
-
+    common_routes.belote_state_changed(game_id, game, NAMESPACE)
     return
 
 
@@ -476,59 +461,22 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
 
 @socketio.on('belote announced', namespace=NAMESPACE)
 def belote_announced(announce):
-    logging.info("belote announced event received. Announce is: " + announce)
-    # Set in game and issue notification if applicable
-    game_id = session.get('game_id')
-    if not game_id is None:
-        player = session.get('username')
-        game = games[game_id]
-        if announce == 'Belote':
-            game.player_announced_belote(player, BeloteGame.BeloteAnnounced.BELOTE)
-        elif announce == 'Rebelote':
-            game.player_announced_belote(player, BeloteGame.BeloteAnnounced.REBELOTE)
-
-        # emit("alert", announce + " announced by " + player, room=game_id, namespace=NAMESPACE)
-        common_routes.emit_to_players(
-            "belote announced",
-            {'game_id': game_id, 'player': player, 'announced': announce},
-            room=game_id, namespace=NAMESPACE)
-        emit("msg posted", {'sender': session['username'], 'msg': announce}, room=game_id, namespace=NAMESPACE)
+    common_routes.belote_announced(announce, games, NAMESPACE)
+    return
 
 
 @socketio.on('join game', namespace=NAMESPACE)
 def on_join(data):
-    # Note that a refresh on the client side causes the socketio sid to changed
-    # so need to remove the previous sid from the room
-    logging.info("on_join")
-    game_id = session.get('game_id')
-    if not game_id is None:
-        if session['game_id'] in games:
-            # Add user to room if user is not there already
-            player = session.get('username')
-            current_client_room = clients[game_id].get(player)
+    common_routes.on_join(session.get('game_id'), games, clients, NAMESPACE)
+    return
 
-            # Adding new client room id (sid) to list of clients
-            clients[game_id][player] = request.sid
-            session['sid'] = request.sid
-            join_room(game_id)
 
-# TODO: factorize
 @socketio.on('join game ai', namespace=NAMESPACE_AI)
 def join_ai(data):
-    # Note that a refresh on the client side causes the socketio sid to changed
-    # so need to remove the previous sid from the room
-    logging.info("join_ai")
-
     game_id = str(data.get('game_id'))
-    game = games.get(game_id)
-    if game is None:
-        logging.error("Unknown game: " + repr(game_id))
-        return
-    # Add user to room if user is not there already
     player = data.get('player')
-    logging.debug("Player: " + player)
-    common_routes.add_player(player, game, NAMESPACE)
-
+    common_routes.join_ai(game_id, player, games, NAMESPACE)
+    return
 
 
 @socketio.on('client post', namespace=NAMESPACE)
@@ -539,15 +487,9 @@ def on_post(msg):
 
 
 @socketio.on('disconnect', namespace=NAMESPACE)
-def test_disconnect():
-    player = session.get('username')
-    game_id = session.get('game_id')
-    logging.info('Client disconnected. ' + str(player))
-    client_id = request.sid
-    if not game_id is None:
-        leave_room(game_id)
-        timer = threading.Timer(120.0, check_player_left, [player, game_id, client_id])
-        timer.start()
+def disconnect():
+    common_routes.disconnect(clients)
+    return
 
 
 def check_player_left(player, game_id, client_id):
