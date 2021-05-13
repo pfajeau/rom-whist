@@ -550,6 +550,10 @@ class BeloteGame(CardGame):
                     self.hands[player].add(self.deck.deal())
                 self.hands[player].sort()
 
+        self.update_belote_status()
+        return self.hands
+
+    def update_belote_status(self):
         # Determine whether Belote / Rebelote enabled for each player
         self.belote_state = BeloteGame.BeloteState.Not_Allowed
         self.player_with_belote = None
@@ -565,8 +569,7 @@ class BeloteGame(CardGame):
                 self.belote_state = BeloteGame.BeloteState.Allowed
                 self.player_with_belote = player
                 break
-
-        return self.hands
+        return
 
     def play_card(self, player, card_value):
         winner = CardGame.play_card(self, player, card_value)

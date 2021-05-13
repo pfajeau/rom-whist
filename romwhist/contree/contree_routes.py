@@ -392,7 +392,7 @@ def player_played_process(game_id, player, card):
     belote_after = game.belote_state
 
     if belote_before != belote_after:
-        belote_state_changed(game_id, player)
+        belote_state_changed(game_id)
 
     nplayer = game.get_active_player()
 

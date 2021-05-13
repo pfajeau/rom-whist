@@ -126,6 +126,8 @@ class ContreeGame(BeloteGame):
             self.phase = BeloteGame.GamePhase.PLAY
             self.set_cards_rank_and_value()
             self.active_player = self.next_player(self.dealer)
+            self.update_belote_status()
+
         return
 
     def get_allowed_bets(self, player):
@@ -190,7 +192,8 @@ class ContreeGame(BeloteGame):
     def deal(self, dealer=""):
         self.current_bet = None
         self.contree_status = ContreStatus.NORMAL
-        return self.deal_cards(int(self.deck_size / len(self.players)), dealer)
+        hands = self.deal_cards(int(self.deck_size / len(self.players)), dealer)
+        return hands
 
     def deal_2(self, dealer=""):
         return
