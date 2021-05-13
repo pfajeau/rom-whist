@@ -50,6 +50,14 @@ function initialize(players) {
     }
   });
 
+  html = ""
+  // $("#chat_text").html(html)
+  for (msg in messages) {
+    html = html.concat(messages[msg])
+    html =  html.concat("\n")
+  }
+  $("#chat_text").html(html)
+
   // Send button for chat
   $("#post_chat").html(i18n["send"])
   $( "#post_chat" ).click(function() {
@@ -351,8 +359,8 @@ function trump_card_received(data, caption) {
 function new_player(player_name) {
   console.log("new player event received");
   socket.emit('join game', player_name);
-  document.getElementById("game_form").submit();
-  // window.location.reload(false);
+  // document.getElementById("game_form").submit();
+  window.location.reload(false);
 }
 
 function game_over(winners) {

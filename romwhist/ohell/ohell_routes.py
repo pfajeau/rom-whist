@@ -36,6 +36,8 @@ games = dict()
 # Keys are game ids and then player ids. Used for socketio.
 clients = dict()
 
+# Dictionary of messages for each game
+messages = dict()
 
 def ohell_start():
     # logging.debug (current_user)
@@ -156,13 +158,17 @@ def ohell_play():
         active_player = game.get_active_player()
         logging.debug("Allowed cards: " + str(game.get_allowed_cards(player)))
 
+        if not game_id in messages:
+            messages[game_id] = []
+
         return render_template("ohell.html", form=form, players=game.get_playing_players(), scores=game.get_scores(),
                                hand=hand, bets=game.get_bets(), wins=game.get_wins(), active_player=active_player,
                                cards_played=cards_played, allowed_cards=game.get_allowed_cards(player),
                                trump=game.trump_card, dealing_method=game.dealing_method,
                                allowed_bets=game.get_allowed_bets(player), game_phase=game.phase.name,
                                hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet,
-                               i18n=json.dumps(i18n_strings.i18n()))
+                               i18n=json.dumps(i18n_strings.i18n()),
+                               messages=json.dumps(messages[game_id]))
     else:
         return redirect_template
 
@@ -465,7 +471,8 @@ def join_ai(data):
 
 @socketio.on('client post', namespace=NAMESPACE)
 def on_post(msg):
-    common_routes.post_msg(msg, session['username'], session.get('game_id'), NAMESPACE)
+    common_routes.post_msg(msg, session['username'], session.get('game_id'),
+                           messages, NAMESPACE)
 
 
 @socketio.on('disconnect', namespace=NAMESPACE)

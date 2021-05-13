@@ -40,6 +40,8 @@ games = dict()
 # Keys are game ids and then player ids. Used for socketio.
 clients = dict()
 
+# Dictionary of messages for each game
+messages = dict()
 
 # @app.route("/contree_start",methods=['GET', 'POST'])
 def contree_start():
@@ -135,8 +137,10 @@ def contree_play():
                 common_routes.add_ai_player(len(game.players),
                                             game_id, NAMESPACE_AI)
             return redirect(url_for('contree_play'))
+        print ("No matchin action!!!!!")
+        return redirect(url_for('contree_start'))
 
-    elif redirect_template is None:
+    elif redirect_template is None or request.method == 'GET':
         hand = game.get_hands().get(player)
         if hand is None:
             hand = []
@@ -161,6 +165,9 @@ def contree_play():
             bets_suit[player] = game.bets[player].suit
             bets_points[player] = game.bets[player].points
 
+        if not game_id in messages:
+            messages[game_id] = []
+
         # TODO: could pass the game state instead of all the parameters
         # individually
         return render_template("contree.html", form=form, players=game.get_playing_players(), scores=game.get_scores(),
@@ -171,9 +178,11 @@ def contree_play():
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
                                belote_allowed=belote_enabled, player_with_belote=game.player_with_belote,
                                contree_status=game.contree_status.value, current_bet=game.current_bet,
-                               taker=game.taker, i18n=json.dumps(i18n_strings.i18n()))
+                               taker=game.taker, i18n=json.dumps(i18n_strings.i18n()),
+                               messages=json.dumps(messages[game_id]))
     else:
-        return redirect_template
+        print ("WEIRD....")
+        return redirect(url_for('contree_start'))
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
@@ -520,10 +529,13 @@ def join_ai(data):
     logging.debug("Player: " + player)
     common_routes.add_player(player, game, NAMESPACE)
 
+
+
 @socketio.on('client post', namespace=NAMESPACE)
 def on_post(msg):
     # Just distribute to players in room
-    common_routes.post_msg(msg, session['username'], session.get('game_id'), NAMESPACE)
+    common_routes.post_msg(msg, session['username'], session.get('game_id'),
+                           messages, NAMESPACE)
 
 
 @socketio.on('disconnect', namespace=NAMESPACE)

@@ -2,8 +2,8 @@
 This module implements common code betwenn routes.
 
 author: Philippe Fajeau
-
 """
+
 import logging
 from random import randint
 
@@ -22,6 +22,8 @@ from romwhist.ohell import ohell_routes
 from romwhist import app
 from romwhist import i18n_strings
 
+# Store chat messages. Dictionary indexed by namespace + game_id
+# messages = dict()
 
 def get_locale(request):
     print(app.config['LANGUAGES'])
@@ -125,12 +127,16 @@ def clean_game_data(game_id, games, clients):
     del clients[game_id]
 
 
-def post_msg(msg, sender, room, namespace):
+def post_msg(msg, sender, room, messages, namespace):
     game_id = session.get('game_id')
     if game_id is None:
         logging.warning("NO GAME_ID IN SESSION!!!!")
     else:
         socketio.emit("msg posted", {'sender': sender, 'msg': msg}, room=room, namespace=namespace)
+        message_key = game_id
+        if not message_key in messages:
+            messages[message_key] = []
+        messages[message_key].append(sender + ": " + msg)
 
 # def restart_hand(game, namespace):
 #     # Deal another hand

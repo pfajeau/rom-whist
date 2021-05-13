@@ -37,6 +37,8 @@ games = dict()
 # Keys are game ids and then player ids. Used for socketio.
 clients = dict()
 
+# Dictionary of messages for each game
+messages = dict()
 
 # @app.route("/belote_start",methods=['GET', 'POST'])
 def belote_start():
@@ -147,6 +149,9 @@ def belote_play():
         if game.belote_state == BeloteGame.BeloteState.Belote_Played or game.belote_state == BeloteGame.BeloteState.Allowed:
             belote_enabled = True
 
+        if not game_id in messages:
+            messages[game_id] = []
+
         # TODO: could pass the game state instead of all the parameters
         # individually
         return render_template("belote.html", form=form, players=game.get_playing_players(), scores=game.get_scores(),
@@ -155,7 +160,9 @@ def belote_play():
                                trump=game.trump_card, trump_suit=game.trump_suit,
                                allowed_bets=game.get_allowed_bets(player),
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
-                               belote_allowed=belote_enabled, player_with_belote=game.player_with_belote, i18n=json.dumps(i18n_strings.i18n()))
+                               belote_allowed=belote_enabled, player_with_belote=game.player_with_belote,
+                               i18n=json.dumps(i18n_strings.i18n()),
+                               messages=json.dumps(messages[game_id]))
 
     else:
         return redirect_template
@@ -507,7 +514,8 @@ def join_ai(data):
 @socketio.on('client post', namespace=NAMESPACE)
 def on_post(msg):
     # Just distribute to players in room
-    common_routes.post_msg(msg, session['username'], session.get('game_id'), NAMESPACE)
+    common_routes.post_msg(msg, session['username'], session.get('game_id'),
+                           messages, NAMESPACE)
 
 
 @socketio.on('disconnect', namespace=NAMESPACE)
