@@ -1,7 +1,8 @@
 import logging
-from romwhist.contree.contree import ContreeGame, CountingMethod
+
 from romwhist.belote.belote import BeloteGame
-from romwhist.contree.announce import Announce, ContreStatus
+from romwhist.contree.announce import Announce
+from romwhist.contree.contree import ContreeGame, CountingMethod
 
 from tests import test_common
 
@@ -26,7 +27,7 @@ def main():
     for player in players:
         assert (len(contree.get_hand(player).cards) == 8)
 
-    #self.assertEqual(True, False)
+    # self.assertEqual(True, False)
 
     # Test Place Bet
     assert len(contree.get_allowed_bets("Joe")[0]) == 5, len(contree.get_allowed_bets("Joe")[0])
@@ -37,7 +38,8 @@ def main():
     assert contree.active_player == "Jack", contree.active_player
 
     assert len(contree.get_allowed_bets("Jack")[0]) == 6, len(contree.get_allowed_bets("Jack")[0])
-    assert len(contree.get_allowed_bets("Jack")[1]) == len(ContreeGame.all_bet_points) - 1, len(contree.get_allowed_bets("Jack")[1])
+    assert len(contree.get_allowed_bets("Jack")[1]) == len(ContreeGame.all_bet_points) - 1, len(
+        contree.get_allowed_bets("Jack")[1])
     bet = Announce("heart", 90)
     contree.place_bet("Jack", bet)
     assert contree.active_player == "Jim", contree.active_player
@@ -51,7 +53,7 @@ def main():
 
     assert (len(contree.get_allowed_bets("Johnny")[0]) == 2)
     assert contree.get_allowed_bets("Johnny")[0][1] == "surcontre", contree.get_allowed_bets("Johnny")[0][1]
-    #assert contree.get_allowed_bets("Johnny")[1][0] == 0, contree.get_allowed_bets("Johnny")[1][0]
+    # assert contree.get_allowed_bets("Johnny")[1][0] == 0, contree.get_allowed_bets("Johnny")[1][0]
     bet = Announce("surcontre", 0)
     contree.place_bet("Johnny", bet)
     assert contree.active_player == "Joe", contree.active_player
@@ -111,7 +113,7 @@ def main():
 
     # Set card values (were overwritten by new cards since they are different objects)
     contree.set_cards_rank_and_value()
-    for i in range(1,9):
+    for i in range(1, 9):
         print("Creating new round")
         a_round = contree.create_round()
         winner = test_common.play_round(contree, a_round)
@@ -124,7 +126,7 @@ def main():
 
     contree.hand_completed()
     scores = contree.get_scores()
-    print ("Scores: ", str(scores))
+    print("Scores: ", str(scores))
 
     contree = ContreeGame("Joe", counting=CountingMethod.POINTS_BID)
     for player in players:
@@ -148,7 +150,7 @@ def main():
     test_common.create_hands(contree, cards_as_str)
     # Set card values (were overwritten by new cards since they are different objects)
     contree.set_cards_rank_and_value()
-    for i in range(1,9):
+    for i in range(1, 9):
         print("Creating new round")
         a_round = contree.create_round()
         winner = test_common.play_round(contree, a_round)
@@ -160,7 +162,7 @@ def main():
             print(player + " played: " + str(cards_played[player]))
 
     for player in players:
-        print ("Player hand points for " + player + ": " + str(contree.hand_points[player]))
+        print("Player hand points for " + player + ": " + str(contree.hand_points[player]))
         print("Player total points for " + player + ": " + str(contree.get_scores()[player]))
     hand_points_joe = contree.hand_points["Joe"]
     total_points_joe = contree.scores["Joe"]
@@ -168,15 +170,15 @@ def main():
     total_points_jack = contree.scores["Jack"]
     contree.hand_completed()
     for player in players:
-        print ("Player hand points for " + player + ": " + str(contree.hand_points[player]))
+        print("Player hand points for " + player + ": " + str(contree.hand_points[player]))
         print("Player total points for " + player + ": " + str(contree.get_scores()[player]))
     scores = contree.get_scores()
-    assert scores["Joe"] == 80 *2 + total_points_joe, scores["Joe"]
+    assert scores["Joe"] == 80 * 2 + total_points_joe, scores["Joe"]
     assert scores["Jack"] == 0, scores["Jack"]
     assert scores["Jim"] == scores["Joe"], scores["Jim"]
-    assert scores["Johnny"] == scores["Jack"] , scores["Johnny"]
+    assert scores["Johnny"] == scores["Jack"], scores["Johnny"]
 
-    print ("Scores: ", str(scores))
+    print("Scores: ", str(scores))
 
 
 if __name__ == '__main__':

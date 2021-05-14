@@ -17,6 +17,7 @@ from flask_socketio import join_room, leave_room
 from flask_login import current_user, login_user
 from romwhist import socketio
 from romwhist.belote import belote_routes
+from romwhist.belote.belote_status import BeloteStatus
 from romwhist.contree import contree_routes
 from romwhist.extensions import db
 from romwhist.forms import LoginForm
@@ -219,18 +220,18 @@ def generate_game_id(max_id, games):
     return game_id
 
 
-def belote_state_changed(game_id, game, namespace):
+def belote_status_changed(game_id, game, namespace):
     logging.info("In belote played")
-    belote_state = game.belote_state
-    if belote_state == BeloteGame.BeloteState.Belote_Played:
+    belote_status = game.belote_status
+    if belote_status == BeloteStatus.Belote_Played:
         logging.info("Belote card played")
         socketio.emit("belote played", game.player_with_belote, room=game_id, namespace=namespace)
 
-    elif belote_state == BeloteGame.BeloteState.Rebelote_Played:
+    elif belote_status == BeloteStatus.Rebelote_Played:
         logging.info("Belote card played")
         socketio.emit("rebelote played", game.player_with_belote, room=game_id, namespace=namespace)
 
-    elif belote_state == BeloteGame.BeloteState.Lost:
+    elif belote_status == BeloteStatus.Lost:
         logging.info("Belote points lost")
         socketio.emit("belote lost", game.player_with_belote, room=game_id, namespace=namespace)
     return
@@ -243,9 +244,9 @@ def belote_announced(announce, games, namespace):
     if game_id is not None:
         player = session.get('username')
         game = games[game_id]
-        if announce == 'Belote':
+        if announce == 'belote':
             game.player_announced_belote(player, BeloteGame.BeloteAnnounced.BELOTE)
-        elif announce == 'Rebelote':
+        elif announce == 'rebelote':
             game.player_announced_belote(player, BeloteGame.BeloteAnnounced.REBELOTE)
 
         # emit("alert", announce + " announced by " + player, room=game_id, namespace=NAMESPACE)

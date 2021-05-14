@@ -1,8 +1,6 @@
 from flask_babel import gettext as _
 
 # Define all strings that need to be passed to the templates
-
-
 def i18n():
     __i18n = dict()
     __i18n["join_game"] = _("join_game")
@@ -33,13 +31,11 @@ def i18n():
     __i18n["round_winner"] = _("round_winner")
     __i18n["with_the"] = _("with_the")
     __i18n["winner"] = _("winner")
-
     __i18n["winners_hand"] = _("winners_hand")
 
     __i18n["trump"] = _("trump")
     __i18n["user"] = _("user")
     __i18n["left_game"] = _("left_game")
-
 
     # This block may not be required
     __i18n["select"] = _("select")
@@ -79,8 +75,8 @@ def i18n():
     __i18n["confirm_add_ai"] = _("confirm_add_ai")
     __i18n["confirm_restart_hand"] = _("confirm_restart_hand")
     __i18n["bet_not_allowed"] = _("bet_not_allowed")
+    __i18n["belote_rebelote_lost"] = _("belote_rebelote_lost")
+    __i18n["belote"] = _("belote")
+    __i18n["rebelote"] = _("rebelote")
 
     return __i18n
-
-def i18n_val(key):
-    return i18n.get[key]

@@ -1,6 +1,7 @@
 from romwhist.card import Card
 from romwhist.contree.announce import Announce, ContreStatus
 from romwhist.belote.belote_state import BeloteState
+from romwhist.belote.belote_status import BeloteStatus
 
 
 class ContreeState(BeloteState):
@@ -11,13 +12,16 @@ class ContreeState(BeloteState):
                  owner="", dealer = "",
                  bets=dict(), allowed_bets = None, trump_card = "",
                  phase = None, hand_points=dict(), hand_winner=[], taker=None,
-                 contree_status = ContreStatus.NORMAL, current_bet = "pass_0", BONUS_CAPOT = 250):
+                 contree_status = ContreStatus.NORMAL, current_bet = "pass_0", BONUS_CAPOT = 250,
+                 belote_status=BeloteStatus.Not_Allowed):
 
-        BeloteState.__init__(self, game_id, sim_player=sim_player, players=players, trump=trump, cards_played_per_player=cards_played_per_player,
-                 cards_played_per_round=cards_played_per_round, deck_size=deck_size,
-                 hand_cards=hand_cards, allowed_cards=allowed_cards, active_player=active_player, scores=scores,
-                 owner=owner, dealer=dealer, bets=bets, allowed_bets=allowed_bets, trump_card=trump_card,
-                 phase=phase, hand_points=hand_points, hand_winner=hand_winner, taker=taker)
+        BeloteState.__init__(self, game_id, sim_player=sim_player, players=players, trump=trump,
+                             cards_played_per_player=cards_played_per_player,
+                             cards_played_per_round=cards_played_per_round, deck_size=deck_size,
+                             hand_cards=hand_cards, allowed_cards=allowed_cards, active_player=active_player,
+                             scores=scores, owner=owner, dealer=dealer, bets=bets, allowed_bets=allowed_bets,
+                             trump_card=trump_card, phase=phase, hand_points=hand_points, hand_winner=hand_winner,
+                             taker=taker,belote_status=belote_status)
 
         self.contree_status = contree_status
         self.current_bet = current_bet

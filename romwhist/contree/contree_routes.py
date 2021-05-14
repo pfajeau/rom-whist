@@ -12,15 +12,15 @@ from random import randint
 from flask import render_template, request, flash, session, url_for, redirect
 from flask_babel import gettext as _
 # from flask import Blueprint
-from wtforms import SelectField
 
 from flask_login import current_user, login_user
 from flask_socketio import emit
 
 from romwhist import common_routes
 from romwhist import socketio
+from romwhist.belote.belote_status import BeloteStatus
 from romwhist.contree.contree import ContreeGame, CountingMethod
-from romwhist.contree.announce import Announce, ContreStatus
+from romwhist.contree.announce import Announce
 from romwhist.belote.belote import BeloteGame
 from romwhist.contree.contree_form import ContreeStartForm
 from romwhist.extensions import db
@@ -41,6 +41,7 @@ clients = dict()
 # Dictionary of messages for each game
 messages = dict()
 
+
 # @app.route("/contree_start",methods=['GET', 'POST'])
 def contree_start():
     form = ContreeStartForm()
@@ -48,7 +49,7 @@ def contree_start():
     logging.info("Language set to: %s", locale)
 
     if form.validate_on_submit():
-        # Sanitize the username (as it isued as IDs in the html)
+        # Sanitize the username (as it used as IDs in the html)
         username = common_routes.sanitize_username(form.user_name.data)
         logging.debug("User: " + username)
 
@@ -65,14 +66,14 @@ def contree_start():
 
         elif form.start_game.data:
             logging.info("start game")
-            game_id = common_routes.generate_game_id(999,games)
+            game_id = common_routes.generate_game_id(999, games)
             if game_id is None:
                 return render_template('contree_start.html',
                                        error="No more games available!!! Please try again later",
                                        form=form, locale=locale)
 
             points_to_reach = int(form.points_to_reach.data)
-            #index = int(form.counting.data)
+            # index = int(form.counting.data)
             # counting_str = form.counting.choices[index][1]
             counting_str = form.counting.data
             logging.debug("Counting string from UI: %s", counting_str)
@@ -135,7 +136,7 @@ def contree_play():
                 common_routes.add_ai_player(len(game.players),
                                             game_id, NAMESPACE_AI)
             return redirect(url_for('contree_play'))
-        print ("No matchin action!!!!!")
+        print("No matching action!!!!!")
         return redirect(url_for('contree_start'))
 
     elif redirect_template is None or request.method == 'GET':
@@ -154,7 +155,7 @@ def contree_play():
         # if game phase = play and user has both queen and king then enabled. If user has already play belote, then
         # enable.
         belote_enabled = False
-        if game.belote_state == BeloteGame.BeloteState.Belote_Played or game.belote_state == BeloteGame.BeloteState.Allowed:
+        if game.belote_state == BeloteStatus.Belote_Played or game.belote_state == BeloteStatus.Allowed:
             belote_enabled = True
 
         bets_suit = dict()
@@ -163,24 +164,26 @@ def contree_play():
             bets_suit[player] = game.bets[player].suit
             bets_points[player] = game.bets[player].points
 
-        if not game_id in messages:
+        if game_id not in messages:
             messages[game_id] = []
 
         # TODO: could pass the game state instead of all the parameters
         # individually
         return render_template("contree.html", form=form, players=game.get_playing_players(), scores=game.get_scores(),
-                               hand=hand, wins=game.hand_points, bets_suit=bets_suit, bets_points=bets_points, active_player=active_player,
+                               hand=hand, wins=game.hand_points, bets_suit=bets_suit, bets_points=bets_points,
+                               active_player=active_player,
                                cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player),
                                trump=game.trump_card, trump_suit=game.trump_suit,
                                allowed_bets=game.get_allowed_bets(player),
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
-                               belote_allowed=belote_enabled, player_with_belote=game.player_with_belote,
+                               belote_status=game.belote_status, player_with_belote=game.player_with_belote,
                                contree_status=game.contree_status.value, current_bet=game.current_bet,
                                taker=game.taker, i18n=json.dumps(i18n_strings.i18n()),
                                messages=json.dumps(messages[game_id]))
     else:
-        print ("WEIRD....")
+        # Should never happen
         return redirect(url_for('contree_start'))
+
 
 # @app.route("/login",methods=['GET', 'POST'])
 def login():
@@ -353,7 +356,7 @@ def hand_completed(game_id, username):
 
 def next_round(game_id, nplayer, allowed_cards):
     game = games[game_id]
-    common_routes.next_round(game, nplayer,allowed_cards, hand_completed, NAMESPACE)
+    common_routes.next_round(game, nplayer, allowed_cards, hand_completed, NAMESPACE)
 
 
 @socketio.on('player played', namespace=NAMESPACE_AI)
@@ -401,8 +404,8 @@ def player_played_process(game_id, player, card):
         allowed_cards = game.get_allowed_cards(nplayer)
         common_routes.emit_to_players(
             "player to play",
-             {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
-             room=game_id, namespace=NAMESPACE, game_state=game.get_state())
+            {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
+            room=game_id, namespace=NAMESPACE, game_state=game.get_state())
     else:
         # There is a winner, so round is ended
         # game.round_ended(winner)
@@ -410,7 +413,8 @@ def player_played_process(game_id, player, card):
         winning_card = game.get_current_round().cards_played[winner]
         common_routes.emit_to_players(
             "round ended",
-            {"game_id": game_id, "winner": winner, "card": winning_card.desc(), "last_player": player, "points":game.hand_points},
+            {"game_id": game_id, "winner": winner, "card": winning_card.desc(),
+             "last_player": player, "points": game.hand_points},
             room=game_id, namespace=NAMESPACE)
 
         timer = threading.Timer(6.0, next_round, [game_id, nplayer, allowed_cards])
@@ -422,7 +426,7 @@ def player_played_process(game_id, player, card):
 
 def belote_state_changed(game_id):
     game = games[game_id]
-    common_routes.belote_state_changed(game_id, game, NAMESPACE)
+    common_routes.belote_status_changed(game_id, game, NAMESPACE)
     return
 
 
@@ -454,7 +458,7 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
 
     common_routes.emit_to_players(
         "player to bet",
-        {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(player)},
+        {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(nplayer)},
         room=game_id, namespace=NAMESPACE, game_state=game.get_state())
     return
 
@@ -524,7 +528,7 @@ def restart_hand(game_id):
 # Add player to a game
 def add_player(player, game_id):
     game = games.get(game_id)
-    if not game is None:
+    if game is not None:
         if len(game.get_playing_players()) >= 4:
             logging.error("Max number of players reached")
             return None
@@ -534,6 +538,7 @@ def add_player(player, game_id):
             if game.started:
                 restart_hand(game_id)
             return player
+
 
 def remove_player(game_id, player):
     common_routes.remove_player(game_id, games, clients, player, NAMESPACE)

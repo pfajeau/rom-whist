@@ -45,16 +45,19 @@ Add footer / contact info
 
     //populate_bets()
 
-    belote_allowed = bool["{{ belote_allowed }}"]
+    belote_status = "{{ belote_status }}"
+    console.log("Belote status: " + belote_status)
 
-    if (username == "{{ player_with_belote }}") {
-      // TODO: need to know whether to put belote or rebelote on button
-      add_belote_button(belote_allowed, "Belote")
+    if (username == "{{ player_with_belote }}" && belote_status == "allowed") {
+      add_belote_button(true)
+    }
+    else if (username == "{{ player_with_belote }}" && belote_status == "belote_played") {
+        add_rebelote_button(true)
     }
     else {
       // Remove belote button
-      $("#belote").remove()
-    }
+      $("#belote_button_div").empty()
+ }
 
     {% if cards_played != None %}
       {% for key, value in cards_played.items() %}
@@ -71,10 +74,6 @@ Add footer / contact info
       make_player_play("{{ active_player }}", "{{ allowed_cards }}");
     }
 
-    // document.getElementById("post_chat").onclick = function() {
-    //   post_msg();
-    // }
-    //
     // Register action for bet input field
     id_bet = "#bets_" + username
     $(id_bet).change(function() {
@@ -90,7 +89,7 @@ Add footer / contact info
     });
 
     enable_start_game();
-    // Allow start button when numbe of players is between 2 and 4
+    // Allow start button when number of players is between 2 and 4
     if (the_players.length < 2 || the_players.length > 4) {
       $("#start_game").prop('disabled', true);
     }
@@ -120,24 +119,25 @@ Add footer / contact info
       belote_announced(data)
     });
 
-    socket.on('belote rebelote enabled', function(data) {
+    socket.on('belote enabled', function(data) {
       // Add Belote/Rebelote button
       console.log("Belote / Rebelote possible")
-      add_belote_button(true, i18n["belote"])
+      $("#belote_button_div").empty()
+      add_belote_button(true)
     });
 
     socket.on('belote played', function(data) {
-      $("#belote").text("")
-      $("#belote").text(i18n["rebelote"])
+      $("#belote_button_div").empty()
+      add_rebelote_button(true)
     });
 
     socket.on('rebelote played', function(data) {
       // Disable Belote/Rebelote button
-      $("#belote").remove()
+      $("#belote_button_div").empty()
     });
 
     socket.on('belote lost', function(data) {
-      belote_lost(i18n["belote_points_lost"])
+      belote_lost()
     });
 
 

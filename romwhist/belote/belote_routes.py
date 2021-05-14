@@ -18,6 +18,7 @@ from flask_socketio import emit
 from romwhist import common_routes
 from romwhist import socketio
 from romwhist.belote.belote import BeloteGame
+from romwhist.belote.belote_status import BeloteStatus
 from romwhist.belote.belote_form import BeloteStartForm
 from romwhist.belote.belote_state import BeloteState
 from romwhist.extensions import db
@@ -144,8 +145,8 @@ def belote_play():
         # if game phase = play and user has both queen and king then enabled. If user has already play belote, then
         # enable.
         belote_enabled = False
-        if game.belote_state == BeloteGame.BeloteState.Belote_Played or \
-                game.belote_state == BeloteGame.BeloteState.Allowed:
+        if game.belote_status == BeloteStatus.Belote_Played or \
+                game.belote_status == BeloteStatus.Allowed:
             belote_enabled = True
 
         if game_id not in messages:
@@ -159,7 +160,7 @@ def belote_play():
                                trump=game.trump_card, trump_suit=game.trump_suit,
                                allowed_bets=game.get_allowed_bets(player),
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
-                               belote_allowed=belote_enabled, player_with_belote=game.player_with_belote,
+                               belote_status=game.belote_status.value, player_with_belote=game.player_with_belote,
                                i18n=json.dumps(i18n_strings.i18n()),
                                messages=json.dumps(messages[game_id]))
 
@@ -293,7 +294,7 @@ def player_bet_process(player, game_id, bet):
                 if player_belote is not None:
                     logging.debug("Player with Belote / Rebelote: " + player_belote)
                     common_routes.emit_to_players(
-                        "belote rebelote enabled",
+                        "belote enabled",
                         player_belote, game_id=game_id,
                         room=clients[game_id].get(player_belote), namespace=NAMESPACE)
             return
@@ -368,7 +369,7 @@ def player_played_process(game_id, player, card):
         return
 
     game = games.get(game_id)
-    belote_before = game.belote_state
+    belote_before = game.belote_status
     winner = game.play_card(player, card)
 
     common_routes.emit_to_players(
@@ -376,7 +377,7 @@ def player_played_process(game_id, player, card):
         {'game_id': game_id, 'player': player, 'card': card},
         room=game_id, namespace=NAMESPACE)
 
-    belote_after = game.belote_state
+    belote_after = game.belote_status
 
     if belote_before != belote_after:
         belote_state_changed(game_id)
@@ -410,7 +411,7 @@ def player_played_process(game_id, player, card):
 
 def belote_state_changed(game_id):
     game = games[game_id]
-    common_routes.belote_state_changed(game_id, game, NAMESPACE)
+    common_routes.belote_status_changed(game_id, game, NAMESPACE)
     return
 
 

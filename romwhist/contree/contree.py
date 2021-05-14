@@ -5,6 +5,7 @@ from enum import Enum
 
 from romwhist.card import Card
 from romwhist.belote.belote import BeloteGame
+from romwhist.belote.belote_status import BeloteStatus
 from romwhist.contree.contree_state import ContreeState
 from romwhist.contree.announce import Announce
 from romwhist.contree.announce import ContreStatus
@@ -229,7 +230,7 @@ class ContreeGame(BeloteGame):
             player_points.append(self.hand_points[players[i]])
 
         for i in range(nb_players):
-            if self.belote_state == BeloteGame.BeloteState.Rebelote_Played and \
+            if self.belote_status == BeloteStatus.Rebelote_Played and \
                     self.player_with_belote == players[i]:
                 logging.info("In update_scores, adding belote / rebelote points to " + players[i])
                 player_points[i] += self.BELOTE_REBELOTE

@@ -8,6 +8,7 @@ from romwhist.deck import Deck
 from romwhist.game import CardGame
 from romwhist.hand import Hand
 from romwhist.belote.belote_state import BeloteState
+from romwhist.belote.belote_status import BeloteStatus
 
 
 class BeloteGame(CardGame):
@@ -23,24 +24,15 @@ class BeloteGame(CardGame):
         OVER = "Over"
 
     class BeloteAnnounced(Enum):
-        BELOTE = "Belote"
-        REBELOTE = "Rebelote"
-
-    class BeloteState(Enum):
-        Not_Allowed = 1
-        Allowed = 2
-        Belote_Announced = 3
-        Belote_Played = 4
-        Rebelote_Announced = 5
-        Rebelote_Played = 6
-        Lost = 7
+        BELOTE = "belote"
+        REBELOTE = "rebelote"
 
     def __init__(self, game_creator="", id=0):
         CardGame.__init__(self, game_creator=game_creator, deck_size=0, id=id)
         self.taker = None
         self.teams = []
         # self.__belote_announced = BeloteGame.BeloteAnnounced.No
-        self.__belote_state = BeloteGame.BeloteState.Not_Allowed
+        self.__belote_status = BeloteStatus.Not_Allowed
         self.__player_with_belote = None
         self.__bonus_litige = 0
         self.__win_game_points = 1000
@@ -114,6 +106,7 @@ class BeloteGame(CardGame):
         state.phase = self.phase
         state.hand_winner = copy.deepcopy(self.hand_winner)
         state.taker = self.taker
+        state.belote_status = self.belote_status
         return state
 
     def set_state(self, state):
@@ -125,30 +118,27 @@ class BeloteGame(CardGame):
 
         # self.hand_winner = copy.deepcopy(state.hand_winner)
         self.taker = state.taker
-
-    # @property
-    # def belote_announced(self):
-    #     return self.__belote_announced
+        self.belote_status = state.belote_status
 
     def player_announced_belote(self, player, value):
         # check player can announce (has the right cards and belote_state ha the right value)
         logging.debug("In player_announced_belote, value is: " + str(value))
-        logging.debug("Belote state value: " + self.belote_state.name)
+        logging.debug("Belote state value: " + self.belote_status.name)
         if value == self.BeloteAnnounced.BELOTE:
 
             belote_ok = self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "12") and \
                         self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "13") and \
-                        self.belote_state == self.BeloteState.Allowed
+                        self.belote_status == BeloteStatus.Allowed
             if belote_ok:
-                self.belote_state = self.BeloteState.Belote_Announced
+                self.belote_status = BeloteStatus.Belote_Announced
         elif value == self.BeloteAnnounced.REBELOTE:
             belote_ok = (self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "12") or
                          self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "13")) and \
-                        self.belote_state == self.BeloteState.Belote_Played
+                        self.belote_status == BeloteStatus.Belote_Played
             if belote_ok:
-                self.belote_state = self.BeloteState.Rebelote_Announced
-        logging.debug("Belote state value: " + self.belote_state.name)
-        return self.belote_state
+                self.belote_status = BeloteStatus.Rebelote_Announced
+        logging.debug("Belote state value: " + self.belote_status.name)
+        return self.belote_status
 
     def has_player_card(self, player, card_as_str):
         for card in self.hands[player].cards:
@@ -157,12 +147,12 @@ class BeloteGame(CardGame):
         return False
 
     @property
-    def belote_state(self):
-        return self.__belote_state
+    def belote_status(self):
+        return self.__belote_status
 
-    @belote_state.setter
-    def belote_state(self, value):
-        self.__belote_state = value
+    @belote_status.setter
+    def belote_status(self, value):
+        self.__belote_status = value
 
     def reset(self):
         CardGame.reset(self)
@@ -242,8 +232,6 @@ class BeloteGame(CardGame):
         else:
             logging.info("Player took")
             self.phase = BeloteGame.GamePhase.PLAY
-            # TODO: this will not work when UI translated to different language, as string passed will be different
-            # than what is in the enum
             self.trump_suit = bet
             self.taker = player
             self.set_cards_rank_and_value()
@@ -379,7 +367,7 @@ class BeloteGame(CardGame):
             player_points.append(self.hand_points[players[i]])
 
         for i in range(nb_players):
-            if self.belote_state == BeloteGame.BeloteState.Rebelote_Played and \
+            if self.belote_status == BeloteStatus.Rebelote_Played and \
                     self.player_with_belote == players[i]:
                 logging.info("In update_scores, adding belote / rebelote points to " + players[i])
                 player_points[i] += self.BELOTE_REBELOTE
@@ -510,7 +498,7 @@ class BeloteGame(CardGame):
         self._nb_pass_since_bet = 0
 
         # Reset belote/rebelote states
-        self.belote_state = BeloteGame.BeloteState.Not_Allowed
+        self.belote_status = BeloteStatus.Not_Allowed
         # self.BeloteAnnounced = BeloteGame.BeloteAnnounced.No
         self.__player_with_belote = None
 
@@ -555,7 +543,7 @@ class BeloteGame(CardGame):
 
     def update_belote_status(self):
         # Determine whether Belote / Rebelote enabled for each player
-        self.belote_state = BeloteGame.BeloteState.Not_Allowed
+        self.belote_status = BeloteStatus.Not_Allowed
         self.player_with_belote = None
         for player in self.get_playing_players():
             queen = False
@@ -566,7 +554,7 @@ class BeloteGame(CardGame):
                 king = True
             if queen and king:
                 logging.info("Player " + player + " can announce belote/re-belote")
-                self.belote_state = BeloteGame.BeloteState.Allowed
+                self.belote_status = BeloteStatus.Allowed
                 self.player_with_belote = player
                 break
         return
@@ -582,19 +570,19 @@ class BeloteGame(CardGame):
         belote_card_played = (card_value == Card.get_suit_initial(self.trump_suit) + "12" or
                               card_value == Card.get_suit_initial(self.trump_suit) + "13")
 
-        if belote_card_played and self.belote_state != BeloteGame.BeloteState.Not_Allowed:
-            if self.belote_state == BeloteGame.BeloteState.Belote_Announced:
-                self.belote_state = BeloteGame.BeloteState.Belote_Played
+        if belote_card_played and self.belote_status != BeloteStatus.Not_Allowed:
+            if self.belote_status == BeloteStatus.Belote_Announced:
+                self.belote_status = BeloteStatus.Belote_Played
                 logging.debug("Player " + player + " played belote card: " + card_value)
 
-            elif self.belote_state == BeloteGame.BeloteState.Rebelote_Announced:
-                self.belote_state = BeloteGame.BeloteState.Rebelote_Played
+            elif self.belote_status == BeloteStatus.Rebelote_Announced:
+                self.belote_status = BeloteStatus.Rebelote_Played
                 logging.debug("Player " + player + " played re-belote card: " + card_value)
 
-            elif self.belote_state == BeloteGame.BeloteState.Allowed or \
-                    self.belote_state == BeloteGame.BeloteState.Belote_Played:
+            elif self.belote_status == BeloteStatus.Allowed or \
+                    self.belote_status == BeloteStatus.Belote_Played:
                 # Player lost the points if it was played but not announced
-                self.belote_state = BeloteGame.BeloteState.Lost
+                self.belote_status = BeloteStatus.Lost
                 logging.debug("Player " + player + " lost the belote/rebelote points")
 
         return winner
@@ -611,7 +599,7 @@ class BeloteGame(CardGame):
 
     def hand_completed(self):
         CardGame.hand_completed(self)
-        self.belote_state = BeloteGame.BeloteState.Not_Allowed
+        self.belote_status = BeloteStatus.Not_Allowed
         # TODO: check if score threshold has been reached
         # and set game state to OVER if it as
 

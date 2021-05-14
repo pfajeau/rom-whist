@@ -1,14 +1,27 @@
-function add_belote_button(enabled, text) {
-  $("#belote_button_div").append('<button id="belote" type="button" class="btn-primary" name="belote">' + text + '</button>');
+function add_belote_button(enabled) {
+  $("#belote_button_div").append('<button id="belote" type="button" class="btn-primary" name="belote">' + i18n["belote"] + '</button>');
   document.getElementById("belote").onclick = function() {
-    announced = $("#belote").text()
-    socket.emit('belote announced', announced);
+    socket.emit('belote announced', "belote");
     console.log ("Belote announced")
+
     // TODO: change allowed cards to only allow queen and king of trump?
   }
   console.log("In add_belote_button enabled is" + enabled)
   if (enabled == false) {
     $("#belote").prop("disabled", true)
+  }
+}
+
+function add_rebelote_button(enabled) {
+  $("#belote_button_div").append('<button id="rebelote" type="button" class="btn-primary" name="rebelote">' + i18n["rebelote"] + '</button>');
+  document.getElementById("rebelote").onclick = function() {
+    socket.emit('belote announced', "rebelote");
+    console.log ("ReBelote announced")
+    // TODO: change allowed cards to only allow queen and king of trump?
+  }
+  console.log("In add_belote_button enabled is" + enabled)
+  if (enabled == false) {
+    $("#rebelote").prop("disabled", true)
   }
 }
 
@@ -22,18 +35,25 @@ function belote_announced(data) {
   // }
   $("#msg_div").text(announce_player + " announce " + announce)
   fade_msg()
-  if (announce == "Rebelote" && announce_player == username) {
-    // Disable Belote button
+
+  if (announce == "belote" && announce_player == username) {
+    // Remove Belote button and add rebelote one
     $("#belote").remove()
+    add_rebelote_button(true)
+  }
+
+  if (announce == "rebelote" && announce_player == username) {
+    // Remove Rebelote button
+    $("#rebelote").remove()
   }
 }
 
-function belote_lost(msg) {
+function belote_lost() {
   // Disable Belote/Rebelote button
   $("#belote").remove()
-  // TODO i18n
-  show_alert("", msg)
-  $("#msg_div").text(msg)
+  $("#rebelote").remove()
+  show_alert(i18n["belote_rebelote_lost"], i18n["belote_rebelote_lost"])
+  $("#msg_div").text(i18n["belote_rebelote_lost"])
   fade_msg()
 }
 
