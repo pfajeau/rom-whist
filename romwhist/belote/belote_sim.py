@@ -105,7 +105,6 @@ class BeloteSim(BeloteGame):
         if self.current_round is None:
             logging.debug("Creating current round")
             round = self.create_round()
-            round.trump_suit = self.trump_suit
 
         self.phase = BeloteGame.GamePhase.PLAY
 
@@ -129,14 +128,25 @@ class BeloteSim(BeloteGame):
         else:
             # Hand points need to be made equal to the round points for the simulation
             # to select the right action
-            hand_points_round_winner = self.hand_points[winner]
-            self.hand_completed()
-            round_points = self.hand_points[winner] - hand_points_round_winner
+            round_points = self.points_for_round((self.current_round))
             self.hand_winner.clear()
-            if self.sim_player == winner or self.next_player(self.next_player(self.sim_player)) == winner:
-                self.hand_points[self.sim_player] = round_points
-                self.hand_winner.append(self.sim_player)
-        logging.debug("Hand completed")
+
+            if len(self.players) < 4:
+                if self.sim_player == winner:
+                    self.hand_points[self.sim_player] = round_points
+                    self.hand_winner.append(self.sim_player)
+                else:
+                    self.hand_points[self.sim_player] = 0
+
+            elif len(self.players) == 4:
+                partner = self.next_player(self.next_player(self.sim_player))
+                if self.sim_player == winner or partner == winner:
+                    self.hand_points[self.sim_player] = round_points
+                    self.hand_points[partner] = round_points
+                    self.hand_winner.append(self.sim_player)
+                    self.hand_winner.append(partner)
+
+        logging.debug("End game_loop")
         return
 
     def play_round(self, round):

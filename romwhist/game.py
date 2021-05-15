@@ -132,17 +132,16 @@ class CardGame:
                 if card_str != 'None':
                     round.card_played(player,
                                       Card.card_from_value(card_str))
-            round.trump_suit = state.trump
             self.rounds.append(round)
             self.current_round = round
 
         if self.current_round is None:
             self.current_round = self.create_round()
-            self.current_round.trump_suit = state.trump
+            self.current_round.trump_suit = state_copy.trump
 
         self.active_player = state_copy.active_player
         self.bets = state_copy.bets
-        if not state.trump_card is None and not state.trump_card == "":
+        if state.trump_card is not None and not state.trump_card == "":
             self.trump_card = Card.card_from_value(state.trump_card)
 
     @property

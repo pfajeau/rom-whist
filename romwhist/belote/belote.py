@@ -588,14 +588,18 @@ class BeloteGame(CardGame):
         return winner
 
     def round_ended(self, winner):
-        player_cards = self.current_round.cards_played
+        points = self.points_for_round( self.current_round)
+        self.hand_points[winner] += points
+        return
+
+    def points_for_round(self, round):
+        player_cards = round.cards_played
         points = 0
         for player in player_cards:
             card = str(player_cards[player])
             points = points + self.card_points[card]
         logging.debug("Points in round:" + str(points))
-        self.hand_points[winner] += points
-        return
+        return points
 
     def hand_completed(self):
         CardGame.hand_completed(self)
@@ -618,7 +622,7 @@ class BeloteGame(CardGame):
                 card.rank = self.card_ranks[str(card)]
                 card.points = self.card_points[str(card)]
 
-        for card in self.deck.all_cards:
+        for card in self.deck.cards:
             card.rank = self.card_ranks[str(card)]
             card.points = self.card_points[str(card)]
 

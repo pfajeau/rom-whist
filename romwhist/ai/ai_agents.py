@@ -92,6 +92,11 @@ def random_action(state):
     logging.debug("In random_action, legal actions are: %s", state.get_legal_actions())
     return np.random.choice(state.get_legal_actions())
 
+def best_effort(state):
+    # TODO return action that is stronger than what has been played if possible,
+    # lowest otherwise
+    return None
+
 class SmartSearchAgent(IAgent):
 
     """Abstract agent implementing IAgent that searches a game tree"""
@@ -303,7 +308,7 @@ class SimpleMCTSAgent(IAgent):
     def compute_best_action(self, legal_actions):
         logging.info("action_value: %s", self.action_value)
         logging.info("action_points: %s", self.action_points)
-        logging.debug("Nb simulations per action %s", str(self.num_simulations_per_action))
+        logging.info("Nb simulations per action %s", str(self.num_simulations_per_action))
 
         # Choose best action - start with
         best_action = list(self.action_value.keys())[0]
