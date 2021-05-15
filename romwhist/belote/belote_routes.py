@@ -18,7 +18,6 @@ from flask_socketio import emit
 from romwhist import common_routes
 from romwhist import socketio
 from romwhist.belote.belote import BeloteGame
-from romwhist.belote.belote_status import BeloteStatus
 from romwhist.belote.belote_form import BeloteStartForm
 from romwhist.belote.belote_state import BeloteState
 from romwhist.extensions import db
@@ -141,13 +140,6 @@ def belote_play():
         cards_played = game.get_cards_played_current_round()
         logging.debug("Game Phase: " + game.phase.name)
         active_player = game.get_active_player()
-
-        # if game phase = play and user has both queen and king then enabled. If user has already play belote, then
-        # enable.
-        belote_enabled = False
-        if game.belote_status == BeloteStatus.Belote_Played or \
-                game.belote_status == BeloteStatus.Allowed:
-            belote_enabled = True
 
         if game_id not in messages:
             messages[game_id] = []
@@ -380,7 +372,7 @@ def player_played_process(game_id, player, card):
     belote_after = game.belote_status
 
     if belote_before != belote_after:
-        belote_state_changed(game_id)
+        belote_status_changed(game_id)
 
     nplayer = game.get_active_player()
 
@@ -409,7 +401,7 @@ def player_played_process(game_id, player, card):
     return
 
 
-def belote_state_changed(game_id):
+def belote_status_changed(game_id):
     game = games[game_id]
     common_routes.belote_status_changed(game_id, game, NAMESPACE)
     return

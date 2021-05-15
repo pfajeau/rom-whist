@@ -1,3 +1,57 @@
+function initialize_belote_game() {
+
+    if (game_phase== "PLAY") {
+      make_player_play(active_player , allowed_cards);
+    }
+
+    // Belote button
+    if (username == player_with_belote  && belote_status == "allowed") {
+      add_belote_button(true)
+    }
+    else if (username == player_with_belote  && belote_status == "belote_played") {
+        add_rebelote_button(true)
+    }
+    else {
+      // Remove belote button
+      $("#belote_button_div").empty()
+    }
+
+    // If 4 players already, disable add ai button
+    if (the_players.length >= 4) {
+      $("#add_ai").prop("disabled", true)
+    }
+    else {
+      $("#add_ai").prop("disabled", false)
+    }
+}
+
+function register_belote_events() {
+    // Belote related events
+    socket.on('belote announced', function(data) {
+      belote_announced(data)
+    });
+
+    socket.on('belote rebelote enabled', function(data) {
+      // Add Belote/Rebelote button
+      $("#belote_button_div").empty()
+      add_belote_button(true)
+    });
+
+    socket.on('belote played', function(data) {
+      $("#belote_button_div").empty()
+      add_rebelote_button(true)
+    });
+
+    socket.on('rebelote played', function(data) {
+      // Disable Belote/Rebelote button
+      $("#belote_button_div").empty()
+    });
+
+    socket.on('belote lost', function(data) {
+      belote_lost(i18n["belote_points_lost"])
+    });
+}
+
 function add_belote_button(enabled) {
   $("#belote_button_div").append('<button id="belote" type="button" class="btn-primary" name="belote">' + i18n["belote"] + '</button>');
   document.getElementById("belote").onclick = function() {

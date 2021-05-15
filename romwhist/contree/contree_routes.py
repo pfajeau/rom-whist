@@ -18,7 +18,6 @@ from flask_socketio import emit
 
 from romwhist import common_routes
 from romwhist import socketio
-from romwhist.belote.belote_status import BeloteStatus
 from romwhist.contree.contree import ContreeGame, CountingMethod
 from romwhist.contree.announce import Announce
 from romwhist.belote.belote import BeloteGame
@@ -151,13 +150,6 @@ def contree_play():
         logging.debug("Game Phase: " + game.phase.name)
         active_player = game.get_active_player()
 
-        # Determine status of belote button
-        # if game phase = play and user has both queen and king then enabled. If user has already play belote, then
-        # enable.
-        belote_enabled = False
-        if game.belote_state == BeloteStatus.Belote_Played or game.belote_state == BeloteStatus.Allowed:
-            belote_enabled = True
-
         bets_suit = dict()
         bets_points = dict()
         for player in game.get_playing_players():
@@ -172,11 +164,11 @@ def contree_play():
         return render_template("contree.html", form=form, players=game.get_playing_players(), scores=game.get_scores(),
                                hand=hand, wins=game.hand_points, bets_suit=bets_suit, bets_points=bets_points,
                                active_player=active_player,
-                               cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player),
+                               cards_played=cards_played, allowed_cards=json.dumps(game.get_allowed_cards(active_player)),
                                trump=game.trump_card, trump_suit=game.trump_suit,
                                allowed_bets=game.get_allowed_bets(player),
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
-                               belote_status=game.belote_status, player_with_belote=game.player_with_belote,
+                               belote_status=game.belote_status.value, player_with_belote=game.player_with_belote,
                                contree_status=game.contree_status.value, current_bet=game.current_bet,
                                taker=game.taker, i18n=json.dumps(i18n_strings.i18n()),
                                messages=json.dumps(messages[game_id]))
@@ -384,7 +376,7 @@ def player_played_process(game_id, player, card):
         return
 
     game = games.get(game_id)
-    belote_before = game.belote_state
+    belote_before = game.belote_status
     winner = game.play_card(player, card)
 
     common_routes.emit_to_players(
@@ -392,10 +384,10 @@ def player_played_process(game_id, player, card):
         {'game_id': game_id, 'player': player, 'card': card},
         room=game_id, namespace=NAMESPACE)
 
-    belote_after = game.belote_state
+    belote_after = game.belote_status
 
     if belote_before != belote_after:
-        belote_state_changed(game_id)
+        belote_status_changed(game_id)
 
     nplayer = game.get_active_player()
 
@@ -424,7 +416,7 @@ def player_played_process(game_id, player, card):
     return
 
 
-def belote_state_changed(game_id):
+def belote_status_changed(game_id):
     game = games[game_id]
     common_routes.belote_status_changed(game_id, game, NAMESPACE)
     return

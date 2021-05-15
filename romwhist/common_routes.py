@@ -221,7 +221,7 @@ def generate_game_id(max_id, games):
 
 
 def belote_status_changed(game_id, game, namespace):
-    logging.info("In belote played")
+    logging.info("In belote_status_changed")
     belote_status = game.belote_status
     if belote_status == BeloteStatus.Belote_Played:
         logging.info("Belote card played")
