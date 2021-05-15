@@ -36,7 +36,11 @@ Add footer / contact info
   var game_phase = "{{ game_phase }}"
   var active_player = "{{ active_player }}"
   var player_with_belote = "{{ player_with_belote }}"
-  var allowed_cards = {{ allowed_cards }}
+  var allowed_cards_json = {{ allowed_cards|tojson }}
+  var allowed_cards = JSON.parse(allowed_cards_json)
+
+  console.log("Belote Status: " + belote_status)
+  console.log("Player with belote: " + player_with_belote)
 
   populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
                    "{{ url_for('static', filename='img/belote.png') }}")
@@ -44,7 +48,6 @@ Add footer / contact info
   document.addEventListener('DOMContentLoaded', () => {
 
     setup_alertify()
-
 
     the_players = {{ players|safe }}
     initialize(the_players)
@@ -102,6 +105,7 @@ Add footer / contact info
       new_hand(data, "{{ url_for('static', filename='') }}")
       $('#trump_card').html('')
       $("input[name='bets']").val('')
+      window.location.reload(false);
     });
 
     socket.on('player to bet', function(data) {

@@ -5,10 +5,12 @@ function initialize_belote_game() {
     }
 
     // Belote button
-    if (username == player_with_belote  && belote_status == "allowed") {
-      add_belote_button(true)
+    if (username == player_with_belote  &&
+        (belote_status == "allowed" || belote_status == "belote_announced")) {
+        add_belote_button(true)
     }
-    else if (username == player_with_belote  && belote_status == "belote_played") {
+    else if (username == player_with_belote  &&
+            (belote_status == "belote_played" || belote_status == "rebelote_announced")) {
         add_rebelote_button(true)
     }
     else {
@@ -90,16 +92,16 @@ function belote_announced(data) {
   $("#msg_div").text(announce_player + " announce " + announce)
   fade_msg()
 
-  if (announce == "belote" && announce_player == username) {
-    // Remove Belote button and add rebelote one
-    $("#belote").remove()
-    add_rebelote_button(true)
-  }
-
-  if (announce == "rebelote" && announce_player == username) {
-    // Remove Rebelote button
-    $("#rebelote").remove()
-  }
+//  if (announce == "belote" && announce_player == username) {
+//    // Remove Belote button and add rebelote one
+//    $("#belote").remove()
+//    add_rebelote_button(true)
+//  }
+//
+//  if (announce == "rebelote" && announce_player == username) {
+//    // Remove Rebelote button
+//    $("#rebelote").remove()
+//  }
 }
 
 function belote_lost() {

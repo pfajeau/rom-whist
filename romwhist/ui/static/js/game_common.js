@@ -197,7 +197,7 @@ function new_hand(data, static_url) {
   // $('#cards').append('<ul>');
   for (var card_index in cards) {
     // $('#cards').append('<br>' + data[card])
-    let card =cards[card_index]
+    let card = cards[card_index]
     let image = 'img/' + card + ".svg"
     // let card = data[card]
     $('#cards').append('<td>'+
@@ -207,6 +207,7 @@ function new_hand(data, static_url) {
       $('#rounds input').val(0);
       // $('#bets input').html('');
     }
+
 }
 
 function enable_start_game() {

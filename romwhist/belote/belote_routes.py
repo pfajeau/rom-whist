@@ -148,7 +148,7 @@ def belote_play():
         # individually
         return render_template("belote.html", form=form, players=game.get_playing_players(), scores=game.get_scores(),
                                hand=hand, wins=game.hand_points, bets=game.get_bets(), active_player=active_player,
-                               cards_played=cards_played, allowed_cards=game.get_allowed_cards(active_player),
+                               cards_played=cards_played, allowed_cards=json.dumps(game.get_allowed_cards(active_player)),
                                trump=game.trump_card, trump_suit=game.trump_suit,
                                allowed_bets=game.get_allowed_bets(player),
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
