@@ -234,7 +234,10 @@ class BeloteGame(CardGame):
             self.phase = BeloteGame.GamePhase.PLAY
             self.trump_suit = bet
             self.taker = player
+
+            # Note: this is also done in deal_2, so may be redundant
             self.set_cards_rank_and_value()
+            
             self.active_player = self.next_player(self.dealer)
 
         return
@@ -419,7 +422,7 @@ class BeloteGame(CardGame):
             for i in range(3):
                 if self.wins[players[i]] == 0:
                     np = self.next_player(players[i])
-                    nnp = self.next_player(players[np])
+                    nnp = self.next_player(np)
                     if self.wins[np] == 0:
                         # nnp gets the entire bonus
                         self.scores[nnp] += self.BONUS_CAPOT
@@ -539,6 +542,10 @@ class BeloteGame(CardGame):
                 self.hands[player].sort()
 
         self.update_belote_status()
+
+        # Required to make sure the trump card  is also update properly
+        self.set_cards_rank_and_value()
+
         return self.hands
 
     def update_belote_status(self):
