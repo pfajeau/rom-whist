@@ -244,12 +244,6 @@ class ContreeGame(BeloteGame):
         self.hand_points[players[1]] = self.hand_points[players[1]] + self.hand_points[players[3]]
         self.hand_points[players[3]] = self.hand_points[players[1]]
 
-        if self.player_with_belote is not None:
-            # set score of partner of player who may have gotten
-            # the belote points to be the same
-            partner = self.next_player(self.next_player(self.player_with_belote))
-            self.scores[partner] = self.scores[self.player_with_belote]
-
         score_winners = 0
         score_losers = 0
         if player_points[0] + player_points[2] >= self.bets[self.taker].points:

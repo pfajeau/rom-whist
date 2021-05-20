@@ -192,7 +192,7 @@
       console.log ("Current bet: " + current_bet)
 
       $("#bet_status").html('')
-      if (current_bet != 'None' && current_bet['suit'] != 'pass') {
+      if (current_bet != null && current_bet['suit'] != 'pass') {
         $("#bet_status").append('<label class="trump_caption">' + taker + " - " + current_bet["points"] + " / " + i18n[current_bet["suit"]] + '</label>')
       }
 
@@ -349,7 +349,7 @@
   <div class="bottomright" id="trump_card">
   </div>
   <div class="bottomright" id="bet_status">
-    {% if current_bet.suit != "pass" and current_bet is not none %}
+    {% if current_bet is not none and current_bet.suit != "pass" %}
       <label class="trump_caption">{{ taker }} - {{ current_bet['points'] }} / {{ _(current_bet['suit']) }}</label>
     {% endif %}
     <br>

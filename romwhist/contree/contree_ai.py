@@ -67,13 +67,17 @@ class ContreeAiPlayer(BeloteAiPlayer):
             bet_points = round(avg_points_for_bet * ContreeAiPlayer.CORRECTION_FACTOR, -1)
             current_bet = Announce.from_str(self.game_state.current_bet)
             if bet_as_str == "contre_80":
+                bet_points = 0
                 if bet_points < BeloteGame.TOTAL_POINTS - current_bet.points:
-                    bet_points = 0
                     bet_as_str = "pass_0"
+                else:
+                    bet_as_str = "contree_0"
             elif bet_as_str == "surcontre_80":
+                bet_points = 0
                 if bet_points < current_bet.points:
-                    bet_points = 0
                     bet_as_str = "pass_0"
+                else:
+                    bet_as_str = "surcontree_0"
             elif bet_points < int(self.game_state.allowed_bets[1][0]):
                 bet_points = 0
                 bet_as_str = "pass_0"

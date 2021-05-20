@@ -382,10 +382,14 @@ class BeloteGame(CardGame):
                 self.scores[players[1]] += player_points[1]
                 self.bonus_litige = 0
                 self._hand_winner.append(players[0])
+
             elif player_points[1] > player_points[0]:
                 self.scores[players[1]] += player_points[0] + player_points[1] + self.bonus_litige
                 self.bonus_litige = 0
                 self._hand_winner.append(players[1])
+                if self.player_with_belote == players[0] :
+                    self.scores[players[0]] += self.BELOTE_REBELOTE
+
             else:
                 # Players are tied
                 self.bonus_litige += player_points[0]
@@ -404,14 +408,20 @@ class BeloteGame(CardGame):
                 self.scores[players[1]] += player_points[1]
                 self.scores[players[2]] += player_points[2]
                 self._hand_winner.append(players[0])
+
             elif player_points[1] > player_points[2]:
                 self.scores[players[1]] += player_points[1] + player_points[0]
                 self.scores[players[2]] += player_points[2]
                 self._hand_winner.append(players[1])
+                if self.player_with_belote == players[0]:
+                    self.scores[players[0]] += self.BELOTE_REBELOTE
+
             elif player_points[2] > player_points[1]:
                 self.scores[players[2]] += player_points[2] + player_points[0]
                 self.scores[players[1]] += player_points[1]
                 self._hand_winner.append(players[2])
+                if self.player_with_belote == players[0]:
+                    self.scores[players[0]] += self.BELOTE_REBELOTE
                 # Player 1 has same number of points than player 2
             else:
                 self.scores[players[1]] += player_points[1] + player_points[0] / 2
@@ -441,12 +451,6 @@ class BeloteGame(CardGame):
             self.hand_points[players[1]] = self.hand_points[players[1]] + self.hand_points[players[3]]
             self.hand_points[players[3]] = self.hand_points[players[1]]
 
-            if self.player_with_belote is not None:
-                # set score of partner of player who may have gotten
-                # the belote points to be the same
-                partner = self.next_player(self.next_player(self.player_with_belote))
-                self.scores[partner] = self.scores[self.player_with_belote]
-
             if player_points[0] + player_points[2] > player_points[1] + player_points[3]:
                 self.scores[players[0]] += player_points[0] + player_points[2] + self.bonus_litige
                 self.scores[players[2]] = self.scores[players[0]]
@@ -460,6 +464,9 @@ class BeloteGame(CardGame):
                 self.scores[players[1]] += self.TOTAL_POINTS + self.bonus_litige
                 self.scores[players[3]] = self.scores[players[1]]
                 self.bonus_litige = 0
+                if self.player_with_belote == players[0] or self.player_with_belote == players[2]:
+                    self.scores[players[0]] += self.BELOTE_REBELOTE
+                    self.scores[players[2]] = self.scores[players[0]]
                 self._hand_winner.append(players[1])
                 self._hand_winner.append(players[3])
             else:
@@ -632,6 +639,12 @@ class BeloteGame(CardGame):
         for card in self.deck.cards:
             card.rank = self.card_ranks[str(card)]
             card.points = self.card_points[str(card)]
+
+        if self.current_round is not None:
+            for card in self.current_round.cards_played.values():
+                if card is not None:
+                    card.rank = self.card_ranks[str(card)]
+                    card.points = self.card_points[str(card)]
 
     def init_bets(self):
         self.init_dict(self.bets, "")
