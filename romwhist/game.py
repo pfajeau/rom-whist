@@ -5,6 +5,7 @@ from enum import Enum
 from romwhist.card import Card
 from romwhist.deck import Deck
 from romwhist.game_state import GameState
+from romwhist.player import Player
 from romwhist.hand import Hand
 from romwhist.round import Round
 
@@ -37,8 +38,6 @@ class CardGame:
         self._started = False
         self.phase = CardGame.GamePhase.DEAL
         self.scoresheet = []
-        self._player_status = dict()
-        self.init_dict(self._player_status, 1)
         self.trump_suit = None  # E.g. "spade", or "heart"
         self.rounds = []  # The rounds for the hand
         self.__id = id
@@ -104,8 +103,8 @@ class CardGame:
         state_copy = copy.deepcopy(state)
         self.__id = state_copy.game_id
         self.players = state_copy.players
-        for player in state_copy.players:
-            self._player_status[player] = 1
+        # for player in state_copy.players:
+        #     self._player_status[player] = 1
         self.trump_suit = state_copy.trump
         self.deck_size = state_copy.deck_size
         self.deck = Deck(state_copy.deck_size)
@@ -190,10 +189,13 @@ class CardGame:
 
         return winners
 
-    def add_player(self, player):
-        if player in self.players:
+    def add_player(self, player_name,
+                   player_type=Player.PlayerType.HUMAN,
+                   player_status=Player.PlayerStatus.ACTIVE):
+        if player_name in self.get_player_names():
             logging.info("player already exits - re-enabling")
-            self._player_status[player] = 1
+            player = self.players.get_player_by_name()
+            player.player_status = Player.PlayerStatus.ACTIVE
             # Need to re-start hands
             self.active_player = self.dealer
             self.phase = CardGame.GamePhase.DEAL
@@ -205,16 +207,21 @@ class CardGame:
             self.init_dict(self.wins, 0)
 
         else:
+            player = Player(player_name)
+            player.player_status = player_status
+            player.player_type = player_type
+
             self.players.append(player)
-            self._player_status[player] = 1
             self.scores[player] = 0
             self.bets[player] = -1
             self.wins[player] = 0
             self.points[player] = 0
 
+        return player
+
     def disable_player(self, player):
         if player in self.players:
-            self._player_status[player] = 0
+            player.player_status = Player.PlayerStatus.INACTIVE
             if player == self.dealer:
                 self.dealer = self.next_player_to_deal()
             self.active_player = self.dealer
@@ -231,12 +238,32 @@ class CardGame:
 
     def get_players(self):
         return self.players
+        # player_names = []
+        # for player in self.players:
+        #     player_names.append(player.name)
+        #
+        # return player_names
+
+    def get_player_by_name(self, player_name):
+        for player in self.players:
+            if player.name == player_name:
+                return player
+        return None
+
+
+
+    def get_player_names(self):
+        player_names = []
+        for player in self.players:
+            player_names.append(player.name)
+
+        return player_names
 
     def get_playing_players(self):
         # TODO: could probably do that with a filter in one line of code
         playing_players = []
         for player in self.players:
-            if self._player_status[player] == 1:
+            if player.player_status == Player.PlayerStatus.ACTIVE:
                 playing_players.append(player)
         return playing_players
 
@@ -373,7 +400,7 @@ class CardGame:
         else:
             next_player = self.players[pos + 1]
 
-        if self._player_status[next_player] == 1:
+        if next_player.player_status == Player.PlayerStatus.ACTIVE:
             return next_player
         else:
             return self.next_player(next_player)

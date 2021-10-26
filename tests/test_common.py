@@ -7,7 +7,7 @@ def create_hands(game, player_cards):
         hand = Hand(game.deck, 0)
         for card_as_str in player_cards[player]:
             hand.add(Card.card_from_value(card_as_str))
-        game.hands[player] = hand
+        game.hands[game.get_player_by_name(player)] = hand
 
 
 def play_round(game, game_round, fc=""):

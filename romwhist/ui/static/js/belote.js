@@ -35,13 +35,15 @@ function register_belote_events() {
 
     socket.on('belote rebelote enabled', function(data) {
       // Add Belote/Rebelote button
-      $("#belote_button_div").empty()
-      add_belote_button(true)
+      if (username == player_with_belote) {
+        $("#belote_button_div").empty()
+        add_belote_button(true)
+      }
     });
 
     socket.on('belote played', function(data) {
       $("#belote_button_div").empty()
-      add_rebelote_button(true)
+      if (username == player_with_belote) add_rebelote_button(true)
     });
 
     socket.on('rebelote played', function(data) {
@@ -75,7 +77,7 @@ function add_rebelote_button(enabled) {
     console.log ("ReBelote announced")
     // TODO: change allowed cards to only allow queen and king of trump?
   }
-  console.log("In add_belote_button enabled is" + enabled)
+  console.log("In add_rebelote_button enabled is" + enabled)
   if (enabled == false) {
     $("#rebelote").prop("disabled", true)
   }
@@ -91,17 +93,6 @@ function belote_announced(data) {
   // }
   $("#msg_div").text(announce_player + " announce " + announce)
   fade_msg()
-
-//  if (announce == "belote" && announce_player == username) {
-//    // Remove Belote button and add rebelote one
-//    $("#belote").remove()
-//    add_rebelote_button(true)
-//  }
-//
-//  if (announce == "rebelote" && announce_player == username) {
-//    // Remove Rebelote button
-//    $("#rebelote").remove()
-//  }
 }
 
 function belote_lost() {
@@ -143,10 +134,10 @@ function hand_completed(data) {
 
   // TODO: message indicating who won the hand
   if (winners[0] == "") {
+    // TODO: need to translate
      msg = "It's a tie! Points of team who took will be given to next hand winner"
   }
   else {
-    // TODO: need to translate
     msg = i18n["winners_hand"] + ": "
     for (i in winners) {
       if (i == 0) {

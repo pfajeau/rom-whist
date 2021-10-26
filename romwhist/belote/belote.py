@@ -5,8 +5,9 @@ from flask_babel import gettext as _
 
 from romwhist.card import Card
 from romwhist.deck import Deck
-from romwhist.game import CardGame
 from romwhist.hand import Hand
+from romwhist.game import CardGame
+from romwhist.player import Player
 from romwhist.belote.belote_state import BeloteState
 from romwhist.belote.belote_status import BeloteStatus
 
@@ -166,42 +167,48 @@ class BeloteGame(CardGame):
                 return True
         return False
 
-    def add_player(self, player):
-        if player in self.players:
-            logging.info("player already exits - re-enabling")
-            self._player_status[player] = 1
-            # Need to re-start hands
-            self.active_player = self.dealer
-            self.phase = BeloteGame.GamePhase.DEAL
-            self.current_round = None
-            # self.trump_card = None
-            self.init_bets()
-            self.init_dict(self.wins, 0)
-            self.hand_points[player] = 0
-
-        else:
-            self.players.append(player)
-            self._player_status[player] = 1
-            self.scores[player] = 0
-            self.bets[player] = ""
-            self.wins[player] = 0
-            self.hand_points[player] = 0
+    def add_player(self, player_name,
+                   player_type=Player.PlayerType.HUMAN,
+                   player_status=Player.PlayerStatus.ACTIVE):
+        player = CardGame.add_player(self, player_name, player_type, player_status)
+        # if player in self.players:
+        #     logging.info("player already exits - re-enabling")
+        #     self._player_status[player] = 1
+        #     # Need to re-start hands
+        #     self.active_player = self.dealer
+        #     self.phase = BeloteGame.GamePhase.DEAL
+        #     self.current_round = None
+        #     # self.trump_card = None
+        #     self.init_bets()
+        #     self.init_dict(self.wins, 0)
+        #     self.hand_points[player] = 0
+        #
+        # else:
+        #     self.players.append(player)
+        #     self._player_status[player] = 1
+        #     self.scores[player] = 0
+        #     self.bets[player] = ""
+        #     self.wins[player] = 0
+        self.hand_points[player] = 0
+        return player
 
     def disable_player(self, player):
-        logging.info("In Game.disable_player, disabling player " + player)
+        logging.info("In BeloteGame.disable_player, disabling player " + player)
+        CardGame.disable_player(self, player)
         if player in self.players:
-            self._player_status[player] = 0
-            logging.debug(self._player_status)
-            if player == self.dealer:
-                self.dealer = self.next_player_to_deal()
-            self.active_player = self.dealer
+            # self._player_status[player] = 0
+            # logging.debug(self._player_status)
+            # if player == self.dealer:
+            #     self.dealer = self.next_player_to_deal()
+            # self.active_player = self.dealer
+            # self.phase = BeloteGame.GamePhase.DEAL
+            # self.current_round = None
+            # # self.trump_card = None
+            # self.bets = dict()
+            # self.wins = dict()
+            # self.init_bets()
+            # self.init_dict(self.wins, 0)
             self.phase = BeloteGame.GamePhase.DEAL
-            self.current_round = None
-            # self.trump_card = None
-            self.bets = dict()
-            self.wins = dict()
-            self.init_bets()
-            self.init_dict(self.wins, 0)
 
     def start_game(self):
         self._started = True
@@ -491,13 +498,13 @@ class BeloteGame(CardGame):
         return self.scores
 
     # Initial deal
-    def deal(self, dealer=""):
+    def deal(self, dealer=None):
         hands = self.deal_cards(self.nb_cards_first_deal[len(self.players)], dealer=dealer)
         # Pick up trump card
         self.trump_card = self.deck.deal()
         return hands
 
-    def deal_cards(self, nb_cards, dealer=""):
+    def deal_cards(self, nb_cards, dealer=None):
         self.deck = Deck(self.deck_size)
         self.deck.shuffle()
         self.init_bets()
@@ -512,7 +519,7 @@ class BeloteGame(CardGame):
         # self.BeloteAnnounced = BeloteGame.BeloteAnnounced.No
         self.__player_with_belote = None
 
-        if dealer == "":
+        if dealer == None:
             self.dealer = self.active_player
         else:
             self.dealer = dealer

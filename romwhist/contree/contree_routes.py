@@ -17,9 +17,11 @@ from flask_login import current_user, login_user
 from flask_socketio import emit
 
 from romwhist import common_routes
+from romwhist.card import Card
 from romwhist import socketio
 from romwhist.contree.contree import ContreeGame, CountingMethod
 from romwhist.contree.announce import Announce
+from romwhist.belote.belote_status import BeloteStatus
 from romwhist.belote.belote import BeloteGame
 from romwhist.contree.contree_form import ContreeStartForm
 from romwhist.extensions import db
@@ -355,9 +357,33 @@ def next_round(game_id, nplayer, allowed_cards):
 def player_played_ai(data):
     logging.debug("player played event received for ai")
     logging.debug("Player card: " + data.get('card'))
+    logging.debug("Game id: " + data.get('game_id'))
     player = data.get('player')
     game_id = data.get('game_id')
+
+    # Announce belote / rebelote as applicable
+    # TODO: move to common routes
+    card_played = data.get('card')
+    game = games.get(game_id)
+    queen_t = Card.get_suit_initial(game.trump_suit) + "12"
+    king_t = Card.get_suit_initial(game.trump_suit) + "13"
+
+    belote_ok = game.player_with_belote == player and \
+                game.has_player_card(player, queen_t) and \
+                game.has_player_card(player,king_t) and \
+                (card_played == queen_t or card_played == king_t)
+    if belote_ok:
+        belote_announced(BeloteGame.BeloteAnnounced.BELOTE)
+
+    else:
+        rebelote_ok = game.player_with_belote == player and \
+                      game.belolote_status == BeloteStatus.Belote_Played and \
+                      (card_played == queen_t or card_played == king_t)
+        if rebelote_ok:
+            belote_announced(BeloteGame.BeloteAnnounced.REBELOTE)
+
     player_played_process(game_id, player, data.get('card'))
+
 
 
 @socketio.on('player played', namespace=NAMESPACE)
