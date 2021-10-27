@@ -3,19 +3,20 @@ import logging
 from romwhist.ohell.ohell import OhellGame
 from romwhist.ohell.ohell_state import OhellState
 from romwhist.card import Card
+from romwhist.player import Player
 
 from tests import test_common
 
 
-def init_game(players, game_id):
-    ohell_game = OhellGame("Joe", deck_size=32, id=game_id)
-    for player in players:
-        ohell_game.add_player(player)
+def init_game(game_creator, player_names, game_id):
+    ohell_game = OhellGame(game_creator, deck_size=32, id=game_id)
+    for player_name in player_names:
+        ohell_game.add_player(player_name)
 
     ohell_game.start_game()
     ohell_game.set_hand_prgression(False, True, 2)
     ohell_game.create_hand_progression()
-    ohell_game.active_player = "Joe"
+    ohell_game.active_player = game_creator
 
     return ohell_game
 
@@ -23,12 +24,25 @@ def main():
     logging.basicConfig(filename="test_ohell.log",
                         format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
                         level=logging.DEBUG)
+    player_names = ["Joe", "Jack", "Jim", "Johnny"]
+    players_by_name = dict()
+    players = []
+    Joe = Player("Joe")
 
-    players = ["Joe", "Jack", "Jim", "Johnny"]
-    ohell = OhellGame("Joe")
+    ohell = OhellGame(Joe)
+    for player_name in player_names:
+        player = ohell.add_player(player_name,
+                          Player.PlayerType.HUMAN,
+                          Player.PlayerStatus.ACTIVE)
 
-    for player in players:
-        ohell.add_player(player)
+        players_by_name[player_name] = player
+        players.append(player)
+
+    Joe = players_by_name["Joe"]
+    Jack = players_by_name["Jack"]
+    Jim = players_by_name["Jim"]
+    Johnny = players_by_name["Johnny"]
+
     ohell.set_hand_prgression()
     ohell.start_game()
     ohell.create_hand_progression()
@@ -38,19 +52,19 @@ def main():
     ohell.create_hand_progression()
     ohell.set_hand_prgression(False, False, 2)
     ohell.create_hand_progression()
-    ohell.deal(dealer="")
+    ohell.deal(dealer=None)
     assert (not ohell.trump_card is None)
     assert (not ohell.trump_suit is None)
-    ohell.deal(dealer="")
+    ohell.deal(dealer=None)
     assert (not ohell.trump_card is None)
     assert (not ohell.trump_suit is None)
-    ohell.deal(dealer="")
+    ohell.deal(dealer=None)
     assert (not ohell.trump_card is None)
     assert (not ohell.trump_suit is None)
-    ohell.deal(dealer="")
+    ohell.deal(dealer=None)
     assert (not ohell.trump_card is None)
     assert (not ohell.trump_suit is None)
-    ohell.deal(dealer="")
+    ohell.deal(dealer=None)
     assert (ohell.trump_card is None)
     assert (ohell.trump_suit is None)
 
@@ -70,7 +84,7 @@ def main():
     cards_as_str["Johnny"] = ['h12', 'h14', 'c7', 'c13', 'c14', 'd8', 'd11', 'd12']
 
     test_common.create_hands(ohell, cards_as_str)
-    ohell.active_player = "Joe"
+    ohell.active_player = Joe
 
     logging.debug("Playing Hand...")
     for i in range(8):
@@ -92,31 +106,31 @@ def main():
 
     # Test scores
     ohell = OhellGame("Joe", 1, 32)
-    for player in players:
-        ohell.add_player(player)
+    for player_name in player_names:
+        ohell.add_player(player_name)
 
-    ohell.scores = {"Joe": 1, "Jack": 2, "Jim": 0, "Johnny": -1}
+    ohell.scores = {Joe: 1, Jack: 2, Jim: 0, Johnny: -1}
     winners = ohell.get_highest_score_player()
     assert (len(winners) == 1)
-    assert (winners[0] == "Jack")
+    assert (winners[0] == Jack)
     logging.debug(winners)
 
-    ohell.scores = {"Joe": 1, "Jack": 2, "Jim": 0, "Johnny": 2}
+    ohell.scores = {Joe: 1, Jack: 2, Jim: 0, Johnny: 2}
     winners = ohell.get_highest_score_player()
     assert (len(winners) == 2)
-    assert (winners[0] == "Jack")
-    assert (winners[1] == "Johnny")
+    assert (winners[0] == Jack)
+    assert (winners[1] == Johnny)
     logging.debug("Winners: " + str(winners))
 
     # Test Game state
     logging.debug("Testing Game State")
-    ohell = init_game(players, "game_state_test")
+    ohell = init_game(Joe, player_names, "game_state_test")
 
-    ohell.deal(dealer="")
-    ohell.deal(dealer="")
-    ohell.deal(dealer="")
-    ohell.deal(dealer="")
-    ohell.deal(dealer="")
+    ohell.deal(dealer=None)
+    ohell.deal(dealer=None)
+    ohell.deal(dealer=None)
+    ohell.deal(dealer=None)
+    ohell.deal(dealer=None)
 
     cards_as_str = dict()
     cards_as_str["Joe"] = ['s9', 's10', 's11', 's14', 'h7', 'c8', 'd9']
@@ -125,7 +139,7 @@ def main():
     cards_as_str["Johnny"] = ['h12', 'h14', 'c7', 'c13', 'd8', 'd11', 'd12']
 
     test_common.create_hands(ohell, cards_as_str)
-    ohell.active_player = "Joe"
+    ohell.active_player = Joe
     for player in players:
         ohell.place_bet(player, 1)
 
@@ -144,7 +158,7 @@ def main():
         for player in cards_played:
             logging.debug(player + " played: " + str(cards_played[player]))
 
-    # state = OhellState("8", "Joe")
+    # state = OhellState("8", joe)
     state = ohell.get_state()
     logging.debug("State: " + repr(state))
     ohell.set_state(state)
@@ -167,16 +181,16 @@ def main():
     # Test Sim Game
     logging.debug("Testing Sim Game")
     game_id = "sim_game"
-    ohell = init_game(players, game_id)
+    ohell = init_game(Joe, player_names, game_id)
 
-    ohell.deal(dealer="")
-    ohell.deal(dealer="")
-    ohell.deal(dealer="")
+    ohell.deal(dealer=None)
+    ohell.deal(dealer=None)
+    ohell.deal(dealer=None)
     for player in players:
         ohell.place_bet(player, 1)
 
 
-    # state = OhellState("game_id", "Joe")
+    # state = OhellState("game_id", joe)
     ohell.get_state()
     logging.debug("Game state is: %s", state)
 

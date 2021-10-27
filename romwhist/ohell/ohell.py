@@ -10,7 +10,7 @@ class OhellGame(CardGame):
 
     MAX_PLAYERS = 6
 
-    def __init__(self, game_creator="", bonus_win=1, deck_size=0, id=0):
+    def __init__(self, game_creator=None, bonus_win=1, deck_size=0, id=0):
         CardGame.__init__(self, game_creator, deck_size, id)
         self.bonus_win = bonus_win
         self._start_of_no_trump = 0
@@ -160,14 +160,14 @@ class OhellGame(CardGame):
 
         return self.scores
 
-    def deal(self, nb_cards=0, with_trump=False, dealer=""):
+    def deal(self, nb_cards=0, with_trump=False, dealer=None):
         self.deck = Deck(self.deck_size)
         self.deck.shuffle()
         self.init_dict(self.bets, -1)
         self.init_dict(self.wins, 0)
         self.rounds = []
 
-        if dealer == "":
+        if dealer is None:
             self.dealer = self.active_player
         else:
             self.dealer = dealer
