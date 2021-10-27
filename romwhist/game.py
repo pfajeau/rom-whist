@@ -19,7 +19,8 @@ class CardGame:
         BET = "Bet"
         PLAY = "Play"
         OVER = "Over"
-    def __init__(self, game_creator="", deck_size=0, id=0):
+
+    def __init__(self, game_creator=None, deck_size=0, id=0):
         self.players = []
         self.current_round = None
         self.trump_card = None
@@ -394,7 +395,10 @@ class CardGame:
         return self.current_round.last_card_played()
 
     def next_player(self, player):
+
+        print ("Type of player in net_player: " + str(type(player)))
         pos = self.players.index(player)
+        print ("Index of " + str(player) + " is " + str(pos))
         if pos == len(self.players) - 1:
             next_player = self.players[0]
         else:

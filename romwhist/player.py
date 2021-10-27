@@ -14,8 +14,8 @@ class Player(str):
         SHADOWED = "Shadowed"
 
     def __init__(self, name):
-        #str.__init__(self)
-        super().__init__()
+        # str.__init__(self)
+        # super().__init__()
 
         self.__player_status = Player.PlayerStatus.ACTIVE
         self.__player_type = Player.PlayerType.HUMAN
@@ -41,9 +41,12 @@ class Player(str):
         return self.name
 
     def __eq__(self, other):
-        if other == None:
+        print("Comparing " + self.name + " with " + str(other))
+        print ("Other type: " + str(type(other)))
+        if other is None:
             return False
         return self.name == other.name
 
     def __hash__(self):
-        return hash(str(self))
+        # return hash(str(self))
+        return hash(self.name)

@@ -28,7 +28,7 @@ class BeloteGame(CardGame):
         BELOTE = "belote"
         REBELOTE = "rebelote"
 
-    def __init__(self, game_creator="", id=0):
+    def __init__(self, game_creator=None, id=0):
         CardGame.__init__(self, game_creator=game_creator, deck_size=0, id=id)
         self.taker = None
         self.teams = []
@@ -171,24 +171,7 @@ class BeloteGame(CardGame):
                    player_type=Player.PlayerType.HUMAN,
                    player_status=Player.PlayerStatus.ACTIVE):
         player = CardGame.add_player(self, player_name, player_type, player_status)
-        # if player in self.players:
-        #     logging.info("player already exits - re-enabling")
-        #     self._player_status[player] = 1
-        #     # Need to re-start hands
-        #     self.active_player = self.dealer
-        #     self.phase = BeloteGame.GamePhase.DEAL
-        #     self.current_round = None
-        #     # self.trump_card = None
-        #     self.init_bets()
-        #     self.init_dict(self.wins, 0)
-        #     self.hand_points[player] = 0
-        #
-        # else:
-        #     self.players.append(player)
-        #     self._player_status[player] = 1
-        #     self.scores[player] = 0
-        #     self.bets[player] = ""
-        #     self.wins[player] = 0
+
         self.hand_points[player] = 0
         return player
 
@@ -196,18 +179,6 @@ class BeloteGame(CardGame):
         logging.info("In BeloteGame.disable_player, disabling player " + player)
         CardGame.disable_player(self, player)
         if player in self.players:
-            # self._player_status[player] = 0
-            # logging.debug(self._player_status)
-            # if player == self.dealer:
-            #     self.dealer = self.next_player_to_deal()
-            # self.active_player = self.dealer
-            # self.phase = BeloteGame.GamePhase.DEAL
-            # self.current_round = None
-            # # self.trump_card = None
-            # self.bets = dict()
-            # self.wins = dict()
-            # self.init_bets()
-            # self.init_dict(self.wins, 0)
             self.phase = BeloteGame.GamePhase.DEAL
 
     def start_game(self):

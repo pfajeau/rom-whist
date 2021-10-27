@@ -9,6 +9,7 @@ from romwhist.belote.belote_status import BeloteStatus
 from romwhist.contree.contree_state import ContreeState
 from romwhist.contree.announce import Announce
 from romwhist.contree.announce import ContreStatus
+from romwhist.player import Player
 
 
 class CountingMethod(str, Enum):
@@ -22,7 +23,7 @@ class ContreeGame(BeloteGame):
     all_bet_points = [80, 90, 100, 110, 120, 130, 140, 150, 162]
     MAX_PLAYERS = 4
 
-    def __init__(self, game_creator="", id=0, counting=CountingMethod.POINTS_BID):
+    def __init__(self, game_creator=None, id=0, counting=CountingMethod.POINTS_BID):
         BeloteGame.__init__(self, game_creator, id)
         # Number of cards to deal depending on number of players
         self.nb_cards_first_deal = {1: 8, 2: 8, 3: 8, 4: 8}
@@ -190,20 +191,22 @@ class ContreeGame(BeloteGame):
         else:
             return False
 
-    def deal(self, dealer=""):
+    def deal(self, dealer=None):
         self.current_bet = None
         self.contree_status = ContreStatus.NORMAL
         hands = self.deal_cards(int(self.deck_size / len(self.players)), dealer)
         return hands
 
-    def deal_2(self, dealer=""):
+    def deal_2(self, dealer=None):
         return
 
-    def add_player(self, player):
+    def add_player(self, player_name,
+                   player_type=Player.PlayerType.HUMAN,
+                   player_status=Player.PlayerStatus.ACTIVE):
         if len(self.get_playing_players()) >= 4:
             return None
 
-        BeloteGame.add_player(self, player)
+        player = BeloteGame.add_player(self, player_name, player_type, player_status)
         if player in self.players:
             self.init_bets()
         else:

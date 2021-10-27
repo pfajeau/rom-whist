@@ -14,7 +14,8 @@ def main():
     player_names = ["Joe", "Jack", "Jim", "Johnny"]
     players_by_name = dict()
     players = []
-    belote = BeloteGame("Joe")
+    Joe = Player("Joe")
+    belote = BeloteGame(Joe)
 
     for player_name in player_names:
         player = belote.add_player(player_name,
@@ -23,7 +24,6 @@ def main():
         players_by_name[player_name] = player
         players.append(player)
 
-    Joe = players_by_name["Joe"]
     Jack = players_by_name["Jack"]
     Jim = players_by_name["Jim"]
     Johnny = players_by_name["Johnny"]
