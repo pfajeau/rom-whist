@@ -5,6 +5,7 @@ import logging
 from romwhist.belote.belote_ai import BeloteAiPlayer
 from romwhist.belote.belote_state import BeloteState
 from romwhist.belote.belote import BeloteGame
+from romwhist.player import Player
 
 
 def main():
@@ -13,20 +14,36 @@ def main():
                         level=logging.INFO)
 
     # Test betting
-    players = ["joe", "jack", "AI1", "jim"]
-    belote = BeloteGame("joe", "1")
-    for player in players:
-        belote.add_player(player)
+    # players = ["joe", "jack", "AI1", "jim"]
+    # belote = BeloteGame("joe", "1")
+    # for player in players:
+    #     belote.add_player(player)
+
+    players = []
+    Joe = Player("Joe")
+
+    belote = BeloteGame(Joe)
+    Joe = belote.add_player("Joe")
+    Jack = belote.add_player("Jack")
+    AI1 = BeloteAiPlayer("AI1", "1")
+    belote.add_player(AI1.name, AI1.player_type, AI1.player_status)
+    Jim = belote.add_player("Jim")
+
+    players.append(Joe)
+    players.append(Jack)
+    players.append(AI1)
+    players.append(Jim)
+
     belote.start_game()
-    belote.deal(dealer="joe")
+    belote.deal(dealer=Joe)
 
     belote_ai = BeloteAiPlayer('AI1', '1')
-    belote_ai.game_started(32, ["joe", "jack", "AI1", "jim"])
+    belote_ai.game_started(32, players)
     cards = ["s9", "s11", "d13", "h12", "c10"]
-    all_cards = {'joe': ["s12", "s13", "d8", "h9", "c7"],
-                 'jack': ["s7", "h10", "d7", "d10", "c9"],
+    all_cards = {'Joe': ["s12", "s13", "d8", "h9", "c7"],
+                 'Jack': ["s7", "h10", "d7", "d10", "c9"],
                  'AI1': ["s9", "s11", "d13", "h12", "c10"],
-                 'jim': ["s8", "s14", "d11", "d14", "c11"]}
+                 'Jim': ["s8", "s14", "d11", "d14", "c11"]}
 
     allowed_bets = ['Pass', 'spade']
     # Create a game state
@@ -49,8 +66,8 @@ def main():
     # Test playing
     belote.set_state(belote_ai.game_state)
     belote.place_bet("AI1", "spade", True)
-    belote.deal_2(dealer="joe")
-    belote.play_card("jack", "d7")
+    belote.deal_2(dealer=Joe)
+    belote.play_card(Jack, "d7")
     belote_ai.game_state = belote.get_state()
     all_cards = {'joe': ["s9", "s11", "d8", "d9", "c7", "c8", "h7", "h9"],
                  'jack': ["s7", "s10", "d10", "c9", "c12", "h8", "h12"],

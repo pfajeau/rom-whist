@@ -190,12 +190,9 @@ class CardGame:
 
         return winners
 
-    def add_player(self, player_name,
-                   player_type=Player.PlayerType.HUMAN,
-                   player_status=Player.PlayerStatus.ACTIVE):
-        if player_name in self.get_player_names():
+    def add_player(self, player):
+        if player in self.players:
             logging.info("player already exits - re-enabling")
-            player = self.players.get_player_by_name()
             player.player_status = Player.PlayerStatus.ACTIVE
             # Need to re-start hands
             self.active_player = self.dealer
@@ -208,17 +205,12 @@ class CardGame:
             self.init_dict(self.wins, 0)
 
         else:
-            player = Player(player_name)
-            player.player_status = player_status
-            player.player_type = player_type
-
             self.players.append(player)
             self.scores[player] = 0
             self.bets[player] = -1
             self.wins[player] = 0
             self.points[player] = 0
 
-        return player
 
     def disable_player(self, player):
         if player in self.players:

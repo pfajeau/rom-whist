@@ -167,13 +167,9 @@ class BeloteGame(CardGame):
                 return True
         return False
 
-    def add_player(self, player_name,
-                   player_type=Player.PlayerType.HUMAN,
-                   player_status=Player.PlayerStatus.ACTIVE):
-        player = CardGame.add_player(self, player_name, player_type, player_status)
-
+    def add_player(self, player):
+        player = CardGame.add_player(self, player)
         self.hand_points[player] = 0
-        return player
 
     def disable_player(self, player):
         logging.info("In BeloteGame.disable_player, disabling player " + player)

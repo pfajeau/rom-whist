@@ -23,6 +23,7 @@ from romwhist.extensions import db
 from romwhist.forms import LoginForm
 from romwhist.models import User
 from romwhist.ohell import ohell_routes
+from romwhist.player import Player
 from romwhist.belote.belote import BeloteGame
 from romwhist import app
 
@@ -151,9 +152,9 @@ def post_msg(msg, sender, room, messages, namespace):
 #       generate_hands(game.id, game.dealer)
 
 
-def add_player(user, game, namespace):
-    game.add_player(user)
-    socketio.emit("new player", user, room=game.id, namespace=namespace)
+def add_player(player_name, game, namespace):
+    game.add_player(player_name)
+    socketio.emit("new player", player_name, room=game.id, namespace=namespace)
 
 
 # To create an ai player
@@ -265,7 +266,7 @@ def on_join(game_id, games, clients, namespace):
     if game_id is not None:
         if session['game_id'] in games:
             # Add user to room if user is not there already
-            player = session.get('username')
+            player = Player(session.get('username'))
             logging.debug("Player: " + player)
 
             # Adding new client room id (sid) to list of clients

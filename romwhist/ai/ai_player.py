@@ -2,15 +2,18 @@ import logging
 
 from romwhist.card import Card
 from romwhist.deck import Deck
+from romwhist.player import Player
 
 
-class AiPlayer:
+class AiPlayer(Player):
 
     def __init__(self, name, game_id):
-        self.__name = name
+        Player.__init__(self, name)
         self.vd = 0
         self.game_id = game_id
         self.__game_state = None
+        self.player_type = Player.PlayerType.AI
+        self.player_status = Player.PlayerStatus.ACTIVE
 
     @property
     def game_state(self):
@@ -19,17 +22,6 @@ class AiPlayer:
     @game_state.setter
     def game_state(self, value):
         self.__game_state = value
-
-
-    @property
-    def name(self):
-        return self.__name
-
-    @name.setter
-    def name(self, value):
-        self.__name = value
-        return
-
 
     def game_started(self, deck_size, players):
         logging.debug("Game started. Deck size: %s", deck_size)
@@ -47,7 +39,7 @@ class AiPlayer:
         return allowed_bets[0]
 
     def player_bet(self, player, bet):
-        #self.game_state.bets[player] = bet
+        # self.game_state.bets[player] = bet
         return
 
     def player_to_play(self, allowed_cards, game_state_json):
@@ -91,7 +83,6 @@ class AiPlayer:
             self.vd += self.compute_card_value(str(card))
         logging.info("Deck value: %s", self.vd)
         return self.vd
-
 
     def compute_card_value(self, card):
         # Returns card value between 0 and 100

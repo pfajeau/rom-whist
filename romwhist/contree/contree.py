@@ -200,22 +200,20 @@ class ContreeGame(BeloteGame):
     def deal_2(self, dealer=None):
         return
 
-    def add_player(self, player_name,
-                   player_type=Player.PlayerType.HUMAN,
-                   player_status=Player.PlayerStatus.ACTIVE):
+    def add_player(self, player):
         if len(self.get_playing_players()) >= 4:
             return None
 
-        player = BeloteGame.add_player(self, player_name, player_type, player_status)
+        player = BeloteGame.add_player(self, player)
         if player in self.players:
             self.init_bets()
         else:
-            self.bets[player] = Announce("", "")
+            self.bets[player] = Announce("", "0")
         return player
 
     def init_bets(self):
         for player in self.players:
-            self.bets[player] = Announce("", 0)
+            self.bets[player] = Announce("", "0")
 
     def update_scores(self):
         # Check each player points

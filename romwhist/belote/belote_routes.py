@@ -96,9 +96,10 @@ def belote_play():
 
     logging.info("In belote_play route")
     form = GameForm()
-    player = session.get('username')
+    player_name = session.get('username')
     game_id = session.get('game_id')
     game = games.get(game_id)
+    player = game.get_player_by_name(player_name)
 
     redirect_template = common_routes.redirect_game_start(
         games,

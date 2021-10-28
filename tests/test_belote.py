@@ -18,9 +18,9 @@ def main():
     belote = BeloteGame(Joe)
 
     for player_name in player_names:
-        player = belote.add_player(player_name,
-                          Player.PlayerType.HUMAN,
-                          Player.PlayerStatus.ACTIVE)
+        player = Player(player_name)
+        belote.add_player(player)
+
         players_by_name[player_name] = player
         players.append(player)
 

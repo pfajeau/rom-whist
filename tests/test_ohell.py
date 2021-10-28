@@ -11,7 +11,8 @@ from tests import test_common
 def init_game(game_creator, player_names, game_id):
     ohell_game = OhellGame(game_creator, deck_size=32, id=game_id)
     for player_name in player_names:
-        ohell_game.add_player(player_name)
+        player = Player(player_name)
+        ohell_game.add_player(player)
 
     ohell_game.start_game()
     ohell_game.set_hand_prgression(False, True, 2)
@@ -30,11 +31,10 @@ def main():
     Joe = Player("Joe")
 
     ohell = OhellGame(Joe)
-    for player_name in player_names:
-        player = ohell.add_player(player_name,
-                          Player.PlayerType.HUMAN,
-                          Player.PlayerStatus.ACTIVE)
 
+    for player_name in player_names:
+        player = Player(player_name)
+        ohell.add_player(player)
         players_by_name[player_name] = player
         players.append(player)
 

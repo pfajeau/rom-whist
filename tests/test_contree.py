@@ -21,11 +21,10 @@ def main():
 
     contree = ContreeGame(Joe)
     for player_name in player_names:
-        player = contree.add_player(player_name,
-                          Player.PlayerType.HUMAN,
-                          Player.PlayerStatus.ACTIVE)
+        player = Player(player_name)
+        contree.add_player(player)
 
-        players_by_name[player_name] = player
+        players_by_name[player.name] = player
         players.append(player)
 
     Joe = players_by_name["Joe"]
@@ -81,7 +80,7 @@ def main():
     # Test case where player that toook get contred and then passes on his turn
     contree = ContreeGame(Joe)
     for player in players:
-        contree.add_player(player.name)
+        contree.add_player(player)
     contree.start_game()
     contree.deal(dealer=Johnny)
     bet = Announce("spade", 80)
@@ -101,7 +100,7 @@ def main():
     # Similar test but Joe surcontre at the end
     contree = ContreeGame(Joe)
     for player in players:
-        contree.add_player(player.name)
+        contree.add_player(player)
     contree.start_game()
     contree.deal(dealer=Johnny)
     bet = Announce("spade", 80)
@@ -149,7 +148,7 @@ def main():
 
     contree = ContreeGame(Joe, counting=CountingMethod.POINTS_BID)
     for player in players:
-        contree.add_player(player.name)
+        contree.add_player(player)
     contree.start_game()
     contree.deal(dealer=Johnny)
     bet = Announce("spade", 80)
