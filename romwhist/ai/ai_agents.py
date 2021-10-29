@@ -178,7 +178,7 @@ class SimpleMCTSAgent(IAgent):
         return action
 
     def get_bet(self, state):
-        logging.debug("In get_bet, state is %s:", state.toJson())
+        logging.debug("In get_bet, state is %s:", state.to_json())
 
         action = self.rollout_bet(state, self.num_simulations)
         return action

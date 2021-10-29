@@ -2,6 +2,8 @@ import copy
 import logging
 from enum import Enum
 
+from romwhist import utils
+
 from romwhist.card import Card
 from romwhist.deck import Deck
 from romwhist.game_state import GameState
@@ -44,6 +46,9 @@ class CardGame:
         self.__id = id
         self.deck = None
         self.hand_points = dict()
+
+        self.soft_init_dict(self.hand_points, 0)
+
         self.init_dict(self.points, 0)
 
     def reset(self):
@@ -72,9 +77,11 @@ class CardGame:
         state.owner = self.owner
         for player in self.get_playing_players():
             state.hand_cards[player] = self.hands[player].serialize()
+            state.players_status[player.name] = player.player_status
+            state.players_type[player.name] = player.player_type
         state.active_player = self.active_player
         state.dealer = self.dealer
-        state.hand_points = copy.deepcopy(self.hand_points)
+        state.hand_points = utils.copy_dict(self.hand_points)
 
         i = 0
         state.cards_played_per_round = dict()
@@ -94,29 +101,42 @@ class CardGame:
         state.allowed_cards = self.get_allowed_cards(state.active_player)
         logging.debug("state.allowed_cards: %s", state.allowed_cards)
 
-        state.bets = copy.deepcopy(self.bets)
+        state.bets = utils.copy_dict(self.bets)
         state.trump_card = str(self.trump_card)
+
+        state.make_serializable()
         return copy.deepcopy(state)
 
-    def set_state(self, state: GameState):
+    def populate_from_state(self, state: GameState):
         self.reset()
 
         state_copy = copy.deepcopy(state)
+        players_by_name = dict()
+
+        # Convert player represented as strings into Player objects
+        for player_name in state_copy.players:
+            player = Player(player_name)
+            players_by_name[player_name] = player
+            self.players[self.players.index(player_name)] = player
+            player.status = state_copy.players_status[player_name]
+            player.type = state_copy.players_type[player_name]
+
+        self.scores = state_copy.convert_dict_to_players(state_copy.scores, players_by_name)
+        self.hand_points = state_copy.convert_dict_to_players(state_copy.hand_points, players_by_name)
+        state_copy.convert_dict_to_players(state_copy.hand_cards, players_by_name)
+        self.bets = state_copy.convert_dict_to_players(state_copy.bets, players_by_name)
+
+        self.dealer = players_by_name[state_copy.dealer]
+        self.owner = players_by_name[state_copy.owner]
+        self.active_player = players_by_name[state_copy.active_player]
+
         self.__id = state_copy.game_id
-        self.players = state_copy.players
-        # for player in state_copy.players:
-        #     self._player_status[player] = 1
         self.trump_suit = state_copy.trump
         self.deck_size = state_copy.deck_size
         self.deck = Deck(state_copy.deck_size)
-        self.scores = state_copy.scores
-        self.soft_init_dict(self.scores, 0)
-        self.owner = state_copy.owner
-        self.dealer = state_copy.dealer
-        self.hand_points = copy.deepcopy(state.hand_points)
-        self.soft_init_dict(self.hand_points,0)
-        self.active_player = state.active_player
 
+        self.soft_init_dict(self.scores, 0)
+        self.soft_init_dict(self.hand_points,0)
 
         # Create hands
         for player in state_copy.hand_cards:
@@ -140,7 +160,6 @@ class CardGame:
             self.current_round.trump_suit = state_copy.trump
 
         self.active_player = state_copy.active_player
-        self.bets = state_copy.bets
         if state.trump_card is not None and not state.trump_card == "":
             self.trump_card = Card.card_from_value(state.trump_card)
 
@@ -388,9 +407,7 @@ class CardGame:
 
     def next_player(self, player):
 
-        print ("Type of player in net_player: " + str(type(player)))
         pos = self.players.index(player)
-        print ("Index of " + str(player) + " is " + str(pos))
         if pos == len(self.players) - 1:
             next_player = self.players[0]
         else:

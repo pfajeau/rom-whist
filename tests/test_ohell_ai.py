@@ -47,7 +47,7 @@ def main():
     ohell_ai.game_state.trump = ""
     ohell_ai.game_state.hand_cards = all_cards
     ohell_ai.game_state.allowed_bets = [0,1,2,3,4,5,6]
-    bet = ohell_ai.player_to_bet(allowed_bets, ohell_ai.game_state.toJson())
+    bet = ohell_ai.player_to_bet(allowed_bets, ohell_ai.game_state.to_json())
     logging.info("bet = %s", bet)
     #assert bet == 2, bet
 
@@ -55,7 +55,7 @@ def main():
     ohell_ai.game_state.trump = ""
     ohell_ai.game_state.hand_cards = all_cards
     ohell_ai.game_state.allowed_bets = [0,1,2,3,4,5,6]
-    bet = ohell_ai.player_to_bet(allowed_bets, ohell_ai.game_state.toJson())
+    bet = ohell_ai.player_to_bet(allowed_bets, ohell_ai.game_state.to_json())
     logging.info("bet = %s", bet)
     #assert bet == 0, bet
 
@@ -76,14 +76,14 @@ def main():
         ohell_ai.game_state.bets['joe'] = int(0)
         ohell_ai.game_state.bets['jack'] = int(0)
         ohell_ai.game_state.allowed_bets = [0, 1, 2, 3, 4, 5, 6]
-        bet = ohell_ai.player_to_bet(allowed_bets, ohell_ai.game_state.toJson())
+        bet = ohell_ai.player_to_bet(allowed_bets, ohell_ai.game_state.to_json())
 
         ohell_ai.game_state.bets = {'joe':1, 'jack':1, 'AI1':bet, 'jim':0}
         ohell_ai.game_state.active_player = "AI1"
         ohell_ai.game_state.dealer = "jack"
         ohell_ai.game_state.allowed_cards = ["s9", "s11", "d8", "d9", "c7"]
 
-        card = ohell_ai.player_to_play("", ohell_ai.game_state.toJson())
+        card = ohell_ai.player_to_play("", ohell_ai.game_state.to_json())
         logging.debug("AI played card: " + card)
         assert card in ["s9", "s11", "d8", "d9", "c7"]
 

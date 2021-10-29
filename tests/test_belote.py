@@ -207,7 +207,7 @@ def main():
 #    state = BeloteState("8")
     state = belote.get_state()
     logging.debug("State: " + repr(state))
-    belote.set_state(state)
+    belote.populate_from_state(state)
 
     belote.hand_completed()
     scores = belote.get_scores()

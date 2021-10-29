@@ -11,17 +11,16 @@ from romwhist.belote.belote import BeloteGame
 # TODO: factorize with OhellAIPlayer
 class BeloteAiPlayer(AiPlayer):
 
-    def __init__(self, name, game_id):
-        AiPlayer.__init__(self, name, game_id)
-        self._agent = SimpleMCTSAgent('BeloteSim', name,
+    def __init__(self, player, id):
+        AiPlayer.__init__(self, player, id)
+        self._agent = SimpleMCTSAgent('BeloteSim', self.player,
                                       action_chooser_function='random_action',
                                       num_simulations=100)
 
-        self._agent2 = SimpleMCTSAgent('BeloteSim', name,
+        self._agent2 = SimpleMCTSAgent('BeloteSim', self.player,
                                        action_chooser_function='random_action',
                                        num_simulations=100)
-
-        self.game_state = BeloteState(game_id, self.name)
+        self.game_state = BeloteState(id, self)
 
     def player_to_play(self, allowed_cards, game_state_json):
         game_state = BeloteState(**json.loads(game_state_json))
@@ -76,7 +75,7 @@ class BeloteAiPlayer(AiPlayer):
         self.game_state = BeloteState(**json.loads(state_as_json))
 
     def player_to_bet(self, allowed_bets, game_state_json):
-        logging.debug("Belote AI PLayer to bet: %s", self.name)
+        logging.debug("Belote AI PLayer to bet: %s", self.player.name)
         logging.debug("Game state: %s", game_state_json)
         game_state = BeloteState(**json.loads(game_state_json))
         self.game_state = game_state

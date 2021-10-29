@@ -5,15 +5,15 @@ from romwhist.deck import Deck
 from romwhist.player import Player
 
 
-class AiPlayer(Player):
+class AiPlayer:
 
-    def __init__(self, name, game_id):
-        Player.__init__(self, name)
+    def __init__(self, player, id):
         self.vd = 0
-        self.game_id = game_id
-        self.__game_state = None
-        self.player_type = Player.PlayerType.AI
-        self.player_status = Player.PlayerStatus.ACTIVE
+        self.player = player
+        self.__gametate = None
+        self.player.player_type = Player.PlayerType.AI
+        self.player.player_status = Player.PlayerStatus.ACTIVE
+        self.game_id = id
 
     @property
     def game_state(self):

@@ -37,7 +37,7 @@ class OhellAiPlayer(AiPlayer):
 
         game_state = OhellState(**json.loads(game_state_json))
         self.game_state = game_state
-        logging.debug("In player_to_bet, state is %s", game_state.toJson())
+        logging.debug("In player_to_bet, state is %s", game_state.to_json())
         # Make active player the one that will start playing
         # for the simulated game
         self.game_state.active_player = self.game_state.next_player(self.game_state.dealer)

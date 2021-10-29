@@ -73,7 +73,7 @@ def main():
     contree_ai.game_state.bets = {"joe":"spade_80", "jack":"pass_0", "AI1":"pass_0", "jim":"pass_0"}
     contree_ai.game_state.current_bet = "spade_80"
 
-    card = contree_ai.player_to_play("", contree_ai.game_state.toJson())
+    card = contree_ai.player_to_play("", contree_ai.game_state.to_json())
     logging.debug("AI played card: " + card)
     #assert card in ["s9", "s11", "d13", "h12"], card
 

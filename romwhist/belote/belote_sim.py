@@ -27,8 +27,7 @@ class BeloteSim(BeloteGame):
             state_copy = copy.deepcopy(state)
             self.players = state.players
             self.soft_init_dict(state_copy.bets, "")
-            self.set_state(state_copy)
-            # logging.debug("In BeloteSim, state is %s:", state_copy.toJson())
+            self.populate_from_state(state_copy)
 
     def play_single_move(self):
         logging.debug("Simulating single move for player %s", self.active_player)

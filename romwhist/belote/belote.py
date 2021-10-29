@@ -98,27 +98,31 @@ class BeloteGame(CardGame):
 
     def get_state(self):
         state = BeloteState(self.id)
-        self.populate_state(state)
-        return state
+        new_state = self.populate_state(state)
+        return new_state
 
     def populate_state(self, state):
-        CardGame.populate_state(self, state)
-        state.allowed_bets = self.get_allowed_bets(self.active_player)
-        state.phase = self.phase
-        state.hand_winner = copy.deepcopy(self.hand_winner)
-        state.taker = self.taker
-        state.belote_status = self.belote_status
-        return state
+        my_state = CardGame.populate_state(self, state)
+        my_state.allowed_bets = self.get_allowed_bets(self.active_player)
+        my_state.phase = self.phase
+        my_state.hand_winner = copy.deepcopy(self.hand_winner)
+        my_state.taker = self.taker
+        if self.taker is not None:
+            my_state.taker = self.taker.name
+        my_state.belote_status = self.belote_status
+        return my_state
 
-    def set_state(self, state):
-        CardGame.set_state(self, state)
+    def populate_from_state(self, state):
+        CardGame.populate_from_state(self, state)
         self.soft_init_dict(self.wins, 0)
         self.soft_init_dict(self.bets, "")
         self.phase = state.phase
         self.soft_init_dict(self.hand_points, 0)
 
         # self.hand_winner = copy.deepcopy(state.hand_winner)
-        self.taker = state.taker
+        if state.taker is not None:
+            self.taker = Player(state.taker)
+
         self.belote_status = state.belote_status
 
     def player_announced_belote(self, player, value):
@@ -168,7 +172,7 @@ class BeloteGame(CardGame):
         return False
 
     def add_player(self, player):
-        player = CardGame.add_player(self, player)
+        CardGame.add_player(self, player)
         self.hand_points[player] = 0
 
     def disable_player(self, player):

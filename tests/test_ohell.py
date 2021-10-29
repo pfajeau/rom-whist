@@ -161,7 +161,7 @@ def main():
     # state = OhellState("8", joe)
     state = ohell.get_state()
     logging.debug("State: " + repr(state))
-    ohell.set_state(state)
+    ohell.populate_from_state(state)
 
     # Check that game can resume
     for i in range(5,8):

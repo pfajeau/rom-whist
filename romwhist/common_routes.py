@@ -318,7 +318,7 @@ def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_s
             logging.error("game_id not specified")
         else:
             if game_state is not None:
-                data['state'] = game_state.toJson()
+                data['state'] = game_state.to_json()
             socketio.emit(event, data, namespace=namespace + "_ai")
         return
 
@@ -332,12 +332,12 @@ def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_s
             data2 = data
             data2["game_id"] = game_id
             if game_state is not None:
-                data2['state'] = game_state.toJson()
+                data2['state'] = game_state.to_json()
         else:
             data2["game_id"] = game_id
             data2['param'] = data
             if game_state is not None:
-                data2['state'] = game_state.toJson()
+                data2['state'] = game_state.to_json()
 
         socketio.emit(event, data2, namespace=namespace+"_ai")
 

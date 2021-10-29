@@ -45,16 +45,16 @@ class ContreeGame(BeloteGame):
 
     def get_state(self):
         state = ContreeState(self.id)
-        self.populate_state(state)
+        new_state = self.populate_state(state)
         state.contree_status = self.contree_status
         for player in self.players:
             state.bets[player] = str(self.bets[player])
         state.current_bet = str(self.current_bet)
 
-        return state
+        return new_state
 
-    def set_state(self, state):
-        BeloteGame.set_state(self, state)
+    def populate_from_state(self, state):
+        BeloteGame.populate_from_state(self, state)
         self.contree_status = state.contree_status
         for player in self.players:
             self.bets[player] = Announce.from_str(state.bets[player])

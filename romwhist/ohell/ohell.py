@@ -36,8 +36,8 @@ class OhellGame(CardGame):
             state.bets[player] = int(self.bets.get(player))
         return state
 
-    def set_state(self, state):
-        CardGame.set_state(self, state)
+    def populate_from_state(self, state):
+        CardGame.populate_from_state(self, state)
         self.phase = state.phase
         self.wins = state.nb_rounds_won
         self.soft_init_dict(self.wins, 0)

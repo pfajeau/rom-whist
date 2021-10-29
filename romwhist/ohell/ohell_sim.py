@@ -26,14 +26,14 @@ class OhellSim(OhellGame):
 
         if state is not None:
             state_copy = copy.deepcopy(state)
-            self.set_state(state_copy)
+            self.populate_from_state(state_copy)
             self.bets[sim_player] = int(state.bets[sim_player])
 
     def play_single_move(self):
         logging.debug("Playing single move")
         #current_state = OhellState(self.id, self.sim_player)
         current_state = self.get_state()
-        logging.debug("In play_single_move, current_state: %s", current_state.toJson())
+        logging.debug("In play_single_move, current_state: %s", current_state.to_json())
 
         if self.first_play and self.starting_action is not None:
             card = self.starting_action
@@ -48,7 +48,7 @@ class OhellSim(OhellGame):
 
     def game_loop(self) -> None:
         current_state = self.get_state()
-        logging.debug("In game_loop, current_state: %s", current_state.toJson())
+        logging.debug("In game_loop, current_state: %s", current_state.to_json())
 
         self.deck = Deck(self.deck_size)
         self.deck.shuffle()

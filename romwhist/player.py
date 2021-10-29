@@ -41,12 +41,20 @@ class Player(str):
         return self.name
 
     def __eq__(self, other):
-        print("Comparing " + self.name + " with " + str(other))
-        print ("Other type: " + str(type(other)))
         if other is None:
             return False
-        return self.name == other.name
+        elif isinstance(other, str):
+            return self.name == other
+        else:
+            return self.name == other.name
 
     def __hash__(self):
         # return hash(str(self))
+        # dump (self)
         return hash(self.name)
+
+
+def dump(obj):
+    for attr in dir(obj):
+        print("obj.%s = %r" % (attr, getattr(obj, attr)))
+    print("")
