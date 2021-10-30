@@ -204,13 +204,16 @@ class ContreeGame(BeloteGame):
         if len(self.get_playing_players()) >= 4:
             return None
 
-        player = BeloteGame.add_player(self, player)
+        BeloteGame.add_player(self, player)
         if player in self.players:
             self.init_bets()
         else:
             self.bets[player] = Announce("", "0")
         return player
 
+    # def init_bet(self, player):
+    #     self.bets[player] = ""
+    #
     def init_bets(self):
         for player in self.players:
             self.bets[player] = Announce("", "0")

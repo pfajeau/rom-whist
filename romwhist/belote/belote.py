@@ -351,7 +351,7 @@ class BeloteGame(CardGame):
             if self.belote_status == BeloteStatus.Rebelote_Played and \
                     self.player_with_belote == players[i]:
                 logging.info("In update_scores, adding belote / rebelote points to " + players[i])
-                player_points[i] += self.BELOTE_REBELOTE
+                player_points[i] = player_points[i] + self.BELOTE_REBELOTE
                 self.hand_points[players[i]] = player_points[i]
 
         if nb_players == 2:
@@ -623,6 +623,9 @@ class BeloteGame(CardGame):
                 if card is not None:
                     card.rank = self.card_ranks[str(card)]
                     card.points = self.card_points[str(card)]
+
+    def init_bet(self, player):
+        self.bets[player] = ""
 
     def init_bets(self):
         self.init_dict(self.bets, "")

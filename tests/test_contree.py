@@ -32,8 +32,6 @@ def main():
     Jim = players_by_name["Jim"]
     Johnny = players_by_name["Johnny"]
 
-    for player in players:
-        contree.add_player(player)
     assert (len(contree.get_playing_players()) == 4)
     assert contree.bets[Joe].suit == "", contree.bets[Joe].suit
     assert contree.bets[Joe].points == 0, contree.bets[Joe].points

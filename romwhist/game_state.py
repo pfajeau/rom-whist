@@ -55,11 +55,6 @@ class GameState:
         self.convert_dict_to_string(self.bets)
         self.convert_dict_to_string(self.cards_played_per_player)
 
-    # Can be calculated
-        # self.cards_played = []
-        # self.cards_played_by_suit = {'c':[], 'd':[], 'h':[], 's':[]}
-        # self.hand_cards_as_str = ""
-
     @staticmethod
     def convert_dict_to_players(a_dict, players_dict):
         for key in a_dict.keys():
@@ -72,6 +67,7 @@ class GameState:
 
     @staticmethod
     def convert_dict_to_string(a_dict):
+        # TODO: would be better to deepcopy a_dict then return the modified dict
         for key in a_dict.keys():
             if isinstance(key, Player):
                 value = a_dict[key]
@@ -90,26 +86,6 @@ class GameState:
         return allowed_bets
 
     def to_json(self):
-        # for player in self.players:
-        #     self_copy.players_status[player.name] = player.player_status
-        #     self_copy.players_type[player.name] = player.player_type
-        #     player_name = player.name
-        #     self_copy.players[self.players.index(player)] = player.name
-        #
-        # self_copy.active_player = self.active_player.name
-        # self_copy.dealer = self.dealer.name
-        # self_copy.owner = self.owner.name
-
-        # Convert dictionaries that use a string player as key to
-        # using a player object as key
-        # self.convert_dict_to_players(self.players_status, players_dict)
-        # self.convert_dict_to_players(self.players_type, players_dict)
-        # self.convert_dict_to_string(self_copy.bets)
-        # self.convert_dict_to_string(self_copy.hand_points)
-        # self.convert_dict_to_string(self_copy.scores)
-        # self.convert_dict_to_string(self_copy.bets)
-        # self.convert_dict_to_string(self_copy.cards_played_per_player)
-
         return json.dumps(self.__dict__)
 
     def next_player(self, player):

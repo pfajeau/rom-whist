@@ -123,7 +123,7 @@ class CardGame:
 
         self.scores = state_copy.convert_dict_to_players(state_copy.scores, players_by_name)
         self.hand_points = state_copy.convert_dict_to_players(state_copy.hand_points, players_by_name)
-        state_copy.convert_dict_to_players(state_copy.hand_cards, players_by_name)
+        self.hand_cards = state_copy.convert_dict_to_players(state_copy.hand_cards, players_by_name)
         self.bets = state_copy.convert_dict_to_players(state_copy.bets, players_by_name)
 
         self.dealer = players_by_name[state_copy.dealer]
@@ -226,7 +226,7 @@ class CardGame:
         else:
             self.players.append(player)
             self.scores[player] = 0
-            self.bets[player] = -1
+            self.init_bet(player)
             self.wins[player] = 0
             self.points[player] = 0
 
@@ -424,6 +424,9 @@ class CardGame:
 
     def init_bets(self):
         self.init_dict(self.bets, -1)
+
+    def init_bet(self, player):
+        self.bets[player] = -1
 
     def soft_init_dict(self, a_dict, default_value):
         for player in self.players:
