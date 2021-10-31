@@ -65,6 +65,7 @@ class CardGame:
         self.init_bets()
         self.init_dict(self.wins, 0)
         self._current_hand_nb = 0
+        self.players = []
 
     def populate_state(self, state:GameState):
         # Populate state
@@ -117,7 +118,7 @@ class CardGame:
         for player_name in state_copy.players:
             player = Player(player_name)
             players_by_name[player_name] = player
-            self.players[self.players.index(player_name)] = player
+            self.players.append(player)
             player.status = state_copy.players_status[player_name]
             player.type = state_copy.players_type[player_name]
 

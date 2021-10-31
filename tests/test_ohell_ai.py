@@ -4,6 +4,8 @@ import json
 import logging
 from romwhist.ohell.ohell_ai import OhellAiPlayer
 from romwhist.ohell.ohell_state import OhellState
+from romwhist.player import Player
+
 from tests import test_common
 
 def main():
@@ -11,7 +13,7 @@ def main():
                         format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
                         level=logging.DEBUG)
 
-    ohell_ai = OhellAiPlayer('AI1', '1')
+    ohell_ai = OhellAiPlayer(Player('AI1'), '1')
     ohell_ai.game_started(32, ["joe", "jack", "AI1", "jim"])
     cards = ["s12", "s13", "d13", "d12", "c10", "c14", "h10", "h11"]
     all_cards = {'joe': ["s9", "s11", "d8", "d9", "c7", "c18", "h7", "h9"],
@@ -28,6 +30,10 @@ def main():
     ohell_ai.game_state = copy.deepcopy(game_state)
     ohell_ai.game_state.allowed_bets = [0,1,2,3,4,5,6]
     ohell_ai.game_state.hand_cards = all_cards
+    ohell_ai.game_state.players_status = {"joe": "Active", "jack": "Active", "AI1": "Active", "jim": "Active"}
+    ohell_ai.game_state.players_type = {"joe": "Human", "jack": "Human", "AI1": "AI", "jim": "Human"}
+    ohell_ai.game_state.owner = 'joe'
+
     state_snapshop = copy.deepcopy(ohell_ai.game_state)
     bet = ohell_ai.player_to_bet(allowed_bets, json.dumps(ohell_ai.game_state.__dict__))
     logging.info("bet = %s", bet)

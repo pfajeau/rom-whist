@@ -13,17 +13,17 @@ class ContreeAiPlayer(BeloteAiPlayer):
 
     CORRECTION_FACTOR = 0.9    # Because simulations are optimistic in outcome
 
-    def __init__(self, name, game_id):
-        AiPlayer.__init__(self, name, game_id)
-        self._agent = SimpleMCTSAgent('ContreeSim', name,
+    def __init__(self, player, game_id):
+        AiPlayer.__init__(self, player, game_id)
+        self._agent = SimpleMCTSAgent('ContreeSim', self.player,
                                       action_chooser_function='random_action',
                                       num_simulations=15)
 
-        self._agent2 = SimpleMCTSAgent('ContreeSim', name,
+        self._agent2 = SimpleMCTSAgent('ContreeSim', self.player,
                                        action_chooser_function='random_action',
                                        num_simulations=15)
 
-        self.game_state = ContreeState(game_id, self.name)
+        self.game_state = ContreeState(game_id, self)
 
         #BeloteAiPlayer.__init__(self, name, game_id)
 
@@ -36,7 +36,7 @@ class ContreeAiPlayer(BeloteAiPlayer):
 
     # TODO
     def player_to_bet(self, allowed_bets, game_state_json):
-        logging.debug("Belote AI PLayer to bet: %s", self.name)
+        logging.debug("Belote AI PLayer to bet: %s", self.player.name)
         logging.debug("Game state: %s", game_state_json)
         game_state = ContreeState(**json.loads(game_state_json))
         self.game_state = game_state

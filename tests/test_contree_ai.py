@@ -8,6 +8,7 @@ from romwhist.card import Card
 from romwhist.contree.contree_ai import ContreeAiPlayer
 from romwhist.contree.contree_state import ContreeState
 from romwhist.contree.contree import ContreeGame
+from romwhist.player import Player
 
 
 def main():
@@ -16,7 +17,7 @@ def main():
                         level=logging.DEBUG)
 
     # Test betting
-    contree_ai = ContreeAiPlayer('AI1', '1')
+    contree_ai = ContreeAiPlayer(Player('AI1'), '1')
     contree_ai.game_started(32, ["joe", "jack", "AI1", "jim"])
 
     all_cards = {'AI1': ["s9", "s11", "s14", "s10", "c14", "c8", "h14", "h10"],
@@ -42,7 +43,9 @@ def main():
     contree_ai.game_state.trump = "heart"
     contree_ai.game_state.current_bet = "heart_80"
     contree_ai.game_state.taker = "jack"
-
+    contree_ai.game_state.players_status = {"joe": "Active", "jack":"Active", "AI1": "Active", "jim":"Active"}
+    contree_ai.game_state.players_type = {"joe": "Human", "jack":"Human", "AI1": "AI", "jim":"Human"}
+    contree_ai.game_state.owner = 'joe'
     state_snapshop = copy.deepcopy(contree_ai.game_state)
 
     #Test serialization

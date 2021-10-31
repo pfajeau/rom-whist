@@ -17,7 +17,7 @@ class OhellAiPlayer(AiPlayer):
         self.__agent2 = SimpleMCTSAgent('OhellSim', name,
                                        action_chooser_function='random_action',
                                        num_simulations=100)
-        self.game_state = OhellState(game_id, self.name)
+        self.game_state = OhellState(game_id, self.player.name)
 
 
     def new_hand(self, cards):
@@ -29,7 +29,7 @@ class OhellAiPlayer(AiPlayer):
         #     self.state.bets[player] = ""
 
     def player_to_bet(self, allowed_bets, game_state_json):
-        logging.debug("Ohell AI PLayer to bet: %s", self.name)
+        logging.debug("Ohell AI PLayer to bet: %s", self.player.name)
         logging.debug("Game state: %s", game_state_json)
 
         # If only one bet allowed, can return it right away
