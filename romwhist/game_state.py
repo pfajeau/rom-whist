@@ -3,8 +3,10 @@ import json
 
 from romwhist.player import Player
 
-
 class GameState:
+    """This class provides a serializable structure that encapsulates
+    the state of a game. It is passed between processes as a JSON object
+    """
 
     def __init__(self, game_id, sim_player=None, players=[], trump="", cards_played_per_player=None,
                  cards_played_per_round=dict(), deck_size=0,
@@ -34,6 +36,8 @@ class GameState:
         self.make_serializable()
 
     def make_serializable(self):
+        """Convert itself to something that can be passed as JSON
+        """
         # Convert Player objects to strings if necessary
         for player in self.players:
             if isinstance(player, Player):

@@ -9,7 +9,6 @@ from romwhist.belote.belote_status import BeloteStatus
 from romwhist.contree.contree_state import ContreeState
 from romwhist.contree.announce import Announce
 from romwhist.contree.announce import ContreStatus
-from romwhist.player import Player
 
 
 class CountingMethod(str, Enum):

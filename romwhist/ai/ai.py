@@ -6,9 +6,11 @@ import threading
 
 import socketio
 from flask_socketio import emit
+from romwhist.ai.ai_player import AiPlayer
 from romwhist.belote.belote_ai import BeloteAiPlayer
 from romwhist.ohell.ohell_ai import OhellAiPlayer
 from romwhist.contree.contree_ai import ContreeAiPlayer
+from romwhist.player import Player
 
 NAMESPACES = {'ohell': '/ohell_ai',
               'belote': '/belote_ai',
@@ -38,8 +40,8 @@ if config.has_section('ai'):
 
 
 
-# List of ai players for each game. it is a list of lists
-players = dict()
+# List of ai ai_players for each game. it is a list of lists
+ai_players = dict()
 
 
 # @sio.on('trump card', namespace=NAMESPACE)
@@ -60,7 +62,7 @@ def game_started(data):
     game_id = data.get('game_id')
     deck_size = data.get('deck_size')
     players = data.get('players')
-    ai_players = get_players(game_id)
+    ai_players = get_ai_players(game_id)
     for ai_player_name in ai_players:
         ai_player = get_player(game_id, ai_player_name)
         ai_player.game_started(deck_size, players)
@@ -72,7 +74,7 @@ def new_hand(data):
     game_id = data.get('game_id')
     player = data.get('player')
     cards = data.get('cards')
-    ai_players = get_players(game_id)
+    ai_players = get_ai_players(game_id)
     for ai_player_name in ai_players:
         if ai_player_name == player:
             ai_player = get_player(game_id, player)
@@ -82,16 +84,37 @@ def new_hand(data):
 # @sio.on('player to bet', namespace=NAMESPACE)
 def player_to_bet(data):
     game_id = data.get('game_id')
-    player = data.get('player')
-    logging.info("player to bet event received for player %s and game %s", player, game_id)
+    player_name = data.get('player')
+    logging.info("player to bet event received for player %s and game %s", player_name, game_id)
 
     game_state_json = data['state']
-    ai_player = get_player(game_id, player)
+    player = Player(player_name)
+    ai_player = get_player(game_id, player_name)
+    if ai_players.get(game_id) is None:
+        ai_players[game_id] = dict()
+
+    if ai_player is None and player.player_type == Player.PlayerType.SHADOWED:
+        """Create am AI player to play on behalf of human player """
+        ai_player = create_ai_player(player, game_id)
+        ai_players[game_id][player.name] = ai_player
 
     if ai_player is not None:
         bet = ai_player.player_to_bet(data.get("allowed_bets"), game_state_json)
         logging.info("AI Player %s computer bet is %s", ai_player, bet)
-        emit_with_delay('player bet', {'game_id': game_id, 'player': player, 'bet': bet})
+        emit_with_delay('player bet', {'game_id': game_id, 'player': player_name, 'bet': bet})
+
+
+def create_ai_player(player, game_id) -> AiPlayer:
+    ai_player = None
+
+    if this.game_type == "belote":
+        ai_player = BeloteAiPlayer(player, game_id)
+    elif this.game_type == "ohell":
+        ai_player = OhellAiPlayer(player, game_id)
+    elif this.game_type == "contree":
+        ai_player = ContreeAiPlayer(player, game_id)
+
+    return ai_player
 
 
 def player_bet(data):
@@ -99,8 +122,8 @@ def player_bet(data):
     game_id = data.get('game_id')
     player = data.get('player')
     bet = data.get('bet')
-    ai_players = get_players(game_id)
-    for ai_player_name in ai_players:
+    ais = get_ai_players(game_id)
+    for ai_player_name in ais:
         ai_player = get_player(game_id, ai_player_name)
         ai_player.player_bet(player, bet)
 
@@ -125,8 +148,8 @@ def card_played(data):
     game_id = data.get('game_id')
     card = data.get('card')
     player = data.get('player')
-    ai_players = get_players(game_id)
-    for ai_player_name in ai_players:
+    ais = get_ai_players(game_id)
+    for ai_player_name in ais:
         ai_player = get_player(game_id, ai_player_name)
         ai_player.card_played(player, card)
 
@@ -166,19 +189,23 @@ def create_ai_player(data):
         logging.error("game_id or name are not defined")
         return
 
+    ai_player = None
     if this.game_type == "belote":
-        player = BeloteAiPlayer(name, game_id)
+        ai_player = BeloteAiPlayer(Player(name), game_id)
     elif this.game_type == "ohell":
-        player = OhellAiPlayer(name, game_id)
+        ai_player = OhellAiPlayer(Player(name), game_id)
     elif this.game_type == "contree":
-        player = ContreeAiPlayer(name, game_id)
+        ai_player = ContreeAiPlayer(Player(name), game_id)
 
-    if players.get(game_id) is None:
-        players[game_id] = dict()
+    if ai_players.get(game_id) is None:
+        ai_players[game_id] = dict()
 
     # TODO: handle case where player already exists in set
-    players[game_id][name] = player
-    join_game(player)
+    if ai_player is not None:
+            ai_players[game_id][name] = ai_player
+            join_game(ai_player)
+    else:
+        logging.error("AI player was not created")
 
 
 @sio.event
@@ -199,23 +226,22 @@ def disconnect():
 def join_game(ai_player):
     print("Emitting join game")
     emit("join game ai",
-         {'player': ai_player.name, 'game_id': ai_player.game_id})
+         {'player': ai_player.player.name, 'game_id': ai_player.game_id})
 
 
 def get_player(game_id, player_name):
     if game_id is None:
         logging.error("game_id misssing")
         return None
-    ai_player = players.get(game_id).get(player_name)
+    ai_player = ai_players.get(game_id).get(player_name)
     return ai_player
 
 
-def get_players(game_id):
+def get_ai_players(game_id):
     if game_id is None:
         logging.error("game_id misssing")
         return None
-    ai_players = players.get(game_id)
-    return ai_players
+    return  ai_players.get(game_id)
 
 
 def emit_with_delay(event, data, delay=DEFAULT_DELAY):
