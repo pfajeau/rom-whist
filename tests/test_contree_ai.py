@@ -9,6 +9,7 @@ from romwhist.contree.contree_ai import ContreeAiPlayer
 from romwhist.contree.contree_state import ContreeState
 from romwhist.contree.contree import ContreeGame
 from romwhist.player import Player
+from romwhist.ai import ai
 
 
 def main():
@@ -16,8 +17,16 @@ def main():
                         format="%(asctime)s] %(levelname)s [%(filename)s  at %(lineno)s]: %(message)s",
                         level=logging.DEBUG)
 
+    data = dict()
+    ai.game_type = "contree"
+    ai.mode = "test"
+    ai.NAMESPACE = "contree_ai"
+
     # Test betting
-    contree_ai = ContreeAiPlayer(Player('AI1'), '1')
+    # contree_ai = ContreeAiPlayer(Player('AI1'), '1')
+    data = {"name": "AI1", "game_id" : "test"}
+    contree_ai = ai.create_ai_player(data)
+
     contree_ai.game_started(32, ["joe", "jack", "AI1", "jim"])
 
     all_cards = {'AI1': ["s9", "s11", "s14", "s10", "c14", "c8", "h14", "h10"],
@@ -56,7 +65,13 @@ def main():
     game_state = ContreeState(**json.loads(state_json))
     logging.debug("Game state from JSON as dict: %s", game_state.__dict__)
 
-    bet = contree_ai.player_to_bet(allowed_bets, json.dumps(contree_ai.game_state.__dict__))
+    data = {"state" : contree_ai.game_state.to_json(),
+            "game_id" : contree_ai.game_state.game_id,
+            "player" : "AI1",
+            "allowed_bets" : allowed_bets}
+    bet = ai.player_to_bet(data)
+
+    # bet = contree_ai.player_to_bet(allowed_bets, json.dumps(contree_ai.game_state.__dict__))
     print ("Computed bet %s", bet)
     logging.info("bet = %s", bet)
     assert bet.suit == "spade", bet.suit
@@ -76,7 +91,11 @@ def main():
     contree_ai.game_state.bets = {"joe":"spade_80", "jack":"pass_0", "AI1":"pass_0", "jim":"pass_0"}
     contree_ai.game_state.current_bet = "spade_80"
 
-    card = contree_ai.player_to_play("", contree_ai.game_state.to_json())
+    data = {"state" : contree_ai.game_state.to_json(),
+            "game_id" : contree_ai.game_state.game_id,
+            "player" : "AI1",
+            "allowed_cards" : contree_ai.game_state.allowed_cards}
+    card = ai.player_to_play(data)
     logging.debug("AI played card: " + card)
     #assert card in ["s9", "s11", "d13", "h12"], card
 

@@ -38,7 +38,8 @@ if config.has_section('ai'):
     else:
         DEFAULT_DELAY = 2  # 1 second
 
-
+# Can be normal or test
+this.mode = "normal"
 
 # List of ai ai_players for each game. it is a list of lists
 ai_players = dict()
@@ -50,7 +51,7 @@ def trump_card(data):
     game_id = data.get('game_id')
     trump_card = data.get('trump_card')
     trump_suit = data.get("trump_suit")
-    ai_players = get_players(game_id)
+    ai_players = get_ai_players(game_id)
     for ai_player_name in ai_players:
         ai_player = get_player(game_id, ai_player_name)
         ai_player.set_trump(trump_card, trump_suit)
@@ -85,6 +86,8 @@ def new_hand(data):
 def player_to_bet(data):
     game_id = data.get('game_id')
     player_name = data.get('player')
+    bet = None
+
     logging.info("player to bet event received for player %s and game %s", player_name, game_id)
 
     game_state_json = data['state']
@@ -94,8 +97,8 @@ def player_to_bet(data):
         ai_players[game_id] = dict()
 
     if ai_player is None and player.player_type == Player.PlayerType.SHADOWED:
-        """Create am AI player to play on behalf of human player """
-        ai_player = create_ai_player(player, game_id)
+        # Create am AI player to play on behalf of human player
+        ai_player = create_an_ai_player(player, game_id)
         ai_players[game_id][player.name] = ai_player
 
     if ai_player is not None:
@@ -103,8 +106,9 @@ def player_to_bet(data):
         logging.info("AI Player %s computer bet is %s", ai_player, bet)
         emit_with_delay('player bet', {'game_id': game_id, 'player': player_name, 'bet': bet})
 
+    return bet
 
-def create_ai_player(player, game_id) -> AiPlayer:
+def create_an_ai_player(player, game_id) -> AiPlayer:
     ai_player = None
 
     if this.game_type == "belote":
@@ -130,17 +134,26 @@ def player_bet(data):
 
 # @sio.on('player to play', namespace=NAMESPACE)
 def player_to_play(data):
+    card = None
     game_id = data.get('game_id')
-    player = data.get('player')
-    logging.info("player to play event received for player %s and game %s", player, game_id)
+    player_name = data.get('player')
+    logging.info("player to play event received for player %s and game %s", player_name, game_id)
 
     game_state_json = data['state']
+    player = Player(player_name)
+
     ai_player = get_player(game_id, player)
+
+    if ai_player is None and player.player_type == Player.PlayerType.SHADOWED:
+        # Create am AI player to play on behalf of human player
+        ai_player = create_an_ai_player(player, game_id)
+        ai_players[game_id][player.name] = ai_player
 
     if ai_player is not None:
         card = ai_player.player_to_play(data.get("allowed_cards"), game_state_json)
         emit_with_delay('player played', {'game_id': game_id, 'player': player, 'card': card})
 
+    return card
 
 # @sio.on('card played', namespace=NAMESPACE)
 def card_played(data):
@@ -181,13 +194,13 @@ def msg_posted(data):
 
 
 # @sio.on("create_ai_player", namespace=NAMESPACE)
-def create_ai_player(data):
+def create_ai_player(data) -> AiPlayer:
     logging.info("In create_ai_player")
     game_id = data.get("game_id")
     name = data.get("name")
     if game_id is None or name is None:
         logging.error("game_id or name are not defined")
-        return
+        return None
 
     ai_player = None
     if this.game_type == "belote":
@@ -207,6 +220,7 @@ def create_ai_player(data):
     else:
         logging.error("AI player was not created")
 
+    return ai_player
 
 @sio.event
 def connect():
@@ -250,7 +264,8 @@ def emit_with_delay(event, data, delay=DEFAULT_DELAY):
 
 
 def emit(event, data):
-    sio.emit(event, data, namespace=NAMESPACE)
+    if this.mode == "normal":
+        sio.emit(event, data, namespace=NAMESPACE)
 
 
 def main(argv):
