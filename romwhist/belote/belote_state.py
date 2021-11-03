@@ -1,3 +1,4 @@
+import json
 from romwhist.game_state import GameState
 from romwhist.belote.belote_status import BeloteStatus
 
@@ -28,3 +29,5 @@ class BeloteState(GameState):
         else:
             self.taker = None
         self.belote_status = belote_status
+
+

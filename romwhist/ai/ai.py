@@ -6,6 +6,8 @@ import threading
 
 import socketio
 from flask_socketio import emit
+
+from romwhist.game_state import GameState
 from romwhist.ai.ai_player import AiPlayer
 from romwhist.belote.belote_ai import BeloteAiPlayer
 from romwhist.ohell.ohell_ai import OhellAiPlayer
@@ -33,7 +35,7 @@ HOST = network_config["host"]
 
 if config.has_section('ai'):
     ai_config = config['ai']
-    if config.has_option('ai','default_delay'):
+    if config.has_option('ai', 'default_delay'):
         DEFAULT_DELAY = int(ai_config['default_delay'])
     else:
         DEFAULT_DELAY = 2  # 1 second
@@ -91,12 +93,14 @@ def player_to_bet(data):
     logging.info("player to bet event received for player %s and game %s", player_name, game_id)
 
     game_state_json = data['state']
+
     player = Player(player_name)
     ai_player = get_player(game_id, player_name)
     if ai_players.get(game_id) is None:
         ai_players[game_id] = dict()
 
-    if ai_player is None and player.player_type == Player.PlayerType.SHADOWED:
+    state = ai_player.set_game_state_from_json(game_state_json)
+    if ai_player is None and state.players_status[player_name] == Player.PlayerType.SHADOWED:
         # Create am AI player to play on behalf of human player
         ai_player = create_an_ai_player(player, game_id)
         ai_players[game_id][player.name] = ai_player
@@ -107,6 +111,7 @@ def player_to_bet(data):
         emit_with_delay('player bet', {'game_id': game_id, 'player': player_name, 'bet': bet})
 
     return bet
+
 
 def create_an_ai_player(player, game_id) -> AiPlayer:
     ai_player = None
@@ -144,7 +149,16 @@ def player_to_play(data):
 
     ai_player = get_player(game_id, player)
 
-    if ai_player is None and player.player_type == Player.PlayerType.SHADOWED:
+    state = None
+    if this.game_type == "belote":
+        state = BeloteAiPlayer.get_game_state_from_json(game_state_json)
+    elif this.game_type == "ohell":
+        state = OhellAiPlayer.get_game_state_from_json(game_state_json)
+    elif this.game_type == "contree":
+        state = ContreeAiPlayer.get_game_state_from_json(game_state_json)
+
+    if ai_player is None and state.players_type[player_name] == Player.PlayerType.SHADOWED:
+        print ("*** CREATING AI PLAYER FOR SHADOWED PLAYER")
         # Create am AI player to play on behalf of human player
         ai_player = create_an_ai_player(player, game_id)
         ai_players[game_id][player.name] = ai_player
@@ -154,6 +168,7 @@ def player_to_play(data):
         emit_with_delay('player played', {'game_id': game_id, 'player': player, 'card': card})
 
     return card
+
 
 # @sio.on('card played', namespace=NAMESPACE)
 def card_played(data):
@@ -215,12 +230,13 @@ def create_ai_player(data) -> AiPlayer:
 
     # TODO: handle case where player already exists in set
     if ai_player is not None:
-            ai_players[game_id][name] = ai_player
-            join_game(ai_player)
+        ai_players[game_id][name] = ai_player
+        join_game(ai_player)
     else:
         logging.error("AI player was not created")
 
     return ai_player
+
 
 @sio.event
 def connect():
@@ -255,7 +271,7 @@ def get_ai_players(game_id):
     if game_id is None:
         logging.error("game_id misssing")
         return None
-    return  ai_players.get(game_id)
+    return ai_players.get(game_id)
 
 
 def emit_with_delay(event, data, delay=DEFAULT_DELAY):

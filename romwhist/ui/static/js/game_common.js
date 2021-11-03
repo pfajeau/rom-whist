@@ -90,6 +90,13 @@ function initialize(players) {
     // show_dialog_ok("Warning", "Are you sure you want to leave the game?", ok_function=submit_form, action="leave_game")
   }
 
+  $("#game_action_buttons").append(
+      '<button id="switch_player_type" type="button" class="btn btn-primary" name="switch_player_type">' +
+      i18n["switch_player_type"] + '</button>');
+  document.getElementById("switch_player_type").onclick = function() {
+    show_alert(i18n["confirm_switch_player_type"], "Warning", cancel=true, callback_ok=submit_form, action="switch_player_type");
+  }
+
   if (username == ownername) {
     $("#game_action_buttons").append('&nbsp;&nbsp;');
 

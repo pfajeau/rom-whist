@@ -142,11 +142,14 @@ class OhellAiPlayer(AiPlayer):
         logging.info("Agent calculated card: %s", best_card)
         return best_card
 
+    @staticmethod
+    def get_game_state_from_json(state_as_json):
+        state = OhellState(**json.loads(state_as_json))
+        return state
 
+    # TODO: can be removed and put in base class?
     def set_game_state_from_json(self, state_as_json):
-
-       self.game_state =  OhellState(**json.loads(state_as_json))
-
+        self.game_state = self.get_game_state_from_json(state_as_json)
 
 
     def compute_card_value(self, card):

@@ -108,7 +108,7 @@ class BeloteGame(CardGame):
         my_state.hand_winner = copy.deepcopy(self.hand_winner)
         my_state.taker = self.taker
         if self.taker is not None:
-            my_state.taker = self.taker.name
+            my_state.taker = str(self.taker)
         my_state.belote_status = self.belote_status
         return my_state
 

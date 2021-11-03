@@ -24,6 +24,7 @@ from romwhist.extensions import db
 from romwhist.forms import LoginForm, GameForm
 from romwhist.models import User
 from romwhist import i18n_strings
+from romwhist.player import Player
 
 
 NAMESPACE = '/belote'
@@ -131,6 +132,14 @@ def belote_play():
                                             game_id, NAMESPACE_AI)
             return redirect(url_for('belote_play'))
 
+        if request.form['action_game'] == "switch_player_type":
+             if player.player_type == Player.PlayerType.SHADOWED:
+                 player.player_type = Player.PlayerType.HUMAN
+             elif player.player_type == Player.PlayerType.HUMAN:
+                player.player_type = Player.PlayerType.SHADOWED
+
+        return redirect(url_for('belote_play'))
+
     elif redirect_template is None:
         hand = game.get_hands().get(player)
         if hand is None:
@@ -230,13 +239,14 @@ def player_bet(bet):
     return
 
 
-def player_bet_process(player, game_id, bet):
+def player_bet_process(player_name, game_id, bet):
     if game_id is None:
         logging.error("ERROR: Game not found!!!")
         return
 
     logging.debug("Player bet: " + bet)
     game = games.get(game_id)
+    player = game.get_player_by_name(player_name)
     if game.phase == BeloteGame.GamePhase.BET or game.phase == BeloteGame.GamePhase.BET2:
         try:
             game.place_bet(player, bet)
@@ -355,13 +365,15 @@ def player_played(card):
     player_played_process(game_id, player, card)
 
 
-def player_played_process(game_id, player, card):
+def player_played_process(game_id, player_name, card):
     # Emit event to players so they can see the card that was played
     if game_id is None:
         logging.error("Game id not specified")
         return
 
     game = games.get(game_id)
+    player = game.get_player_by_name(player_name)
+
     belote_before = game.belote_status
     winner = game.play_card(player, card)
 
@@ -507,7 +519,7 @@ def add_player(player, game_id):
     game = games.get(game_id)
     if game is not None:
         session['game_id'] = game.id
-        common_routes.add_player(player, game, NAMESPACE)
+        common_routes.add_player_by_name(player, game, NAMESPACE)
         if game.started:
             restart_hand(game_id)
 

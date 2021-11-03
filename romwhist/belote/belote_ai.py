@@ -71,8 +71,13 @@ class BeloteAiPlayer(AiPlayer):
 
         return best_card
 
+    @staticmethod
+    def get_game_state_from_json(state_as_json):
+        state = BeloteState(**json.loads(state_as_json))
+        return state
+
     def set_game_state_from_json(self, state_as_json):
-        self.game_state = BeloteState(**json.loads(state_as_json))
+        self.game_state = self.get_game_state_from_json(state_as_json)
 
     def player_to_bet(self, allowed_bets, game_state_json):
         logging.debug("Belote AI PLayer to bet: %s", self.player.name)

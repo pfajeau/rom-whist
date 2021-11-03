@@ -152,9 +152,14 @@ def post_msg(msg, sender, room, messages, namespace):
 #       generate_hands(game.id, game.dealer)
 
 
-def add_player(player_name, game, namespace):
-    game.add_player(player_name)
-    socketio.emit("new player", player_name, room=game.id, namespace=namespace)
+def add_player_by_name(player_name, game, namespace):
+    new_player = Player(player_name)
+    add_player(new_player, game, namespace)
+
+
+def add_player(player, game, namespace):
+    game.add_player(player)
+    socketio.emit("new player", player.name, room=game.id, namespace=namespace)
 
 
 # To create an ai player
@@ -266,26 +271,28 @@ def on_join(game_id, games, clients, namespace):
     if game_id is not None:
         if session['game_id'] in games:
             # Add user to room if user is not there already
-            player = Player(session.get('username'))
-            logging.debug("Player: " + player)
+            player_name = session.get('username')
+            logging.debug("Player: " + player_name)
 
             # Adding new client room id (sid) to list of clients
-            clients[game_id][player] = request.sid
+            clients[game_id][player_name] = request.sid
             session['sid'] = request.sid
             join_room(game_id, namespace=namespace)
     return
 
 
-def join_ai(game_id, player, games, namespace):
+def join_ai(game_id, player_name, games, namespace):
     # Note that a refresh on the client side causes the socketio sid to changed
     # so need to remove the previous sid from the room
-    logging.info("join_ai with player %s", player)
+    logging.info("join_ai with player %s", player_name)
 
     game = games.get(game_id)
     if game is None:
         logging.error("Unknown game: " + repr(game_id))
         return
     # Add user to room if user is not there already
+    player = Player(player_name)
+    player.player_type = Player.PlayerType.AI
     add_player(player, game, namespace)
     return
 

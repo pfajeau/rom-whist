@@ -65,7 +65,7 @@ class CardGame:
         self.init_bets()
         self.init_dict(self.wins, 0)
         self._current_hand_nb = 0
-        self.players = []
+        #self.players = []
 
     def populate_state(self, state:GameState):
         # Populate state
@@ -113,14 +113,15 @@ class CardGame:
 
         state_copy = copy.deepcopy(state)
         players_by_name = dict()
+        self.players = []
 
         # Convert player represented as strings into Player objects
         for player_name in state_copy.players:
             player = Player(player_name)
             players_by_name[player_name] = player
-            self.players.append(player)
             player.status = state_copy.players_status[player_name]
             player.type = state_copy.players_type[player_name]
+            self.players.append(player)
 
         self.scores = state_copy.convert_dict_to_players(state_copy.scores, players_by_name)
         self.hand_points = state_copy.convert_dict_to_players(state_copy.hand_points, players_by_name)
@@ -137,18 +138,20 @@ class CardGame:
         self.deck = Deck(state_copy.deck_size)
 
         self.soft_init_dict(self.scores, 0)
-        self.soft_init_dict(self.hand_points,0)
+        self.soft_init_dict(self.hand_points, 0)
 
         # Create hands
-        for player in state_copy.hand_cards:
+        for player_name in state_copy.hand_cards:
+            player = self.get_player_by_name(player_name)
             self.hands[player] = Hand(self.deck)
             for card in state_copy.hand_cards[player]:
                 self.hands[player].cards.append(Card.card_from_value(card))
 
         # Create rounds
         for round_nb in state_copy.cards_played_per_round:
-            round = Round(state_copy.players, state_copy.trump)
-            for player in state_copy.cards_played_per_round[round_nb]:
+            round = Round(self.players, state_copy.trump)
+            for player_name in state_copy.cards_played_per_round[round_nb]:
+                player = self.get_player_by_name(player_name)
                 card_str = state_copy.cards_played_per_round[round_nb].get(player)
                 if card_str != 'None':
                     round.card_played(player,
@@ -160,7 +163,7 @@ class CardGame:
             self.current_round = self.create_round()
             self.current_round.trump_suit = state_copy.trump
 
-        self.active_player = state_copy.active_player
+        self.active_player = self.get_player_by_name(state_copy.active_player)
         if state.trump_card is not None and not state.trump_card == "":
             self.trump_card = Card.card_from_value(state.trump_card)
 
@@ -231,7 +234,6 @@ class CardGame:
             self.wins[player] = 0
             self.points[player] = 0
 
-
     def disable_player(self, player):
         if player in self.players:
             player.player_status = Player.PlayerStatus.INACTIVE
@@ -262,8 +264,6 @@ class CardGame:
             if player.name == player_name:
                 return player
         return None
-
-
 
     def get_player_names(self):
         player_names = []

@@ -31,8 +31,13 @@ class ContreeAiPlayer(BeloteAiPlayer):
         game_state = ContreeState(**json.loads(game_state_json))
         return BeloteAiPlayer.player_to_play_from_state(self, game_state)
 
+    @staticmethod
+    def get_game_state_from_json(state_as_json):
+        state = ContreeState(**json.loads(state_as_json))
+        return state
+
     def set_game_state_from_json(self, state_as_json):
-        self.game_state = ContreeState(**json.loads(state_as_json))
+        self.game_state = self.get_game_state_from_json(state_as_json)
 
     # TODO
     def player_to_bet(self, allowed_bets, game_state_json):

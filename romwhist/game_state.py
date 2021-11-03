@@ -92,6 +92,11 @@ class GameState:
     def to_json(self):
         return json.dumps(self.__dict__)
 
+    # @staticmethod
+    # def from_jason(state_json):
+    #     state = GameState.__init__(**json.loads(state_json))
+    #     return state
+
     def next_player(self, player):
         pos = self.players.index(player)
         if pos == len(self.players) - 1:
