@@ -7,7 +7,6 @@ author: Philippe Fajeau
 import logging
 import json
 from random import randint
-import threading
 
 from flask import render_template, request, flash, session, url_for, redirect
 from flask_babel import gettext as _
@@ -339,7 +338,7 @@ def hand_completed(game_id, username):
         clean_game_data(game_id)
 
     else:
-        generate_hands(game_id, "")
+        generate_hands(game_id, None)
 
 
 def next_round(game_id, nplayer, allowed_cards):
@@ -359,7 +358,7 @@ def player_played_ai(data):
 
     # Announce belote / rebelote as applicable
     common_routes.belote_rebelote_ai(game, card, player, NAMESPACE)
-    player_played_process(game, player, data.get('card'))
+    common_routes.player_played_process(game, player, card, NAMESPACE)
 
 
 @socketio.on('player played', namespace=NAMESPACE)
@@ -369,59 +368,7 @@ def player_played(card):
     game_id = session.get('game_id')
     game = games.get(game_id)
     player = session.get('username')
-    player_played_process(game, player, card)
-
-
-def player_played_process(game, player_name, card):
-    # Emit event to players so they can see the card that was played
-    if game is None:
-        logging.error("Game does not exist")
-        return
-
-    game_id = game.id
-    player = game.get_player_by_name(player_name)
-
-    belote_before = game.belote_status
-    winner = game.play_card(player, card)
-
-    logging.debug("Sending card played event")
-    common_routes.emit_to_players(
-        "card played",
-        {'game_id': game_id, 'player': player, 'card': card},
-        room=game_id, namespace=NAMESPACE)
-
-    belote_after = game.belote_status
-
-    if belote_before != belote_after:
-        belote_status_changed(game_id)
-
-    nplayer = game.get_active_player()
-
-    if winner is None:
-        # Round continues
-        allowed_cards = game.get_allowed_cards(nplayer)
-        common_routes.emit_to_players(
-            "player to play",
-            {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
-            room=game_id, namespace=NAMESPACE, game_state=game.get_state())
-    else:
-        # There is a winner, so round is ended
-        # game.round_ended(winner)
-        allowed_cards = game.get_hand(nplayer).serialize()
-        winning_card = game.get_current_round().cards_played[winner]
-        common_routes.emit_to_players(
-            "round ended",
-            {"game_id": game_id, "winner": winner, "card": winning_card.desc(), "last_player": player,
-             "points":game.hand_points},
-            room=game_id, namespace=NAMESPACE)
-
-        timer = threading.Timer(6.0, next_round, [game_id, nplayer, allowed_cards])
-        timer.start()
-
-    logging.info("Allowed cards: " + str(allowed_cards))
-    return
-
-
+    common_routes.player_played_process(game, player, card, NAMESPACE)
 
 
 def belote_status_changed(game_id):
@@ -431,13 +378,13 @@ def belote_status_changed(game_id):
 
 
 # TODO factorize with ohell
-def generate_hands(game_id, username, nbcards=5, trump=True):
+def generate_hands(game_id, player, nbcards=5, trump=True):
     game = games.get(game_id)
     if game is None:
         logging.error("Unknown game: " + str(game_id))
         return
 
-    hands = game.deal(username)
+    hands = game.deal(player)
 
     # FInd out who the first player to bet is
     nplayer = game.get_active_player()
@@ -452,14 +399,15 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
             room=clients[game_id].get(player), namespace=NAMESPACE)
 
     common_routes.emit_to_players(
+        "player to bet",
+        {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(nplayer)},
+        room=game_id, namespace=NAMESPACE, game_state=game.get_state())
+
+    common_routes.emit_to_players(
         "trump card",
         {"game_id": game_id, "trump_card": str(game.trump_card), "trump_suit": str(game.trump_suit)},
         room=game_id, namespace=NAMESPACE)
 
-    common_routes.emit_to_players(
-        "player to bet",
-        {'game_id': game_id, 'player': nplayer, 'allowed_bets': game.get_allowed_bets(nplayer)},
-        room=game_id, namespace=NAMESPACE, game_state=game.get_state())
     return
 
 

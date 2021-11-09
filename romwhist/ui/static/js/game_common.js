@@ -97,6 +97,9 @@ function initialize(players) {
   else if (player_type.toLowerCase() == "human") {
     button_label = i18n["ai_mode"]
   }
+  else {
+      button_label = "ERROR"
+  }
 
   $("#game_action_buttons").append(
       '<button id="switch_player_type" type="button" class="btn btn-primary" name="switch_player_type">' +

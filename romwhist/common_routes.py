@@ -227,6 +227,56 @@ def generate_game_id(max_id, games):
     return game_id
 
 
+def player_played_process(game, player_name, card, namespace):
+    """This function is used by the belote and ohell game"""
+    # Emit event to players so they can see the card that was played
+    if game is None:
+        logging.error("Game does not exist")
+        return
+
+    game_id = game.id
+    player = game.get_player_by_name(player_name)
+
+    belote_before = game.belote_status
+    winner = game.play_card(player, card)
+
+    logging.debug("Sending card played event")
+    emit_to_players(
+        "card played",
+        {'game_id': game_id, 'player': player, 'card': card},
+        room=game_id, namespace=namespace)
+
+    belote_after = game.belote_status
+
+    if belote_before != belote_after:
+        belote_status_changed(game_id)
+
+    nplayer = game.get_active_player()
+
+    if winner is None:
+        # Round continues
+        allowed_cards = game.get_allowed_cards(nplayer)
+        emit_to_players(
+            "player to play",
+            {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
+            room=game_id, namespace=namespace, game_state=game.get_state())
+    else:
+        # There is a winner, so round is ended
+        # game.round_ended(winner)
+        allowed_cards = game.get_hand(nplayer).serialize()
+        winning_card = game.get_current_round().cards_played[winner]
+        emit_to_players(
+            "round ended",
+            {"game_id": game_id, "winner": winner, "card": winning_card.desc(), "last_player": player,
+             "points":game.hand_points},
+            room=game_id, namespace=namespace)
+
+        timer = threading.Timer(6.0, next_round, [game_id, nplayer, allowed_cards])
+        timer.start()
+
+    logging.info("Allowed cards: " + str(allowed_cards))
+    return
+
 def belote_status_changed(game_id, game, namespace):
     logging.info("In belote_status_changed")
     belote_status = game.belote_status

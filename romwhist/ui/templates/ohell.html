@@ -34,7 +34,7 @@ Add footer / contact info
   var i18n = JSON.parse(i18n_json);
   var messages_json = {{ messages|tojson }}
   var messages = JSON.parse(messages_json)
-
+  var player_type = "{{ player_type }}"
 
   populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
                    "{{ url_for('static', filename="") }}" + "img/{{ _('ohell_image') }}")

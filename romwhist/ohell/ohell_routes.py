@@ -23,6 +23,8 @@ from romwhist.models import User
 from romwhist.ohell.ohell import OhellGame
 from romwhist.ohell.ohell_form import OhellStartForm
 from romwhist import i18n_strings
+from romwhist.player import Player
+
 from romwhist.ohell.ohell_state import OhellState
 
 NAMESPACE = '/ohell'
@@ -108,9 +110,10 @@ def ohell_start():
 def ohell_play():
     logging.debug("In ohell_play route")
     form = GameForm()
-    player = session.get('username')
+    player_name = session.get('username')
     game_id = session.get('game_id')
     game = games.get(game_id)
+    player = game.get_player_by_name(player_name)
 
     redirect_template = common_routes.redirect_game_start(
         games,
@@ -140,6 +143,13 @@ def ohell_play():
             else:
                 common_routes.add_ai_player(len(game.players),
                                             game_id, NAMESPACE_AI)
+
+        if request.form['action_game'] == "switch_player_type":
+            if player.player_type == Player.PlayerType.SHADOWED:
+                player.player_type = Player.PlayerType.HUMAN
+            elif player.player_type == Player.PlayerType.HUMAN:
+                player.player_type = Player.PlayerType.SHADOWED
+
         return redirect(url_for('ohell_play'))
 
     elif redirect_template is None:
@@ -152,12 +162,12 @@ def ohell_play():
 
         cards_played = game.get_cards_played_current_round()
 
-        logging.debug("Player: " + player)
+        logging.debug("Player: " + player_name)
         logging.debug("Game Phase: " + game.phase.name)
         active_player = game.get_active_player()
         logging.debug("Allowed cards: " + str(game.get_allowed_cards(player)))
 
-        if not game_id in messages:
+        if game_id  not in messages:
             messages[game_id] = []
 
         return render_template("ohell.html", form=form, players=game.get_playing_players(), scores=game.get_scores(),
@@ -167,6 +177,7 @@ def ohell_play():
                                allowed_bets=game.get_allowed_bets(player), game_phase=game.phase.name,
                                hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet,
                                i18n=json.dumps(i18n_strings.i18n()),
+                               player_type = player.player_type.value,
                                messages=json.dumps(messages[game_id]))
     else:
         return redirect_template
@@ -311,7 +322,7 @@ def hand_completed(game_id, username):
         clean_game_data(game_id)
 
     elif game.dealing_method == OhellGame.AUTOMATED_DEALING:
-        generate_hands(game_id, "")
+        generate_hands(game_id, None)
 
 
 def next_round(game_id, nplayer, allowed_cards):
@@ -379,21 +390,6 @@ def player_played_process(game_id, player, card):
     return
 
 
-# @socketio.on('start hand', namespace=NAMESPACE)
-# def start_hand(nbcards, trump):
-#     # selection = data["selection"]
-#     # votes[selection] += 1
-#     logging.info("start hand event received")
-#     game_id = session.get('game_id')
-#     username = session.get('username')
-#
-#     if game_id is None or username is None:
-#         logging.error("Error in start_hand. username or game_id not in session")
-#         return
-#
-#     generate_hands(game_id, "", int(nbcards), trump)
-
-
 def generate_hands(game_id, username, nbcards=0, trump=True):
     game = games.get(game_id)
     if game is None:
@@ -436,6 +432,7 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
 def on_join(data):
     common_routes.on_join(session.get('game_id'), games, clients, NAMESPACE)
     return
+
 
 @socketio.on('join game ai', namespace=NAMESPACE_AI)
 def join_ai(data):
@@ -492,9 +489,9 @@ def restart_hand(game_id):
 # Add player to a game
 def add_player(player, game_id):
     game = games.get(game_id)
-    if not game is None:
+    if game is not None:
         session['game_id'] = game.id
-        common_routes.add_player(player, game, NAMESPACE)
+        common_routes.add_player_by_name(player, game, NAMESPACE)
         if game.started:
             restart_hand(game_id)
 

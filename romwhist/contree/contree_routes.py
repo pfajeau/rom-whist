@@ -17,18 +17,16 @@ from flask_login import current_user, login_user
 from flask_socketio import emit
 
 from romwhist import common_routes
-from romwhist.card import Card
 from romwhist import socketio
 from romwhist.contree.contree import ContreeGame, CountingMethod
 from romwhist.contree.announce import Announce
-from romwhist.belote.belote_status import BeloteStatus
 from romwhist.belote.belote import BeloteGame
 from romwhist.contree.contree_form import ContreeStartForm
 from romwhist.extensions import db
 from romwhist.forms import LoginForm, GameForm
 from romwhist.models import User
 from romwhist import i18n_strings
-from romwhist.belote import belote_routes
+from romwhist.player import Player
 
 NAMESPACE = '/contree'
 NAMESPACE_AI = '/contree_ai'
@@ -105,9 +103,10 @@ def contree_start():
 def contree_play():
     logging.info("In contree_play route")
     form = GameForm()
-    player = session.get('username')
+    player_name = session.get('username')
     game_id = session.get('game_id')
     game = games.get(game_id)
+    player = game.get_player_by_name(player_name)
 
     redirect_template = common_routes.redirect_game_start(
         games,
@@ -138,7 +137,14 @@ def contree_play():
                 common_routes.add_ai_player(len(game.players),
                                             game_id, NAMESPACE_AI)
             return redirect(url_for('contree_play'))
-        print("No matching action!!!!!")
+
+        if request.form['action_game'] == "switch_player_type":
+             if player.player_type == Player.PlayerType.SHADOWED:
+                 player.player_type = Player.PlayerType.HUMAN
+             elif player.player_type == Player.PlayerType.HUMAN:
+                player.player_type = Player.PlayerType.SHADOWED
+
+        logging.error("No matching action!!!!!")
         return redirect(url_for('contree_start'))
 
     elif redirect_template is None or request.method == 'GET':
@@ -347,7 +353,7 @@ def hand_completed(game_id, username):
         # clean_game_data(game_id)
 
     else:
-        generate_hands(game_id, "")
+        generate_hands(game_id, None)
 
 
 def next_round(game_id, nplayer, allowed_cards):
@@ -367,7 +373,7 @@ def player_played_ai(data):
 
     # Announce belote / rebelote as applicable
     common_routes.belote_rebelote_ai(game, card, player, NAMESPACE)
-    belote_routes.player_played_process(game_id, player, card)
+    common_routes.player_played_process(game, player, card, NAMESPACE)
 
 
 @socketio.on('player played', namespace=NAMESPACE)
@@ -377,7 +383,7 @@ def player_played(card):
     game_id = session.get('game_id')
     game = games.get(game_id)
     player = session.get('username')
-    player_played_process(game_id, player, card)
+    common_routes.player_played_process(game, player, card, NAMESPACE)
 
 
 # TODO: function can be moved to common_routes as it is the same as the belote
@@ -435,14 +441,14 @@ def belote_status_changed(game_id):
     return
 
 
-# TODO factorize with ohell
-def generate_hands(game_id, username, nbcards=5, trump=True):
+# TODO factorize with ohell and/or belote
+def generate_hands(game_id, player, nbcards=5, trump=True):
     game = games.get(game_id)
     if game is None:
         logging.error("Unknown game: " + str(game_id))
         return
 
-    hands = game.deal(username)
+    hands = game.deal(player)
 
     # FInd out who the first player to bet is
     nplayer = game.get_active_player()
@@ -455,11 +461,6 @@ def generate_hands(game_id, username, nbcards=5, trump=True):
             "new hand",
             {'game_id': game_id, 'player': player, 'cards': cards},
             room=clients[game_id].get(player), namespace=NAMESPACE)
-
-    # common_routes.emit_to_players(
-    #     "trump card",
-    #     {"game_id": game_id, "trump_card": str(game.trump_card), "trump_suit": str(game.trump_suit)},
-    #     room=game_id, namespace=NAMESPACE)
 
     common_routes.emit_to_players(
         "player to bet",
@@ -539,7 +540,7 @@ def add_player(player, game_id):
             return None
         else:
             session['game_id'] = game.id
-            common_routes.add_player(player, game, NAMESPACE)
+            common_routes.add_player_by_name(player, game, NAMESPACE)
             if game.started:
                 restart_hand(game_id)
             return player
