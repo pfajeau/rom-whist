@@ -38,6 +38,7 @@ Add footer / contact info
   var player_with_belote = "{{ player_with_belote }}"
   var allowed_cards_json = {{ allowed_cards|tojson }}
   var allowed_cards = JSON.parse(allowed_cards_json)
+  var player_type = "{{ player_type }}"
 
   console.log("Belote Status: " + belote_status)
   console.log("Player with belote: " + player_with_belote)

@@ -90,9 +90,17 @@ function initialize(players) {
     // show_dialog_ok("Warning", "Are you sure you want to leave the game?", ok_function=submit_form, action="leave_game")
   }
 
+  console.log("Player type is: " + player_type)
+  if (player_type.toLowerCase() == "shadowed") {
+    button_label = i18n["human_mode"]
+  }
+  else if (player_type.toLowerCase() == "human") {
+    button_label = i18n["ai_mode"]
+  }
+
   $("#game_action_buttons").append(
       '<button id="switch_player_type" type="button" class="btn btn-primary" name="switch_player_type">' +
-      i18n["switch_player_type"] + '</button>');
+     button_label + '</button>');
   document.getElementById("switch_player_type").onclick = function() {
     show_alert(i18n["confirm_switch_player_type"], "Warning", cancel=true, callback_ok=submit_form, action="switch_player_type");
   }
@@ -323,7 +331,14 @@ function card_played_event(data) {
   html = html.concat("</figure>")
   $('#cards_played').append(html)
 
-  make_player_inactive(player_name);
+   console.log("Player name: " + player_name)
+   console.log("Username: " + username)
+   // If player is in ai mode, need to remove card from their deck
+   if ((player_name == username) && (document.getElementById(card) != null)) {
+     console.log("REmving card: " + card)
+     document.getElementById(card).remove()
+   }
+   make_player_inactive(player_name);
 }
 
 function round_ended(data) {

@@ -20,7 +20,8 @@ def i18n():
     __i18n["stop_game"] = _("stop_game")
     __i18n["start_game"] = _("start_game")
     __i18n["restart_hand"] = _("restart_hand")
-    __i18n["switch_player_type"] = _("switch_player_type")
+    __i18n["ai_mode"] = _("ai_mode")
+    __i18n["human_mode"] = _("human_mode")
 
     __i18n["ohell"] = _("ohell")
     __i18n["belote"] = _("belote")
@@ -75,7 +76,7 @@ def i18n():
     __i18n["confirm_stop_game"] = _("confirm_stop_game")
     __i18n["confirm_add_ai"] = _("confirm_add_ai")
     __i18n["confirm_restart_hand"] = _("confirm_restart_hand")
-    __i18n["confirm_switch_player"] = _("confirm_switch_player")
+    __i18n["confirm_switch_player_type"] = _("confirm_switch_player_type")
     __i18n["bet_not_allowed"] = _("bet_not_allowed")
     __i18n["belote_rebelote_lost"] = _("belote_rebelote_lost")
     __i18n["belote"] = _("belote")

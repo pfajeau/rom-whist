@@ -28,6 +28,7 @@ from romwhist.extensions import db
 from romwhist.forms import LoginForm, GameForm
 from romwhist.models import User
 from romwhist import i18n_strings
+from romwhist.belote import belote_routes
 
 NAMESPACE = '/contree'
 NAMESPACE_AI = '/contree_ai'
@@ -173,6 +174,7 @@ def contree_play():
                                belote_status=game.belote_status.value, player_with_belote=game.player_with_belote,
                                contree_status=game.contree_status.value, current_bet=game.current_bet,
                                taker=game.taker, i18n=json.dumps(i18n_strings.i18n()),
+                               player_type = player.player_type.value,
                                messages=json.dumps(messages[game_id]))
     else:
         # Should never happen
@@ -360,30 +362,12 @@ def player_played_ai(data):
     logging.debug("Game id: " + data.get('game_id'))
     player = data.get('player')
     game_id = data.get('game_id')
+    card = data.get('card')
+    game = games.get(game_id)
 
     # Announce belote / rebelote as applicable
-    # TODO: move to common routes
-    card_played = data.get('card')
-    game = games.get(game_id)
-    queen_t = Card.get_suit_initial(game.trump_suit) + "12"
-    king_t = Card.get_suit_initial(game.trump_suit) + "13"
-
-    belote_ok = game.player_with_belote == player and \
-                game.has_player_card(player, queen_t) and \
-                game.has_player_card(player,king_t) and \
-                (card_played == queen_t or card_played == king_t)
-    if belote_ok:
-        belote_announced(BeloteGame.BeloteAnnounced.BELOTE)
-
-    else:
-        rebelote_ok = game.player_with_belote == player and \
-                      game.belolote_status == BeloteStatus.Belote_Played and \
-                      (card_played == queen_t or card_played == king_t)
-        if rebelote_ok:
-            belote_announced(BeloteGame.BeloteAnnounced.REBELOTE)
-
-    player_played_process(game_id, player, data.get('card'))
-
+    common_routes.belote_rebelote_ai(game, card, player, NAMESPACE)
+    belote_routes.player_played_process(game_id, player, card)
 
 
 @socketio.on('player played', namespace=NAMESPACE)
@@ -391,10 +375,13 @@ def player_played(card):
     logging.info("card played event received")
     logging.info("Card played: " + card)
     game_id = session.get('game_id')
+    game = games.get(game_id)
     player = session.get('username')
     player_played_process(game_id, player, card)
 
 
+# TODO: function can be moved to common_routes as it is the same as the belote
+# routes one
 def player_played_process(game_id, player, card):
     # Emit event to players so they can see the card that was played
     if game_id is None:

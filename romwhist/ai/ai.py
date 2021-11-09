@@ -99,13 +99,22 @@ def player_to_bet(data):
     if ai_players.get(game_id) is None:
         ai_players[game_id] = dict()
 
-    state = ai_player.set_game_state_from_json(game_state_json)
-    if ai_player is None and state.players_status[player_name] == Player.PlayerType.SHADOWED:
+    state = None
+    if this.game_type == "belote":
+        state = BeloteAiPlayer.get_game_state_from_json(game_state_json)
+    elif this.game_type == "ohell":
+        state = OhellAiPlayer.get_game_state_from_json(game_state_json)
+    elif this.game_type == "contree":
+        state = ContreeAiPlayer.get_game_state_from_json(game_state_json)
+
+    player_type = state.players_type.get(player_name)
+    if ai_player is None and player_type == Player.PlayerType.SHADOWED:
         # Create am AI player to play on behalf of human player
         ai_player = create_an_ai_player(player, game_id)
         ai_players[game_id][player.name] = ai_player
 
-    if ai_player is not None:
+    if ai_player is not None and \
+            (player_type == Player.PlayerType.AI or player_type == Player.PlayerType.SHADOWED):
         bet = ai_player.player_to_bet(data.get("allowed_bets"), game_state_json)
         logging.info("AI Player %s computer bet is %s", ai_player, bet)
         emit_with_delay('player bet', {'game_id': game_id, 'player': player_name, 'bet': bet})
@@ -147,7 +156,7 @@ def player_to_play(data):
     game_state_json = data['state']
     player = Player(player_name)
 
-    ai_player = get_player(game_id, player)
+    ai_player = get_player(game_id, player_name)
 
     state = None
     if this.game_type == "belote":
@@ -157,14 +166,17 @@ def player_to_play(data):
     elif this.game_type == "contree":
         state = ContreeAiPlayer.get_game_state_from_json(game_state_json)
 
-    if ai_player is None and state.players_type[player_name] == Player.PlayerType.SHADOWED:
-        print ("*** CREATING AI PLAYER FOR SHADOWED PLAYER")
+    player_type = state.players_type.get(player_name)
+
+    if ai_player is None and player_type == Player.PlayerType.SHADOWED:
         # Create am AI player to play on behalf of human player
         ai_player = create_an_ai_player(player, game_id)
         ai_players[game_id][player.name] = ai_player
 
-    if ai_player is not None:
+    if ai_player is not None and \
+            (player_type == Player.PlayerType.AI or player_type == Player.PlayerType.SHADOWED):
         card = ai_player.player_to_play(data.get("allowed_cards"), game_state_json)
+        logging.info("AI Player %s computer card is %s", ai_player, card)
         emit_with_delay('player played', {'game_id': game_id, 'player': player, 'card': card})
 
     return card

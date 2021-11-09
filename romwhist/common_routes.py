@@ -18,6 +18,7 @@ from flask_login import current_user, login_user
 from romwhist import socketio
 from romwhist.belote import belote_routes
 from romwhist.belote.belote_status import BeloteStatus
+from romwhist.card import Card
 from romwhist.contree import contree_routes
 from romwhist.extensions import db
 from romwhist.forms import LoginForm
@@ -250,18 +251,43 @@ def belote_announced(announce, games, namespace):
     if game_id is not None:
         player = session.get('username')
         game = games[game_id]
-        if announce == 'belote':
-            game.player_announced_belote(player, BeloteGame.BeloteAnnounced.BELOTE)
-        elif announce == 'rebelote':
-            game.player_announced_belote(player, BeloteGame.BeloteAnnounced.REBELOTE)
 
-        # emit("alert", announce + " announced by " + player, room=game_id, namespace=NAMESPACE)
-        emit_to_players(
-            "belote announced",
-            {'game_id': game_id, 'player': player, 'announced': announce},
-            room=game_id, namespace=namespace)
-        socketio.emit("msg posted", {'sender': session['username'], 'msg': announce}, room=game_id, namespace=namespace)
+        belote_announced2(announce, game, player, namespace)
     return
+
+
+def belote_announced2(announce, game, player, namespace):
+    if announce == 'belote':
+        game.player_announced_belote(player, BeloteGame.BeloteAnnounced.BELOTE)
+    elif announce == 'rebelote':
+        game.player_announced_belote(player, BeloteGame.BeloteAnnounced.REBELOTE)
+
+    # emit("alert", announce + " announced by " + player, room=game_id, namespace=NAMESPACE)
+    emit_to_players(
+        "belote announced",
+        {'game_id': game.id, 'player': player, 'announced': announce},
+        room=game.id, namespace=namespace)
+    socketio.emit("msg posted", {'sender': session['username'], 'msg': announce}, room=game_id, namespace=namespace)
+    return
+
+
+def belote_rebelote_ai(game, card_played, player, namespace):
+    queen_t = Card.get_suit_initial(game.trump_suit) + "12"
+    king_t = Card.get_suit_initial(game.trump_suit) + "13"
+
+    belote_ok = game.player_with_belote == player and \
+                game.has_player_card(player, queen_t) and \
+                game.has_player_card(player,king_t) and \
+                (card_played == queen_t or card_played == king_t)
+    if belote_ok:
+        belote_announced2(BeloteGame.BeloteAnnounced.BELOTE, game, player, namespace)
+
+    else:
+        rebelote_ok = game.player_with_belote == player and \
+                      game.belolote_status == BeloteStatus.Belote_Played and \
+                      (card_played == queen_t or card_played == king_t)
+        if rebelote_ok:
+            belote_announced2(BeloteGame.BeloteAnnounced.REBELOTE, game, player, namespace)
 
 
 def on_join(game_id, games, clients, namespace):

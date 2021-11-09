@@ -19,7 +19,6 @@ from romwhist import common_routes
 from romwhist import socketio
 from romwhist.belote.belote import BeloteGame
 from romwhist.belote.belote_form import BeloteStartForm
-from romwhist.belote.belote_state import BeloteState
 from romwhist.extensions import db
 from romwhist.forms import LoginForm, GameForm
 from romwhist.models import User
@@ -164,6 +163,7 @@ def belote_play():
                                game_phase=game.phase.name, scoresheet=game.scoresheet,
                                belote_status=game.belote_status.value, player_with_belote=game.player_with_belote,
                                i18n=json.dumps(i18n_strings.i18n()),
+                               player_type = player.player_type.value,
                                messages=json.dumps(messages[game_id]))
 
     else:
@@ -351,9 +351,15 @@ def next_round(game_id, nplayer, allowed_cards):
 def player_played_ai(data):
     logging.debug("player played event received for ai")
     logging.debug("Player card: " + data.get('card'))
+    logging.debug("Game id: " + data.get('game_id'))
     player = data.get('player')
     game_id = data.get('game_id')
-    player_played_process(game_id, player, data.get('card'))
+    card = data.get('card')
+    game = games.get(game_id)
+
+    # Announce belote / rebelote as applicable
+    common_routes.belote_rebelote_ai(game, card, player, NAMESPACE)
+    player_played_process(game, player, data.get('card'))
 
 
 @socketio.on('player played', namespace=NAMESPACE)
@@ -361,22 +367,24 @@ def player_played(card):
     logging.info("card played event received")
     logging.info("Card played: " + card)
     game_id = session.get('game_id')
+    game = games.get(game_id)
     player = session.get('username')
-    player_played_process(game_id, player, card)
+    player_played_process(game, player, card)
 
 
-def player_played_process(game_id, player_name, card):
+def player_played_process(game, player_name, card):
     # Emit event to players so they can see the card that was played
-    if game_id is None:
-        logging.error("Game id not specified")
+    if game is None:
+        logging.error("Game does not exist")
         return
 
-    game = games.get(game_id)
+    game_id = game.id
     player = game.get_player_by_name(player_name)
 
     belote_before = game.belote_status
     winner = game.play_card(player, card)
 
+    logging.debug("Sending card played event")
     common_routes.emit_to_players(
         "card played",
         {'game_id': game_id, 'player': player, 'card': card},
@@ -412,6 +420,8 @@ def player_played_process(game_id, player_name, card):
 
     logging.info("Allowed cards: " + str(allowed_cards))
     return
+
+
 
 
 def belote_status_changed(game_id):

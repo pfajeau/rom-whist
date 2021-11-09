@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-02 17:43-0700\n"
+"POT-Creation-Date: 2021-11-03 16:04-0700\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -30,33 +30,33 @@ msgstr "La session a expiré"
 msgid "game_does_not_exist"
 msgstr "Ce jeu n'existe pas"
 
-#: common_routes.py:97 i18n_strings.py:29
+#: common_routes.py:97 i18n_strings.py:30
 msgid "game_over"
 msgstr "Partie Terminée"
 
-#: common_routes.py:176
+#: common_routes.py:181
 msgid "game_not_created"
 msgstr "Ce jeu n'a pas été crée"
 
-#: common_routes.py:185
+#: common_routes.py:190
 msgid "game_has_user_with_same_name"
 msgstr "Ce jeu a déjà un joueur avec le même nom"
 
-#: common_routes.py:192
+#: common_routes.py:197
 msgid "game_already_started"
 msgstr "Ce jeu a déjà commencé. Il n'est pas possible de joindre unn jeu en cours"
 
-#: common_routes.py:201
+#: common_routes.py:206
 msgid "game_already_has_4_players"
 msgstr "Ce jeu a déjà 4 joueurs!"
 
-#: belote/belote_routes.py:127 belote/belote_routes.py:129 common_routes.py:203
+#: belote/belote_routes.py:127 belote/belote_routes.py:129 common_routes.py:208
 #: contree/contree_routes.py:133 contree/contree_routes.py:135
 #: ohell/ohell_routes.py:137 ohell/ohell_routes.py:139
 msgid "game_already_has_max_players"
 msgstr "Le jeu a déjà le nombre maximum de joueurs"
 
-#: forms.py:27 i18n_strings.py:69
+#: forms.py:27 i18n_strings.py:70
 msgid "game_id"
 msgstr "Identifiant Jeu"
 
@@ -89,12 +89,12 @@ msgstr "Annonces"
 msgid "wins"
 msgstr "Plis"
 
-#: i18n_strings.py:13 ui/templates/belote.html:256
+#: i18n_strings.py:13 ui/templates/belote.html:257
 #: ui/templates/contree.html:326
 msgid "points"
 msgstr "Points"
 
-#: i18n_strings.py:14 ui/templates/belote.html:266
+#: i18n_strings.py:14 ui/templates/belote.html:267
 #: ui/templates/contree.html:336 ui/templates/ohell.html:263
 msgid "score"
 msgstr "Score"
@@ -128,195 +128,199 @@ msgid "restart_hand"
 msgstr "Rejout Donne"
 
 #: i18n_strings.py:23
-msgid "switch_player_type"
+msgid "ai_mode"
 msgstr ""
 
-#: i18n_strings.py:25
+#: i18n_strings.py:24
+msgid "human_mode"
+msgstr ""
+
+#: i18n_strings.py:26
 msgid "ohell"
 msgstr "Ascenseur"
 
-#: i18n_strings.py:26 i18n_strings.py:81
+#: i18n_strings.py:27 i18n_strings.py:82
 msgid "belote"
 msgstr "Belote"
 
-#: i18n_strings.py:27
+#: i18n_strings.py:28
 msgid "contree"
 msgstr "Contree"
 
-#: i18n_strings.py:30
+#: i18n_strings.py:31
 msgid "ok"
 msgstr "Continuer"
 
-#: i18n_strings.py:31
+#: i18n_strings.py:32
 msgid "cancel"
 msgstr "Annuler"
 
-#: i18n_strings.py:32
+#: i18n_strings.py:33
 msgid "round_winner"
 msgstr "Gagnant du pli"
 
-#: i18n_strings.py:33
+#: i18n_strings.py:34
 msgid "with_the"
 msgstr "avec"
 
-#: i18n_strings.py:34
+#: i18n_strings.py:35
 msgid "winner"
 msgstr "Gagnant"
 
-#: i18n_strings.py:35
+#: i18n_strings.py:36
 msgid "winners_hand"
 msgstr "Gagnant(s) de cette manche"
 
-#: i18n_strings.py:37 ui/templates/ohell.html:278
+#: i18n_strings.py:38 ui/templates/ohell.html:278
 msgid "trump"
 msgstr "Atout"
 
-#: i18n_strings.py:38
+#: i18n_strings.py:39
 msgid "user"
 msgstr "Joueur"
 
-#: i18n_strings.py:39
+#: i18n_strings.py:40
 msgid "left_game"
 msgstr "quitté la partie"
 
-#: i18n_strings.py:42 ui/templates/belote.html:239
+#: i18n_strings.py:43 ui/templates/belote.html:240
 #: ui/templates/contree.html:304 ui/templates/contree.html:314
 msgid "select"
 msgstr "Choisir"
 
-#: i18n_strings.py:43
+#: i18n_strings.py:44
 msgid "spade"
 msgstr "Pique"
 
-#: i18n_strings.py:44
+#: i18n_strings.py:45
 msgid "heart"
 msgstr "Coeur"
 
-#: i18n_strings.py:45
+#: i18n_strings.py:46
 msgid "diamond"
 msgstr "Carreau"
 
-#: i18n_strings.py:46
+#: i18n_strings.py:47
 msgid "club"
 msgstr "Trèfle"
 
-#: contree/contree.py:38 i18n_strings.py:47
+#: contree/contree.py:38 i18n_strings.py:48
 msgid "pass"
 msgstr "Passe"
 
-#: contree/contree.py:39 i18n_strings.py:48
+#: contree/contree.py:39 i18n_strings.py:49
 msgid "contre"
 msgstr "Contre"
 
-#: contree/contree.py:40 i18n_strings.py:49
+#: contree/contree.py:40 i18n_strings.py:50
 msgid "surcontre"
 msgstr "Surcontre"
 
-#: i18n_strings.py:50 ui/templates/contree.html:357
+#: i18n_strings.py:51 ui/templates/contree.html:357
 msgid "contré"
 msgstr "Contré"
 
-#: i18n_strings.py:51 ui/templates/contree.html:359
+#: i18n_strings.py:52 ui/templates/contree.html:359
 msgid "surcontré"
 msgstr "Surcontré"
 
-#: i18n_strings.py:54
+#: i18n_strings.py:55
 msgid "two"
 msgstr "Deux"
 
-#: i18n_strings.py:55
+#: i18n_strings.py:56
 msgid "three"
 msgstr "Trois"
 
-#: i18n_strings.py:56
+#: i18n_strings.py:57
 msgid "four"
 msgstr "Quatre"
 
-#: i18n_strings.py:57
+#: i18n_strings.py:58
 msgid "five"
 msgstr "Cinq"
 
-#: i18n_strings.py:58
+#: i18n_strings.py:59
 msgid "six"
 msgstr "Six"
 
-#: i18n_strings.py:59
+#: i18n_strings.py:60
 msgid "seven"
 msgstr "Sept"
 
-#: i18n_strings.py:60
+#: i18n_strings.py:61
 msgid "eight"
 msgstr "Huit"
 
-#: i18n_strings.py:61
+#: i18n_strings.py:62
 msgid "nine"
 msgstr "Neuf"
 
-#: i18n_strings.py:62
+#: i18n_strings.py:63
 msgid "ten"
 msgstr "Dix"
 
-#: i18n_strings.py:63
+#: i18n_strings.py:64
 msgid "jack"
 msgstr "Valet"
 
-#: i18n_strings.py:64
+#: i18n_strings.py:65
 msgid "queen"
 msgstr "Dame"
 
-#: i18n_strings.py:65
+#: i18n_strings.py:66
 msgid "king"
 msgstr "Roi"
 
-#: i18n_strings.py:66
+#: i18n_strings.py:67
 msgid "ace"
 msgstr "As"
 
-#: i18n_strings.py:68
+#: i18n_strings.py:69
 msgid "copyright"
 msgstr "Copyright"
 
-#: i18n_strings.py:70
+#: i18n_strings.py:71
 msgid "chat"
 msgstr "Chat"
 
-#: i18n_strings.py:71
+#: i18n_strings.py:72
 msgid "send"
 msgstr "Envoie"
 
-#: i18n_strings.py:73
+#: i18n_strings.py:74
 msgid "confirm_leave_game"
 msgstr "Confirmez que vous voulez quitter cetter partie"
 
-#: i18n_strings.py:74
+#: i18n_strings.py:75
 msgid "confirm_remove_player"
 msgstr "Confirmez que vous voulez enlever ce joueur de la partie"
 
-#: i18n_strings.py:75
+#: i18n_strings.py:76
 msgid "confirm_stop_game"
 msgstr "Confirmez que vous voulez arrêter  cette partie"
 
-#: i18n_strings.py:76
+#: i18n_strings.py:77
 msgid "confirm_add_ai"
 msgstr "Confirmez que vous voulez ajouter un joueur artificiel"
 
-#: i18n_strings.py:77
+#: i18n_strings.py:78
 msgid "confirm_restart_hand"
 msgstr "Confirmez que voulez voulez rejouer cette main"
 
-#: i18n_strings.py:78
-msgid "confirm_switch_player"
+#: i18n_strings.py:79
+msgid "confirm_switch_player_type"
 msgstr ""
 
-#: i18n_strings.py:79
+#: i18n_strings.py:80
 msgid "bet_not_allowed"
 msgstr "Le nomber de plis demandé n'est pas valide"
 
-#: i18n_strings.py:80
+#: i18n_strings.py:81
 msgid "belote_rebelote_lost"
 msgstr "Points de belote/rebelote perdus! Il faut annoncer avant de jouer"
 
-#: i18n_strings.py:82
+#: i18n_strings.py:83
 msgid "rebelote"
 msgstr "Rebelote"
 
@@ -370,7 +374,7 @@ msgstr ""
 "Ce site a été crée pendant COVID19            &copy; Copyright 2020/2021 "
 "Philippe Fajeau"
 
-#: ui/templates/belote.html:235 ui/templates/contree.html:297
+#: ui/templates/belote.html:236 ui/templates/contree.html:297
 msgid "bid"
 msgstr "Annonce"
 
@@ -435,5 +439,14 @@ msgstr "Références"
 #~ msgstr "Gagant du pli"
 
 #~ msgid "confirm_arestaet_hand"
+#~ msgstr ""
+
+#~ msgid "switch_player_type"
+#~ msgstr ""
+
+#~ msgid "confirm_switch_type"
+#~ msgstr ""
+
+#~ msgid "confirm_switch_player"
 #~ msgstr ""
 
