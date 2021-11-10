@@ -33,11 +33,13 @@
   var allowed_cards = JSON.parse(allowed_cards_json)
   var player_type = "{{ player_type }}"
 
+  console.log("Player name: " + username)
   console.log("Contree status: " + "{{ contree_status }}")
   console.log("Current bet: " + "{{ current_bet }}")
   console.log("Allowed cards: " + allowed_cards)
   console.log("Belote Status: " + belote_status)
   console.log("Player with belote: " + player_with_belote)
+  console.log("Player type: " + player_type)
 
   populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
                    "{{ url_for('static', filename='img/contree.jpg') }}")

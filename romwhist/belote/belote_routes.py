@@ -81,7 +81,6 @@ def belote_start():
 
             # dealing_method = request.form['dealing_method']
             # logging.info ("In route game, dealing method is: ", request.form['dealing_method'])
-            dealing_method = "computer"
             session['ownername'] = username
             add_player(username, game_id)
             return redirect(url_for('belote_play'))
@@ -121,7 +120,7 @@ def belote_play():
             return redirect(url_for('belote_play'))
 
         if request.form['action_game'] == "add_ai":
-            if len(game.get_playing_players()) >= 4:
+            if len(game.get_playing_players()) >= BeloteGame.MAX_PLAYERS:
                 socketio.emit("alert", _("game_already_has_max_players"),
                               room=clients[game_id].get(player), namespace=NAMESPACE)
                 flash(_("game_already_has_max_players"))
@@ -131,9 +130,9 @@ def belote_play():
             return redirect(url_for('belote_play'))
 
         if request.form['action_game'] == "switch_player_type":
-             if player.player_type == Player.PlayerType.SHADOWED:
-                 player.player_type = Player.PlayerType.HUMAN
-             elif player.player_type == Player.PlayerType.HUMAN:
+            if player.player_type == Player.PlayerType.SHADOWED:
+                player.player_type = Player.PlayerType.HUMAN
+            elif player.player_type == Player.PlayerType.HUMAN:
                 player.player_type = Player.PlayerType.SHADOWED
 
         return redirect(url_for('belote_play'))
@@ -166,7 +165,7 @@ def belote_play():
                                messages=json.dumps(messages[game_id]))
 
     else:
-        return redirect_template
+        return redirect(url_for('belote_start'))
 
 
 # @app.route("/login",methods=['GET', 'POST'])
@@ -426,8 +425,8 @@ def on_join(data):
 @socketio.on('join game ai', namespace=NAMESPACE_AI)
 def join_ai(data):
     game_id = str(data.get('game_id'))
-    player = data.get('player')
-    common_routes.join_ai(game_id, player, games, NAMESPACE)
+    player_name = data.get('player')
+    common_routes.join_ai(game_id, player_name, games, NAMESPACE)
     return
 
 @socketio.on('client post', namespace=NAMESPACE)

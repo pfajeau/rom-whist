@@ -34,7 +34,7 @@ class CardGame:
         self.dealer = None
         self.init_dict(self.scores, 0)
         self.dealing_method = CardGame.AUTOMATED_DEALING
-        self.__owner = game_creator
+        self.__owner = Player(game_creator)
         self.active_player = self.owner
         self.deck_size = deck_size
         self._current_hand_nb = 0
@@ -46,10 +46,9 @@ class CardGame:
         self.__id = id
         self.deck = None
         self.hand_points = dict()
-
         self.soft_init_dict(self.hand_points, 0)
-
         self.init_dict(self.points, 0)
+        self.hand_cards = dict()
 
     def reset(self):
         self.current_round = None
@@ -65,7 +64,6 @@ class CardGame:
         self.init_bets()
         self.init_dict(self.wins, 0)
         self._current_hand_nb = 0
-        #self.players = []
 
     def populate_state(self, state:GameState):
         # Populate state
@@ -307,7 +305,10 @@ class CardGame:
         return self.wins
 
     def round_ended(self, winner):
-        return
+        pass
+
+    def create_hand_progression(self):
+        pass
 
     # Return a dictionary of cards played per player for the current round
     def get_cards_played_current_round(self):
@@ -433,4 +434,3 @@ class CardGame:
         for player in self.players:
             if a_dict.get(player) is None:
                 a_dict[player] = default_value
-

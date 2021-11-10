@@ -163,6 +163,7 @@ Add footer / contact info
     });
 
     socket.on('card played', function(data) { card_played_event(data) })
+
     socket.on('new player', function(player_name) { new_player(player_name) })
 
     socket.on('player left', function(player_name) {

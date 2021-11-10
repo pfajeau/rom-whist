@@ -9,6 +9,7 @@ from romwhist.belote.belote_status import BeloteStatus
 from romwhist.contree.contree_state import ContreeState
 from romwhist.contree.announce import Announce
 from romwhist.contree.announce import ContreStatus
+from romwhist.player import Player
 
 
 class CountingMethod(str, Enum):
@@ -30,7 +31,7 @@ class ContreeGame(BeloteGame):
         self.contree_status = ContreStatus.NORMAL
         self.counting = counting
         self.init_bets()
-        self.active_player = game_creator
+        self.active_player = Player(game_creator)
 
         self.BONUS_CAPOT = 250
 

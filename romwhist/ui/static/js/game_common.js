@@ -386,7 +386,7 @@ function new_player(player_name) {
   console.log("new player event received");
   socket.emit('join game', player_name);
   // document.getElementById("game_form").submit();
-  window.location.reload(false);
+  window.location.reload(true);
 }
 
 function game_over(winners) {
@@ -450,7 +450,7 @@ function show_alert(msg, title, cancel=false, callback_ok, action="") {
 }
 
 function refresh_display() {
-   window.location.reload(false);
+   window.location.reload(true);
 }
 
 

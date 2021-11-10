@@ -107,11 +107,14 @@ def player_to_bet(data):
     elif this.game_type == "contree":
         state = ContreeAiPlayer.get_game_state_from_json(game_state_json)
 
+    # The player type comes from the state that was passed
     player_type = state.players_type.get(player_name)
+
     if ai_player is None and player_type == Player.PlayerType.SHADOWED:
         # Create am AI player to play on behalf of human player
         ai_player = create_an_ai_player(player, game_id)
         ai_players[game_id][player.name] = ai_player
+        ai_player.player.player_type = Player.PlayerType.SHADOWED
 
     if ai_player is not None and \
             (player_type == Player.PlayerType.AI or player_type == Player.PlayerType.SHADOWED):
@@ -172,12 +175,13 @@ def player_to_play(data):
         # Create am AI player to play on behalf of human player
         ai_player = create_an_ai_player(player, game_id)
         ai_players[game_id][player.name] = ai_player
+        ai_player.player.player_type = Player.PlayerType.SHADOWED
 
     if ai_player is not None and \
             (player_type == Player.PlayerType.AI or player_type == Player.PlayerType.SHADOWED):
         card = ai_player.player_to_play(data.get("allowed_cards"), game_state_json)
         logging.info("AI Player %s computer card is %s", ai_player, card)
-        emit_with_delay('player played', {'game_id': game_id, 'player': player, 'card': card})
+        emit_with_delay('player played', {'game_id': game_id, 'player': player_name, 'card': card})
 
     return card
 

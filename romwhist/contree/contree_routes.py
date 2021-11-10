@@ -107,6 +107,8 @@ def contree_play():
     game_id = session.get('game_id')
     game = games.get(game_id)
     player = game.get_player_by_name(player_name)
+    print("Player: " + player.name)
+    print("Player type: " + str(player.player_type.value))
 
     redirect_template = common_routes.redirect_game_start(
         games,
@@ -139,13 +141,12 @@ def contree_play():
             return redirect(url_for('contree_play'))
 
         if request.form['action_game'] == "switch_player_type":
-             if player.player_type == Player.PlayerType.SHADOWED:
-                 player.player_type = Player.PlayerType.HUMAN
-             elif player.player_type == Player.PlayerType.HUMAN:
+            if player.player_type == Player.PlayerType.SHADOWED:
+                player.player_type = Player.PlayerType.HUMAN
+            elif player.player_type == Player.PlayerType.HUMAN:
                 player.player_type = Player.PlayerType.SHADOWED
 
-        logging.error("No matching action!!!!!")
-        return redirect(url_for('contree_start'))
+        return redirect(url_for('contree_play'))
 
     elif redirect_template is None or request.method == 'GET':
         hand = game.get_hands().get(player)
@@ -155,15 +156,14 @@ def contree_play():
             hand = hand.serialize()
 
         cards_played = game.get_cards_played_current_round()
-
         logging.debug("Game Phase: " + game.phase.name)
         active_player = game.get_active_player()
 
         bets_suit = dict()
         bets_points = dict()
-        for player in game.get_playing_players():
-            bets_suit[player] = game.bets[player].suit
-            bets_points[player] = game.bets[player].points
+        for player2 in game.get_playing_players():
+            bets_suit[player2] = game.bets[player].suit
+            bets_points[player2] = game.bets[player].points
 
         if game_id not in messages:
             messages[game_id] = []
@@ -226,7 +226,7 @@ def game_started():
 def player_bet_ai(data):
     logging.debug("player bet event received for ai")
     logging.debug("Player bet: " + str(data.get('bet')))
-    player = data.get('player')
+    player_name = data.get('player')
     bet = data.get('bet')
     bet = Announce(bet['suit'], bet['points'])
 
@@ -234,7 +234,7 @@ def player_bet_ai(data):
     # bet_suit = data.get('bet_suit')
     # bet_points = data.get('bet_points')
     # bet = Announce(bet_suit, bet_points)
-    player_bet_process(player, game_id, bet)
+    player_bet_process(player_name, game_id, bet)
 
 
 @socketio.on("player bet", namespace=NAMESPACE)
@@ -242,20 +242,22 @@ def player_bet(bet_suit, bet_points):
     logging.info("player bet event received")
     bet = Announce(bet_suit, bet_points)
     logging.info("Player bet: %s %s", bet_suit, bet_points)
-    player = session.get('username')
+    player_name = session.get('username')
     game_id = session.get('game_id')
 
-    player_bet_process(player, game_id, bet)
+    player_bet_process(player_name, game_id, bet)
     return
 
 
-def player_bet_process(player, game_id, bet):
+def player_bet_process(player_name, game_id, bet):
     if game_id is None:
         logging.error("ERROR: Game not found!!!")
         return
 
     logging.debug("Player bet: %s", bet)
     game = games.get(game_id)
+    player = game.get_player_by_name(player_name)
+
     if game.phase == BeloteGame.GamePhase.BET:
         try:
             game.place_bet(player, bet)
@@ -366,14 +368,15 @@ def player_played_ai(data):
     logging.debug("player played event received for ai")
     logging.debug("Player card: " + data.get('card'))
     logging.debug("Game id: " + data.get('game_id'))
-    player = data.get('player')
+    player_name = data.get('player')
     game_id = data.get('game_id')
     card = data.get('card')
     game = games.get(game_id)
+    player = game.get_player_by_name(player_name)
 
     # Announce belote / rebelote as applicable
     common_routes.belote_rebelote_ai(game, card, player, NAMESPACE)
-    common_routes.player_played_process(game, player, card, NAMESPACE)
+    common_routes.player_played_process(game, player_name, card, NAMESPACE)
 
 
 @socketio.on('player played', namespace=NAMESPACE)
@@ -382,31 +385,27 @@ def player_played(card):
     logging.info("Card played: " + card)
     game_id = session.get('game_id')
     game = games.get(game_id)
-    player = session.get('username')
-    common_routes.player_played_process(game, player, card, NAMESPACE)
+    player_name = session.get('username')
+    common_routes.player_played_process(game, player_name, card, NAMESPACE)
 
 
 # TODO: function can be moved to common_routes as it is the same as the belote
 # routes one
-def player_played_process(game_id, player, card):
+def player_played_process(game, player_name, card):
     # Emit event to players so they can see the card that was played
-    if game_id is None:
-        logging.error("Game id not specified")
-        return
-
-    game = games.get(game_id)
+    player = game.get_player_by_name(player_name)
     belote_before = game.belote_status
     winner = game.play_card(player, card)
 
     common_routes.emit_to_players(
         "card played",
-        {'game_id': game_id, 'player': player, 'card': card},
-        room=game_id, namespace=NAMESPACE)
+        {'game_id': game.id, 'player': player, 'card': card},
+        room=game.id, namespace=NAMESPACE)
 
     belote_after = game.belote_status
 
     if belote_before != belote_after:
-        belote_status_changed(game_id)
+        belote_status_changed(game.id)
 
     nplayer = game.get_active_player()
 
@@ -415,8 +414,8 @@ def player_played_process(game_id, player, card):
         allowed_cards = game.get_allowed_cards(nplayer)
         common_routes.emit_to_players(
             "player to play",
-            {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
-            room=game_id, namespace=NAMESPACE, game_state=game.get_state())
+            {'game_id': game.id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
+            room=game.id, namespace=NAMESPACE, game_state=game.get_state())
     else:
         # There is a winner, so round is ended
         # game.round_ended(winner)
@@ -424,11 +423,11 @@ def player_played_process(game_id, player, card):
         winning_card = game.get_current_round().cards_played[winner]
         common_routes.emit_to_players(
             "round ended",
-            {"game_id": game_id, "winner": winner, "card": winning_card.desc(),
+            {"game_id": game.id, "winner": winner, "card": winning_card.desc(),
              "last_player": player, "points": game.hand_points},
-            room=game_id, namespace=NAMESPACE)
+            room=game.id, namespace=NAMESPACE)
 
-        timer = threading.Timer(6.0, next_round, [game_id, nplayer, allowed_cards])
+        timer = threading.Timer(6.0, next_round, [game.id, nplayer, allowed_cards])
         timer.start()
 
     logging.info("Allowed cards: " + str(allowed_cards))
@@ -484,8 +483,8 @@ def on_join(data):
 @socketio.on('join game ai', namespace=NAMESPACE_AI)
 def join_ai(data):
     game_id = str(data.get('game_id'))
-    player = data.get('player')
-    common_routes.join_ai(game_id, player, games, NAMESPACE)
+    player_name = data.get('player')
+    common_routes.join_ai(game_id, player_name, games, NAMESPACE)
     return
 
 

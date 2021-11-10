@@ -317,7 +317,7 @@ def belote_announced2(announce, game, player, namespace):
         "belote announced",
         {'game_id': game.id, 'player': player, 'announced': announce},
         room=game.id, namespace=namespace)
-    socketio.emit("msg posted", {'sender': session['username'], 'msg': announce}, room=game_id, namespace=namespace)
+    socketio.emit("msg posted", {'sender': session['username'], 'msg': announce}, room=game.id, namespace=namespace)
     return
 
 
@@ -361,15 +361,22 @@ def join_ai(game_id, player_name, games, namespace):
     # Note that a refresh on the client side causes the socketio sid to changed
     # so need to remove the previous sid from the room
     logging.info("join_ai with player %s", player_name)
+    print("Player name:" + player_name)
 
     game = games.get(game_id)
     if game is None:
         logging.error("Unknown game: " + repr(game_id))
         return
     # Add user to room if user is not there already
-    player = Player(player_name)
-    player.player_type = Player.PlayerType.AI
-    add_player(player, game, namespace)
+    player = game.get_player_by_name(player_name)
+    if player is None:
+        player = Player(player_name)
+        player.player_type = Player.PlayerType.AI
+        add_player(player, game, namespace)
+    else:
+        # Case where the player already exists.
+        # Can happen if a player changes its type to SHADOWED
+        pass
     return
 
 

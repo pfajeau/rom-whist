@@ -10,7 +10,7 @@ class AiPlayer:
     def __init__(self, player, id):
         self.vd = 0
         self.player = player
-        self.__gametate = None
+        self.__game_state = None
         self.player.player_type = Player.PlayerType.AI
         self.player.player_status = Player.PlayerStatus.ACTIVE
         self.game_id = id
