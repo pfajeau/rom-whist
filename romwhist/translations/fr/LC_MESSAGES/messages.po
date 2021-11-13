@@ -129,11 +129,11 @@ msgstr "Rejout Donne"
 
 #: i18n_strings.py:23
 msgid "ai_mode"
-msgstr ""
+msgstr "Mode IA"
 
 #: i18n_strings.py:24
 msgid "human_mode"
-msgstr ""
+msgstr "Mode Humain"
 
 #: i18n_strings.py:26
 msgid "ohell"
@@ -161,7 +161,7 @@ msgstr "Gagnant du pli"
 
 #: i18n_strings.py:34
 msgid "with_the"
-msgstr "avec"
+msgstr "avec le"
 
 #: i18n_strings.py:35
 msgid "winner"
@@ -310,11 +310,11 @@ msgstr "Confirmez que voulez voulez rejouer cette main"
 
 #: i18n_strings.py:79
 msgid "confirm_switch_player_type"
-msgstr ""
+msgstr "Confirmez que voulez changet le mode joueur"
 
 #: i18n_strings.py:80
 msgid "bet_not_allowed"
-msgstr "Le nomber de plis demandé n'est pas valide"
+msgstr "Le nombre de plis demandé n'est pas valide"
 
 #: i18n_strings.py:81
 msgid "belote_rebelote_lost"
