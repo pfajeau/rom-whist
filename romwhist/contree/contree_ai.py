@@ -49,12 +49,11 @@ class ContreeAiPlayer(BeloteAiPlayer):
         self.game_state.active_player = self.game_state.next_player(self.game_state.dealer)
         #self.game_state.current_bet = "pass_0"
 
-        # Remove Pass option
-        # self.game_state.allowed_bets.pop(0)
-
         if len(allowed_bets[0]) == 1 and allowed_bets[0][0] == "pass":
             return Announce("pass", 0)
         else:
+            # Remove Pass option for simulation
+            # self.game_state.allowed_bets[0].pop(0)
             bet_as_str = self._agent2.get_bet(self.game_state)
 
         logging.info("Agent calculated bet: %s", bet_as_str)

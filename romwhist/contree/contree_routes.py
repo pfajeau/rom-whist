@@ -376,7 +376,7 @@ def player_played_ai(data):
 
     # Announce belote / rebelote as applicable
     common_routes.belote_rebelote_ai(game, card, player, NAMESPACE)
-    common_routes.player_played_process(game, player_name, card, NAMESPACE)
+    common_routes.player_played_process(game, player_name, card, NAMESPACE, next_round)
 
 
 @socketio.on('player played', namespace=NAMESPACE)
@@ -386,52 +386,7 @@ def player_played(card):
     game_id = session.get('game_id')
     game = games.get(game_id)
     player_name = session.get('username')
-    common_routes.player_played_process(game, player_name, card, NAMESPACE)
-
-
-# TODO: function can be moved to common_routes as it is the same as the belote
-# routes one
-def player_played_process(game, player_name, card):
-    # Emit event to players so they can see the card that was played
-    player = game.get_player_by_name(player_name)
-    belote_before = game.belote_status
-    winner = game.play_card(player, card)
-
-    common_routes.emit_to_players(
-        "card played",
-        {'game_id': game.id, 'player': player, 'card': card},
-        room=game.id, namespace=NAMESPACE)
-
-    belote_after = game.belote_status
-
-    if belote_before != belote_after:
-        belote_status_changed(game.id)
-
-    nplayer = game.get_active_player()
-
-    if winner is None:
-        # Round continues
-        allowed_cards = game.get_allowed_cards(nplayer)
-        common_routes.emit_to_players(
-            "player to play",
-            {'game_id': game.id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
-            room=game.id, namespace=NAMESPACE, game_state=game.get_state())
-    else:
-        # There is a winner, so round is ended
-        # game.round_ended(winner)
-        allowed_cards = game.get_hand(nplayer).serialize()
-        winning_card = game.get_current_round().cards_played[winner]
-        common_routes.emit_to_players(
-            "round ended",
-            {"game_id": game.id, "winner": winner, "card": winning_card.desc(),
-             "last_player": player, "points": game.hand_points},
-            room=game.id, namespace=NAMESPACE)
-
-        timer = threading.Timer(6.0, next_round, [game.id, nplayer, allowed_cards])
-        timer.start()
-
-    logging.info("Allowed cards: " + str(allowed_cards))
-    return
+    common_routes.player_played_process(game, player_name, card, NAMESPACE, next_round)
 
 
 def belote_status_changed(game_id):

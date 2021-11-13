@@ -23,7 +23,7 @@ class ContreeState(BeloteState):
                              scores=scores, owner=owner, dealer=dealer, bets=bets, allowed_bets=allowed_bets,
                              trump_card=trump_card, phase=phase, hand_points=hand_points, hand_winner=hand_winner,
                              taker=taker,belote_status=belote_status,
-                         players_status=players_status, players_type=players_type)
+                             players_status=players_status, players_type=players_type)
 
         self.contree_status = contree_status
         self.current_bet = current_bet
@@ -33,11 +33,6 @@ class ContreeState(BeloteState):
     def get_legal_bets(self):
         allowed = []
         for bet in self.allowed_bets[0]:
-            if bet != "pass":
+            if bet.casefold() != "PASS".casefold():
                 allowed.append(str(bet) + "_80")
-        # for suit in Card.SUIT_NAMES:
-        # #     for bet_point in self.allowed_bets:
-        # #         allowed.append(ContreeGame.Announce(suit, bet_point))
-        #     allowed.append(str(Announce(suit, 80)))
-        # # TODO: add Contree or Surcontree option
         return allowed

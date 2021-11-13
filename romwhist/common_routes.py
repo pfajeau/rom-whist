@@ -227,7 +227,7 @@ def generate_game_id(max_id, games):
     return game_id
 
 
-def player_played_process(game, player_name, card, namespace):
+def player_played_process(game, player_name, card, namespace, next_round_cb):
     """This function is used by the belote and ohell game"""
     # Emit event to players so they can see the card that was played
     if game is None:
@@ -249,7 +249,7 @@ def player_played_process(game, player_name, card, namespace):
     belote_after = game.belote_status
 
     if belote_before != belote_after:
-        belote_status_changed(game_id)
+        belote_status_changed(game_id, game, namespace)
 
     nplayer = game.get_active_player()
 
@@ -271,7 +271,7 @@ def player_played_process(game, player_name, card, namespace):
              "points":game.hand_points},
             room=game_id, namespace=namespace)
 
-        timer = threading.Timer(6.0, next_round, [game_id, nplayer, allowed_cards])
+        timer = threading.Timer(6.0, next_round_cb, [game_id, nplayer, allowed_cards])
         timer.start()
 
     logging.info("Allowed cards: " + str(allowed_cards))

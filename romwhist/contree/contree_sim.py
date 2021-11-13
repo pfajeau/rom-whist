@@ -19,7 +19,6 @@ class ContreeSim(BeloteSim, ContreeGame):
         self.nb_cards_first_deal = {1: 8, 2: 8, 3: 8, 4: 8}
         self.BONUS_CAPOT = 250
 
-
     def sim_player_won(self):
         logging.debug("Bet for %s: %s", self.sim_player, self.bets[self.sim_player])
         sim_player_wins = (self.sim_player in self.hand_winner)

@@ -46,10 +46,10 @@ class ContreeGame(BeloteGame):
     def get_state(self):
         state = ContreeState(self.id)
         new_state = self.populate_state(state)
-        state.contree_status = self.contree_status
+        new_state.contree_status = self.contree_status
         for player in self.players:
-            state.bets[player] = str(self.bets[player])
-        state.current_bet = str(self.current_bet)
+            new_state.bets[player] = str(self.bets[player])
+        new_state.current_bet = str(self.current_bet)
 
         return new_state
 
@@ -126,6 +126,7 @@ class ContreeGame(BeloteGame):
 
         if move_to_play_phase or ai:
             self.phase = BeloteGame.GamePhase.PLAY
+            # if not bet.suit == "pass":
             self.set_cards_rank_and_value()
             self.active_player = self.next_player(self.dealer)
             self.update_belote_status()

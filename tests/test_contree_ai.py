@@ -34,7 +34,7 @@ def main():
                  'joe': ["s12", "s13", "d9", "d12", "c10", "c7", "h9", "h11"],
                  'jim': ["s8", "d13", "d11", "d14", "c11", "c13", "h7", "h13"]}
 
-    #allowed_bets = ['80', '90','100','Capot']
+    # allowed_bets = ['80', '90','100','Capot']
     allowed_bets_suits = ["pass", "spade", "heart", "diamond","club"]
     allowed_bets_suits.append( 'contre')
     allowed_bets_points = ['80', '90','100','162']

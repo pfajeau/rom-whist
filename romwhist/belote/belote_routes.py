@@ -7,6 +7,7 @@ author: Philippe Fajeau
 import logging
 import json
 from random import randint
+import threading
 
 from flask import render_template, request, flash, session, url_for, redirect
 from flask_babel import gettext as _
@@ -357,7 +358,7 @@ def player_played_ai(data):
 
     # Announce belote / rebelote as applicable
     common_routes.belote_rebelote_ai(game, card, player, NAMESPACE)
-    common_routes.player_played_process(game, player, card, NAMESPACE)
+    common_routes.player_played_process(game, player, card, NAMESPACE, next_round)
 
 
 @socketio.on('player played', namespace=NAMESPACE)
@@ -367,7 +368,8 @@ def player_played(card):
     game_id = session.get('game_id')
     game = games.get(game_id)
     player = session.get('username')
-    common_routes.player_played_process(game, player, card, NAMESPACE)
+
+    common_routes.player_played_process(game, player, card, NAMESPACE, next_round)
 
 
 def belote_status_changed(game_id):
