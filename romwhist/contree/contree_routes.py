@@ -106,6 +106,10 @@ def contree_play():
     player_name = session.get('username')
     game_id = session.get('game_id')
     game = games.get(game_id)
+    if game is None:
+        logging.info("No gaee found for the game id: " + game_id)
+        return redirect(url_for('contree_start'))
+
     player = game.get_player_by_name(player_name)
     print("Player: " + player.name)
     print("Player type: " + str(player.player_type.value))
@@ -146,7 +150,7 @@ def contree_play():
             elif player.player_type == Player.PlayerType.HUMAN:
                 player.player_type = Player.PlayerType.SHADOWED
 
-        return redirect(url_for('contree_play'))
+            return redirect(url_for('contree_play'))
 
     elif redirect_template is None or request.method == 'GET':
         hand = game.get_hands().get(player)
@@ -162,8 +166,8 @@ def contree_play():
         bets_suit = dict()
         bets_points = dict()
         for player2 in game.get_playing_players():
-            bets_suit[player2] = game.bets[player].suit
-            bets_points[player2] = game.bets[player].points
+            bets_suit[player2] = game.bets[player2].suit
+            bets_points[player2] = game.bets[player2].points
 
         if game_id not in messages:
             messages[game_id] = []

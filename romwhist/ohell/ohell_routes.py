@@ -113,6 +113,10 @@ def ohell_play():
     player_name = session.get('username')
     game_id = session.get('game_id')
     game = games.get(game_id)
+    if game is None:
+        logging.info("No gaee found for the game id: " + game_id)
+        return redirect(url_for('ohell_start'))
+
     player = game.get_player_by_name(player_name)
 
     redirect_template = common_routes.redirect_game_start(
@@ -143,6 +147,7 @@ def ohell_play():
             else:
                 common_routes.add_ai_player(len(game.players),
                                             game_id, NAMESPACE_AI)
+            return redirect(url_for('ohell_play'))
 
         if request.form['action_game'] == "switch_player_type":
             if player.player_type == Player.PlayerType.SHADOWED:
@@ -150,7 +155,7 @@ def ohell_play():
             elif player.player_type == Player.PlayerType.HUMAN:
                 player.player_type = Player.PlayerType.SHADOWED
 
-        return redirect(url_for('ohell_play'))
+            return redirect(url_for('ohell_play'))
 
     elif redirect_template is None:
         hand = game.get_hands().get(player)

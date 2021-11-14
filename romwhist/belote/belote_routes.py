@@ -98,6 +98,10 @@ def belote_play():
     player_name = session.get('username')
     game_id = session.get('game_id')
     game = games.get(game_id)
+    if game is None:
+        logging.info("No gaee found for the game id: " + game_id)
+        return redirect(url_for('belote_start'))
+
     player = game.get_player_by_name(player_name)
 
     redirect_template = common_routes.redirect_game_start(
@@ -136,7 +140,7 @@ def belote_play():
             elif player.player_type == Player.PlayerType.HUMAN:
                 player.player_type = Player.PlayerType.SHADOWED
 
-        return redirect(url_for('belote_play'))
+            return redirect(url_for('belote_play'))
 
     elif redirect_template is None:
         hand = game.get_hands().get(player)

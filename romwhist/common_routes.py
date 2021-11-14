@@ -277,6 +277,7 @@ def player_played_process(game, player_name, card, namespace, next_round_cb):
     logging.info("Allowed cards: " + str(allowed_cards))
     return
 
+
 def belote_status_changed(game_id, game, namespace):
     logging.info("In belote_status_changed")
     belote_status = game.belote_status
@@ -317,7 +318,7 @@ def belote_announced2(announce, game, player, namespace):
         "belote announced",
         {'game_id': game.id, 'player': player, 'announced': announce},
         room=game.id, namespace=namespace)
-    socketio.emit("msg posted", {'sender': session['username'], 'msg': announce}, room=game.id, namespace=namespace)
+    socketio.emit("msg posted", {'sender': player, 'msg': announce}, room=game.id, namespace=namespace)
     return
 
 
@@ -334,7 +335,7 @@ def belote_rebelote_ai(game, card_played, player, namespace):
 
     else:
         rebelote_ok = game.player_with_belote == player and \
-                      game.belolote_status == BeloteStatus.Belote_Played and \
+                      game.belote_status == BeloteStatus.Belote_Played and \
                       (card_played == queen_t or card_played == king_t)
         if rebelote_ok:
             belote_announced2(BeloteGame.BeloteAnnounced.REBELOTE, game, player, namespace)

@@ -124,7 +124,7 @@
       new_hand(data, "{{ url_for('static', filename='') }}")
 
       // Required to properly refresh the bet fields
-      window.location.reload(false);
+      window.location.retext(false);
     });
 
     socket.on('player to bet', function(data) {
@@ -297,7 +297,7 @@
     <tr id="bets">
       {% for player in players -%}
       <td class="td_player_info_label">
-        <label for="bets_{{ player }}" id="label_bets_{{ player }}" class="player_info">{{ _('bid') }}</label>
+        <text id="label_bets_{{ player }}" class="player_info">{{ _('bid') }}</text>
       </td>
       <td class="td_player_info">
         <select name="bets_suit" id="bets_suit_{{ player }}" disabled>

@@ -24,7 +24,7 @@ class BeloteGame(CardGame):
         PLAY = "Play"
         OVER = "Over"
 
-    class BeloteAnnounced(Enum):
+    class BeloteAnnounced(str, Enum):
         BELOTE = "belote"
         REBELOTE = "rebelote"
 
@@ -87,6 +87,14 @@ class BeloteGame(CardGame):
     @player_with_belote.setter
     def player_with_belote(self, value):
         self.__player_with_belote = value
+
+    @property
+    def belote_status(self):
+        return self.__belote_status
+
+    @belote_status.setter
+    def belote_status(self, value):
+        self.__belote_status = value
 
     @property
     def win_game_points(self):
