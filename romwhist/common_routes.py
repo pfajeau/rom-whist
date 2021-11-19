@@ -187,14 +187,14 @@ def join_game(games, game_id, username, start_page, play_page, namespace, form, 
     # Not allowed to connect if another player has the same alias
     # and game has not started. If game has started, assume player
     # is trying to reconnect after having lost a connection
-    if username in game.get_players() and not game.started:
+    if username in game.get_player_names() and not game.started:
         error = _("game_has_user_with_same_name")
         logging.info(error)
         return render_template(start_page, error=error, form=form)
 
     # Not allowed to connect to a game already started unless the player
     # is already an existing player (same alias)
-    if game.started and username not in game.get_players():
+    if game.started and username not in game.get_player_names():
         error = _("game_already_started")
         logging.info(error)
         return render_template(start_page, error=error, form=form)
@@ -210,7 +210,7 @@ def join_game(games, game_id, username, start_page, play_page, namespace, form, 
                                form=form, locale=get_locale(request))
 
     session['ownername'] = game.owner
-    add_player(username, game, namespace)
+    add_player_by_name(username, game, namespace)
     return redirect(url_for(play_page))
 
 
