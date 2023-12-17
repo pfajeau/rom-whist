@@ -22,6 +22,7 @@ from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO
 
 app = Flask(__name__, instance_relative_config=True, template_folder="ui/templates", static_folder="ui/static")
+app.config['APPLICATION_ROOT'] = '/cards/'
 socketio = SocketIO(app, logger=True)
 babel = Babel(app)
 
@@ -45,9 +46,9 @@ app.add_url_rule('/contree_play', view_func=contree_routes.contree_play, methods
 
 from romwhist import common_routes
 
-app.add_url_rule('/', view_func=common_routes.home, methods=["GET", "POST"])
-app.add_url_rule('/admin', view_func=common_routes.admin, methods=["GET", "POST"])
 app.add_url_rule('/home', view_func=common_routes.home, methods=["GET", "POST"])
+app.add_url_rule('/admin', view_func=common_routes.admin, methods=["GET", "POST"])
+app.add_url_rule('/', view_func=common_routes.home, methods=["GET", "POST"])
 app.add_url_rule('/base', view_func=common_routes.base, methods=["GET", "POST"])
 
 
@@ -83,7 +84,7 @@ def create_app():
 
     # Use the browser's language preferences to select an available translation
     # add to you main app code
-    @babel.localeselector
+    # @babel.localeselector
     def get_locale():
         # print(app.config['LANGUAGES'])
         refresh()
