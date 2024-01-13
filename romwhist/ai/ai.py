@@ -19,7 +19,7 @@ NAMESPACES = {'ohell': '/ohell_ai',
               'contree': '/contree_ai'}
 
 this = sys.modules[__name__]
-sio = socketio.Client()
+sio = socketio.Client(logger=True)
 
 config = configparser.ConfigParser()
 config.read('instance/config_ai.ini')
