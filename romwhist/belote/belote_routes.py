@@ -73,6 +73,7 @@ def belote_start():
 
             logging.info("creating new game with id: " + str(game_id))
             # Add game id in session
+            session['game_id'] = game_id
             game = BeloteGame(game_creator=username, id=game_id)
             game.win_game_points = points_to_reach
 
@@ -93,13 +94,19 @@ def belote_start():
 # @app.route("/belote_play", methods=['GET', 'POST'])
 def belote_play():
 
-    logging.info("In belote_play route")
-    form = GameForm()
     player_name = session.get('username')
+    logging.info("In belote_play route")
+    if player_name is None:
+       logging.error("Error: username does not exist in session")
+       return redirect(url_for('belote_start')) 
+
+    form = GameForm()
+    logging.debug("User from session: " + str(player_name))
     game_id = session.get('game_id')
+    logging.debug("Game ID from session: " + str(game_id))
     game = games.get(game_id)
     if game is None:
-        logging.info("No gaee found for the game id: " + game_id)
+        logging.info("No game found for the game id: " + str(game_id))
         return redirect(url_for('belote_start'))
 
     player = game.get_player_by_name(player_name)
