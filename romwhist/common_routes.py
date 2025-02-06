@@ -400,7 +400,7 @@ def next_round(game, nplayer, allowed_cards, hand_completed_cb, namespace):
 def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_state=None):
     if room is not None:
         # If room specified assumes it goes to the web clients
-        socketio.emit(event, data, game_id=game_id, room=room, namespace=namespace)
+        socketio.emit(event, data, room=room, namespace=namespace)
 
     if game_id is None:
         # In this case, the game_id has to be part of the data being passed

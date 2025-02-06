@@ -61,7 +61,7 @@ class GameState:
 
     @staticmethod
     def convert_dict_to_players(a_dict, players_dict):
-        for key in a_dict.keys():
+        for key in list(a_dict):
             if isinstance(key, str):
                 value = a_dict[key]
                 del a_dict[key]
@@ -72,7 +72,7 @@ class GameState:
     @staticmethod
     def convert_dict_to_string(a_dict):
         # TODO: would be better to deepcopy a_dict then return the modified dict
-        for key in a_dict.keys():
+        for key in list(a_dict):
             if isinstance(key, Player):
                 value = a_dict[key]
                 del a_dict[key]
