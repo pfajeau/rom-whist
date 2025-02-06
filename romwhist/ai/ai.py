@@ -7,11 +7,10 @@ import threading
 import socketio
 from flask_socketio import emit
 
-from romwhist.game_state import GameState
 from romwhist.ai.ai_player import AiPlayer
 from romwhist.belote.belote_ai import BeloteAiPlayer
-from romwhist.ohell.ohell_ai import OhellAiPlayer
 from romwhist.contree.contree_ai import ContreeAiPlayer
+from romwhist.ohell.ohell_ai import OhellAiPlayer
 from romwhist.player import Player
 
 NAMESPACES = {'ohell': '/ohell_ai',
