@@ -329,6 +329,7 @@ def main(argv):
     sio.on("game over", game_over, this.NAMESPACE)
     sio.on("game_state", game_state, this.NAMESPACE)
 
+    sio.wait()
     # print (name + " " + str(game_id))
     # ai_player = AiPlayer(name, game_id)
     # ai_player.join_game()
