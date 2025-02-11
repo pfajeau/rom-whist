@@ -1,0 +1,12 @@
+
+[Unit]
+Description=Gunicorn instance to serve romwhist app
+After=network.target
+
+[Service]
+User=pfajeau
+WorkingDirectory=/home/pfajeau/dev/rom-whist
+Environment="PATH=/home/pfajeau/dev/rom-whist/venv/bin"
+ExecStart=/home/pfajeau/dev/rom-whist/venv/bin/gunicorn -k eventlet --workers 1 -b :5000 romwhist:'create_app()'
+[Install]
+WantedBy=multi-user.target

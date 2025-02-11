@@ -1,0 +1,12 @@
+
+[Unit]
+Description=Belote game ai agent
+After=cards.service
+
+[Service]
+User=pfajeau
+WorkingDirectory=/home/pfajeau/dev/rom-whist
+Environment="PATH=/home/pfajeau/dev/rom-whist/venv/bin"
+ExecStart=/home/pfajeau/dev/rom-whist/venv/bin/python -m romwhist.ai.ai -g ohell
+[Install]
+WantedBy=multi-user.target
