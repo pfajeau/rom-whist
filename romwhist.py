@@ -1,7 +1,7 @@
 import romwhist
 from romwhist import app, socketio
 from flask_babel import Babel
-
+import test
 
 # Use the browser's language preferences to select an available translation
 # add to you main app code

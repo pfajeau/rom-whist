@@ -320,11 +320,9 @@ function card_played_event(data) {
   }
   let player_name = data['player']
   let card = data['card']
+
   // Display card on table
-
   let image = 'img/' + card + ".svg"
-  // $('#cards_played').append("<img id=" + card + "_table" + " src=" + static_folder + image + ">");
-
   // TOOD: this  does not work for some reason
   // play_sound("cardSlide5.wav");
 
@@ -336,9 +334,8 @@ function card_played_event(data) {
 
    console.log("Player name: " + player_name)
    console.log("Username: " + username)
-   // If player is in ai mode, need to remove card from their deck
    if ((player_name == username) && (document.getElementById(card) != null)) {
-     console.log("REmving card: " + card)
+     console.log("Removing card: " + card)
      document.getElementById(card).remove()
    }
    make_player_inactive(player_name);

@@ -84,6 +84,8 @@ def ohell_start():
 
             logging.debug("creating new game with id: " + str(game_id))
             # Add game id in session
+            session['game_id'] = game_id
+            logging.debug("game_id in session: " + session['game_id'])
             game = OhellGame(game_creator=username, deck_size=0, id=game_id)
             games[game_id] = game
             # players[game_id] = []
@@ -99,6 +101,7 @@ def ohell_start():
                     int(request.form['increment']))
 
             session['ownername'] = username
+
             add_player(username, game_id)
             return redirect(url_for('ohell_play'))
     else:

@@ -16,6 +16,7 @@ from flask_babel import Babel
 from flask_babel import refresh
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
+from flask_cors import CORS
 
 import secrets
 from pathlib import Path
@@ -27,7 +28,7 @@ from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO
 
 app = Flask(__name__, instance_relative_config=True, template_folder="ui/templates", static_folder="ui/static");
-
+#CORS(app)
 app.config.from_pyfile("config.py");
 NGINX = app.config["NGINX"];
 #NGINX = True
@@ -37,9 +38,9 @@ print("NGINX: " + str(NGINX))
 # It does not work under a prefix otherwise (i.e. "cards")
 if NGINX:
     app.wsgi_app = ProxyFix(
-    app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
-    app.config['APPLICATION_ROOT'] = '/cards/'
-    #app.wsgi_app = DispatcherMiddleware(__name__,{'/cards': app.wsgi_app})
+    app.wsgi_app, x_for=1, x_proto=1, x_prefix=0 ,x_host=1)
+#    app.config['APPLICATION_ROOT'] = '/cards/'
+#    app.wsgi_app = DispatcherMiddleware(app.wsgi_app,{'/cards': app.wsgi_app})
 
 app.config['WTF_CSRF_CHECK_DEFAULT'] = False
 app.config['WTF_CSRF_ENABLED'] = False
@@ -54,7 +55,7 @@ except FileNotFoundError:
         app.secret_key = secrets.token_hex(32)
         secret_file.write(app.secret_key)
 
-socketio = SocketIO(app, logger=True)
+socketio = SocketIO(app, logger=True, engineio_logger=True)
 babel = Babel(app)
 
 from .ohell import ohell_routes

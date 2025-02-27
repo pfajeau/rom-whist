@@ -86,11 +86,13 @@ Add footer / contact info
     }
 
     // Connect to websocket
-    console.log("Connecting to io")
+    console.log("Connecting to io with belote")
+    console.log(location.protocol + '//' + document.domain + ':' + location.port + '/belote')
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/belote');
     socket.on('connect', function() {
       console.log("Connected to io")
-
+      // console.log(location.protocol + '//' + document.domain + ':' + location.port + '/belote')
+ 
       // Register user - only used here to cover the case of
       // first player joining. DO NOT REMOVE
       socket.emit('join game', {data:''});

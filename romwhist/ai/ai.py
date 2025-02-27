@@ -296,7 +296,7 @@ def emit_with_delay(event, data, delay=DEFAULT_DELAY):
 
 def emit(event, data):
     if this.mode == "normal":
-        sio.emit(event, data, namespace=NAMESPACE)
+        sio.emit(event, data, namespace=this.NAMESPACE)
 
 
 def main(argv):
