@@ -167,18 +167,15 @@ function add_card_to_table(player, card) {
 
 function populate_header(player, game_id, game_logo_url) {
   let html_frag = ""
-  html_frag = html_frag.concat("<span class='game_page_title'>")
-  html_frag = html_frag.concat(i18n["game_id"] + ": " + game_id)
-  html_frag = html_frag.concat(" - " + player + "</span>")
+  html_frag = html_frag.concat("<div class='game_page_title'>" + i18n['game_id']  + ': ' + game_id + "</div>")
+  html_frag = html_frag.concat("<div class='game_page_title'>" + i18n['user']  + ': ' + player + "</div>")
+ 
   html_frag = html_frag.concat(
-      "<span class='game_page_title'><a href='#scoresheet_div'>" +
-      i18n["scoresheet"] +
-      "</a></span>")
-  html_frag = html_frag.concat(
-      "<span class='logo_game'><img border='0' alt='' src=" +
-      game_logo_url + " width='80'></a> </span>")
+      "<div class='logo_game'><img border='0' alt='' src=" +
+      game_logo_url + " width='80'></a> </div>")
 
-  $("#topnav").last().after(html_frag);
+  //$("#topnav").last().after(html_frag);
+  $("#topnav").append(html_frag);
 }
 
 function start_game() {

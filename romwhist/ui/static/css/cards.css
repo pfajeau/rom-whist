@@ -42,18 +42,20 @@ figcaption {
 }
 
 .table-no-padding-border{
+	margin-left: 15px;
     border: 5px;
     padding:0;
     margin:0;
     border-collapse: collapse;
 }
+
 @keyframes blinker {
   50% {
     opacity: 0;
   }
 }
 .player_info {
-  padding-left:5px;
+    padding-left:5px;
 	font-size: small;
 	font-weight: normal;
 	padding-right:10;
@@ -68,13 +70,13 @@ figcaption {
 	font-weight: bold;
 	color: darkred;
 	animation: blinker 1s step-start infinite;
-  padding-left:10px;
+    padding-left:10px;
 }
 
 .normal_player {
 	font-weight: bold;
 	color: black;
-  padding-left:10px;
+    padding-left:10px;
 }
 
 #game_action_buttons {
@@ -85,21 +87,38 @@ figcaption {
 	padding-bottom:10px;
 }
 
-#topnav{
-	font-size: large;
-	display:inline-block;
-}
-.game_page_title{
-	font-size: medium;
-	text-align: right;
+#scoresheet {
 	font-weight: bold;
 	color: darkblue;
-	padding-left:100px;
+	margin-left: 15px;
 }
+
+#topnav:first-child {
+    justify-content: flex-start;
+	align-items: left;
+}
+
+#topnav {
+	width: 100%;
+    display:inline-flex;
+    justify-content: space-evenly;  /* Space the items with left and right justification */
+    /*padding: 15px 0; */
+	padding: 1vw 1vw;
+}
+
+.game_page_title{
+	font-size: medium;
+	align-items: center;
+	font-weight: bold;
+	display: inline-block;
+	color: darkblue;
+	padding-left:5vw;
+}
+
+
 
 .logo_game {
   padding-left:100px;
-
 }
 
 .div_title {
@@ -174,12 +193,12 @@ img.preload {
 	display:none;
 }
 
-#card-table-green {
+#card-table-whist {
 	background-color:#11520F;
-  margin-left: 0px;
+    margin-left: 15px;
 	height:250px;
 	width:100%;
-  min-width: 800px;
+    /*min-width: 500px;*/
 	border:solid 6px #072607;
 	border-radius:8px;
 	-webkit-border-radius:8px;
@@ -188,12 +207,12 @@ img.preload {
 	-o-border-radius:8px;
 	box-shadow:#111 1px 1px 2px;
 }
-#card-table-burgundy {
+#card-table-belote, #card-table-contree {
 	background-color:#295298;
-  margin-left: 0px;
+    margin-left: 15px;
 	height:250px;
-	width:50%;
-  min-width: 800px;
+	width:100%;
+    /*min-width: 500px;*/
 	border:solid 6px #23273D;
 	border-radius:8px;
 	-webkit-border-radius:8px;
@@ -203,6 +222,9 @@ img.preload {
 	box-shadow:#111 1px 1px 2px;
 }
 
+#chat, #chat-input, #buttons-div, #scoresheet_div{
+    margin-left: 15px;
+}
 
 .figures
 {

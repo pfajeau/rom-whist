@@ -37,7 +37,7 @@ Add footer / contact info
   var player_type = "{{ player_type }}"
 
   populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
-                   "{{ url_for('static', filename="") }}" + "img/{{ _('ohell_image') }}")
+                   "{{ url_for('static', filename='img/whist.jpg') }}")
 
   document.addEventListener('DOMContentLoaded', () => {
 
@@ -269,8 +269,10 @@ Add footer / contact info
     </tr>
   </table>
 </div>
-<br>
-<div id="card-table-green" class="container">
+<div id="scoresheet">
+  <a href='#scoresheet_div'>{{ _('scoresheet') }}</a>
+</div>
+<div id="card-table-whist" class="container">
   <div class="bottomright" id="trump_card">
     {% if trump != None %}
       <figure>
@@ -307,7 +309,7 @@ Add footer / contact info
 
     {% include 'chat.html' %}
 
-    <div>
+    <div id="buttons-div">
       <div id="game_action_buttons" class="btn-toolbar">
         <p><br>
       </div>
@@ -333,23 +335,23 @@ Add footer / contact info
             {% endfor %}
           </tr>
         </thead>
-          <tbody id="scoresheet_body">
-    {% for scores_hand in scoresheet -%}
-    <tr>
-      {% for player in players -%}
-      <td>
-        <table>
+        <tbody id="scoresheet_body">
+          {% for scores_hand in scoresheet -%}
           <tr>
-            <td class="scoresheet_nb">{{scores_hand[0][player]}}</td>
-            <td class="scoresheet_nb">{{scores_hand[1][player]}}</td>
-            <td class="scoresheet_nb">{{scores_hand[2][player]}}</td>
+            {% for player in players -%}
+            <td>
+              <table>
+                <tr>
+                  <td class="scoresheet_nb">{{scores_hand[0][player]}}</td>
+                  <td class="scoresheet_nb">{{scores_hand[1][player]}}</td>
+                  <td class="scoresheet_nb">{{scores_hand[2][player]}}</td>
+                </tr>
+              </table>
+            </td>
+            {% endfor %}
           </tr>
-        </table>
-        </td>
         {% endfor %}
-      </tr>
-      {% endfor %}
-          </tbody>
+        </tbody>
       </table>
     </div>
   </form>

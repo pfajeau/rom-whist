@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <img border="0" alt="Play Ohell" src="{{ url_for('static', filename='') }}img/{{ _('ohell_image') }}" height="100" align="right"></a>
+  <img border="0" alt="Play Ohell" src="{{ url_for('static', filename='') }}img/whist.jpg" height="100" align="right"></a>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
 
@@ -42,7 +42,7 @@
 </script>
 
   <p><p>
-  <h2>{% trans %}welcome_play_ohell{% endtrans %}</h2>
+  <h2>{% trans %}welcome_play_whist{% endtrans %}</h2>
   <br><br>
 
   <form action="" method="post" novalidate  align="left">
@@ -97,9 +97,9 @@
   <br><br>
 
   {% if locale == "fr" %}
-    {% include 'ohell_guide_fr.html' %}
+    {% include 'whist_guide_fr.html' %}
   {% else %}
-    {% include 'ohell_guide.html' %}
+    {% include 'whist_guide.html' %}
   {% endif %}
 
   <div>

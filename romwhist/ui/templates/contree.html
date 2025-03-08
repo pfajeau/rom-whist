@@ -348,7 +348,7 @@
 <br>
 <div id = "#dialog-message">
 </div>
-<div id="card-table-burgundy" class="container">
+<div id="card-table-contree" class="container">
   <div class="bottomright" id="trump_card">
   </div>
   <div class="bottomright" id="bet_status">
@@ -367,6 +367,9 @@
   </div>
   <div id="cards_played">
   </div>
+</div>
+<div id="scoresheet">
+  <a href='#scoresheet_div'>{{ _('scoresheet') }}</a>
 </div>
 
 {% include 'msg_container.html' %}
@@ -396,7 +399,8 @@
 
     {% include 'chat.html' %}
 
-    <div>
+    <div id="buttons-div">
+      >
       <div id="game_action_buttons" class="btn-toolbar">
         <p><br>
       </div>
