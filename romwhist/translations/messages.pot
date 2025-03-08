@@ -1,3 +1,4 @@
+
 # Translations template for PROJECT.
 # Copyright (C) 2021 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
@@ -422,4 +423,3 @@ msgstr ""
 #: ui/templates/ohell_start.html:106
 msgid "references"
 msgstr ""
-
