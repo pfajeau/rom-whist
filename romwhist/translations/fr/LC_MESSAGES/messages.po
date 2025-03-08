@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-03 16:04-0700\n"
+"POT-Creation-Date: 2025-03-08 14:56-0800\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -22,37 +22,37 @@ msgstr ""
 msgid "of"
 msgstr "de"
 
-#: common_routes.py:77
+#: common_routes.py:78
 msgid "session_has_expired"
 msgstr "La session a expiré"
 
-#: common_routes.py:83 common_routes.py:89
+#: common_routes.py:84 common_routes.py:90
 msgid "game_does_not_exist"
 msgstr "Ce jeu n'existe pas"
 
-#: common_routes.py:97 i18n_strings.py:30
+#: common_routes.py:98 i18n_strings.py:30
 msgid "game_over"
 msgstr "Partie Terminée"
 
-#: common_routes.py:181
+#: common_routes.py:182
 msgid "game_not_created"
 msgstr "Ce jeu n'a pas été crée"
 
-#: common_routes.py:190
+#: common_routes.py:191
 msgid "game_has_user_with_same_name"
 msgstr "Ce jeu a déjà un joueur avec le même nom"
 
-#: common_routes.py:197
+#: common_routes.py:198
 msgid "game_already_started"
 msgstr "Ce jeu a déjà commencé. Il n'est pas possible de joindre unn jeu en cours"
 
-#: common_routes.py:206
+#: common_routes.py:207
 msgid "game_already_has_4_players"
 msgstr "Ce jeu a déjà 4 joueurs!"
 
-#: belote/belote_routes.py:127 belote/belote_routes.py:129 common_routes.py:208
-#: contree/contree_routes.py:133 contree/contree_routes.py:135
-#: ohell/ohell_routes.py:137 ohell/ohell_routes.py:139
+#: belote/belote_routes.py:136 belote/belote_routes.py:138 common_routes.py:209
+#: contree/contree_routes.py:139 contree/contree_routes.py:141
+#: ohell/ohell_routes.py:147 ohell/ohell_routes.py:149
 msgid "game_already_has_max_players"
 msgstr "Le jeu a déjà le nombre maximum de joueurs"
 
@@ -89,17 +89,19 @@ msgstr "Annonces"
 msgid "wins"
 msgstr "Plis"
 
-#: i18n_strings.py:13 ui/templates/belote.html:257
-#: ui/templates/contree.html:326
+#: i18n_strings.py:13 ui/templates/belote.html:260
+#: ui/templates/contree.html:329
 msgid "points"
 msgstr "Points"
 
-#: i18n_strings.py:14 ui/templates/belote.html:267
-#: ui/templates/contree.html:336 ui/templates/ohell.html:263
+#: i18n_strings.py:14 ui/templates/belote.html:270
+#: ui/templates/contree.html:339 ui/templates/ohell.html:263
 msgid "score"
 msgstr "Score"
 
-#: i18n_strings.py:15 ui/templates/ohell.html:318
+#: i18n_strings.py:15 ui/templates/belote.html:280 ui/templates/belote.html:330
+#: ui/templates/contree.html:372 ui/templates/contree.html:411
+#: ui/templates/ohell.html:273 ui/templates/ohell.html:320
 msgid "scoresheet"
 msgstr "Feuille de Score"
 
@@ -171,7 +173,7 @@ msgstr "Gagnant"
 msgid "winners_hand"
 msgstr "Gagnant(s) de cette manche"
 
-#: i18n_strings.py:38 ui/templates/ohell.html:278
+#: i18n_strings.py:38 ui/templates/ohell.html:280
 msgid "trump"
 msgstr "Atout"
 
@@ -183,8 +185,8 @@ msgstr "Joueur"
 msgid "left_game"
 msgstr "quitté la partie"
 
-#: i18n_strings.py:43 ui/templates/belote.html:240
-#: ui/templates/contree.html:304 ui/templates/contree.html:314
+#: i18n_strings.py:43 ui/templates/belote.html:243
+#: ui/templates/contree.html:307 ui/templates/contree.html:317
 msgid "select"
 msgstr "Choisir"
 
@@ -204,23 +206,23 @@ msgstr "Carreau"
 msgid "club"
 msgstr "Trèfle"
 
-#: contree/contree.py:38 i18n_strings.py:48
+#: contree/contree.py:39 i18n_strings.py:48
 msgid "pass"
 msgstr "Passe"
 
-#: contree/contree.py:39 i18n_strings.py:49
+#: contree/contree.py:40 i18n_strings.py:49
 msgid "contre"
 msgstr "Contre"
 
-#: contree/contree.py:40 i18n_strings.py:50
+#: contree/contree.py:41 i18n_strings.py:50
 msgid "surcontre"
 msgstr "Surcontre"
 
-#: i18n_strings.py:51 ui/templates/contree.html:357
+#: i18n_strings.py:51 ui/templates/contree.html:360
 msgid "contré"
 msgstr "Contré"
 
-#: i18n_strings.py:52 ui/templates/contree.html:359
+#: i18n_strings.py:52 ui/templates/contree.html:362
 msgid "surcontré"
 msgstr "Surcontré"
 
@@ -332,15 +334,15 @@ msgstr "Limite de points"
 msgid "number_between_500_and_2000"
 msgstr "Entrez un nombre entre 500 et 2000"
 
-#: contree/contree.py:41
+#: contree/contree.py:42
 msgid "points_bid"
 msgstr "Points demandés"
 
-#: contree/contree.py:42
+#: contree/contree.py:43
 msgid "points_achieved"
 msgstr "Points gagnés"
 
-#: contree/contree.py:43
+#: contree/contree.py:44
 msgid "points_achieved_bid"
 msgstr "Points gagnés + demandés"
 
@@ -348,7 +350,7 @@ msgstr "Points gagnés + demandés"
 msgid "counting"
 msgstr "Comptage"
 
-#: contree/contree_routes.py:539
+#: contree/contree_routes.py:485
 msgid "hand_to_be_replayed"
 msgstr "La main va être rejouée"
 
@@ -374,7 +376,7 @@ msgstr ""
 "Ce site a été crée pendant COVID19            &copy; Copyright 2020/2021 "
 "Philippe Fajeau"
 
-#: ui/templates/belote.html:236 ui/templates/contree.html:297
+#: ui/templates/belote.html:239 ui/templates/contree.html:300
 msgid "bid"
 msgstr "Annonce"
 
@@ -413,14 +415,9 @@ msgstr "Bienvenue sur ce site, oú vous pouvez jouer gratuitement à plusieurs j
 msgid "ṕick_game"
 msgstr "Choisissez un jeu"
 
-#: ui/templates/home.html:12 ui/templates/ohell.html:40
-#: ui/templates/ohell_start.html:4
-msgid "ohell_image"
-msgstr "whist.jpg"
-
 #: ui/templates/ohell_start.html:45
-msgid "welcome_play_ohell"
-msgstr "Bienvenue au jeu de l'Ascenseur (ou Whist Roumain)!"
+msgid "welcome_play_whist"
+msgstr "Bienvenue au jeu de Whist!"
 
 #: ui/templates/ohell_start.html:106
 msgid "references"
@@ -449,4 +446,10 @@ msgstr "Références"
 
 #~ msgid "confirm_switch_player"
 #~ msgstr ""
+
+#~ msgid "ohell_image"
+#~ msgstr "whist.jpg"
+
+#~ msgid "welcome_play_ohell"
+#~ msgstr "Bienvenue au jeu de l'Ascenseur (ou Whist Roumain)!"
 
