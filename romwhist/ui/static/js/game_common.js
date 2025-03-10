@@ -87,7 +87,6 @@ function initialize(players) {
       i18n["leave_game"] + '</button>');
   document.getElementById("leave_game").onclick = function() {
     show_alert(i18n["confirm_leave_game"], "Warning", cancel=true, callback_ok=submit_form, action="leave_game");
-    // show_dialog_ok("Warning", "Are you sure you want to leave the game?", ok_function=submit_form, action="leave_game")
   }
 
   console.log("Player type is: " + player_type)
@@ -411,11 +410,7 @@ function msg_posted(data) {
   textarea.val(content + sender + ": " + msg + "\n");
   textarea.animate({scrollTop:textarea[0].scrollHeight - textarea.height()},1000);
 
-  // For testing TODO: remove
-  if (msg == "alert") {
-    show_dialog_ok("Title", "Hello!")
-  }
-  // play_sound("beep.wav");
+   // play_sound("beep.wav");
 }
 
 function show_question(msg, title, rsp1=i18n["ok"], rsp1_callback, rsp2=i18n["cancel"], rsp2_callback) {
@@ -446,21 +441,6 @@ function show_alert(msg, title, cancel=false, callback_ok, action="") {
 function refresh_display() {
    window.location.reload(true);
 }
-
-
-function show_dialog_ok(title,text,ok_function, action="") {
-  console.log("In show_dialog_ok...")
-  $( "#dialog-message" ).dialog({
-    modal: true,
-    title: title,
-    buttons: {
-      Ok: ok_function
-    }
-  })
-  $( "#dialog-message").html(text)
-  $("#action_game").val(action);
-}
-
 
 function sleep(miliseconds) {
  var currentTime = new Date().getTime();
