@@ -296,6 +296,7 @@ Add footer / contact info
 </div>
 
 {% include 'msg_container.html' %}
+{% include 'belote_buttons.html' %}
 
 <!-- Player cards section-->
 <div>
@@ -323,36 +324,8 @@ Add footer / contact info
       </div>
     </div>
 
-    <div id="scoresheet_div">
-      <br/>
-      <h4 class="div_title">{{ _('scoresheet') }}</h4>
-      <!-- <table id="scoresheet_table" class="table-no-padding-border padding-between-cols"> -->
-      <table id="scoresheet_table" class="table-no-padding-border table table-sm table-bordered">
-        <thead>
-          <tr>
-            {% for player in players -%}
-            <th class="td_player_info">{{player}}
-            </th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody id="scoresheet_body">
-          {% for scores_hand in scoresheet -%}
-          <tr>
-            {% for player in players -%}
-            <td>
-              <table>
-                <tr>
-                  <td class="scoresheet_nb">{{scores_hand[player]}}</td>
-                </tr>
-              </table>
-            </td>
-            {% endfor %}
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    {% include 'scoresheet_belote.html' %}
+
   </form>
 </div>
 
