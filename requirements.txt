@@ -10,6 +10,7 @@ dominate
 eventlet
 Flask
 Flask-Bootstrap
+flask-cors
 Flask-Login
 Flask-Session
 Flask-SocketIO

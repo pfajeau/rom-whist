@@ -1,3 +1,14 @@
+"""
+This module implements romwhist functionality.
+
+License: GNU General Public License (GPL) v3.0 or later.
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+Author: Philippe Fajeau
+"""
+
 import romwhist
 from romwhist import app, socketio
 from flask_babel import Babel

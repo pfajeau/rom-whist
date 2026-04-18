@@ -1,8 +1,12 @@
 """
-Add your config which will go under version control. Generally config which will not change in different environments
-like staging, testing, production, should go here.
-e.g. tuning parameters, extension specific settings etc.
+This module implements config functionality.
 
-@author: Philippe Fajeau
+License: GNU General Public License (GPL) v3.0 or later.
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+Author: Philippe Fajeau
 """
+
 

@@ -1,8 +1,14 @@
 """
-This module implements common code between routes.
+This module implements common routes functionality.
 
-author: Philippe Fajeau
+License: GNU General Public License (GPL) v3.0 or later.
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+Author: Philippe Fajeau
 """
+
 
 import logging
 from random import randint
