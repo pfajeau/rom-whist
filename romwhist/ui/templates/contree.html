@@ -32,6 +32,7 @@
   var allowed_cards_json = {{ allowed_cards|tojson }}
   var allowed_cards = JSON.parse(allowed_cards_json)
   var player_type = "{{ player_type }}"
+  var embeddedGameState = {{ embedded_game_state|tojson }};
 
   console.log("Player name: " + username)
   console.log("Contree status: " + "{{ contree_status }}")
@@ -104,6 +105,7 @@
     // Connect to websocket
     console.log("Connecting to io")
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/contree');
+    registerSyncStateSocket(socket);
 
     socket.on('connect', function() {
       console.log("Connected to io")
@@ -124,7 +126,7 @@
       new_hand(data, "{{ url_for('static', filename='') }}")
 
       // Required to properly refresh the bet fields
-      window.location.retext(false);
+      window.location.reload(false);
     });
 
     socket.on('player to bet', function(data) {
@@ -217,7 +219,7 @@
       for (var i in the_players) {
         let player = the_players[i]
         // Reset the bid selection list
-        let bet_id_suit = "#bets_suit_" + player
+        let id_bet_suit = "#bets_suit_" + player
         idx = $(id_bet_suit).find('option[value="Select"]').index()
         console.log("idx: " + idx)
         $(id_bet_suit).get(0).selectedIndex = idx

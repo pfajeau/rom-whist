@@ -65,6 +65,7 @@ def login():
             user = User(username=form.username.data)
             db.session.add(user)
             db.session.commit()
+            session['username'] = form.username.data
         login_user(user, remember=form.remember_me.data)
         logging.debug("current user: " + session['username'])
         return redirect(url_for('index'))
@@ -228,17 +229,37 @@ def generate_game_id(max_id, games):
 
 
 def player_played_process(game, player_name, card, namespace, next_round_cb):
-    """This function is used by the belote and ohell game"""
-    # Emit event to players so they can see the card that was played
+    """This function is used by the belote and contree games.
+
+    Returns a dict for Socket.IO acknowledgement: ``{'ok': True}`` or
+    ``{'ok': False, 'error': 'reason'}`` so the client can avoid optimistic UI
+    desync when the play is rejected.
+    """
     if game is None:
         logging.error("Game does not exist")
-        return
+        return {'ok': False, 'error': 'no_game'}
 
     game_id = game.id
     player = game.get_player_by_name(player_name)
+    if player is None:
+        logging.error("Unknown player: %s", player_name)
+        return {'ok': False, 'error': 'unknown_player'}
+
+    if game.get_active_player() != player:
+        logging.warning("Play rejected: not %s's turn", player_name)
+        return {'ok': False, 'error': 'not_your_turn'}
+
+    allowed = game.get_allowed_cards(player)
+    if allowed and card not in allowed:
+        logging.warning("Play rejected: illegal card %s for %s", card, player_name)
+        return {'ok': False, 'error': 'illegal_card'}
 
     belote_before = game.belote_status
-    winner = game.play_card(player, card)
+    try:
+        winner = game.play_card(player, card)
+    except Exception:
+        logging.exception("play_card failed")
+        return {'ok': False, 'error': 'server_error'}
 
     logging.debug("Sending card played event")
     emit_to_players(
@@ -262,20 +283,19 @@ def player_played_process(game, player_name, card, namespace, next_round_cb):
             room=game_id, namespace=namespace, game_state=game.get_state())
     else:
         # There is a winner, so round is ended
-        # game.round_ended(winner)
         allowed_cards = game.get_hand(nplayer).serialize()
         winning_card = game.get_current_round().cards_played[winner]
         emit_to_players(
             "round ended",
             {"game_id": game_id, "winner": winner, "card": winning_card.desc(), "last_player": player,
-             "points":game.hand_points},
+             "points": game.hand_points},
             room=game_id, namespace=namespace)
 
         timer = threading.Timer(6.0, next_round_cb, [game_id, nplayer, allowed_cards])
         timer.start()
 
     logging.info("Allowed cards: " + str(allowed_cards))
-    return
+    return {'ok': True}
 
 
 def belote_status_changed(game_id, game, namespace):
@@ -346,15 +366,23 @@ def on_join(game_id, games, clients, namespace):
     # so need to remove the previous sid from the room
     logging.info("on_join")
     if game_id is not None:
-        if session['game_id'] in games:
+        if game_id in games:
             # Add user to room if user is not there already
             player_name = session.get('username')
-            logging.debug("Player: " + player_name)
+            logging.debug("Player: " + str(player_name))
 
             # Adding new client room id (sid) to list of clients
             clients[game_id][player_name] = request.sid
             session['sid'] = request.sid
             join_room(game_id, namespace=namespace)
+            game = games.get(game_id)
+            if game is not None:
+                socketio.emit(
+                    'sync_state',
+                    {'state': game.get_state().to_json()},
+                    room=request.sid,
+                    namespace=namespace,
+                )
     return
 
 
@@ -420,7 +448,7 @@ def emit_to_players(event, data, game_id=None, room=None, namespace=None, game_s
         # data being passed
         data2 = dict()
         if isinstance(data, dict):
-            data2 = data
+            data2 = dict(data)
             data2["game_id"] = game_id
             if game_state is not None:
                 data2['state'] = game_state.to_json()

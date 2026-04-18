@@ -261,6 +261,8 @@ class BeloteGame(CardGame):
         # If no cards are of the same suit, trump cards must be played. If no trump card
         # any card is allowed
         allowed_cards = []
+        if player is None or player not in self.hands:
+            return allowed_cards
         if self.current_round is None:
             logging.debug("Current round is None")
             return allowed_cards
@@ -297,7 +299,7 @@ class BeloteGame(CardGame):
             # partner played strongest card.
             # Also need to surcouper if applicable
             if len(allowed_cards) == 0:
-                cut = (winning_card.get_suit_name == self.trump_suit)
+                cut = (winning_card.get_suit_name() == self.trump_suit)
                 for card in self.hands[player].cards:
                     # Check for trump cards
                     if card.get_suit_name() == self.trump_suit:

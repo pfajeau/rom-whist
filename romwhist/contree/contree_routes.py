@@ -185,7 +185,8 @@ def contree_play():
                                contree_status=game.contree_status.value, current_bet=game.current_bet,
                                taker=game.taker, i18n=json.dumps(i18n_strings.i18n()),
                                player_type = player.player_type.value,
-                               messages=json.dumps(messages[game_id]))
+                               messages=json.dumps(messages[game_id]),
+                               embedded_game_state=game.get_state().to_json())
     else:
         # Should never happen
         return redirect(url_for('contree_start'))
@@ -390,7 +391,7 @@ def player_played(card):
     game_id = session.get('game_id')
     game = games.get(game_id)
     player_name = session.get('username')
-    common_routes.player_played_process(game, player_name, card, NAMESPACE, next_round)
+    return common_routes.player_played_process(game, player_name, card, NAMESPACE, next_round)
 
 
 def belote_status_changed(game_id):

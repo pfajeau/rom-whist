@@ -288,21 +288,56 @@ function player_to_play(data) {
 
 function card_played (card) {
 
-  // Remove card from hand being displayed
-  document.getElementById(card).remove();
-
-  // Emit an event indicating a card has been card_played
-  socket.emit('player played', card);
-
-  // Prevent player from playing again until round is finished
+  // Prevent double-clicks until the server acknowledges the play
   RecursiveUnbind($('#cards'));
-
-  // Remove borders on cards
   $( '#cards img').removeClass("img_with_border");
 
-  make_player_inactive(username);
-  // $("#"+username).removeClass("active_player");
-  // $("#"+username).addClass("normal_player");
+  socket.emit('player played', card, function (response) {
+    if (response && response.ok === false) {
+      var err = (response && response.error) ? response.error : 'unknown';
+      show_alert('Play failed: ' + err, 'Warning');
+      if (typeof allowed_cards !== 'undefined') {
+        make_player_play(username, allowed_cards);
+      }
+      return;
+    }
+    var el = document.getElementById(card);
+    if (el) {
+      el.remove();
+    }
+    make_player_inactive(username);
+  });
+}
+
+/**
+ * After a Socket.IO reconnect, compare server state to the snapshot embedded
+ * in the page at load time; reload if they differ so missed events are healed.
+ */
+function registerSyncStateSocket(socket) {
+  var hadSocketReconnect = false;
+  socket.on('reconnect', function () {
+    hadSocketReconnect = true;
+  });
+  socket.on('sync_state', function (data) {
+    if (!hadSocketReconnect) {
+      return;
+    }
+    if (!data || !data.state) {
+      return;
+    }
+    if (typeof embeddedGameState === 'undefined') {
+      return;
+    }
+    try {
+      var serverNorm = JSON.stringify(JSON.parse(data.state));
+      var pageNorm = JSON.stringify(JSON.parse(embeddedGameState));
+      if (serverNorm !== pageNorm) {
+        window.location.reload();
+      }
+    } catch (e) {
+      console.warn('sync_state compare failed', e);
+    }
+  });
 }
 
 

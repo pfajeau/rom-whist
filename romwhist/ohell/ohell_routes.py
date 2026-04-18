@@ -186,7 +186,8 @@ def ohell_play():
                                hand_nb=game._nb_cards_per_hand, scoresheet=game.scoresheet,
                                i18n=json.dumps(i18n_strings.i18n()),
                                player_type = player.player_type.value,
-                               messages=json.dumps(messages[game_id]))
+                               messages=json.dumps(messages[game_id]),
+                               embedded_game_state=game.get_state().to_json())
     else:
         return redirect_template
 
@@ -352,32 +353,47 @@ def player_played(card):
     logging.info("card played event received")
     logging.info("Card played: " + card)
     game_id = session.get('game_id')
-    player = session.get('username')
-    player_played_process(game_id, player, card)
+    player_name = session.get('username')
+    return player_played_process(game_id, player_name, card)
 
 
 def player_played_process(game_id, player, card):
     # Emit event to players so they can see the card that was played
     if game_id is None:
         logging.error("Game id not specified")
-        return
+        return {'ok': False, 'error': 'no_game'}
+
+    game = games.get(game_id)
+    if game is None:
+        return {'ok': False, 'error': 'no_game'}
+
+    player = game.get_player_by_name(player_name)
+    if player is None:
+        return {'ok': False, 'error': 'unknown_player'}
+
+    if game.get_active_player() != player:
+        logging.warning("Play rejected: not %s's turn", player_name)
+        return {'ok': False, 'error': 'not_your_turn'}
+
+    allowed = game.get_allowed_cards(player)
+    if allowed and card not in allowed:
+        return {'ok': False, 'error': 'illegal_card'}
+
+    try:
+        winner = game.play_card(player, card)
+    except Exception:
+        logging.exception("play_card failed")
+        return {'ok': False, 'error': 'server_error'}
 
     common_routes.emit_to_players(
         "card played",
         {'game_id': game_id, 'player': player, 'card': card},
         room=game_id, namespace=NAMESPACE)
 
-    game = games.get(game_id)
-    winner = game.play_card(player, card)
-
     nplayer = game.get_active_player()
     if winner is None:
         # Round continues
         allowed_cards = game.get_allowed_cards(nplayer)
-        # common_routes.emit_game_state(
-        #     game_id, nplayer, game.get_state(OhellState(game.id, nplayer)), \
-        #     NAMESPACE_AI)
-
         common_routes.emit_to_players(
             "player to play",
             {'game_id': game_id, 'player': nplayer, 'allowed_cards': allowed_cards, "last_player": player},
@@ -395,7 +411,7 @@ def player_played_process(game_id, player, card):
         timer.start()
 
     logging.debug("Allowed cards: " + str(allowed_cards))
-    return
+    return {'ok': True}
 
 
 def generate_hands(game_id, username, nbcards=0, trump=True):

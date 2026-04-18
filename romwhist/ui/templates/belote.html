@@ -39,6 +39,7 @@ Add footer / contact info
   var allowed_cards_json = {{ allowed_cards|tojson }}
   var allowed_cards = JSON.parse(allowed_cards_json)
   var player_type = "{{ player_type }}"
+  var embeddedGameState = {{ embedded_game_state|tojson }};
 
   console.log("Belote Status: " + belote_status)
   console.log("Player with belote: " + player_with_belote)
@@ -89,6 +90,7 @@ Add footer / contact info
     console.log("Connecting to io with belote")
     console.log(location.protocol + '//' + document.domain + ':' + location.port + '/belote')
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/belote');
+    registerSyncStateSocket(socket);
     socket.on('connect', function() {
       console.log("Connected to io")
       // console.log(location.protocol + '//' + document.domain + ':' + location.port + '/belote')

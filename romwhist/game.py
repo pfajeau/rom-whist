@@ -75,7 +75,8 @@ class CardGame:
         state.scores = self.scores
         state.owner = self.owner
         for player in self.get_playing_players():
-            state.hand_cards[player] = self.hands[player].serialize()
+            # hand_cards is filled below from self.hands only; hands may be empty
+            # before the first deal (e.g. right after "start game").
             state.players_status[player.name] = player.player_status
             state.players_type[player.name] = player.player_type
         state.active_player = self.active_player
@@ -97,7 +98,14 @@ class CardGame:
         # if self.current_round is None:
         #     state.current_round = self.create_round()
 
-        state.allowed_cards = self.get_allowed_cards(state.active_player)
+        try:
+            ap = state.active_player
+            if ap is None:
+                state.allowed_cards = []
+            else:
+                state.allowed_cards = self.get_allowed_cards(ap)
+        except (KeyError, TypeError, AttributeError):
+            state.allowed_cards = []
         logging.debug("state.allowed_cards: %s", state.allowed_cards)
 
         state.bets = utils.copy_dict(self.bets)
@@ -162,8 +170,8 @@ class CardGame:
             self.current_round.trump_suit = state_copy.trump
 
         self.active_player = self.get_player_by_name(state_copy.active_player)
-        if state.trump_card is not None and not state.trump_card == "":
-            self.trump_card = Card.card_from_value(state.trump_card)
+        if state_copy.trump_card is not None and not state_copy.trump_card == "":
+            self.trump_card = Card.card_from_value(state_copy.trump_card)
 
     @property
     def phase(self):
@@ -391,8 +399,9 @@ class CardGame:
 
     # By default allows any card.
     def get_allowed_cards(self, player):
-        allowed_cards = self.hands[player].serialize()
-        return allowed_cards
+        if player is None or player not in self.hands:
+            return []
+        return self.hands[player].serialize()
 
     def get_current_round(self):
         return self.current_round

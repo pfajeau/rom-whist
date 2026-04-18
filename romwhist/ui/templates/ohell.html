@@ -35,6 +35,7 @@ Add footer / contact info
   var messages_json = {{ messages|tojson }}
   var messages = JSON.parse(messages_json)
   var player_type = "{{ player_type }}"
+  var embeddedGameState = {{ embedded_game_state|tojson }};
 
   populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
                    "{{ url_for('static', filename='img/whist.jpg') }}")
@@ -91,6 +92,7 @@ Add footer / contact info
     // Connect to websocket
     console.log("Connecting to io")
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/ohell');
+    registerSyncStateSocket(socket);
 
     socket.on('connect', function() {
       console.log("Connected to io")

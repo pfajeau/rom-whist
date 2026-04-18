@@ -128,6 +128,8 @@ class OhellGame(CardGame):
         # Allowed cards are cars of the same suit than the first card played
         # If no cards are of the same suit, any card is allowed_cards
         allowed_cards = []
+        if player is None or player not in self.hands:
+            return allowed_cards
         if self.current_round is None:
             logging.error("Current round is None")
             return allowed_cards

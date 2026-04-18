@@ -174,7 +174,8 @@ def belote_play():
                                belote_status=game.belote_status.value, player_with_belote=game.player_with_belote,
                                i18n=json.dumps(i18n_strings.i18n()),
                                player_type = player.player_type.value,
-                               messages=json.dumps(messages[game_id]))
+                               messages=json.dumps(messages[game_id]),
+                               embedded_game_state=game.get_state().to_json())
 
     else:
         return redirect(url_for('belote_start'))
@@ -307,7 +308,7 @@ def player_bet_process(player_name, game_id, bet):
                 if player_belote is not None:
                     logging.debug("Player with Belote / Rebelote: " + player_belote)
                     common_routes.emit_to_players(
-                        "belote enabled",
+                        "belote rebelote enabled",
                         player_belote, game_id=game_id,
                         room=clients[game_id].get(player_belote), namespace=NAMESPACE)
             return
@@ -380,7 +381,7 @@ def player_played(card):
     game = games.get(game_id)
     player = session.get('username')
 
-    common_routes.player_played_process(game, player, card, NAMESPACE, next_round)
+    return common_routes.player_played_process(game, player, card, NAMESPACE, next_round)
 
 
 def belote_status_changed(game_id):
