@@ -10,6 +10,10 @@ Author: Philippe Fajeau
 """
 
 import copy
+import time
+
+def get_timestamp():
+    return time.time()
 
 def copy_dict(dict1):
     dict2 = dict()

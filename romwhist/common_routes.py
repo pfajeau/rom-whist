@@ -22,6 +22,7 @@ from flask_socketio import join_room, leave_room
 
 from flask_login import current_user, login_user
 from romwhist import socketio
+from romwhist import utils
 from romwhist.belote import belote_routes
 from romwhist.belote.belote_status import BeloteStatus
 from romwhist.card import Card
@@ -220,6 +221,15 @@ def join_game(games, game_id, username, start_page, play_page, namespace, form, 
     add_player_by_name(username, game, namespace)
     return redirect(url_for(play_page))
 
+def clean_old_games(games):
+    # Remove old games that are not active anymore
+    now = utils.get_timestamp()
+    for game_id, game in list(games.items()):
+        if game.timestamp is not None:
+            hours_since_start = (now - game.timestamp) / 3600
+            if hours_since_start > app.config['GAME_EXPIRATION_HOURS']:
+                logging.info("Removing old game: %s", game_id)
+                del games[game_id]
 
 def generate_game_id(max_id, games):
     if len(games) == max_id:

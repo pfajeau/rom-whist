@@ -29,6 +29,7 @@ from romwhist.forms import LoginForm, GameForm
 from romwhist.models import User
 from romwhist import i18n_strings
 from romwhist.player import Player
+from romwhist import app
 
 
 NAMESPACE = '/belote'
@@ -68,7 +69,7 @@ def belote_start():
 
         elif form.start_game.data:
             logging.info("start game")
-            game_id = common_routes.generate_game_id(999, games)
+            game_id = common_routes.generate_game_id(app.config['MAX_GAMES'], games)
             if game_id is None:
                 return render_template('belote_start.html',
                                        error="No more games available!!! Please try again later",
@@ -90,6 +91,10 @@ def belote_start():
             # logging.info ("In route game, dealing method is: ", request.form['dealing_method'])
             session['ownername'] = username
             add_player(username, game_id)
+
+            # Clean old games
+            common_routes.clean_old_games(games)
+            
             return redirect(url_for('belote_play'))
     else:
         return render_template("belote_start.html",

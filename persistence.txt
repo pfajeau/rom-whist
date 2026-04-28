@@ -1,0 +1,19 @@
+Persist state of game:
+    Use JSON to store / retrieve, based on game id and game kind
+    Check game can be stored, retrieved and resumed
+    Delete game states in DB older than 24h
+
+Persist User information
+    PLayer identity (email/password)
+    Game history
+        scoresheets of game played (as JSON)
+        game stats (number og games lost / won). Ome table: games played, games lost, games won
+        ranking?
+
+Persist game stats
+    Number of games played / completed / abandonned / cancelled
+    Kind of games played (simple count)
+    Game stats
+
+Game data:
+    Games played: date, game_id, game_kind, players, scoresheet

@@ -29,8 +29,9 @@ from romwhist.ohell.ohell import OhellGame
 from romwhist.ohell.ohell_form import OhellStartForm
 from romwhist import i18n_strings
 from romwhist.player import Player
-
 from romwhist.ohell.ohell_state import OhellState
+from romwhist import app
+
 
 NAMESPACE = '/ohell'
 NAMESPACE_AI = '/ohell_ai'
@@ -82,7 +83,7 @@ def ohell_start():
 
         elif form.start_game.data:
             logging.info("start game")
-            game_id = common_routes.generate_game_id(999, games)
+            game_id = common_routes.generate_game_id(app.config['MAX_GAMES'], games)
             if game_id is None:
                 return render_template('ohell_start.html', error="No more games available!!! Please try again later",
                                        form=form, locale=locale)
@@ -108,6 +109,10 @@ def ohell_start():
             session['ownername'] = username
 
             add_player(username, game_id)
+
+            # Clean old games
+            common_routes.clean_old_games(games)           
+
             return redirect(url_for('ohell_play'))
     else:
         return render_template("ohell_start.html",

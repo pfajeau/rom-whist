@@ -60,6 +60,7 @@ class CardGame:
         self.soft_init_dict(self.hand_points, 0)
         self.init_dict(self.points, 0)
         self.hand_cards = dict()
+        self._timestamp = utils.get_timestamp()
 
     def reset(self):
         self.current_round = None
@@ -121,7 +122,7 @@ class CardGame:
 
         state.bets = utils.copy_dict(self.bets)
         state.trump_card = str(self.trump_card)
-
+        state.timestamp = self.timestamp
         state.make_serializable()
         return copy.deepcopy(state)
 
@@ -183,6 +184,8 @@ class CardGame:
         self.active_player = self.get_player_by_name(state_copy.active_player)
         if state_copy.trump_card is not None and not state_copy.trump_card == "":
             self.trump_card = Card.card_from_value(state_copy.trump_card)
+        
+        self.timestamp = state_copy.timestamp
 
     @property
     def phase(self):
@@ -215,6 +218,10 @@ class CardGame:
     @property
     def id(self):
         return self.__id
+    
+    @property
+    def timestamp(self):
+        return self._timestamp
 
     # Return a list of players with the maximum score
     def get_highest_score_player(self):
