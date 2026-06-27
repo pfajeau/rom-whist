@@ -19,6 +19,7 @@
   var player_type = "{{ player_type }}";
   var poker_type = "{{ poker_type }}";
   var active_player = "{{ active_player }}";
+  var community_cards = {{ community_cards|tojson }};
   var allowed_cards_json = {{ allowed_cards|tojson }};
   var allowed_cards = JSON.parse(allowed_cards_json);
   var game_phase = "{{ game_phase }}";
@@ -32,6 +33,7 @@
     the_players = {{ players|safe }};
     initialize(the_players);
     initialize_poker_game(active_player, allowed_cards, game_phase);
+    render_poker_board(community_cards || []);
     enable_start_game();
 
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/poker');
@@ -49,6 +51,14 @@
   <div class="row">
     <div class="col-12">
       <strong>{% trans %}poker_type{% endtrans %}:</strong> {{ poker_type_label }}
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <div id="poker_board"></div>
     </div>
   </div>
 </div>

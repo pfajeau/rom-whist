@@ -131,7 +131,8 @@ def poker_play():
             messages[game_id] = []
 
         return render_template('poker.html', form=form, players=game.get_playing_players(), scores=game.get_scores(),
-                               hand=hand_cards, wins=game.wins, active_player=active_player,
+                               hand=hand_cards, community_cards=game.community_cards.serialize() if game.community_cards is not None else [],
+                               wins=game.wins, active_player=active_player,
                                cards_played=cards_played, allowed_cards=json.dumps(game.get_allowed_cards(active_player)),
                                game_phase=game.phase.name, messages=json.dumps(messages[game_id]),
                                i18n=json.dumps(i18n_strings.i18n()),
@@ -151,7 +152,9 @@ def deal_hands(game_id):
         return
 
     game.start_game()
-    common_routes.emit_to_players("sc game started", {'nb_cards': game.hand_size},
+    common_routes.emit_to_players("sc game started", {'nb_cards': game.hole_cards_count,
+                                  'community_cards': game.community_cards.serialize() if game.community_cards is not None else [],
+                                  'poker_type': game.poker_type},
                                   room=game_id, namespace=NAMESPACE)
 
     for player in game.get_playing_players():
@@ -163,7 +166,9 @@ def deal_hands(game_id):
 
     showdown_data = {
         'winners': [player.name for player in game.hand_winners],
+        'community_cards': game.community_cards.serialize() if game.community_cards is not None else [],
         'hands': {player.name: game.get_hand(player).serialize() for player in game.get_playing_players()},
+        'best_hands': {player.name: game.get_best_hand(player).serialize() if game.get_best_hand(player) is not None else [] for player in game.get_playing_players()},
         'hand_ranks': {player.name: game.get_hand_rank_description(player) for player in game.get_playing_players()}
     }
 

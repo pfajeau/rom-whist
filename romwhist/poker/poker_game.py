@@ -3,6 +3,7 @@ This module implements poker game functionality using the existing card game bas
 """
 
 import logging
+from itertools import combinations
 from enum import Enum
 
 from romwhist.card import Card
@@ -18,7 +19,11 @@ from collections import Counter
 
 class PokerGame(CardGame):
     MAX_PLAYERS = 6
-    HAND_SIZE = 5
+    BOARD_SIZE = 5
+    HOLE_CARDS_BY_TYPE = {
+        "texas_holdem": 2,
+        "omaha": 4,
+    }
     POKER_TYPE_LABELS = {
         "texas_holdem": "Texas Hold'em",
         "omaha": "Omaha",
@@ -59,19 +64,24 @@ class PokerGame(CardGame):
         CardGame.__init__(self, game_creator=game_creator, deck_size=52, id=id)
         self.deck = Deck(self.deck_size)
         self.deck.shuffle()
-        self.hand_size = PokerGame.HAND_SIZE
+        self.poker_type = poker_type if poker_type in PokerGame.HOLE_CARDS_BY_TYPE else "texas_holdem"
+        self.hand_size = PokerGame.HOLE_CARDS_BY_TYPE[self.poker_type]
+        self.hole_cards_count = self.hand_size
+        self.community_cards = None
         self.hand_winners = []
-        self.poker_type = poker_type
 
     def reset(self):
         CardGame.reset(self)
         self.deck = Deck(self.deck_size)
         self.deck.shuffle()
+        self.community_cards = None
         self.hand_winners = []
 
     def get_state(self):
         state = GameState(self.id)
         state.poker_type = self.poker_type
+        state.hole_cards_count = self.hole_cards_count
+        state.community_cards = self.community_cards.serialize() if self.community_cards is not None else []
         return self.populate_state(state)
 
     def get_poker_type_label(self):
@@ -97,9 +107,11 @@ class PokerGame(CardGame):
             self.deck = Deck(self.deck_size)
             self.deck.shuffle()
 
+        self.community_cards = Hand(self.deck, PokerGame.BOARD_SIZE)
+        self.community_cards.sort()
         self.hands = dict()
         for player in self.get_playing_players():
-            self.hands[player] = Hand(self.deck, self.hand_size)
+            self.hands[player] = Hand(self.deck, self.hole_cards_count)
             self.hands[player].sort()
 
         self.wins = dict()
@@ -128,9 +140,21 @@ class PokerGame(CardGame):
         return CardGame.get_allowed_cards(self, player)
 
     def get_hand_rank(self, player):
-        if player not in self.hands:
+        if player not in self.hands or self.community_cards is None:
             return None
-        return self.score_hand(self.hands[player])
+        best_score, _ = self._best_score_for_player(player)
+        return best_score
+
+    def get_best_hand(self, player):
+        if player not in self.hands or self.community_cards is None:
+            return None
+        _, best_cards = self._best_score_for_player(player)
+        if best_cards is None:
+            return None
+        hand = Hand(None, 0)
+        hand.cards = list(best_cards)
+        hand.sort()
+        return hand
 
     def get_winners(self):
         best_score = None
@@ -145,7 +169,11 @@ class PokerGame(CardGame):
         return winners
 
     def score_hand(self, hand):
-        cards = sorted(hand.get_cards(), key=lambda c: c.card_num, reverse=True)
+        cards = hand.get_cards() if hasattr(hand, "get_cards") else list(hand)
+        return self._score_five_card_hand(cards)
+
+    def _score_five_card_hand(self, cards):
+        cards = sorted(cards, key=lambda c: c.card_num, reverse=True)
         ranks = [card.card_num for card in cards]
         suits = [card.suit_char for card in cards]
         rank_counts = Counter(ranks)
@@ -188,6 +216,36 @@ class PokerGame(CardGame):
             return (PokerGame.PokerHandRank.ONE_PAIR, [pair_rank] + kickers)
 
         return (PokerGame.PokerHandRank.HIGH_CARD, ranks)
+
+    def _best_score_for_player(self, player):
+        hole_cards = self.hands[player].get_cards()
+        board_cards = self.community_cards.get_cards() if self.community_cards is not None else []
+
+        best_score = None
+        best_cards = None
+
+        if self.poker_type == "omaha":
+            if len(hole_cards) < 2 or len(board_cards) < 3:
+                return None, None
+            for hole_combo in combinations(hole_cards, 2):
+                for board_combo in combinations(board_cards, 3):
+                    current_cards = list(hole_combo) + list(board_combo)
+                    score = self._score_five_card_hand(current_cards)
+                    if best_score is None or score > best_score:
+                        best_score = score
+                        best_cards = current_cards
+        else:
+            available_cards = list(hole_cards) + list(board_cards)
+            if len(available_cards) < 5:
+                return None, None
+            for current_cards in combinations(available_cards, 5):
+                current_cards = list(current_cards)
+                score = self._score_five_card_hand(current_cards)
+                if best_score is None or score > best_score:
+                    best_score = score
+                    best_cards = current_cards
+
+        return best_score, best_cards
 
     def _is_straight(self, ranks):
         unique = sorted(set(ranks), reverse=True)

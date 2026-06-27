@@ -7,8 +7,29 @@ function initialize_poker_game(active_player, allowed_cards, game_phase) {
   }
 }
 
+function render_poker_cards(cards, containerId) {
+  let html = '';
+  for (let i = 0; i < cards.length; i++) {
+    let card = cards[i];
+    let image = 'img/' + card + '.svg';
+    html += '<img class="card_table" src="' + static_folder + image + '">';
+  }
+  $(containerId).html(html);
+}
+
+function render_poker_board(cards) {
+  if (!cards || !cards.length) {
+    $('#poker_board').empty();
+    return;
+  }
+  let html = '<div class="poker_board"><div class="poker_showdown_header">Board</div><div id="poker_board_cards"></div></div>';
+  $('#poker_board').html(html);
+  render_poker_cards(cards, '#poker_board_cards');
+}
+
 function register_poker_events() {
   socket.on('sc game started', function(data) {
+    render_poker_board(data['community_cards'] || []);
     game_started(data);
   });
 
@@ -76,6 +97,8 @@ function poker_showdown(data) {
   $('#cards_played').empty();
   let winners = data['winners'];
   let hands = data['hands'];
+  let bestHands = data['best_hands'] || {};
+  let communityCards = data['community_cards'] || [];
   let handRanks = data['hand_ranks'];
   let winnerText = '';
   if (winners.length === 1) {
@@ -86,15 +109,27 @@ function poker_showdown(data) {
   $('#msg_div').text('Poker showdown - ' + winnerText);
   fade_msg();
 
+  render_poker_board(communityCards);
+
   for (let playerName in hands) {
-    let cardList = hands[playerName];
+    let cardList = hands[playerName] || [];
+    let bestCardList = bestHands[playerName] || [];
     let handRank = handRanks[playerName] || '';
     let html = '<div class="poker_showdown_player">';
     html += '<div class="poker_showdown_header">' + playerName + ' (' + handRank + ')</div>';
+    html += '<div class="poker_showdown_subheader">Hole cards</div>';
     for (let i = 0; i < cardList.length; i++) {
       let card = cardList[i];
       let image = 'img/' + card + '.svg';
       html += '<img class="card_table" src="' + static_folder + image + '">';
+    }
+    if (bestCardList.length) {
+      html += '<div class="poker_showdown_subheader">Best hand</div>';
+      for (let i = 0; i < bestCardList.length; i++) {
+        let card = bestCardList[i];
+        let image = 'img/' + card + '.svg';
+        html += '<img class="card_table" src="' + static_folder + image + '">';
+      }
     }
     html += '</div>';
     $('#cards_played').append(html);
