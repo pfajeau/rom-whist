@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>{% trans %}welcome_play_poker{% endtrans %}</h2>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
+
+  {% if error %}
+  <p class="error_msg"><strong>Error:</strong> {{ error }}</p>
+  {% endif %}
+
+  <form action="" method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="container">
+        <h3>{% trans %}enter_alias{% endtrans %}</h3>
+        <div class="row">
+          <div class="col-12">
+            {{ form.user_name.label }}
+            {{ form.user_name(size=10) }}
+          </div>
+        </div>
+        <br><br>
+        <h3>{% trans %}choose_option{% endtrans %}</h3>
+        <div class="row">
+          <div class="col-4 data_block">
+            <h2>{% trans %}join_a_game{% endtrans %}</h2>
+            <br/>
+            {{ form.game_id.label }}
+            {{ form.game_id(size=5) }}
+            <br><br>
+            {{ form.join_game(class="btn btn-primary") }}
+          </div>
+          <div class="col-2">
+            <br><h3>&nbsp;&nbsp;or</h3>
+          </div>
+          <div class="col-5 data_block">
+            <h2>{{ _('create_new_game') }}</h2>
+            <br>
+            <div id="create_options">
+              {{ form.poker_type.label }}
+              {{ form.poker_type }}
+            </div>
+            <br>
+            {{ form.start_game(class="btn btn-primary") }}
+          </div>
+        </div>
+      </div>
+  </form>
+
+  <br/><br/>
+  <div>
+    {% block footer %}
+      {{ super() }}
+    {% endblock %}
+  </div>
+{% endblock %}

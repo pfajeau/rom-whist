@@ -37,6 +37,7 @@ def i18n():
     __i18n["ohell"] = _("ohell")
     __i18n["belote"] = _("belote")
     __i18n["contree"] = _("contree")
+    __i18n["poker"] = _("poker")
 
     __i18n["game_over"] = _("game_over")
     __i18n["ok"] = _("ok")

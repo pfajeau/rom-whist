@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script type="text/javascript" src="https://cdn.socket.io/3.1.1/socket.io.min.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/game_common.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/poker.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
+
+<script type="text/javascript">
+  var socket;
+  var username = "{{ session['username'] }}";
+  var ownername = "{{ session['ownername'] }}";
+  var static_folder="{{ url_for('static', filename='') }}";
+  var the_players;
+  var i18n_json = {{ i18n|tojson }};
+  var i18n = JSON.parse(i18n_json);
+  var messages_json = {{ messages|tojson }};
+  var messages = JSON.parse(messages_json);
+  var player_type = "{{ player_type }}";
+  var poker_type = "{{ poker_type }}";
+  var active_player = "{{ active_player }}";
+  var allowed_cards_json = {{ allowed_cards|tojson }};
+  var allowed_cards = JSON.parse(allowed_cards_json);
+  var game_phase = "{{ game_phase }}";
+  var embeddedGameState = {{ embedded_game_state|tojson }};
+
+  populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
+                   "{{ url_for('static', filename='img/whist.jpg') }}")
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setup_alertify();
+    the_players = {{ players|safe }};
+    initialize(the_players);
+    initialize_poker_game(active_player, allowed_cards, game_phase);
+    enable_start_game();
+
+    socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/poker');
+    registerSyncStateSocket(socket);
+
+    socket.on('connect', function() {
+      socket.emit('join game', {data:''});
+    });
+
+    register_poker_events();
+  });
+</script>
+
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <strong>{% trans %}poker_type{% endtrans %}:</strong> {{ poker_type_label }}
+    </div>
+  </div>
+</div>
+
+<form id="game_form" action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <input type="hidden" id="action_game" name="action_game" value="" />
+
+  <div class="table-responsive">
+    <br>
+    <table class="table-with-padding">
+      <tr id="players">
+        {% for player in players -%}
+        <td id="name_{{ player }}" name="player" class="normal_player">{{ player }}</td>
+        {% endfor %}
+      </tr>
+      <tr>
+        <td colspan="{{ players|length }}">
+          <div id="cards"></div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="{{ players|length }}">
+          <div id="cards_played"></div>
+        </td>
+      </tr>
+      <tr>
+        {% for player in players -%}
+        <td class="player_info_label">{{ player }}</td>
+        {% endfor %}
+      </tr>
+      <tr>
+        {% for player in players -%}
+        <td class="player_info">
+          <label class="player_info">{{ _('score') }}</label><br>
+          <input type="text" id="score_{{ player }}" value="{{ scores[player] if scores[player] is not none else 0 }}" readonly>
+        </td>
+        {% endfor %}
+      </tr>
+    </table>
+  </div>
+
+  <div id="game_action_buttons"></div>
+  <div id="msg_div"></div>
+
+  <div class="chat_panel">
+    <textarea id="chat_text" rows="6" cols="80" readonly></textarea><br>
+    <input id="chat_input" type="text" size="70">
+    <button id="post_chat" type="button"></button>
+  </div>
+
+  {% block footer %}
+    {{ super() }}
+  {% endblock %}
+</form>
+{% endblock %}

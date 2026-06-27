@@ -70,6 +70,10 @@ from .contree import contree_routes
 app.add_url_rule('/contree_start', view_func=contree_routes.contree_start, methods=["GET", "POST"])
 app.add_url_rule('/contree_play', view_func=contree_routes.contree_play, methods=["GET", "POST"])
 
+from .poker import poker_routes
+app.add_url_rule('/poker_start', view_func=poker_routes.poker_start, methods=["GET", "POST"])
+app.add_url_rule('/poker_play', view_func=poker_routes.poker_play, methods=["GET", "POST"])
+
 from romwhist import common_routes
 app.add_url_rule('/home', view_func=common_routes.home, methods=["GET", "POST"])
 app.add_url_rule('/admin', view_func=common_routes.admin, methods=["GET", "POST"])
