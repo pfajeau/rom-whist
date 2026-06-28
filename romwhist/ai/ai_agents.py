@@ -23,6 +23,7 @@ from romwhist.game_state import GameState
 from romwhist.belote.belote_sim import BeloteSim
 from romwhist.ohell.ohell_sim import OhellSim
 from romwhist.contree.contree_sim import ContreeSim
+from romwhist.poker.poker_sim import PokerSim
 
 
 def lookup(name, namespace):

@@ -84,9 +84,9 @@ class SimGame(CardGame):
         return
 
 
-    def play_round(round):
+    def play_round(self):
         logging.debug("Playing round")
-        active_player = self.get_active_player()
+        self.active_player = self.get_active_player()
         winner = ""
         for i in range(len(self.get_playing_players())):
             winner = self.play_single_move()

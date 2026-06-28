@@ -32,7 +32,7 @@ function render_poker_board(cards) {
     return;
   }
   let html = '<div style="display:flex;align-items:center;padding:6px 8px;">'
-           + '<span class="poker_board_label">Board&nbsp;&nbsp;</span>'
+           + '<span class="poker_board_label">' + (i18n['board'] || 'Board') + '&nbsp;&nbsp;</span>'
            + '<div id="poker_board_cards" style="display:flex;gap:4px;flex-wrap:wrap;"></div></div>';
   $('#poker_board').html(html);
   render_poker_cards(cards, '#poker_board_cards');
@@ -46,23 +46,23 @@ function show_betting_actions(allowed_actions, current_bet) {
   let html = '<div id="poker_bet_panel">';
 
   if (allowed_actions.indexOf('fold') >= 0) {
-    html += '<button class="btn btn-danger" onclick="send_poker_action(\'fold\')" style="margin:2px">Fold</button> ';
+    html += '<button class="btn btn-danger" onclick="send_poker_action(\'fold\')" style="margin:2px">' + (i18n['fold'] || 'Fold') + '</button> ';
   }
   if (allowed_actions.indexOf('check') >= 0) {
-    html += '<button class="btn btn-secondary" onclick="send_poker_action(\'check\')" style="margin:2px">Check</button> ';
+    html += '<button class="btn btn-secondary" onclick="send_poker_action(\'check\')" style="margin:2px">' + (i18n['check'] || 'Check') + '</button> ';
   }
   if (allowed_actions.indexOf('call') >= 0) {
-    html += '<button class="btn btn-primary" onclick="send_poker_action(\'call\')" style="margin:2px">Call ' + current_bet + '</button> ';
+    html += '<button class="btn btn-primary" onclick="send_poker_action(\'call\')" style="margin:2px">' + (i18n['call'] || 'Call') + ' ' + current_bet + '</button> ';
   }
   if (allowed_actions.indexOf('bet') >= 0) {
     html += '<input type="number" id="poker_bet_amount" value="' + (window._poker_big_blind || current_bet || 1)
           + '" min="1" style="width:80px;margin:2px"> ';
-    html += '<button class="btn btn-warning" onclick="send_poker_action(\'bet\', document.getElementById(\'poker_bet_amount\').value)" style="margin:2px">Bet</button> ';
+    html += '<button class="btn btn-warning" onclick="send_poker_action(\'bet\', document.getElementById(\'poker_bet_amount\').value)" style="margin:2px">' + (i18n['bet'] || 'Bet') + '</button> ';
   }
   if (allowed_actions.indexOf('raise') >= 0) {
     html += '<input type="number" id="poker_bet_amount" value="' + (window._poker_big_blind || current_bet || 1)
           + '" min="1" style="width:80px;margin:2px"> ';
-    html += '<button class="btn btn-warning" onclick="send_poker_action(\'raise\', document.getElementById(\'poker_bet_amount\').value)" style="margin:2px">Raise</button> ';
+    html += '<button class="btn btn-warning" onclick="send_poker_action(\'raise\', document.getElementById(\'poker_bet_amount\').value)" style="margin:2px">' + (i18n['raise'] || 'Raise') + '</button> ';
   }
 
   html += '</div>';
@@ -141,7 +141,7 @@ function register_poker_events() {
     // Clear cards-played area (used for inline bets)
     $('#cards_played').empty();
     let phase = data['phase_label'] || data['phase'];
-    show_msg(phase);
+    show_msg(i18n[phase.toLowerCase()] || phase);
   });
 
   // Whose turn it is to bet
@@ -185,15 +185,15 @@ function register_poker_events() {
     update_pot_display(0);
     update_bets_display({});
     $('#cards').html('');
-    update_phase_display('Showdown');
+    update_phase_display(i18n['showdown'] || 'Showdown');
 
     if (username === ownername) {
       $('#poker_bet_buttons').html(
         '<button class="btn btn-success" onclick="dealNextHand()" style="margin:4px">'
-        + 'Deal Next Hand</button>');
-      show_msg('Showdown complete — click "Deal Next Hand" to continue.');
+        + (i18n['deal_next_hand'] || 'Deal Next Hand') + '</button>');
+      show_msg(i18n['showdown_complete_deal'] || 'Showdown complete \u2014 click "Deal Next Hand" to continue.');
     } else {
-      show_msg('Showdown complete — waiting for the dealer…');
+      show_msg(i18n['showdown_complete_wait'] || 'Showdown complete \u2014 waiting for the dealer\u2026');
     }
   });
 
@@ -241,10 +241,10 @@ function poker_showdown(data) {
 
   let winnerText = winners.length === 1
     ? (i18n['winner'] || 'Winner') + ': ' + winners[0]
-    : 'Winners: ' + winners.join(', ');
+    : (i18n['winners'] || 'Winners') + ': ' + winners.join(', ');
 
-  update_phase_display('Showdown');
-  show_msg('Showdown — ' + winnerText);
+  update_phase_display(i18n['showdown'] || 'Showdown');
+  show_msg((i18n['showdown'] || 'Showdown') + ' \u2014 ' + winnerText);
   update_money_display(money);
   render_poker_board(communityCards);
 
@@ -258,12 +258,12 @@ function poker_showdown(data) {
 
     html += '<div class="' + panelClass + '">';
     if (isWinner) {
-      html += '<div class="poker_showdown_winner_badge">WINNER</div>';
+      html += '<div class="poker_showdown_winner_badge">' + (i18n['winner'] || 'WINNER').toUpperCase() + '</div>';
     }
     html += '<div class="poker_showdown_player_name">' + playerName + '</div>';
     html += '<div class="poker_showdown_rank">' + (handRank || '&mdash;') + '</div>';
 
-    html += '<div class="poker_showdown_cards_label">Hole cards</div>';
+    html += '<div class="poker_showdown_cards_label">' + (i18n['hole_cards'] || 'Hole cards') + '</div>';
     html += '<div class="poker_showdown_cards">';
     for (let i = 0; i < cardList.length; i++) {
       html += '<img class="card_showdown" src="' + static_folder + 'img/' + cardList[i] + '.svg">';
@@ -271,7 +271,7 @@ function poker_showdown(data) {
     html += '</div>';
 
     if (bestCardList.length) {
-      html += '<div class="poker_showdown_cards_label">Best hand</div>';
+      html += '<div class="poker_showdown_cards_label">' + (i18n['best_hand'] || 'Best hand') + '</div>';
       html += '<div class="poker_showdown_cards">';
       for (let i = 0; i < bestCardList.length; i++) {
         html += '<img class="card_showdown" src="' + static_folder + 'img/' + bestCardList[i] + '.svg">';

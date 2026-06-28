@@ -22,11 +22,14 @@ from romwhist.ai.ai_player import AiPlayer
 from romwhist.belote.belote_ai import BeloteAiPlayer
 from romwhist.contree.contree_ai import ContreeAiPlayer
 from romwhist.ohell.ohell_ai import OhellAiPlayer
+from romwhist.poker.poker_ai import PokerAiPlayer
+from romwhist.poker.poker_state import PokerState
 from romwhist.player import Player
 
 NAMESPACES = {'ohell': '/ohell_ai',
               'belote': '/belote_ai',
-              'contree': '/contree_ai'}
+              'contree': '/contree_ai',
+              'poker': '/poker_ai'}
 
 this = sys.modules[__name__]
 sio = socketio.Client(logger=True)
@@ -116,6 +119,8 @@ def player_to_bet(data):
         state = OhellAiPlayer.get_game_state_from_json(game_state_json)
     elif this.game_type == "contree":
         state = ContreeAiPlayer.get_game_state_from_json(game_state_json)
+    elif this.game_type == "poker":
+        state = PokerAiPlayer.get_game_state_from_json(game_state_json)
 
     # The player type comes from the state that was passed
     player_type = state.players_type.get(player_name)
@@ -128,9 +133,20 @@ def player_to_bet(data):
 
     if ai_player is not None and \
             (player_type == Player.PlayerType.AI or player_type == Player.PlayerType.SHADOWED):
-        bet = ai_player.player_to_bet(data.get("allowed_bets"), game_state_json)
-        logging.info("AI Player %s computer bet is %s", ai_player, bet)
-        emit_with_delay('player bet', {'game_id': game_id, 'player': player_name, 'bet': bet})
+        if this.game_type == "poker":
+            # For poker the response is an action dict, not a simple bet string
+            result = ai_player.player_to_act(
+                data.get("allowed_actions", []), game_state_json)
+            logging.info("Poker AI Player %s action is %s", ai_player, result)
+            emit_with_delay('poker ai action',
+                            {'game_id': game_id, 'player': player_name,
+                             'action': result.get('action'),
+                             'amount': result.get('amount', 0)})
+            bet = result
+        else:
+            bet = ai_player.player_to_bet(data.get("allowed_bets"), game_state_json)
+            logging.info("AI Player %s computer bet is %s", ai_player, bet)
+            emit_with_delay('player bet', {'game_id': game_id, 'player': player_name, 'bet': bet})
 
     return bet
 
@@ -144,6 +160,8 @@ def create_an_ai_player(player, game_id) -> AiPlayer:
         ai_player = OhellAiPlayer(player, game_id)
     elif this.game_type == "contree":
         ai_player = ContreeAiPlayer(player, game_id)
+    elif this.game_type == "poker":
+        ai_player = PokerAiPlayer(player, game_id)
 
     return ai_player
 
@@ -178,6 +196,8 @@ def player_to_play(data):
         state = OhellAiPlayer.get_game_state_from_json(game_state_json)
     elif this.game_type == "contree":
         state = ContreeAiPlayer.get_game_state_from_json(game_state_json)
+    elif this.game_type == "poker":
+        state = PokerAiPlayer.get_game_state_from_json(game_state_json)
 
     player_type = state.players_type.get(player_name)
 
@@ -250,6 +270,8 @@ def create_ai_player(data) -> AiPlayer:
         ai_player = OhellAiPlayer(Player(name), game_id)
     elif this.game_type == "contree":
         ai_player = ContreeAiPlayer(Player(name), game_id)
+    elif this.game_type == "poker":
+        ai_player = PokerAiPlayer(Player(name), game_id)
 
     if ai_players.get(game_id) is None:
         ai_players[game_id] = dict()
@@ -339,6 +361,8 @@ def main(argv):
     sio.on("card played", card_played, this.NAMESPACE)
     sio.on("game over", game_over, this.NAMESPACE)
     sio.on("game_state", game_state, this.NAMESPACE)
+    if this.game_type == "poker":
+        sio.on("poker to act", player_to_bet, this.NAMESPACE)
 
     sio.wait()
     # print (name + " " + str(game_id))

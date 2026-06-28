@@ -12,6 +12,7 @@ from flask_socketio import emit
 from romwhist import common_routes
 from romwhist import socketio
 from romwhist.poker.poker_game import PokerGame
+from romwhist.poker.poker_state import PokerState
 from romwhist.poker.poker_form import PokerStartForm
 from romwhist.forms import LoginForm, GameForm
 from romwhist.models import User
@@ -21,10 +22,12 @@ from romwhist import app
 
 
 NAMESPACE = '/poker'
+NAMESPACE_AI = '/poker_ai'
 
 games = dict()
 clients = dict()
 messages = dict()
+ai_service_connected = False
 
 
 # ---------------------------------------------------------------------------
@@ -50,7 +53,7 @@ def poker_start():
             game_id = common_routes.generate_game_id(app.config['MAX_GAMES'], games)
             if game_id is None:
                 return render_template('poker_start.html',
-                                       error="No more games available!!! Please try again later",
+                                       error=_("no_more_games"),
                                        form=form, locale=locale)
 
             logging.info("creating new poker game with id: %s", game_id)
@@ -59,6 +62,7 @@ def poker_start():
             initial_money = form.initial_money.data
             game = PokerGame(game_creator=username, id=game_id,
                              poker_type=poker_type, initial_money=initial_money)
+            games[game_id] = game
             games[game_id] = game
             clients[game_id] = dict()
             session['ownername'] = username
@@ -106,8 +110,11 @@ def poker_play():
                 socketio.emit("alert", _("game_already_has_max_players"),
                               room=clients[game_id].get(player_name), namespace=NAMESPACE)
                 flash(_("game_already_has_max_players"))
+            elif not ai_service_connected:
+                flash(_("poker_ai_service_not_running"))
             else:
-                common_routes.add_ai_player(len(game.players), game_id, NAMESPACE)
+                ai_name = "ai" + game_id + "_" + str(len(game.players))
+                common_routes.add_ai_player(len(game.players), game_id, NAMESPACE_AI)
             return redirect(url_for('poker_play'))
 
         if action == 'switch_player_type':
@@ -216,14 +223,51 @@ def _emit_betting_turn(game_id):
     if game is None or game.active_player is None:
         return
     active = game.active_player
+    allowed_actions = game.get_allowed_actions(active)
+
+    # Build a full PokerState for the AI process
+    base_state = game.get_state()
+    poker_state = PokerState(
+        game_id=game_id,
+        players=base_state.players,
+        hand_cards=base_state.hand_cards,
+        active_player=str(active),
+        scores=base_state.scores,
+        owner=base_state.owner,
+        dealer=base_state.dealer,
+        players_status=base_state.players_status,
+        players_type=base_state.players_type,
+        community_cards=game.community_cards.serialize() if game.community_cards else [],
+        pot=game.pot,
+        current_bet=game.current_bet,
+        bets_this_round={str(k): v for k, v in game.bets_this_round.items()},
+        folded_players=[str(p) for p in game.folded_players],
+        money={str(k): v for k, v in game.money.items()},
+        phase=game.phase.name,
+        hole_cards_count=game.hole_cards_count,
+        allowed_actions=allowed_actions,
+        poker_type=game.poker_type,
+        small_blind=game.small_blind,
+        big_blind=game.big_blind,
+    )
+
     socketio.emit(
         'poker_to_act',
         {'player': str(active),
-         'allowed_actions': game.get_allowed_actions(active),
+         'allowed_actions': allowed_actions,
          'current_bet': game.current_bet,
          'pot': game.pot,
          'bets_this_round': {str(k): v for k, v in game.bets_this_round.items()}},
         room=game_id, namespace=NAMESPACE)
+
+    # Emit a separate event consumed by the AI process (includes full state)
+    socketio.emit(
+        'poker to act',
+        {'game_id': game_id,
+         'player': str(active),
+         'allowed_actions': allowed_actions,
+         'state': poker_state.to_json()},
+        namespace=NAMESPACE_AI)
 
 
 def _do_advance_phase(game_id):
@@ -340,3 +384,61 @@ def on_post(msg):
 @socketio.on('disconnect', namespace=NAMESPACE)
 def disconnect():
     common_routes.disconnect(clients)
+
+
+@socketio.on('connect', namespace=NAMESPACE_AI)
+def ai_connect():
+    global ai_service_connected
+    ai_service_connected = True
+    logging.info("Poker AI service connected")
+
+
+@socketio.on('disconnect', namespace=NAMESPACE_AI)
+def ai_disconnect():
+    global ai_service_connected
+    ai_service_connected = False
+    logging.info("Poker AI service disconnected")
+
+
+@socketio.on('join game ai', namespace=NAMESPACE_AI)
+def join_ai(data):
+    game_id = str(data.get('game_id'))
+    player_name = data.get('player')
+    common_routes.join_ai(game_id, player_name, games, NAMESPACE)
+
+
+@socketio.on('poker ai action', namespace=NAMESPACE_AI)
+def on_poker_ai_action(data):
+    """Receives the action chosen by the AI process and applies it to the game."""
+    game_id = data.get('game_id')
+    player_name = data.get('player')
+    action = data.get('action')
+    amount = int(data.get('amount', 0))
+
+    game = games.get(game_id)
+    if not game or not player_name or not action:
+        return
+
+    player = game.get_player_by_name(player_name)
+    if player is None:
+        return
+
+    ok = game.player_action(player, action, amount)
+    if not ok:
+        logging.warning("Invalid poker AI action '%s' from %s", action, player_name)
+        return
+
+    socketio.emit(
+        'poker_player_acted',
+        {'player': player_name,
+         'action': action,
+         'amount': amount,
+         'pot': game.pot,
+         'bets_this_round': {str(k): v for k, v in game.bets_this_round.items()},
+         'money': {str(k): v for k, v in game.money.items()}},
+        room=game_id, namespace=NAMESPACE)
+
+    if game.is_betting_round_complete():
+        _do_advance_phase(game_id)
+    else:
+        _emit_betting_turn(game_id)

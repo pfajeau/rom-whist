@@ -10,7 +10,6 @@ Free Software Foundation, either version 3 of the License, or (at your option) a
 Author: Philippe Fajeau
 """
 
-"""\nPackage initialization for tests.\n\nLicense: GNU General Public License (GPL) v3.0 or later.\nThis program is free software: you can redistribute it and/or modify it\nunder the terms of the GNU General Public License as published by the\nFree Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nAuthor: Philippe Fajeau\n"""\n\n#
 # Description: Python module for the Rom-Whist project.
 #
 # Copyright (C) 2026 Philippe Fajeau

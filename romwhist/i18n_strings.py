@@ -94,4 +94,18 @@ def i18n():
     __i18n["belote"] = _("belote")
     __i18n["rebelote"] = _("rebelote")
 
+    # Poker strings passed to JS
+    __i18n["board"] = _("board")
+    __i18n["fold"] = _("fold")
+    __i18n["check"] = _("check")
+    __i18n["call"] = _("call")
+    __i18n["raise"] = _("raise")
+    __i18n["deal_next_hand"] = _("deal_next_hand")
+    __i18n["showdown_complete_deal"] = _("showdown_complete_deal")
+    __i18n["showdown_complete_wait"] = _("showdown_complete_wait")
+    __i18n["hole_cards"] = _("hole_cards")
+    __i18n["best_hand"] = _("best_hand")
+    __i18n["showdown"] = _("showdown")
+    __i18n["winners"] = _("winners")
+
     return __i18n

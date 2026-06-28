@@ -5,7 +5,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
 
   {% if error %}
-  <p class="error_msg"><strong>Error:</strong> {{ error }}</p>
+  <p class="error_msg"><strong>{{ _('error') }}:</strong> {{ error }}</p>
   {% endif %}
 
   <form action="" method="post" novalidate>
@@ -30,7 +30,7 @@
             {{ form.join_game(class="btn btn-primary") }}
           </div>
           <div class="col-2">
-            <br><h3>&nbsp;&nbsp;or</h3>
+            <br><h3>&nbsp;&nbsp;{{ _('or') }}</h3>
           </div>
           <div class="col-5 data_block">
             <h2>{{ _('create_new_game') }}</h2>

@@ -56,6 +56,9 @@ msgstr "Game already has 4 players - Cannot add another one"
 msgid "game_already_has_max_players"
 msgstr "The game has already reached its maximum number of players"
 
+msgid "poker_ai_service_not_running"
+msgstr "The Poker AI process is not running. Please start the poker_ai service first."
+
 #: forms.py:27 i18n_strings.py:70
 msgid "game_id"
 msgstr "Game ID"
@@ -422,6 +425,70 @@ msgstr "Welcome to the game of Whist!"
 #: ui/templates/ohell_start.html:106
 msgid "references"
 msgstr "References: "
+
+# Poker game strings
+msgid "welcome_play_poker"
+msgstr "Welcome to Poker!"
+
+msgid "poker_type"
+msgstr "Poker type"
+
+msgid "initial_money"
+msgstr "Starting money"
+
+msgid "phase"
+msgstr "Phase"
+
+msgid "pot"
+msgstr "Pot"
+
+msgid "money"
+msgstr "Money"
+
+msgid "error"
+msgstr "Error"
+
+msgid "or"
+msgstr "or"
+
+msgid "no_more_games"
+msgstr "No more games available. Please try again later."
+
+msgid "board"
+msgstr "Board"
+
+msgid "fold"
+msgstr "Fold"
+
+msgid "check"
+msgstr "Check"
+
+msgid "call"
+msgstr "Call"
+
+msgid "raise"
+msgstr "Raise"
+
+msgid "deal_next_hand"
+msgstr "Deal Next Hand"
+
+msgid "showdown_complete_deal"
+msgstr "Showdown complete \u2014 click \"Deal Next Hand\" to continue."
+
+msgid "showdown_complete_wait"
+msgstr "Showdown complete \u2014 waiting for the dealer\u2026"
+
+msgid "hole_cards"
+msgstr "Hole cards"
+
+msgid "best_hand"
+msgstr "Best hand"
+
+msgid "showdown"
+msgstr "Showdown"
+
+msgid "winners"
+msgstr "Winners"
 
 #~ msgid "points_achieved"
 #~ msgstr "Points Achieved"

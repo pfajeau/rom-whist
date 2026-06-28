@@ -56,6 +56,9 @@ msgstr "Ce jeu a déjà 4 joueurs!"
 msgid "game_already_has_max_players"
 msgstr "Le jeu a déjà le nombre maximum de joueurs"
 
+msgid "poker_ai_service_not_running"
+msgstr "Le processus IA Poker n'est pas en cours d'exécution. Veuillez d'abord démarrer le service poker_ai."
+
 #: forms.py:27 i18n_strings.py:70
 msgid "game_id"
 msgstr "Identifiant Jeu"
@@ -422,6 +425,70 @@ msgstr "Bienvenue au jeu de Whist!"
 #: ui/templates/ohell_start.html:106
 msgid "references"
 msgstr "Références"
+
+# Poker game strings
+msgid "welcome_play_poker"
+msgstr "Bienvenue au Poker !"
+
+msgid "poker_type"
+msgstr "Type de poker"
+
+msgid "initial_money"
+msgstr "Mise de départ"
+
+msgid "phase"
+msgstr "Phase"
+
+msgid "pot"
+msgstr "Pot"
+
+msgid "money"
+msgstr "Argent"
+
+msgid "error"
+msgstr "Erreur"
+
+msgid "or"
+msgstr "ou"
+
+msgid "no_more_games"
+msgstr "Aucune partie disponible. Veuillez réessayer plus tard."
+
+msgid "board"
+msgstr "Tableau"
+
+msgid "fold"
+msgstr "Se coucher"
+
+msgid "check"
+msgstr "Checker"
+
+msgid "call"
+msgstr "Suivre"
+
+msgid "raise"
+msgstr "Relancer"
+
+msgid "deal_next_hand"
+msgstr "Distribuer la main suivante"
+
+msgid "showdown_complete_deal"
+msgstr "Abattage terminé \u2014 cliquez sur \u00ab Distribuer la main suivante \u00bb pour continuer."
+
+msgid "showdown_complete_wait"
+msgstr "Abattage terminé \u2014 en attente du donneur\u2026"
+
+msgid "hole_cards"
+msgstr "Cartes privées"
+
+msgid "best_hand"
+msgstr "Meilleure main"
+
+msgid "showdown"
+msgstr "Abattage"
+
+msgid "winners"
+msgstr "Gagnants"
 
 #~ msgid "points_achieved"
 #~ msgstr "Points gagnés"
