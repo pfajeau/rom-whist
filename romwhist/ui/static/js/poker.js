@@ -31,8 +31,9 @@ function render_poker_board(cards) {
     $('#poker_board').empty();
     return;
   }
-  let html = '<div class="poker_board"><div class="poker_showdown_header">Board</div>'
-           + '<div id="poker_board_cards"></div></div>';
+  let html = '<div style="display:flex;align-items:center;padding:6px 8px;">'
+           + '<span class="poker_board_label">Board&nbsp;&nbsp;</span>'
+           + '<div id="poker_board_cards" style="display:flex;gap:4px;flex-wrap:wrap;"></div></div>';
   $('#poker_board').html(html);
   render_poker_cards(cards, '#poker_board_cards');
 }
@@ -65,16 +66,21 @@ function show_betting_actions(allowed_actions, current_bet) {
   }
 
   html += '</div>';
-  $('#game_action_buttons').html(html);
+  $('#poker_bet_buttons').html(html);
 }
 
 function hide_betting_actions() {
-  $('#game_action_buttons').html('');
+  $('#poker_bet_buttons').html('');
 }
 
 function send_poker_action(action, amount) {
   hide_betting_actions();
   socket.emit('poker action', {action: action, amount: parseInt(amount) || 0});
+}
+
+function dealNextHand() {
+  hide_betting_actions();
+  socket.emit('cs game started');
 }
 
 // ---------------------------------------------------------------------------
@@ -111,6 +117,7 @@ function update_phase_display(phase_label) {
 
 function register_poker_events() {
   socket.on('sc game started', function(data) {
+    hide_betting_actions();
     render_poker_board(data['community_cards'] || []);
     update_pot_display(data['pot'] || 0);
     update_bets_display({});
@@ -173,22 +180,21 @@ function register_poker_events() {
       + player + ': ' + label + '</span>');
   });
 
-  socket.on('hand completed', function(data) {
-    poker_hand_completed(data);
-  });
-
   socket.on('poker_next_hand', function(data) {
     update_money_display(data['money'] || {});
     update_pot_display(0);
     update_bets_display({});
-    hide_betting_actions();
     $('#cards').html('');
-    $('#cards_played').empty();
-    render_poker_board([]);
-    update_phase_display('Hand ' + data['hand_nb'] + ' complete');
-    show_msg('Hand ' + data['hand_nb'] + ' complete — owner can start the next hand');
-    // Re-enable the Start Game button so the owner can deal again
-    enable_start_game();
+    update_phase_display('Showdown');
+
+    if (username === ownername) {
+      $('#poker_bet_buttons').html(
+        '<button class="btn btn-success" onclick="dealNextHand()" style="margin:4px">'
+        + 'Deal Next Hand</button>');
+      show_msg('Showdown complete — click "Deal Next Hand" to continue.');
+    } else {
+      show_msg('Showdown complete — waiting for the dealer…');
+    }
   });
 
   socket.on('poker showdown', function(data) {
@@ -220,18 +226,10 @@ function register_poker_events() {
 }
 
 // ---------------------------------------------------------------------------
-// Hand-end handlers
+// Showdown handler
 // ---------------------------------------------------------------------------
 
-function poker_hand_completed(data) {
-  hide_betting_actions();
-  update_money_display(data['money'] || {});
-  show_msg('Hand completed');
-  fade_msg();
-}
-
 function poker_showdown(data) {
-  $('#cards_played').empty();
   hide_betting_actions();
 
   let winners = data['winners'] || [];
@@ -250,25 +248,42 @@ function poker_showdown(data) {
   update_money_display(money);
   render_poker_board(communityCards);
 
+  let html = '<div class="poker_showdown_container">';
   for (let playerName in hands) {
     let cardList = hands[playerName] || [];
     let bestCardList = bestHands[playerName] || [];
     let handRank = handRanks[playerName] || '';
-    let html = '<div class="poker_showdown_player">';
-    html += '<div class="poker_showdown_header">' + playerName + ' (' + handRank + ')</div>';
-    html += '<div class="poker_showdown_subheader">Hole cards</div>';
-    for (let i = 0; i < cardList.length; i++) {
-      html += '<img class="card_table" src="' + static_folder + 'img/' + cardList[i] + '.svg">';
+    let isWinner = winners.indexOf(playerName) >= 0;
+    let panelClass = 'poker_showdown_player' + (isWinner ? ' poker_showdown_winner' : '');
+
+    html += '<div class="' + panelClass + '">';
+    if (isWinner) {
+      html += '<div class="poker_showdown_winner_badge">WINNER</div>';
     }
-    if (bestCardList.length) {
-      html += '<div class="poker_showdown_subheader">Best hand</div>';
-      for (let i = 0; i < bestCardList.length; i++) {
-        html += '<img class="card_table" src="' + static_folder + 'img/' + bestCardList[i] + '.svg">';
-      }
+    html += '<div class="poker_showdown_player_name">' + playerName + '</div>';
+    html += '<div class="poker_showdown_rank">' + (handRank || '&mdash;') + '</div>';
+
+    html += '<div class="poker_showdown_cards_label">Hole cards</div>';
+    html += '<div class="poker_showdown_cards">';
+    for (let i = 0; i < cardList.length; i++) {
+      html += '<img class="card_showdown" src="' + static_folder + 'img/' + cardList[i] + '.svg">';
     }
     html += '</div>';
-    $('#cards_played').append(html);
+
+    if (bestCardList.length) {
+      html += '<div class="poker_showdown_cards_label">Best hand</div>';
+      html += '<div class="poker_showdown_cards">';
+      for (let i = 0; i < bestCardList.length; i++) {
+        html += '<img class="card_showdown" src="' + static_folder + 'img/' + bestCardList[i] + '.svg">';
+      }
+      html += '</div>';
+    }
+
+    html += '</div>';  // end player panel
   }
+  html += '</div>';  // end container
+
+  $('#cards_played').html(html);
 }
 
 // Small helpers

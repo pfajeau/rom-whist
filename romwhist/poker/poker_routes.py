@@ -235,7 +235,7 @@ def _do_advance_phase(game_id):
     new_phase = game.advance_phase()
 
     if new_phase == PokerGame.GamePhase.SHOWDOWN:
-        active = game.get_active_players()
+        active = [p for p in game.get_active_players() if p in game.hands]
         showdown_data = {
             'winners': [str(w) for w in game.hand_winners],
             'community_cards': game.community_cards.serialize() if game.community_cards else [],
@@ -253,13 +253,12 @@ def _do_advance_phase(game_id):
 
         game.hand_completed()
         money = {str(k): v for k, v in game.money.items()}
-        socketio.emit("hand completed", {'money': money}, room=game_id, namespace=NAMESPACE)
 
         if game.is_game_over():
             solvent = game.get_solvent_players()
             winner = str(solvent[0]) if solvent else "Nobody"
             common_routes.emit_to_players(
-                "game over", winner,
+                "game over", [winner],
                 game_id=game_id, room=game_id, namespace=NAMESPACE)
             common_routes.clean_game_data(game_id, games, clients)
         else:
