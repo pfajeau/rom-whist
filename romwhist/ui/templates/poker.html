@@ -20,19 +20,21 @@
   var poker_type = "{{ poker_type }}";
   var active_player = "{{ active_player }}";
   var community_cards = {{ community_cards|tojson }};
-  var allowed_cards_json = {{ allowed_cards|tojson }};
-  var allowed_cards = JSON.parse(allowed_cards_json);
+  var allowed_actions = {{ allowed_actions|tojson }};
   var game_phase = "{{ game_phase }}";
+  var current_bet = {{ current_bet }};
+  window._poker_current_bet = current_bet;
+  window._poker_big_blind = {{ big_blind }};
   var embeddedGameState = {{ embedded_game_state|tojson }};
 
   populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
-                   "{{ url_for('static', filename='img/whist.jpg') }}")
+                   "{{ url_for('static', filename='img/poker.png') }}")
 
   document.addEventListener('DOMContentLoaded', () => {
     setup_alertify();
     the_players = {{ players|safe }};
     initialize(the_players);
-    initialize_poker_game(active_player, allowed_cards, game_phase);
+    initialize_poker_game(active_player, allowed_actions, game_phase);
     render_poker_board(community_cards || []);
     enable_start_game();
 
@@ -51,67 +53,72 @@
   <div class="row">
     <div class="col-12">
       <strong>{% trans %}poker_type{% endtrans %}:</strong> {{ poker_type_label }}
+      &nbsp;&nbsp;|&nbsp;&nbsp;
+      <strong>Phase:</strong> <span id="poker_phase_label">{{ phase_label }}</span>
+      &nbsp;&nbsp;|&nbsp;&nbsp;
+      <strong>Pot:</strong> $<span id="poker_pot_value">{{ pot }}</span>
     </div>
   </div>
 </div>
 
-<div class="container">
-  <div class="row">
-    <div class="col-12">
-      <div id="poker_board"></div>
-    </div>
-  </div>
+<div class="table-responsive">
+  <br>
+  <table class="table-with-padding">
+    <tr id="players">
+      {% for player in players -%}
+      <td id="label_{{ player }}"></td>
+      <td id="name_{{ player }}" name="player" class="normal_player">{{ player }}</td>
+      {% endfor %}
+    </tr>
+    <tr id="money_row">
+      {% for player in players -%}
+      <td class="td_player_info_label">
+        <label for="money_{{ player }}" id="label_money_{{ player }}" class="player_info">{{ _('money') }}</label>
+      </td>
+      <td class="td_player_info">
+        <input type="text" id="money_{{ player }}" class="player_info" value="{{ money[player] if money is defined and player in money else 0 }}" readonly>
+      </td>
+      {% endfor %}
+    </tr>
+    <tr id="bets_round_row">
+      {% for player in players -%}
+      <td class="td_player_info_label">
+        <label for="bet_round_{{ player }}" class="player_info">{{ _('bet') }}</label>
+      </td>
+      <td class="td_player_info">
+        <input type="text" id="bet_round_{{ player }}" class="player_info"
+               value="{{ bets_this_round[player] if bets_this_round is defined and player in bets_this_round else 0 }}" readonly>
+      </td>
+      {% endfor %}
+    </tr>
+  </table>
 </div>
 
-<form id="game_form" action="" method="post" novalidate>
+<div id="card-table-poker" class="container">
+  <div id="poker_board"></div>
+  <div id="cards_played"></div>
+</div>
+
+{% include 'msg_container.html' %}
+
+<div>
+  <form id="game_form" action="" method="post" novalidate>
     {{ form.hidden_tag() }}
     <input type="hidden" id="action_game" name="action_game" value="" />
-
-  <div class="table-responsive">
     <br>
-    <table class="table-with-padding">
-      <tr id="players">
-        {% for player in players -%}
-        <td id="name_{{ player }}" name="player" class="normal_player">{{ player }}</td>
-        {% endfor %}
-      </tr>
-      <tr>
-        <td colspan="{{ players|length }}">
-          <div id="cards"></div>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="{{ players|length }}">
-          <div id="cards_played"></div>
-        </td>
-      </tr>
-      <tr>
-        {% for player in players -%}
-        <td class="player_info_label">{{ player }}</td>
-        {% endfor %}
-      </tr>
-      <tr>
-        {% for player in players -%}
-        <td class="player_info">
-          <label class="player_info">{{ _('score') }}</label><br>
-          <input type="text" id="score_{{ player }}" value="{{ scores[player] if scores[player] is not none else 0 }}" readonly>
-        </td>
-        {% endfor %}
-      </tr>
-    </table>
-  </div>
+    <div class="col-md-12" id="cards"></div>
 
-  <div id="game_action_buttons"></div>
-  <div id="msg_div"></div>
+    {% include 'chat.html' %}
 
-  <div class="chat_panel">
-    <textarea id="chat_text" rows="6" cols="80" readonly></textarea><br>
-    <input id="chat_input" type="text" size="70">
-    <button id="post_chat" type="button"></button>
-  </div>
+    <div id="buttons-div">
+      <div id="game_action_buttons" class="btn-toolbar">
+        <p><br>
+      </div>
+    </div>
 
-  {% block footer %}
-    {{ super() }}
-  {% endblock %}
-</form>
+    {% block footer %}
+      {{ super() }}
+    {% endblock %}
+  </form>
+</div>
 {% endblock %}

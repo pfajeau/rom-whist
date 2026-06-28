@@ -38,6 +38,12 @@
             <div id="create_options">
               {{ form.poker_type.label }}
               {{ form.poker_type }}
+              <br><br>
+              {{ form.initial_money.label }}
+              {{ form.initial_money(size=6, min=10, max=10000) }}
+              {% if form.initial_money.errors %}
+                <span class="error_msg">{{ form.initial_money.errors[0] }}</span>
+              {% endif %}
             </div>
             <br>
             {{ form.start_game(class="btn btn-primary") }}
