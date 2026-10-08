@@ -7,6 +7,6 @@ After=network.target
 User=pfajeau
 WorkingDirectory=/home/pfajeau/dev/rom-whist
 Environment="PATH=/home/pfajeau/dev/rom-whist/venv/bin"
-ExecStart=/home/pfajeau/dev/rom-whist/venv/bin/gunicorn -k eventlet --workers 1 -b :5000 romwhist:'create_app()'
+ExecStart=/home/pfajeau/dev/rom-whist/venv/bin/gunicorn -k gthread --workers 1 --threads 100 -b :5000 romwhist:'create_app()'
 [Install]
 WantedBy=multi-user.target

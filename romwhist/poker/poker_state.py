@@ -23,7 +23,7 @@ class PokerState(GameState):
                  community_cards=[], pot=0, current_bet=0,
                  bets_this_round={}, folded_players=[], money={},
                  phase=None, hole_cards_count=2, allowed_actions=[],
-                 poker_type="texas_holdem", small_blind=10, big_blind=20,
+                 poker_type="texas_holdem", small_blind=10, big_blind=20, timestamp=None,
                  # absorb extra GameState kwargs silently
                  **kwargs):
         super().__init__(
@@ -37,6 +37,7 @@ class PokerState(GameState):
             dealer=dealer,
             players_status=players_status,
             players_type=players_type,
+            timestamp=timestamp,
         )
         self.community_cards = community_cards
         self.pot = pot

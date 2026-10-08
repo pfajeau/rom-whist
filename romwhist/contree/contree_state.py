@@ -25,7 +25,7 @@ class ContreeState(BeloteState):
                  phase = None, hand_points=dict(), hand_winner=[], taker=None,
                  contree_status = ContreStatus.NORMAL, current_bet = "pass_0", BONUS_CAPOT = 250,
                  belote_status=BeloteStatus.Not_Allowed,
-                 players_status=dict(), players_type=dict()):
+                 players_status=dict(), players_type=dict(), timestamp=None):
 
         BeloteState.__init__(self, game_id, sim_player=sim_player, players=players, trump=trump,
                              cards_played_per_player=cards_played_per_player,
@@ -34,7 +34,7 @@ class ContreeState(BeloteState):
                              scores=scores, owner=owner, dealer=dealer, bets=bets, allowed_bets=allowed_bets,
                              trump_card=trump_card, phase=phase, hand_points=hand_points, hand_winner=hand_winner,
                              taker=taker,belote_status=belote_status,
-                             players_status=players_status, players_type=players_type)
+                             players_status=players_status, players_type=players_type, timestamp=timestamp)
 
         self.contree_status = contree_status
         self.current_bet = current_bet

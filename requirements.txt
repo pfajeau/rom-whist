@@ -7,7 +7,7 @@ colorclass
 dnspython
 docopt
 dominate
-eventlet
+simple-websocket
 Flask
 Flask-Bootstrap
 flask-cors

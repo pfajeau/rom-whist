@@ -23,8 +23,9 @@ class GameState:
                  cards_played_per_round=dict(), deck_size=0,
                  hand_cards=dict(), allowed_cards=[], active_player=None, scores=dict(),
                  owner=None, dealer=None, bets=dict(), allowed_bets=[], trump_card="", hand_points=dict(),
-                 players_status=dict(), players_type=dict()):
+                 players_status=dict(), players_type=dict(), timestamp=None):
         self.game_id = game_id
+        self.timestamp = timestamp
         self.players = players
         self.trump = trump
         self.cards_played_per_player = cards_played_per_player

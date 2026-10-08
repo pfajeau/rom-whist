@@ -55,7 +55,7 @@ except FileNotFoundError:
         app.secret_key = secrets.token_hex(32)
         secret_file.write(app.secret_key)
 
-socketio = SocketIO(app, logger=True, engineio_logger=True)
+socketio = SocketIO(app, async_mode="threading", logger=True, engineio_logger=True)
 babel = Babel(app)
 
 from .ohell import ohell_routes
@@ -126,5 +126,4 @@ def create_app():
         # finally create tables as per models
         db.create_all()
     return app
-
 

@@ -195,8 +195,6 @@ function game_started(data) {
   $('#button').remove()
   $('#msg_div').empty()
 
-  // Add scoresheet
-  $("#scoresheet_div").append("<td>")
 }
 
 function new_hand(data, static_url) {

@@ -22,7 +22,7 @@ class BeloteState(GameState):
                  bets=dict(), allowed_bets=[], trump_card = "",
                  phase = None, hand_points=dict(), hand_winner=[], taker=None,
                  belote_status=BeloteStatus.Not_Allowed,
-                 players_status=dict(), players_type=dict()):
+                 players_status=dict(), players_type=dict(), timestamp=None):
 
         super().__init__(game_id, sim_player=sim_player, players=players, trump=trump,
                          cards_played_per_player=cards_played_per_player,
@@ -30,7 +30,7 @@ class BeloteState(GameState):
                          hand_cards=hand_cards, allowed_cards=allowed_cards, active_player=active_player, scores=scores,
                          owner=owner, dealer=dealer, bets=bets, allowed_bets=allowed_bets, trump_card=trump_card,
                          hand_points=hand_points,
-                         players_status=players_status, players_type=players_type)
+                         players_status=players_status, players_type=players_type, timestamp=timestamp)
         self.phase = phase
         self.hand_winner = hand_winner
         if isinstance(taker, str):
@@ -40,5 +40,4 @@ class BeloteState(GameState):
         else:
             self.taker = None
         self.belote_status = belote_status
-
 

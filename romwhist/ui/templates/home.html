@@ -1,34 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}"/>
-<br><br>
-<h2>{{ _('welcome_home') }}<br></h2>
-<p><h3>{{ _('ṕick_game') }}: </p></h3>
-<br>
-<table id="game_list">
-  <tr>
-    <td>
-      <a href="ohell_start">
-      <img border="0" alt="Play Whist" src="{{ url_for('static', filename='') }}img/whist.jpg" width="200", height="150"></a>
-    </td>
-    <td>
-      <a href="belote_start">
-      <img border="0" alt="Play Belote" src="{{ url_for('static', filename='') }}img/belote.png" width="200", height="150"></a>
-    </td>
-    <td>
-      <a href="contree_start">
-      <img border="0" alt="Play Belote Contree" src="{{ url_for('static', filename='') }}img/contree.jpg" width="200", height="150"></a>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <a href="poker_start">
-      <img border="0" alt="Play Poker" src="{{ url_for('static', filename='') }}img/poker.png" width="200", height="150"></a>
-    </td>
-  </tr>
-</table>
-<br><br>
-  {% block footer %}
-    {{ super() }}
-  {% endblock %}
+<main class="home-page">
+  <div class="home-heading">
+    <h1>{{ _('welcome_home') }}</h1>
+    <h2>{{ _('ṕick_game') }}</h2>
+  </div>
+  <div class="game-grid">
+    {% for route, image, name in [('ohell_start', 'whist.jpg', 'Whist'), ('belote_start', 'belote.png', 'Belote'), ('contree_start', 'contree.jpg', 'Belote Contree'), ('poker_start', 'poker.png', 'Poker')] %}
+    <a class="game-tile" href="{{ url_for(route) }}">
+      <img src="{{ url_for('static', filename='img/' ~ image) }}" alt="" />
+      <span>{{ name }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</main>
+{% block footer %}{{ super() }}{% endblock %}
 {% endblock %}

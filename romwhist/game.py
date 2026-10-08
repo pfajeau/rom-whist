@@ -185,7 +185,7 @@ class CardGame:
         if state_copy.trump_card is not None and not state_copy.trump_card == "":
             self.trump_card = Card.card_from_value(state_copy.trump_card)
         
-        self.timestamp = state_copy.timestamp
+        self._timestamp = state_copy.timestamp
 
     @property
     def phase(self):

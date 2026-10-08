@@ -1,0 +1,1 @@
+python -m romwhist.ai.ai -g poker

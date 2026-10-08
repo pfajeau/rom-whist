@@ -367,7 +367,7 @@ def player_played(card):
     return player_played_process(game_id, player_name, card)
 
 
-def player_played_process(game_id, player, card):
+def player_played_process(game_id, player_name, card):
     # Emit event to players so they can see the card that was played
     if game_id is None:
         logging.error("Game id not specified")
