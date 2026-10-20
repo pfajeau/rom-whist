@@ -10,11 +10,13 @@ Author: Philippe Fajeau
 """
 
 import logging
+import copy
 
 from romwhist.deck import Deck
 from romwhist.game import CardGame
 from romwhist.hand import Hand
 from romwhist.ohell.ohell_state import OhellState
+from romwhist.card import Card
 
 
 class OhellGame(CardGame):
@@ -37,8 +39,10 @@ class OhellGame(CardGame):
         state = OhellState(self.id)
         state = CardGame.populate_state(self, state)
         state.phase = self.phase
-        state.nb_rounds_won = self.wins
-        state.phase = self.phase
+        state.nb_rounds_won = {str(player): wins for player, wins in self.wins.items()}
+        state.round_leaders = {str(index): str(trick.first_player)
+                               for index, trick in enumerate(self.rounds) if trick.round_started}
+        state.bonus_win = self.bonus_win
         state.allowed_bets = self.get_allowed_bets(self.active_player)
 
         # Required because AI agent sets a bet of type int64 which
@@ -48,11 +52,28 @@ class OhellGame(CardGame):
         return state
 
     def populate_from_state(self, state):
+        state = copy.deepcopy(state)
+        state.trump = Card.SUIT_NAMES_BY_INITIAL.get(state.trump, state.trump) or None
         CardGame.populate_from_state(self, state)
         self.phase = state.phase
-        self.wins = state.nb_rounds_won
+        self.bonus_win = state.bonus_win
+        self.wins = {player: int(state.nb_rounds_won.get(str(player), 0)) for player in self.players}
         self.soft_init_dict(self.wins, 0)
         self.soft_init_dict(self.bets, -1)
+        self.bets = {player: int(bet) for player, bet in self.bets.items()}
+        leader = self.next_player(self.dealer)
+        for index, trick in enumerate(self.rounds):
+            if state.round_leaders is not None:
+                name = state.round_leaders.get(str(index))
+                if name is not None:
+                    leader = self.get_player_by_name(name)
+            if trick.cards_played.get(leader) is not None:
+                trick.first_player = leader
+                trick.first_card_played = trick.cards_played[leader]
+                if trick.last_card_played():
+                    leader = trick.compute_winner()
+                    if not state.nb_rounds_won:
+                        self.wins[leader] += 1
 
     # Define the card distribution pattern
     def set_hand_prgression(self, multiple_one_card=False, multiple_no_trump=True, increment=1):

@@ -26,6 +26,8 @@ from romwhist.belote.belote_status import BeloteStatus
 class BeloteGame(CardGame):
     TOTAL_POINTS = 162
     MAX_PLAYERS = 4
+    # Contrée permits discarding when an opponent cannot be overtrumped.
+    MUST_UNDERTRUMP = True
 
     class GamePhase(str, Enum):
         DEAL = "Deal"
@@ -52,6 +54,8 @@ class BeloteGame(CardGame):
         self._hand_winner = []
         self.deck = None
         self._nb_pass_since_bet = 0
+        self._hand_scored = False
+        self._belote_started = False
 
         self.reset_card_ranks_and_points()
 
@@ -129,6 +133,15 @@ class BeloteGame(CardGame):
         if self.taker is not None:
             my_state.taker = str(self.taker)
         my_state.belote_status = self.belote_status
+        my_state.player_with_belote = str(self.player_with_belote) if self.player_with_belote is not None else None
+        my_state.nb_rounds_won = {str(player): wins for player, wins in self.wins.items()}
+        my_state.bonus_litige = self.bonus_litige
+        my_state.win_game_points = self.win_game_points
+        my_state.hand_scored = self._hand_scored
+        my_state.belote_started = self._belote_started
+        my_state.round_leaders = {str(index): str(game_round.first_player)
+                                 for index, game_round in enumerate(self.rounds)
+                                 if game_round.round_started}
         return my_state
 
     def populate_from_state(self, state):
@@ -138,16 +151,45 @@ class BeloteGame(CardGame):
         self.phase = state.phase
         self.soft_init_dict(self.hand_points, 0)
 
-        # self.hand_winner = copy.deepcopy(state.hand_winner)
+        self._hand_winner = [self.get_player_by_name(player) if player else ""
+                            for player in state.hand_winner]
         if state.taker is not None:
             self.taker = Player(state.taker)
 
-        self.belote_status = state.belote_status
+        self.belote_status = BeloteStatus(state.belote_status)
+        self.player_with_belote = self.get_player_by_name(state.player_with_belote)
+        self.bonus_litige = state.bonus_litige
+        self.win_game_points = state.win_game_points
+        self._hand_scored = state.hand_scored
+        self._belote_started = state.belote_started
+        if self.trump_suit in Card.SUIT_NAMES:
+            self.set_cards_rank_and_value()
+        leader = self.next_player(self.dealer)
+        for index, game_round in enumerate(self.rounds):
+            if state.round_leaders is not None:
+                name = state.round_leaders.get(str(index))
+                if name is not None:
+                    leader = self.get_player_by_name(name)
+            if game_round.cards_played.get(leader) is not None:
+                game_round.first_player = leader
+                game_round.first_card_played = game_round.cards_played[leader]
+                if game_round.last_card_played():
+                    leader = game_round.compute_winner()
+        if state.nb_rounds_won is not None:
+            for player in self.players:
+                self.wins[player] = state.nb_rounds_won.get(str(player), 0)
+        else:
+            # Older snapshots did not include trick counts.
+            for game_round in self.rounds:
+                if game_round.last_card_played():
+                    self.wins[game_round.compute_winner()] += 1
 
     def player_announced_belote(self, player, value):
         # check player can announce (has the right cards and belote_state ha the right value)
         logging.debug("In player_announced_belote, value is: " + str(value))
         logging.debug("Belote state value: " + self.belote_status.name)
+        if player != self.player_with_belote or self.phase != self.GamePhase.PLAY:
+            return self.belote_status
         if value == self.BeloteAnnounced.BELOTE:
 
             belote_ok = self.has_player_card(player, Card.get_suit_initial(self.trump_suit) + "12") and \
@@ -170,25 +212,24 @@ class BeloteGame(CardGame):
                 return True
         return False
 
-    @property
-    def belote_status(self):
-        return self.__belote_status
-
-    @belote_status.setter
-    def belote_status(self, value):
-        self.__belote_status = value
-
     def reset(self):
         CardGame.reset(self)
         self.taker = None
+        self.belote_status = BeloteStatus.Not_Allowed
+        self.player_with_belote = None
+        self.bonus_litige = 0
+        self._hand_winner = []
+        self._hand_scored = False
+        self._belote_started = False
 
     def is_game_over(self):
-        # Return True if one of the player or team has reached
-        # the number of points required to win
-        for player in self.players:
-            if self.scores[player] > self.win_game_points:
-                return True
-        return False
+        # Partners share a score; only compare one representative per team.
+        competitors = self.players[:2] if len(self.players) == 4 else self.players
+        totals = [self.scores[player] for player in competitors]
+        if not totals:
+            return False
+        highest = max(totals)
+        return highest >= self.win_game_points and totals.count(highest) == 1
 
     def add_player(self, player):
         CardGame.add_player(self, player)
@@ -343,7 +384,10 @@ class BeloteGame(CardGame):
                                         lower_trumps.append(str(card))
 
                 if not higher_trump and len(lower_trumps) > 0:
-                    allowed_cards = lower_trumps
+                    if self.MUST_UNDERTRUMP:
+                        allowed_cards = lower_trumps
+                    else:
+                        return self.hands[player].serialize()
 
             # Any card is allowed if no asked suit and no trump
             if len(allowed_cards) == 0:
@@ -353,141 +397,87 @@ class BeloteGame(CardGame):
 
         return allowed_cards
 
-    def update_scores(self):
-        # Check each player points
-        # If 2 or 3 players, player that took need to have more points that other players to win
-        # if 4 players, player that took and partner need to have more points than other players
-        nb_players = len(self.players)
-        players = []
-        players.append(self.taker)
-        player_points = []
-        player_points.append(self.hand_points[self.taker])
-        self._hand_winner = []
+    def _scoring_sides(self):
+        """Return the takers first, followed by the opposing side(s)."""
+        ordered = [self.taker]
+        for _ in range(1, len(self.players)):
+            ordered.append(self.next_player(ordered[-1]))
+        if len(ordered) == 4:
+            return [ordered[::2], ordered[1::2]]
+        return [[player] for player in ordered]
 
-        for i in range(1, nb_players):
-            players.append(self.next_player(players[i - 1]))
-            player_points.append(self.hand_points[players[i]])
+    def _belote_bonus(self, side):
+        if self.belote_status == BeloteStatus.Rebelote_Played and self.player_with_belote in side:
+            return self.BELOTE_REBELOTE
+        return 0
 
-        for i in range(nb_players):
-            if self.belote_status == BeloteStatus.Rebelote_Played and \
-                    self.player_with_belote == players[i]:
-                logging.info("In update_scores, adding belote / rebelote points to " + players[i])
-                player_points[i] = player_points[i] + self.BELOTE_REBELOTE
-                self.hand_points[players[i]] = player_points[i]
-
-        if nb_players == 2:
-            if player_points[0] > player_points[1]:
-                self.scores[players[0]] += player_points[0] + self.bonus_litige
-                self.scores[players[1]] += player_points[1]
-                self.bonus_litige = 0
-                self._hand_winner.append(players[0])
-
-            elif player_points[1] > player_points[0]:
-                self.scores[players[1]] += player_points[0] + player_points[1] + self.bonus_litige
-                self.bonus_litige = 0
-                self._hand_winner.append(players[1])
-                if self.player_with_belote == players[0] :
-                    self.scores[players[0]] += self.BELOTE_REBELOTE
-
-            else:
-                # Players are tied
-                self.bonus_litige += player_points[0]
-                logging.info("Points litige: " + str(self.bonus_litige))
-                self._hand_winner.append("")
-
-            # Capot
-            if self.wins[players[1]] == 0:
-                self.scores[players[0]] += self.BONUS_CAPOT - self.DIX_DE_DER
-            elif self.wins[players[0]] == 0:
-                self.scores[players[1]] += self.BONUS_CAPOT - self.DIX_DE_DER
-
-        elif nb_players == 3:
-            if player_points[0] > player_points[1] and player_points[0] > player_points[2]:
-                self.scores[players[0]] += player_points[0]
-                self.scores[players[1]] += player_points[1]
-                self.scores[players[2]] += player_points[2]
-                self._hand_winner.append(players[0])
-
-            elif player_points[1] > player_points[2]:
-                self.scores[players[1]] += player_points[1] + player_points[0]
-                self.scores[players[2]] += player_points[2]
-                self._hand_winner.append(players[1])
-                if self.player_with_belote == players[0]:
-                    self.scores[players[0]] += self.BELOTE_REBELOTE
-
-            elif player_points[2] > player_points[1]:
-                self.scores[players[2]] += player_points[2] + player_points[0]
-                self.scores[players[1]] += player_points[1]
-                self._hand_winner.append(players[2])
-                if self.player_with_belote == players[0]:
-                    self.scores[players[0]] += self.BELOTE_REBELOTE
-                # Player 1 has same number of points than player 2
-            else:
-                self.scores[players[1]] += player_points[1] + player_points[0] / 2
-                self.scores[players[2]] += player_points[2] + player_points[0] / 2
-
-            # Capot
-            # TODO: How is dix de der handled?
-            for i in range(3):
-                if self.wins[players[i]] == 0:
-                    np = self.next_player(players[i])
-                    nnp = self.next_player(np)
-                    if self.wins[np] == 0:
-                        # nnp gets the entire bonus
-                        self.scores[nnp] += self.BONUS_CAPOT
-                    elif self.wins[nnp] == 0:
-                        # np gets the entire bonus
-                        self.scores[np] += self.BONUS_CAPOT
-                    else:
-                        # np and nnp share the bonus
-                        self.scores[np] += self.BONUS_CAPOT / 2
-                        self.scores[nnp] += self.BONUS_CAPOT / 2
-
-        elif nb_players == 4:
-            # Required, as AI needs to know the team score for the hand
-            self.hand_points[players[0]] = self.hand_points[players[0]] + self.hand_points[players[2]]
-            self.hand_points[players[2]] = self.hand_points[players[0]]
-            self.hand_points[players[1]] = self.hand_points[players[1]] + self.hand_points[players[3]]
-            self.hand_points[players[3]] = self.hand_points[players[1]]
-
-            if player_points[0] + player_points[2] > player_points[1] + player_points[3]:
-                self.scores[players[0]] += player_points[0] + player_points[2] + self.bonus_litige
-                self.scores[players[2]] = self.scores[players[0]]
-                self.scores[players[1]] += player_points[1] + player_points[3]
-                self.scores[players[3]] = self.scores[players[1]]
-                self.bonus_litige = 0
-                self._hand_winner.append(players[0])
-                self._hand_winner.append(players[2])
-
-            elif player_points[1] + player_points[3] > player_points[0] + player_points[2]:
-                self.scores[players[1]] += self.TOTAL_POINTS + self.bonus_litige
-                self.scores[players[3]] = self.scores[players[1]]
-                self.bonus_litige = 0
-                if self.player_with_belote == players[0] or self.player_with_belote == players[2]:
-                    self.scores[players[0]] += self.BELOTE_REBELOTE
-                    self.scores[players[2]] = self.scores[players[0]]
-                self._hand_winner.append(players[1])
-                self._hand_winner.append(players[3])
-            else:
-                # Same number of points for both teams
-                # The team that did not take get their points
-                # The other team points are attributed to the winner of the next hand
-                self.bonus_litige += player_points[0]
-                logging.info("Points litige: " + str(self.bonus_litige))
-                self._hand_winner.append("")
-
-            # Capot
-            points_capot = self.BONUS_CAPOT - self.DIX_DE_DER
-            if self.wins[players[1]] + self.wins[players[3]] == 0:
-                self.scores[players[0]] += points_capot
-                self.scores[players[2]] = self.scores[players[0]]
-            elif self.wins[players[0]] + self.wins[players[2]] == 0:
-                self.scores[players[1]] += points_capot
-                self.scores[players[3]] = self.scores[players[1]]
-
-        logging.debug("Player points: %s", player_points)
+    def _record_hand_scores(self, sides, points, awards, winners):
+        """Publish team hand totals only after all calculations use individual points."""
+        self._hand_winner = winners
+        for side, total, award in zip(sides, points, awards):
+            score = self.scores[side[0]] + award
+            for player in side:
+                self.hand_points[player] = total
+                self.scores[player] = score
+        self._hand_scored = True
         self.scoresheet.append(self.scores.copy())
         return self.scores
+
+    def update_scores(self):
+        if self._hand_scored:
+            return self.scores
+        sides = self._scoring_sides()
+        raw_points = [sum(self.hand_points[player] for player in side) for side in sides]
+        bonuses = [self._belote_bonus(side) for side in sides]
+        points = [raw + bonus for raw, bonus in zip(raw_points, bonuses)]
+        tricks = [sum(self.wins[player] for player in side) for side in sides]
+        if len(sides) == 1:
+            return self._record_hand_scores(sides, points, [0], [])
+        if len(sides) == 3:
+            return self._score_three_players(sides, points, bonuses, tricks)
+
+        if points[0] > points[1]:
+            awards = [points[0] + self.bonus_litige, points[1]]
+            winners = sides[0]
+            self.bonus_litige = 0
+        elif points[0] < points[1]:
+            # A completed belote stays with its owner, even on a failed contract.
+            awards = [bonuses[0], sum(raw_points) + bonuses[1] + self.bonus_litige]
+            winners = sides[1]
+            self.bonus_litige = 0
+        else:
+            # The defense scores now; the takers' entire team total is carried.
+            awards = [0, points[1]]
+            self.bonus_litige += points[0]
+            winners = [""]
+
+        for index in range(2):
+            if tricks[index] > 0 and tricks[1 - index] == 0:
+                awards[index] += self.BONUS_CAPOT - self.DIX_DE_DER
+        return self._record_hand_scores(sides, points, awards, winners)
+
+    def _score_three_players(self, sides, points, bonuses, tricks):
+        """Keep the existing three-player variant's individual scoring."""
+        if points[0] > points[1] and points[0] > points[2]:
+            awards = points.copy()
+            winners = sides[0]
+        elif points[1] > points[2]:
+            awards = [bonuses[0], points[1] + points[0] - bonuses[0], points[2]]
+            winners = sides[1]
+        elif points[2] > points[1]:
+            awards = [bonuses[0], points[1], points[2] + points[0] - bonuses[0]]
+            winners = sides[2]
+        else:
+            share = (points[0] - bonuses[0]) / 2
+            awards = [bonuses[0], points[1] + share, points[2] + share]
+            winners = []
+
+        for index in range(3):
+            if tricks[index] == 0:
+                opponents = [other for other in range(3) if other != index and tricks[other] > 0]
+                for other in opponents:
+                    awards[other] += self.BONUS_CAPOT / len(opponents)
+        return self._record_hand_scores(sides, points, awards, winners)
 
     # Initial deal
     def deal(self, dealer=None):
@@ -505,6 +495,8 @@ class BeloteGame(CardGame):
         self.trump_suit = None
         self.rounds = []
         self._nb_pass_since_bet = 0
+        self._hand_scored = False
+        self._belote_started = False
 
         # Reset belote/rebelote states
         self.belote_status = BeloteStatus.Not_Allowed
@@ -558,6 +550,7 @@ class BeloteGame(CardGame):
         # Determine whether Belote / Rebelote enabled for each player
         self.belote_status = BeloteStatus.Not_Allowed
         self.player_with_belote = None
+        self._belote_started = False
         for player in self.get_playing_players():
             queen = False
             king = False
@@ -586,6 +579,7 @@ class BeloteGame(CardGame):
         if belote_card_played and self.belote_status != BeloteStatus.Not_Allowed:
             if self.belote_status == BeloteStatus.Belote_Announced:
                 self.belote_status = BeloteStatus.Belote_Played
+                self._belote_started = True
                 logging.debug("Player " + player + " played belote card: " + card_value)
 
             elif self.belote_status == BeloteStatus.Rebelote_Announced:

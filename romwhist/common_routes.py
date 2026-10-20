@@ -425,6 +425,40 @@ def join_ai(game_id, player_name, games, namespace):
     return
 
 
+def resume_ai_games(data, games, namespace):
+    """Replay only a current AI turn to the service that reconnected."""
+    resumed = 0
+    for game_id, player_names in data.get('players', {}).items():
+        game = games.get(str(game_id))
+        if game is None:
+            continue
+        player = game.get_active_player()
+        if player is None or player not in player_names or player.player_type not in (
+                Player.PlayerType.AI, Player.PlayerType.SHADOWED):
+            continue
+        if game.phase in ('Bet', 'Bet2'):
+            event = 'player to bet'
+            allowed = {'allowed_bets': game.get_allowed_bets(player)}
+        elif game.phase == 'Play':
+            # The pause after a completed trick already has a timer for the next
+            # turn. Replaying now would play into the completed trick.
+            if game.current_round is None or game.current_round.last_card_played():
+                continue
+            cards = game.get_allowed_cards(player)
+            if not cards:
+                continue
+            event = 'player to play'
+            allowed = {'allowed_cards': cards}
+        else:
+            continue
+        logging.info("Resuming AI turn for game %s, player %s", game_id, player)
+        socketio.emit(event, {'game_id': str(game_id), 'player': str(player),
+                             'state': game.get_state().to_json(), **allowed},
+                      room=request.sid, namespace=namespace + '_ai')
+        resumed += 1
+    return {'ok': True, 'resumed': resumed}
+
+
 def next_round(game, nplayer, allowed_cards, hand_completed_cb, namespace):
     game.create_round()
     game_id = game.id

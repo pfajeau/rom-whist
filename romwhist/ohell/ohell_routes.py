@@ -476,6 +476,11 @@ def join_ai(data):
     return
 
 
+@socketio.on('resume ai games', namespace=NAMESPACE_AI)
+def resume_ai_games(data):
+    return common_routes.resume_ai_games(data, games, NAMESPACE)
+
+
 @socketio.on('client post', namespace=NAMESPACE)
 def on_post(msg):
     common_routes.post_msg(msg, session['username'], session.get('game_id'),

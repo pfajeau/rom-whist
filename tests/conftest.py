@@ -18,7 +18,7 @@ Pytest configuration file. You can add common fixtures, hooks, plugins here.
 
 
 import pytest
-from rom-whist import create_app
+from romwhist import create_app
 
 
 @pytest.fixture

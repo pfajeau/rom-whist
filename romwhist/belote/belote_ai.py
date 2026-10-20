@@ -12,11 +12,9 @@ Author: Philippe Fajeau
 import json
 import logging
 
-from romwhist.ai.ai_agents import SimpleMCTSAgent
+from romwhist.belote.belote_search import BeloteSearchAgent
 from romwhist.ai.ai_player import AiPlayer
-from romwhist.deck import Deck
 from romwhist.belote.belote_state import BeloteState
-from romwhist.belote.belote import BeloteGame
 
 
 # TODO: factorize with OhellAIPlayer
@@ -24,13 +22,8 @@ class BeloteAiPlayer(AiPlayer):
 
     def __init__(self, player, id):
         AiPlayer.__init__(self, player, id)
-        self._agent = SimpleMCTSAgent('BeloteSim', self.player,
-                                      action_chooser_function='random_action',
-                                      num_simulations=100)
-
-        self._agent2 = SimpleMCTSAgent('BeloteSim', self.player,
-                                       action_chooser_function='random_action',
-                                       num_simulations=100)
+        self._agent = BeloteSearchAgent('BeloteSim', self.player, num_simulations=100)
+        self._agent2 = BeloteSearchAgent('BeloteSim', self.player, num_simulations=100)
         self.game_state = BeloteState(id, self)
 
     def player_to_play(self, allowed_cards, game_state_json):
@@ -49,37 +42,7 @@ class BeloteAiPlayer(AiPlayer):
             raise RuntimeError("Allowed cards is empty!")
 
         best_card = self._agent.get_action(self.game_state)
-
-        if best_card is None:
-            fake_game = BeloteGame("")
-            fake_game.trump_suit = self.game_state.trump
-            fake_game.deck = Deck(self.game_state.deck_size)
-
-            fake_game.set_cards_rank_and_value()
-
-            # Return weakest card from allowed cards
-            best_card = str(self.game_state.allowed_cards[0])
-            min_points = fake_game.card_points[best_card]
-            for card in self.game_state.allowed_cards:
-                if fake_game.card_points[str(card)] < min_points:
-                    best_card = card
-                    min_points = fake_game.card_points[str(card)]
-            logging.info ("No good card to play - Best card is: " + str(best_card))
-            return best_card
-
-        # Select the card which result in the most points
-        best_avg_points = 0
-        for card in self.game_state.allowed_cards:
-            points_for_card = self._agent.action_points[card]
-            avg_points_for_card = 0
-            if self._agent.num_simulations_per_action[card] > 0:
-                avg_points_for_card = points_for_card / self._agent.num_simulations_per_action[card]
-            logging.info("Avg points for card %s: %s", card, avg_points_for_card)
-            if avg_points_for_card > best_avg_points:
-                best_avg_points = max(best_avg_points, avg_points_for_card)
-                best_card = card
         logging.info("Agent calculated card: %s", best_card)
-
         return best_card
 
     @staticmethod
@@ -100,29 +63,14 @@ class BeloteAiPlayer(AiPlayer):
         # for the simulated game
         self.game_state.active_player = self.game_state.next_player(self.game_state.dealer)
 
-        # Remove Pass option
-        self.game_state.allowed_bets.pop(0)
-
         bet = self._agent2.get_bet(self.game_state)
 
         if bet is None:
             return "pass"
 
-        nb_simulations = self._agent2.num_simulations_per_action[bet]
-        nb_wins_for_best_bet = self._agent2.action_value[bet]
-        ratio_win = 0
-        if nb_simulations != 0:
-            ratio_win = nb_wins_for_best_bet/nb_simulations
-
-        logging.info("Agent calculated bet: %s", bet)
-        logging.info("Ratio of wins for that bet: %s", ratio_win)
-
-        # Only take if the bet will lead to a significant number of wins
-        if ratio_win > 0.75:
-            return bet
-        else:
-            return "pass"
-
+        # The search applies the configurable bidding risk threshold. Card
+        # selection has no such cutoff: an AI must play even in a losing hand.
+        return bet
 
     def compute_bet_agent(self):
         return self._agent2.get_bet(self.game_state)

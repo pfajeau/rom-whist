@@ -25,7 +25,10 @@ class ContreeState(BeloteState):
                  phase = None, hand_points=dict(), hand_winner=[], taker=None,
                  contree_status = ContreStatus.NORMAL, current_bet = "pass_0", BONUS_CAPOT = 250,
                  belote_status=BeloteStatus.Not_Allowed,
-                 players_status=dict(), players_type=dict(), timestamp=None):
+                 players_status=dict(), players_type=dict(), timestamp=None,
+                 player_with_belote=None, nb_rounds_won=None, bonus_litige=0,
+                 win_game_points=1000, hand_scored=False, belote_started=False,
+                 counting="points_bid", round_leaders=None):
 
         BeloteState.__init__(self, game_id, sim_player=sim_player, players=players, trump=trump,
                              cards_played_per_player=cards_played_per_player,
@@ -34,16 +37,26 @@ class ContreeState(BeloteState):
                              scores=scores, owner=owner, dealer=dealer, bets=bets, allowed_bets=allowed_bets,
                              trump_card=trump_card, phase=phase, hand_points=hand_points, hand_winner=hand_winner,
                              taker=taker,belote_status=belote_status,
-                             players_status=players_status, players_type=players_type, timestamp=timestamp)
+                             players_status=players_status, players_type=players_type, timestamp=timestamp,
+                             player_with_belote=player_with_belote, nb_rounds_won=nb_rounds_won,
+                             bonus_litige=bonus_litige, win_game_points=win_game_points,
+                             hand_scored=hand_scored, belote_started=belote_started,
+                             round_leaders=round_leaders)
 
         self.contree_status = contree_status
         self.current_bet = current_bet
         self.BONUS_CAPOT = BONUS_CAPOT   # Required for AI
         self.allowed_bets = allowed_bets
+        self.counting = counting
 
     def get_legal_bets(self):
         allowed = []
-        for bet in self.allowed_bets[0]:
-            if bet.casefold() != "PASS".casefold():
-                allowed.append(str(bet) + "_80")
+        if not self.allowed_bets:
+            return allowed
+        for suit in self.allowed_bets[0]:
+            suit = suit.casefold()
+            if suit in ('pass', 'contre', 'surcontre'):
+                allowed.append(suit + '_0')
+            else:
+                allowed.extend(f'{suit}_{int(points)}' for points in self.allowed_bets[1])
         return allowed

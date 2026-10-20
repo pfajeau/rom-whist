@@ -58,6 +58,9 @@ this.mode = "normal"
 
 # List of ai ai_players for each game. it is a list of lists
 ai_players = dict()
+_emit_lock = threading.Lock()
+_connection_generation = 0
+ACK_TIMEOUT = 30
 
 
 # @sio.on('trump card', namespace=NAMESPACE)
@@ -311,7 +314,7 @@ def get_player(game_id, player_name):
     if game_id is None:
         logging.error("game_id misssing")
         return None
-    ai_player = ai_players.get(game_id).get(player_name)
+    ai_player = ai_players.get(game_id, {}).get(player_name)
     return ai_player
 
 
@@ -323,13 +326,71 @@ def get_ai_players(game_id):
 
 
 def emit_with_delay(event, data, delay=DEFAULT_DELAY):
-    timer = threading.Timer(delay, emit, [event, data])
+    generation = _connection_generation
+
+    def send_if_current_connection():
+        if generation != _connection_generation:
+            logging.info("Discarding delayed %s from a previous connection", event)
+            return
+        emit(event, data)
+
+    timer = threading.Timer(delay, send_if_current_connection)
+    timer.daemon = True
     timer.start()
 
 
 def emit(event, data):
     if this.mode == "normal":
-        sio.emit(event, data, namespace=this.NAMESPACE)
+        timeout = None
+        callback = None
+        if event == 'player played':
+            def acknowledgement(*args):
+                timeout.cancel()
+                result = args[0] if args else None
+                if isinstance(result, dict) and not result.get('ok', False):
+                    logging.warning("AI play rejected for game %s, player %s: %s",
+                                    data.get('game_id'), data.get('player'), result)
+                else:
+                    logging.debug("AI play acknowledged for game %s, player %s",
+                                  data.get('game_id'), data.get('player'))
+
+            callback = acknowledgement
+            timeout = threading.Timer(
+                ACK_TIMEOUT, logging.warning,
+                ["No acknowledgement for AI play in game %s, player %s, card %s",
+                 data.get('game_id'), data.get('player'), data.get('card')])
+            timeout.daemon = True
+            timeout.start()
+        try:
+            # Delayed-action threads share one Socket.IO connection.
+            with _emit_lock:
+                sio.emit(event, data, namespace=this.NAMESPACE, callback=callback)
+        except Exception:
+            if timeout is not None:
+                timeout.cancel()
+            logging.exception("Failed to send AI event %s for game %s", event, data.get('game_id'))
+
+
+def resume_games():
+    """Request the server's current turn after reconnecting, not the old move."""
+    if this.game_type not in ('belote', 'contree', 'ohell'):
+        return
+    players = {str(game_id): list(players) for game_id, players in list(ai_players.items()) if players}
+    if players:
+        emit('resume ai games', {'players': players})
+
+
+def namespace_connected():
+    global _connection_generation
+    _connection_generation += 1
+    logging.info("AI namespace %s connected; requesting pending turns", this.NAMESPACE)
+    resume_games()
+
+
+def namespace_disconnected(reason=None):
+    global _connection_generation
+    _connection_generation += 1
+    logging.warning("AI namespace %s disconnected: %s", this.NAMESPACE, reason)
 
 
 def main(argv):
@@ -350,7 +411,9 @@ def main(argv):
             this.game_type = arg
             this.NAMESPACE = NAMESPACES[this.game_type]
 
-    sio.connect(HOST, namespaces=[this.NAMESPACE])
+    # Register before connecting so automatic reconnects can recover missed turns.
+    sio.on('connect', namespace_connected, this.NAMESPACE)
+    sio.on('disconnect', namespace_disconnected, this.NAMESPACE)
     sio.on("create_ai_player", create_ai_player, this.NAMESPACE)
     sio.on("sc game started", game_started, this.NAMESPACE)
     sio.on("trump card", trump_card, this.NAMESPACE)
@@ -364,6 +427,7 @@ def main(argv):
     if this.game_type == "poker":
         sio.on("poker to act", player_to_bet, this.NAMESPACE)
 
+    sio.connect(HOST, namespaces=[this.NAMESPACE])
     sio.wait()
     # print (name + " " + str(game_id))
     # ai_player = AiPlayer(name, game_id)

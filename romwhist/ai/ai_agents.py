@@ -142,6 +142,7 @@ class SimpleMCTSAgent(IAgent):
         :param int num_simulations: How many simulations for rollout
         """
         max_threads = None
+        win_threshold = 0.6
         self.best_action = None
 
         # Read nb simulation from config file

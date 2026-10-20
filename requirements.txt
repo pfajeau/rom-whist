@@ -26,7 +26,7 @@ Jinja2
 MarkupSafe
 pyparsing
 python-engineio
-python-socketio
+python-socketio[client]
 requests
 six
 SQLAlchemy

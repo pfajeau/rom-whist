@@ -14,7 +14,7 @@ import copy
 import json
 import logging
 
-from contree.announce import Announce
+from romwhist.contree.announce import Announce
 from romwhist.card import Card
 from romwhist.contree.contree_ai import ContreeAiPlayer
 from romwhist.contree.contree_state import ContreeState

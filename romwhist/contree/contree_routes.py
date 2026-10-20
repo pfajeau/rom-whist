@@ -389,11 +389,11 @@ def player_played_ai(data):
     game_id = data.get('game_id')
     card = data.get('card')
     game = games.get(game_id)
-    player = game.get_player_by_name(player_name)
-
-    # Announce belote / rebelote as applicable
-    common_routes.belote_rebelote_ai(game, card, player, NAMESPACE)
-    common_routes.player_played_process(game, player_name, card, NAMESPACE, next_round)
+    if game is not None:
+        player = game.get_player_by_name(player_name)
+        # Announce belote / rebelote as applicable
+        common_routes.belote_rebelote_ai(game, card, player, NAMESPACE)
+    return common_routes.player_played_process(game, player_name, card, NAMESPACE, next_round)
 
 
 @socketio.on('player played', namespace=NAMESPACE)
@@ -458,6 +458,11 @@ def join_ai(data):
     player_name = data.get('player')
     common_routes.join_ai(game_id, player_name, games, NAMESPACE)
     return
+
+
+@socketio.on('resume ai games', namespace=NAMESPACE_AI)
+def resume_ai_games(data):
+    return common_routes.resume_ai_games(data, games, NAMESPACE)
 
 
 @socketio.on('client post', namespace=NAMESPACE)

@@ -31,8 +31,10 @@ class CountingMethod(str, Enum):
 
 class ContreeGame(BeloteGame):
 
-    all_bet_points = [80, 90, 100, 110, 120, 130, 140, 150, 162]
+    # 162 is the existing wire-format sentinel for a requested capot.
+    all_bet_points = [80, 90, 100, 110, 120, 130, 140, 150, 160, 162]
     MAX_PLAYERS = 4
+    MUST_UNDERTRUMP = False
 
     def __init__(self, game_creator=None, id=0, counting=CountingMethod.POINTS_BID):
         BeloteGame.__init__(self, game_creator, id)
@@ -61,12 +63,14 @@ class ContreeGame(BeloteGame):
         for player in self.players:
             new_state.bets[player] = str(self.bets[player])
         new_state.current_bet = str(self.current_bet)
+        new_state.counting = self.counting
 
         return new_state
 
     def populate_from_state(self, state):
         BeloteGame.populate_from_state(self, state)
-        self.contree_status = state.contree_status
+        self.contree_status = ContreStatus(state.contree_status)
+        self.counting = CountingMethod(state.counting)
         for player in self.players:
             self.bets[player] = Announce.from_str(state.bets[player])
         self.current_bet = Announce.from_str(state.current_bet)
@@ -184,7 +188,7 @@ class ContreeGame(BeloteGame):
 
         if self.contree_status == ContreStatus.CONTREE or \
            self.contree_status == ContreStatus.SURCONTREE or \
-           self.taker == partner or \
+           self.taker in (partner, player) or \
            self.current_bet is None or \
            self.current_bet.suit == "pass":
             logging.debug("Contre disabled")
@@ -230,96 +234,66 @@ class ContreeGame(BeloteGame):
         for player in self.players:
             self.bets[player] = Announce("", "0")
 
+    @staticmethod
+    def _round_score(points):
+        # Python's round uses ties-to-even; the rules require 85 -> 90.
+        return ((points + 5) // 10) * 10
+
     def update_scores(self):
-        # Check each player points
-        # If 2 or 3 players, player that took need to have more points that other players to win
-        # if 4 players, player that took and partner need to have more points than other players
-        nb_players = len(self.players)
-        players = []
-        players.append(self.taker)
-        player_points = []
-        player_points.append(self.hand_points[self.taker])
-        self._hand_winner = []
+        if self._hand_scored:
+            return self.scores
+        sides = self._scoring_sides()
+        if len(sides) != 2 or len(self.players) != 4:
+            raise ValueError("Contrée scoring requires two teams of two players")
+        raw_points = [sum(self.hand_points[player] for player in side) for side in sides]
+        bonuses = [self._belote_bonus(side) for side in sides]
+        points = [raw + bonus for raw, bonus in zip(raw_points, bonuses)]
+        tricks = [sum(self.wins[player] for player in side) for side in sides]
+        capot = [count == 8 for count in tricks]
+        bid = self.current_bet.points
+        requested_capot = bid == self.TOTAL_POINTS
+        success = capot[0] if requested_capot else points[0] >= bid
+        multiplier = {ContreStatus.NORMAL: 1, ContreStatus.CONTREE: 2,
+                      ContreStatus.SURCONTREE: 4}[self.contree_status]
+        winner = 0 if success else 1
+        awards = [0, 0]
 
-        for i in range(1, nb_players):
-            players.append(self.next_player(players[i - 1]))
-            player_points.append(self.hand_points[players[i]])
-
-        for i in range(nb_players):
-            if self.belote_status == BeloteStatus.Rebelote_Played and \
-                    self.player_with_belote == players[i]:
-                logging.info("In update_scores, adding belote / rebelote points to " + players[i])
-                player_points[i] += self.BELOTE_REBELOTE
-                self.hand_points[players[i]] = player_points[i]
-
-        logging.debug("Bet points: %s", self.bets[self.taker].points)
-
-        # Required, as AI needs to know the team score for the hand
-        self.hand_points[players[0]] = self.hand_points[players[0]] + self.hand_points[players[2]]
-        self.hand_points[players[2]] = self.hand_points[players[0]]
-        self.hand_points[players[1]] = self.hand_points[players[1]] + self.hand_points[players[3]]
-        self.hand_points[players[3]] = self.hand_points[players[1]]
-
-        score_winners = 0
-        score_losers = 0
-        if player_points[0] + player_points[2] >= self.bets[self.taker].points:
-            if self.counting == CountingMethod.POINTS_ACHIEVED:
-                score_winners = round(player_points[0] + player_points[2], -1)
-                score_losers = round(player_points[1] + player_points[3], -1)
-            elif self.counting == CountingMethod.POINTS_BID:
-                score_winners = round(self.current_bet.points, -1)
-                score_losers = 0
-            elif self.counting == CountingMethod.POINTS_ACHIEVED_PLUS_BID:
-                score_winners = round(player_points[0] + player_points[2] + self.current_bet.points, -1)
-                score_losers = round(player_points[1] + player_points[3], -1)
-
-            self._hand_winner.append(players[0])
-            self._hand_winner.append(players[2])
-
-            # Contree
-            if self.contree_status == ContreStatus.CONTREE:
-                score_winners = 2 * score_winners
-            elif self.contree_status == ContreStatus.SURCONTREE:
-                score_winners = 4 * score_winners
-
-            self.scores[players[0]] += score_winners
-            self.scores[players[2]] = self.scores[players[0]]
-            self.scores[players[1]] += score_losers
-            self.scores[players[3]] = self.scores[players[1]]
-
+        if self.counting == CountingMethod.POINTS_BID:
+            # Preserve the app's bid-only variant: belote helps fulfill a numeric
+            # contract, while the award is the bid (250 for a made capot).
+            award = (self.BONUS_CAPOT if requested_capot else bid) if success else 160
+            awards[winner] = award * multiplier
         else:
-            score_winners = round(self.TOTAL_POINTS, -1)
-            if self.contree_status == ContreStatus.CONTREE:
-                score_winners = 2 * score_winners
-            elif self.contree_status == ContreStatus.SURCONTREE:
-                score_winners = 4 * score_winners
+            # FFB Contrée, sections 7 and 10.2: a failed taker's belote transfers
+            # even if the first card was announced but rebelote was omitted.
+            transferred_bonus = sum(bonuses)
+            if not success and bonuses[0] == 0 and self.player_with_belote in sides[0] and (
+                    self._belote_started or self.belote_status in (
+                        BeloteStatus.Belote_Played, BeloteStatus.Rebelote_Announced)):
+                transferred_bonus += self.BELOTE_REBELOTE
 
-            self.scores[players[1]] += score_winners
-            self.scores[players[3]] = self.scores[players[1]]
-            self._hand_winner.append(players[1])
-            self._hand_winner.append(players[3])
-
-        # Capot
-        if self.counting == CountingMethod.POINTS_ACHIEVED or \
-           self.counting == CountingMethod.POINTS_ACHIEVED_PLUS_BID or \
-           self.counting == CountingMethod.POINTS_BID and self.current_bet.points == self.TOTAL_POINTS:
-
-            if self.contree_status == ContreStatus.CONTREE:
-                points_capot = self.BONUS_CAPOT * 2
-            elif self.contree_status == ContreStatus.SURCONTREE:
-                points_capot = self.BONUS_CAPOT * 4
+            if requested_capot:
+                awards[winner] = 2 * self.BONUS_CAPOT * multiplier
+                if success and multiplier == 1:
+                    awards[0] += bonuses[0]
+                    awards[1] = bonuses[1]
+                else:
+                    awards[winner] += transferred_bonus
+            elif multiplier > 1 or not success:
+                # Doubled hands award the whole stake to the winning side.
+                base = 160
+                if self.counting == CountingMethod.POINTS_ACHIEVED_PLUS_BID:
+                    base = (self.BONUS_CAPOT if capot[winner] else 160) + bid
+                awards[winner] = base * multiplier + transferred_bonus
+                if self.counting == CountingMethod.POINTS_ACHIEVED and capot[winner]:
+                    # Section 10.2, note 2: an unrequested doubled capot is
+                    # 320 + 100, rather than doubling the capot premium.
+                    awards[winner] += 100 if multiplier > 1 else 90
             else:
-                points_capot = self.BONUS_CAPOT
+                awards = [self._round_score(total) for total in points]
+                if capot[0]:
+                    awards[0] = self.BONUS_CAPOT + bonuses[0]
+                if self.counting == CountingMethod.POINTS_ACHIEVED_PLUS_BID:
+                    awards[0] += bid
 
-            if self.wins[players[1]] + self.wins[players[3]] == 0:
-                self.scores[players[0]] += points_capot
-                self.scores[players[2]] = self.scores[players[0]]
-            elif self.wins[players[0]] + self.wins[players[2]] == 0:
-                self.scores[players[1]] += points_capot
-                self.scores[players[3]] = self.scores[players[1]]
-
-        logging.debug("Bet %s", self.current_bet)
-        logging.debug("Player points: %s", player_points)
-        logging.debug("Hand Winners: %s", self._hand_winner)
-        self.scoresheet.append(self.scores.copy())
-        return self.scores
+        return self._record_hand_scores(sides, points, awards, sides[winner])

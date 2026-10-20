@@ -17,7 +17,8 @@ class OhellState(GameState):
                  hand_cards=dict(), allowed_cards=[], active_player=None, scores=dict(),
                  owner=None, dealer = None, trump_card = "", hand_points=dict(),
                  bets=dict(), nb_rounds_won=dict(), allowed_bets=[],
-                 players_status=dict(), players_type=dict(), timestamp=None):
+                 players_status=dict(), players_type=dict(), timestamp=None,
+                 round_leaders=None, bonus_win=1):
 
         super().__init__(game_id, sim_player=sim_player, players=players, trump=trump, cards_played_per_player=cards_played_per_player,
                  cards_played_per_round=cards_played_per_round, deck_size=deck_size,
@@ -26,6 +27,8 @@ class OhellState(GameState):
                  bets=bets, allowed_bets=allowed_bets, trump_card=trump_card, hand_points=hand_points,
                  players_status=players_status, players_type=players_type, timestamp=timestamp)
 
-        self.nb_rounds_won = nb_rounds_won
+        self.nb_rounds_won = dict(nb_rounds_won)
         self.phase = phase
+        self.round_leaders = dict(round_leaders) if round_leaders is not None else None
+        self.bonus_win = bonus_win
 
