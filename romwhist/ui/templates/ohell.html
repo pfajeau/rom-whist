@@ -37,6 +37,7 @@ Add footer / contact info
   var player_type = "{{ player_type }}"
   var embeddedGameState = {{ embedded_game_state|tojson }};
 
+{% include "galene_button_vars.html" %}
   populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
                    "{{ url_for('static', filename='img/whist.jpg') }}")
 
@@ -47,6 +48,7 @@ Add footer / contact info
 
     the_players = {{ players|safe }}
     initialize(the_players)
+    add_video_button('{{ session["game_id"] }}');
 
     {% if cards_played != None %}
       {% for key, value in cards_played.items() %}
@@ -93,6 +95,7 @@ Add footer / contact info
     console.log("Connecting to io")
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/ohell');
     registerSyncStateSocket(socket);
+    socket.on('video state changed', function(data) { video_state_changed(data) });
 
     socket.on('connect', function() {
       console.log("Connected to io")

@@ -123,6 +123,15 @@ def create_app():
         from .commands import romwhist_cli
         app.cli.add_command(romwhist_cli)
 
+        # Video conferencing rooms are created on demand in Galene
+        from .galene import configure as configure_galene
+        galene_service = configure_galene(app)
+        if galene_service.enabled and app.config.get("GALENE_SWEEP_ENABLED", True):
+            from . import common_routes
+            galene_service.start_sweeper(
+                common_routes.live_video_games,
+                interval_seconds=int(app.config.get("GALENE_SWEEP_INTERVAL_SECONDS", 900)))
+
         # finally create tables as per models
         db.create_all()
     return app

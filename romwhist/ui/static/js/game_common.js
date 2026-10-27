@@ -177,6 +177,151 @@ function populate_header(player, game_id, game_logo_url) {
   $("#topnav").append(html_frag);
 }
 
+// Window opened for the video conference, so it can be reopened on demand.
+var video_window = null;
+
+// Video conference button. The room lives in a separate browser window so the
+// game page stays untouched.
+function add_video_button(game_id) {
+  // The template sets video_available to false when Galene is not configured.
+  if (typeof video_available === "undefined" || !video_available) {
+    return;
+  }
+
+  if (video_enabled && galene_url) {
+    // A real popup window (rather than a target=_blank tab) is used when the
+    // browser allows it. The anchor keeps a working link as a fallback.
+    $("#game_action_buttons").append(
+      '<a id="join_video" class="btn btn-primary" target="romwhist_video_' + game_id + '"' +
+      ' rel="noopener noreferrer" href="' + galene_url + '">' +
+      i18n["join_video"] + '</a>');
+
+    document.getElementById("join_video").onclick = function(event) {
+      // Re-use the window while it is open.
+      if (video_window && !video_window.closed) {
+        event.preventDefault();
+        video_window.focus();
+        return;
+      }
+      // A real popup window needs a user gesture, hence opening it here rather
+      // than when the page loads. When the browser blocks it, the anchor's
+      // default behaviour opens the room in a tab instead.
+      video_window = open_video_window(galene_url, game_id);
+      if (video_window) {
+        event.preventDefault();
+      }
+    }
+  } else if (video_enabled) {
+    // The room exists but no token could be obtained, usually because the
+    // Galene server is unreachable right now.
+    $("#game_action_buttons").append(
+      '<button id="join_video" type="button" class="btn btn-secondary" disabled>' +
+      i18n["video_chat_unavailable"] + '</button>');
+  }
+
+  if (video_owner) {
+    $("#game_action_buttons").append(
+      '<button id="toggle_video" type="button" class="btn btn-primary" name="toggle_video">' +
+      i18n[video_enabled ? "disable_video_chat" : "enable_video_chat"] + '</button>');
+    document.getElementById("toggle_video").onclick = function() {
+      toggle_video_chat(game_id, !video_enabled);
+    }
+  }
+}
+
+// Enable or disable video chat for the game. Enabling also joins the owner, so
+// the room opens in a window during the click: browsers only allow that from a
+// user gesture. The window is navigated once the server has created the room.
+function toggle_video_chat(game_id, enable) {
+  var pending = null;
+  if (enable) {
+    pending = open_blank_video_window(game_id);
+  }
+
+  socket.emit("toggle video", {enable: enable}, function (ack) {
+    if (!ack || !ack.ok) {
+      if (pending) {
+        pending.close();
+      }
+      show_alert(i18n[video_error_key(ack)], i18n["video_chat_error"]);
+      return;
+    }
+    if (!pending || pending.closed) {
+      return;
+    }
+    if (ack.url) {
+      pending.location.replace(ack.url);
+      pending.focus();
+      video_window = pending;
+    } else {
+      pending.close();
+    }
+  });
+}
+
+function video_error_key(ack) {
+  var error = ack && ack.error;
+  if (error === "not_owner") {
+    return "video_owner_only";
+  }
+  return "video_chat_unavailable";
+}
+
+// Reflect a video chat state change without reloading the game page. The
+// event only carries the on/off state: join URLs are personal, so a player
+// who has none yet fetches its own from the server.
+function video_state_changed(data) {
+  video_enabled = !!data.enabled;
+  if (!video_enabled) {
+    galene_url = null;
+  }
+
+  if (video_enabled && !galene_url) {
+    socket.emit("join video chat", {}, function (ack) {
+      if (ack && ack.ok) {
+        galene_url = ack.url || null;
+        $("#join_video, #toggle_video").remove();
+        add_video_button(data.game_id);
+      }
+    });
+    return;
+  }
+
+  $("#join_video, #toggle_video").remove();
+  add_video_button(data.game_id);
+}
+
+// The video window is named, so opening it again reuses it instead of piling
+// up windows.
+var VIDEO_WINDOW_FEATURES = "popup,width=1100,height=800,resizable,scrollbars";
+
+// Open the room in its own window. Returns null when the browser blocks it.
+function open_video_window(url, game_id) {
+  var win = open_named_window(url, game_id);
+  if (win) {
+    win.focus();
+  }
+  return win;
+}
+
+// Open an empty window now, to be pointed at the room once the server has
+// created it. Necessary because a popup must be opened from a user gesture.
+function open_blank_video_window(game_id) {
+  if (video_window && !video_window.closed) {
+    return video_window;
+  }
+  return open_named_window("about:blank", game_id);
+}
+
+function open_named_window(url, game_id) {
+  try {
+    return window.open(url, "romwhist_video_" + game_id, VIDEO_WINDOW_FEATURES) || null;
+  } catch (error) {
+    console.warn("Could not open the video window: " + error);
+    return null;
+  }
+}
+
 function start_game() {
   socket.emit('cs game started');
   //disable_start_game();

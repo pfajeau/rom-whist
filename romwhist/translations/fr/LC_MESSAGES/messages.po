@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-03-08 14:56-0800\n"
+"POT-Creation-Date: 2026-10-27 15:38-0700\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.14.0\n"
+"Generated-By: Babel 2.18.0\n"
 
 #: card.py:69
 msgid "of"
@@ -520,3 +520,27 @@ msgstr "Gagnants"
 #~ msgid "welcome_play_ohell"
 #~ msgstr "Bienvenue au jeu de l'Ascenseur (ou Whist Roumain)!"
 
+
+#: i18n_strings.py:87
+msgid "join_video"
+msgstr "Joindre la vidéo"
+
+#: forms.py:35 i18n_strings.py:88
+msgid "enable_video_chat"
+msgstr "Activer la vidéo"
+
+#: i18n_strings.py:89
+msgid "disable_video_chat"
+msgstr "Désactiver la vidéo"
+
+#: common_routes.py:56 i18n_strings.py:90
+msgid "video_chat_unavailable"
+msgstr "Vidéo non disponible"
+
+#: i18n_strings.py:91
+msgid "video_chat_error"
+msgstr "Erreur de la vidéo"
+
+#: i18n_strings.py:92
+msgid "video_owner_only"
+msgstr "Seul le créateur du jeu peut modifier la vidéo"

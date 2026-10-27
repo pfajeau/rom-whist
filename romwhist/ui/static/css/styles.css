@@ -89,8 +89,26 @@ body .btn-primary, body input[type=submit], body #belote, body #rebelote {
   background: var(--accent);
   color: #fff;
 }
+/* Anchors styled as buttons must override body a and body a:visited, whose
+   colour rules are more specific than a plain .btn-primary selector. */
+body a.btn, body a.btn:link, body a.btn:visited, body a.btn:hover,
+body a.btn:active, body a.btn:focus {
+  color: #3730a3;
+  text-decoration: none;
+}
+body a.btn-primary, body a.btn-primary:link, body a.btn-primary:visited,
+body a.btn-primary:hover, body a.btn-primary:active, body a.btn-primary:focus {
+  color: #fff;
+}
 body .btn-primary:hover, body input[type=submit]:hover { background: #4338ca; border-color: #4338ca; }
 body button:disabled, body input:disabled { opacity: .55; cursor: default; }
+/* The action toolbar wraps onto several rows on narrow screens; without a row
+   gap the wrapped rows touch each other. Horizontal spacing comes from the
+   buttons' own margins, so only the row gap is added here. */
+body #buttons-div #game_action_buttons,
+body #buttons-div #poker_bet_buttons {
+  row-gap: 8px;
+}
 body #footer { margin-top: 36px; padding: 20px 0; border-top: 1px solid #e2e8f0; color: var(--muted); font-size: 13px; }
 .home-heading { padding: 36px; margin-bottom: 28px; border: 1px solid #e0e7ff; border-radius: 30px; background: radial-gradient(ellipse at 88% 12%, #e0e7ff, transparent 50%), linear-gradient(135deg, #fff 38%, #f2f4ff); box-shadow: 0 22px 60px #312e8110; }
 .home-heading h1 { margin: 0; font-size: clamp(32px, 5vw, 52px); letter-spacing: -.055em; }

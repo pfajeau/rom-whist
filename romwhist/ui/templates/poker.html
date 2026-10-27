@@ -27,6 +27,7 @@
   window._poker_big_blind = {{ big_blind }};
   var embeddedGameState = {{ embedded_game_state|tojson }};
 
+{% include "galene_button_vars.html" %}
   populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
                    "{{ url_for('static', filename='img/poker.png') }}")
 
@@ -34,12 +35,14 @@
     setup_alertify();
     the_players = {{ players|safe }};
     initialize(the_players);
+    add_video_button('{{ session["game_id"] }}');
     initialize_poker_game(active_player, allowed_actions, game_phase);
     render_poker_board(community_cards || []);
     enable_start_game();
 
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/poker');
     registerSyncStateSocket(socket);
+    socket.on('video state changed', function(data) { video_state_changed(data) });
 
     socket.on('connect', function() {
       socket.emit('join game', {data:''});
