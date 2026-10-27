@@ -507,8 +507,19 @@ class GaleneButtonScriptTests(unittest.TestCase):
 
     def test_toggle_uses_socket_not_form_submit(self):
         body = self._add_video_button()
-        self.assertIn('socket.emit("toggle video"', body)
+        self.assertIn("toggle_video_chat(", body)
         self.assertNotIn("submit_form", body)
+
+        import re
+        match = re.search(
+            r"function toggle_video_chat\(game_id, enable\) \{(.*?)\n\}\n",
+            self.js, re.S)
+        self.assertIsNotNone(match, "toggle_video_chat not found")
+        toggle = match.group(1)
+        self.assertIn('socket.emit("toggle video"', toggle)
+        # Failures must be reported, not swallowed.
+        self.assertIn("show_alert", toggle)
+        self.assertIn("ack.ok", toggle)
 
 
 class GaleneToggleSocketTests(unittest.TestCase):
@@ -533,24 +544,83 @@ class GaleneToggleSocketTests(unittest.TestCase):
 
     def test_owner_enables_video(self):
         result, sio = self._call({"enable": True})
-        self.assertEqual(result, {"ok": True})
+
+        self.assertTrue(result["ok"])
+        self.assertTrue(result["enabled"])
+        # The acknowledgement carries the owner's join URL so the client can
+        # open the room immediately after enabling.
+        self.assertIn("token=", result["url"])
+        self.assertEqual(result["game_id"], "42")
         self.assertTrue(self.service.video_enabled("whist", "42"))
 
         event, payload = sio.emit.call_args.args
         self.assertEqual(event, "video state changed")
         self.assertTrue(payload["enabled"])
-        self.assertIn("token=", payload["url"])
         self.assertEqual(sio.emit.call_args.kwargs["room"], "42")
 
     def test_owner_disables_video(self):
         self.service.create_room("whist", "42", 6)
         result, sio = self._call({"enable": False})
 
-        self.assertEqual(result, {"ok": True})
+        self.assertTrue(result["ok"])
+        self.assertFalse(result["enabled"])
+        self.assertIsNone(result["url"])
         self.assertFalse(self.service.video_enabled("whist", "42"))
         payload = sio.emit.call_args.args[1]
         self.assertFalse(payload["enabled"])
-        self.assertIsNone(payload["url"])
+        self.assertNotIn("url", payload)
+
+    def test_enable_reports_failure_instead_of_staying_silent(self):
+        """A failed enable must reach the client, not just the log."""
+        self.service.client.create_group.side_effect = GaleneUnavailable("down")
+        result, sio = self._call({"enable": True})
+        self.assertEqual(result, {"ok": False, "error": "unavailable"})
+        sio.emit.assert_not_called()
+
+    def test_enable_without_a_join_url_is_reported(self):
+        """Room exists but no token could be minted: still an error."""
+        with patch.object(self.service, "join_url", return_value=None):
+            result, sio = self._call({"enable": True})
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "unavailable")
+
+    def test_broadcast_never_carries_a_join_url(self):
+        """A join URL is personal; broadcasting it would log others in as the owner."""
+        _, sio = self._call({"enable": True})
+        payload = sio.emit.call_args.args[1]
+        self.assertEqual(set(payload), {"game_id", "enabled"})
+        self.assertNotIn("url", payload)
+
+    def test_each_player_gets_its_own_url(self):
+        from romwhist import common_routes
+
+        self.service.create_room("whist", "42", 6)
+        self.service.client.create_token.side_effect = ["tok-alice", "tok-bob"]
+
+        def fetch(player):
+            session = {"username": player, "game_id": "42"}
+            with patch.object(video, "get_service", return_value=self.service), \
+                    patch.object(common_routes, "session", session):
+                return common_routes.join_video_chat(
+                    "whist", {"42": self.game}, {}, "/ohell")
+
+        alice = fetch("alice")
+        bob = fetch("bob")
+
+        self.assertTrue(alice["ok"])
+        self.assertTrue(bob["ok"])
+        self.assertIn("tok-alice", alice["url"])
+        self.assertIn("tok-bob", bob["url"])
+        self.assertNotEqual(alice["url"], bob["url"])
+
+    def test_join_url_refused_when_video_is_off(self):
+        from romwhist import common_routes
+        session = {"username": "alice", "game_id": "42"}
+        with patch.object(video, "get_service", return_value=self.service), \
+                patch.object(common_routes, "session", session):
+            result = common_routes.join_video_chat(
+                "whist", {"42": self.game}, {}, "/ohell")
+        self.assertEqual(result, {"ok": False, "error": "video_disabled"})
 
     def test_non_owner_cannot_toggle(self):
         result, sio = self._call({"enable": True}, player="bob", owner="alice")

@@ -95,16 +95,42 @@ def toggle_video(game_type, games, data, namespace, default_max_players=6):
     else:
         service.disable_video(game_type, game_id)
 
-    payload = {
-        'game_id': game_id,
-        'enabled': service.video_enabled(game_type, game_id),
-        'url': None,
-    }
-    if payload['enabled']:
-        payload['url'] = service.join_url(game_type, game_id, player)
+    enabled = service.video_enabled(game_type, game_id)
+    url = service.join_url(game_type, game_id, player) if enabled else None
 
-    socketio.emit('video state changed', payload, room=game_id, namespace=namespace)
-    return {'ok': True}
+    # Only the on/off state is broadcast: a join URL is personal (it carries a
+    # token bound to one alias), so each player must get its own. Broadcasting
+    # the owner's URL would let everyone else join as the owner.
+    socketio.emit('video state changed',
+                  {'game_id': game_id, 'enabled': enabled},
+                  room=game_id, namespace=namespace)
+
+    # The owner's acknowledgement carries its join URL so the client can show
+    # the room straight away, and an error so a failure is never silent.
+    if enabled and url is None:
+        return {'ok': False, 'error': 'unavailable', 'enabled': enabled}
+    return {'ok': True, 'enabled': enabled, 'url': url, 'game_id': game_id}
+
+
+def join_video_chat(game_type, games, data, namespace):
+    """Give the calling player its own join URL.
+
+    Join URLs embed a token bound to one alias, so they are never broadcast;
+    each player asks for its own.
+    """
+    game_id = session.get('game_id')
+    player = session.get('username')
+    if game_id is None or player is None:
+        return {'ok': False, 'error': 'no_game'}
+
+    service = video.get_service()
+    if not service.enabled or not service.video_enabled(game_type, game_id):
+        return {'ok': False, 'error': 'video_disabled'}
+
+    url = service.join_url(game_type, game_id, player)
+    if url is None:
+        return {'ok': False, 'error': 'unavailable'}
+    return {'ok': True, 'url': url, 'game_id': game_id}
 
 
 # TODO: separate from this file to remove circular dependency between

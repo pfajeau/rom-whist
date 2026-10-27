@@ -454,6 +454,11 @@ def belote_announced(announce):
     return
 
 
+@socketio.on('join video chat', namespace=NAMESPACE)
+def join_video_chat(data):
+    return common_routes.join_video_chat(GAME_TYPE, games, data, NAMESPACE)
+
+
 @socketio.on('toggle video', namespace=NAMESPACE)
 def toggle_video(data):
     return common_routes.toggle_video(GAME_TYPE, games, data, NAMESPACE)

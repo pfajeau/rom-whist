@@ -119,11 +119,19 @@ friendly names such as `presenter`; the token API expects the internal values.
 Enabling and disabling from the game page
 ------------------------------------------
 
-The owner sees a button that toggles video chat at any time. It is handled over
-the game's websocket (`video state changed`), never by submitting the page form,
-so the game page is neither reloaded nor navigated away from. Every client in
-the room gets the event and updates its buttons in place; players other than the
-owner see only the *Join video* link appear or disappear.
+The owner sees a button that toggles video chat at any time, so a game created
+without video can still get a room. It is handled over the game's websocket
+(`video state changed`), never by submitting the page form, so the game page is
+neither reloaded nor navigated away from. Every client in the room gets the
+event and updates its buttons in place; players other than the owner see only
+the *Join video* link appear or disappear.
+
+Enabling also joins the owner straight away. A popup may only be opened from a
+user gesture, so an empty window is opened during the click and pointed at the
+room once the server has created it. If the server refuses (Galene unreachable,
+not the owner, feature off) the acknowledgement carries the reason, the empty
+window is closed and an alert is shown instead of the button silently doing
+nothing.
 
 The server refuses a toggle from anyone but the owner (`not_owner`), and the
 room is only created when the feature is enabled and Galene answers.
