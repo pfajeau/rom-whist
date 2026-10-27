@@ -577,6 +577,43 @@ class GaleneToggleSocketTests(unittest.TestCase):
         sio.emit.assert_not_called()
 
 
+class ActionToolbarStyleTests(unittest.TestCase):
+    """The action toolbar wraps on narrow screens and needs row spacing."""
+
+    def setUp(self):
+        import os
+        import pathlib
+        self.css = pathlib.Path(os.path.join(
+            flask_app.root_path, flask_app.static_folder,
+            "css", "styles.css")).read_text()
+
+    def test_action_toolbar_sets_a_row_gap(self):
+        import re
+        blocks = re.findall(r"([^{}]*)\{([^}]*row-gap:[^}]*)\}", self.css, re.S)
+        self.assertTrue(blocks, "no row-gap rule found")
+
+        selectors = " ".join(sel for sel, _ in blocks)
+        self.assertIn("#game_action_buttons", selectors)
+        # The poker page has its own bet toolbar.
+        self.assertIn("#poker_bet_buttons", selectors)
+
+        value = __import__("re").search(
+            r"row-gap:\s*([^;]+)", blocks[0][1]).group(1).strip()
+        self.assertRegex(value, r"^\d+px$")
+        self.assertGreaterEqual(int(value.rstrip("px")), 4)
+
+    def test_toolbars_are_flex_wrapping(self):
+        """Row spacing is only meaningful because the toolbar wraps."""
+        import os
+        import pathlib
+        bootstrap = pathlib.Path(os.path.join(
+            flask_app.root_path, flask_app.static_folder,
+            "css", "bootstrap.min.css")).read_text()
+        rule = __import__("re").search(r"\.btn-toolbar\{[^}]*\}", bootstrap)
+        self.assertIsNotNone(rule)
+        self.assertIn("wrap", rule.group(0))
+
+
 class GaleneSweeperTests(unittest.TestCase):
     def setUp(self):
         self.client = MagicMock()
