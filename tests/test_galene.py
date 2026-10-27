@@ -647,6 +647,66 @@ class GaleneToggleSocketTests(unittest.TestCase):
         sio.emit.assert_not_called()
 
 
+class GaleneTranslationTests(unittest.TestCase):
+    """Every label the video feature adds must exist in both languages."""
+
+    KEYS = (
+        "join_video",
+        "enable_video_chat",
+        "disable_video_chat",
+        "video_chat_unavailable",
+        "video_chat_error",
+        "video_owner_only",
+    )
+
+    def _catalog(self, lang):
+        import pathlib
+        import re
+        path = pathlib.Path(flask_app.root_path) / "translations" / lang \
+            / "LC_MESSAGES" / "messages.po"
+        text = path.read_text(encoding="utf-8")
+        entries = {}
+        for match in re.finditer(
+                r'(?:#, fuzzy\n)?msgid "([^"]+)"\nmsgstr "([^"]*)"', text):
+            entries[match.group(1)] = match.group(2)
+        return entries
+
+    def test_all_video_keys_are_translated_in_both_languages(self):
+        for lang in ("en", "fr"):
+            catalog = self._catalog(lang)
+            for key in self.KEYS:
+                self.assertIn(key, catalog, "%s missing from %s.po" % (key, lang))
+                self.assertTrue(
+                    catalog[key].strip(),
+                    "%s has an empty translation in %s.po" % (key, lang))
+                # A translation identical to the msgid usually means it was
+                # never translated (English happens to match for some keys).
+                if lang == "fr":
+                    self.assertNotEqual(
+                        catalog[key], key,
+                        "%s is untranslated in fr.po" % key)
+
+    def test_keys_are_exposed_to_javascript(self):
+        from romwhist import i18n_strings
+        with flask_app.app_context():
+            exported = i18n_strings.i18n()
+        for key in self.KEYS:
+            self.assertIn(key, exported)
+
+    def test_compiled_catalogs_are_newer_than_sources(self):
+        """.mo files are what gettext reads; stale ones silently serve English."""
+        import pathlib
+        for lang in ("en", "fr"):
+            folder = pathlib.Path(flask_app.root_path) / "translations" / lang \
+                / "LC_MESSAGES"
+            po = folder / "messages.po"
+            mo = folder / "messages.mo"
+            self.assertTrue(mo.exists(), "%s missing" % mo)
+            self.assertGreaterEqual(
+                mo.stat().st_mtime, po.stat().st_mtime,
+                "%s is older than %s: run pybabel compile" % (mo.name, po.name))
+
+
 class ActionToolbarStyleTests(unittest.TestCase):
     """The action toolbar wraps on narrow screens and needs row spacing."""
 
