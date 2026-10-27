@@ -717,18 +717,30 @@ class GaleneTranslationTests(unittest.TestCase):
                 self.assertTrue(catalog[key].strip(),
                                 "%s is empty in %s.po" % (key, lang))
 
-    def test_compiled_catalogs_are_newer_than_sources(self):
-        """.mo files are what gettext reads; stale ones silently serve English."""
+    def test_compiled_catalogs_contain_the_video_labels(self):
+        """gettext reads the .mo, so a stale one silently serves old text.
+
+        This compares content rather than modification times: timestamps are
+        not preserved by checkouts or clones, so an mtime check fails spuriously
+        on a freshly cloned tree.
+        """
+        import gettext as gettext_module
         import pathlib
+
         for lang in ("en", "fr"):
-            folder = pathlib.Path(flask_app.root_path) / "translations" / lang \
-                / "LC_MESSAGES"
-            po = folder / "messages.po"
-            mo = folder / "messages.mo"
-            self.assertTrue(mo.exists(), "%s missing" % mo)
-            self.assertGreaterEqual(
-                mo.stat().st_mtime, po.stat().st_mtime,
-                "%s is older than %s: run pybabel compile" % (mo.name, po.name))
+            mo = pathlib.Path(flask_app.root_path) / "translations" / lang \
+                / "LC_MESSAGES" / "messages.mo"
+            self.assertTrue(mo.exists(), "%s missing: run pybabel compile" % mo)
+
+            with mo.open("rb") as handle:
+                catalog = gettext_module.GNUTranslations(handle)
+            for key in self.KEYS:
+                # gettext falls back to the msgid, so compare against the key
+                # rather than merely checking for an empty string.
+                self.assertNotEqual(
+                    catalog.gettext(key), key,
+                    "%s: %s absent from the compiled catalog, "
+                    "run pybabel compile" % (lang, key))
 
 
 class ActionToolbarStyleTests(unittest.TestCase):
