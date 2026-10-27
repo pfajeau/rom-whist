@@ -177,9 +177,11 @@ function populate_header(player, game_id, game_logo_url) {
   $("#topnav").append(html_frag);
 }
 
+// Window opened for the video conference, so it can be reopened on demand.
+var video_window = null;
+
 // Video conference button. The room lives in a separate browser window so the
-// game page stays untouched; the named target reuses the same window on every
-// click instead of piling up new ones.
+// game page stays untouched.
 function add_video_button(game_id) {
   // The template sets these only when video chat is configured at all.
   if (typeof video_enabled === "undefined" || !video_enabled) {
@@ -187,10 +189,28 @@ function add_video_button(game_id) {
   }
 
   if (galene_url) {
+    // A real popup window (rather than a target=_blank tab) is used when the
+    // browser allows it. The anchor keeps a working link as a fallback.
     $("#game_action_buttons").append(
       '<a id="join_video" class="btn btn-primary" target="romwhist_video_' + game_id + '"' +
       ' rel="noopener noreferrer" href="' + galene_url + '">' +
       i18n["join_video"] + '</a>');
+
+    document.getElementById("join_video").onclick = function(event) {
+      // Re-use the window while it is open.
+      if (video_window && !video_window.closed) {
+        event.preventDefault();
+        video_window.focus();
+        return;
+      }
+      // A real popup window needs a user gesture, hence opening it here rather
+      // than when the page loads. When the browser blocks it, the anchor's
+      // default behaviour opens the room in a tab instead.
+      video_window = open_video_window(galene_url, game_id);
+      if (video_window) {
+        event.preventDefault();
+      }
+    }
   } else if (video_available) {
     // The room exists but no token could be obtained, usually because the
     // Galene server is unreachable right now.
@@ -207,6 +227,21 @@ function add_video_button(game_id) {
       submit_form_action(video_enabled ? "disable_video" : "enable_video");
     }
   }
+}
+
+// Open the room in its own window. Returns null when the browser blocks it.
+function open_video_window(url, game_id) {
+  try {
+    var win = window.open(url, "romwhist_video_" + game_id,
+                          "popup,width=1100,height=800,resizable,scrollbars");
+    if (win) {
+      win.focus();
+      return win;
+    }
+  } catch (error) {
+    console.warn("Could not open the video window: " + error);
+  }
+  return null;
 }
 
 function submit_form_action(action) {

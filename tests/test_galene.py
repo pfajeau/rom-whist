@@ -9,6 +9,7 @@ Free Software Foundation, either version 3 of the License, or (at your option) a
 Author: Philippe Fajeau
 """
 
+import threading
 import unittest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
@@ -419,6 +420,144 @@ class GaleneServiceTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class GaleneButtonStyleTests(unittest.TestCase):
+    """The link is styled as a button, so it must beat the anchor colour rules."""
+
+    def setUp(self):
+        import os
+        import pathlib
+        path = os.path.join(flask_app.root_path, flask_app.static_folder,
+                            "css", "styles.css")
+        self.css = pathlib.Path(path).read_text()
+
+    @staticmethod
+    def specificity(selector):
+        import re
+        ids = len(re.findall(r"#[\w-]+", selector))
+        classes = (len(re.findall(r"\.[\w-]+", selector))
+                   + len(re.findall(r"\[[^\]]+\]", selector))
+                   + len(re.findall(r":[\w-]+", selector)))
+        elements = len(re.findall(r"(?:^|[\s>+~])([a-zA-Z][\w-]*)", selector))
+        return (ids, classes, elements)
+
+    def _rules(self, predicate):
+        import re
+        found = []
+        for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", self.css):
+            selectors, body = match.group(1), match.group(2)
+            colour = re.search(r"color:\s*([^;]+)", body)
+            if not colour:
+                continue
+            for selector in selectors.split(","):
+                selector = selector.strip()
+                if selector and predicate(selector):
+                    found.append((selector, self.specificity(selector),
+                                  colour.group(1).strip()))
+        return found
+
+    def test_visited_button_link_stays_white(self):
+        anchors = self._rules(lambda s: "a:visited" in s and ".btn" not in s)
+        buttons = self._rules(lambda s: "a.btn-primary" in s and ":visited" in s)
+
+        self.assertTrue(anchors, "expected a body a:visited colour rule")
+        self.assertTrue(buttons, "expected an a.btn-primary:visited colour rule")
+
+        anchor_specificity = max(spec for _, spec, _ in anchors)
+        button_specificity = max(spec for _, spec, _ in buttons)
+        self.assertGreater(
+            button_specificity, anchor_specificity,
+            "a.btn-primary:visited must be more specific than a:visited, "
+            "otherwise the label disappears on a purple background")
+        self.assertEqual(buttons[0][2], "#fff")
+
+
+class GaleneSweeperTests(unittest.TestCase):
+    def setUp(self):
+        self.client = MagicMock()
+        self.client.list_groups.return_value = []
+        self.client.get_group_etag.return_value = '"1-2"'
+        self.service = GaleneService(make_config(), client=self.client,
+                                     expiration_hours=8, clock=lambda: NOW)
+
+    def test_sweeper_purges_orphans_and_stops(self):
+        self.client.list_groups.return_value = ["cards-whist-99", "cards-whist-42"]
+        calls = []
+
+        def provider():
+            calls.append(1)
+            return {"whist": ["42"]}
+
+        self.service.start_sweeper(provider, interval_seconds=0.05)
+        self.assertTrue(self.service._sweeper.is_alive())
+
+        # Wait for at least two sweeps.
+        for _ in range(100):
+            if len(calls) >= 2:
+                break
+            threading.Event().wait(0.02)
+        self.service.stop_sweeper()
+
+        self.assertGreaterEqual(len(calls), 2)
+        self.assertIsNone(self.service._sweeper)
+        deleted = [c.args[0] for c in self.client.delete_group.call_args_list]
+        self.assertIn("cards-whist-99", deleted)
+        self.assertNotIn("cards-whist-42", deleted)
+
+    def test_sweeper_is_not_started_twice(self):
+        provider = MagicMock(return_value={"whist": []})
+        first = self.service.start_sweeper(provider, interval_seconds=60)
+        second = self.service.start_sweeper(provider, interval_seconds=60)
+        self.assertIs(first, second)
+        self.service.stop_sweeper()
+
+    def test_sweeper_survives_galene_failure(self):
+        self.client.list_groups.side_effect = GaleneUnavailable("down")
+        calls = []
+
+        def provider():
+            calls.append(1)
+            return {"whist": []}
+
+        self.service.start_sweeper(provider, interval_seconds=0.05)
+        for _ in range(100):
+            if len(calls) >= 2:
+                break
+            threading.Event().wait(0.02)
+        self.service.stop_sweeper()
+        self.assertGreaterEqual(len(calls), 2)
+
+    def test_expired_games_tear_down_their_room(self):
+        """clean_old_games must remove the room of a game it expires."""
+        from romwhist import common_routes
+        from romwhist import galene as video_module
+
+        service = MagicMock()
+        games = {"42": MagicMock(timestamp=0)}
+
+        with patch.object(video_module, "get_service", return_value=service), \
+                patch.object(flask_app, "config", {**flask_app.config,
+                                                   "GAME_EXPIRATION_HOURS": 1}):
+            common_routes.clean_old_games(games, "whist")
+
+        self.assertNotIn("42", games)
+        service.teardown.assert_called_once_with("whist", "42")
+        service.sweep.assert_called_once()
+
+    def test_live_games_provider_covers_every_game_type(self):
+        """The sweeper relies on this; a missing import here silently breaks it."""
+        from romwhist import common_routes
+
+        live = common_routes.live_video_games()
+        self.assertEqual(set(live), {"whist", "belote", "contree", "poker"})
+        for game_type, game_ids in live.items():
+            self.assertIsInstance(game_ids, list, game_type)
+
+    def test_disabled_service_has_no_sweeper(self):
+        service = GaleneService(GaleneConfig())
+        self.assertIsNone(service.start_sweeper(lambda: {}))
+        service.stop_sweeper()
 
 
 class GaleneRouteTests(unittest.TestCase):

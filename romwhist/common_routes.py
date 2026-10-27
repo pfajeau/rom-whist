@@ -32,6 +32,7 @@ from romwhist.forms import LoginForm
 from romwhist.models import User
 from romwhist.ohell import ohell_routes
 from romwhist.player import Player
+from romwhist.poker import poker_routes
 from romwhist.belote.belote import BeloteGame
 from romwhist import app
 from romwhist import galene as video
@@ -183,7 +184,7 @@ def clean_game_data(game_id, games, clients, game_type=None):
     if game is None:
         return
     if game_type is not None:
-        video.teardown(game_type, game_id)
+        video.get_service().teardown(game_type, game_id)
     del games[game_id]
     del clients[game_id]
 
@@ -276,7 +277,7 @@ def clean_old_games(games, game_type=None):
             if hours_since_start > app.config['GAME_EXPIRATION_HOURS']:
                 logging.info("Removing old game: %s", game_id)
                 if game_type is not None:
-                    video.teardown(game_type, game_id)
+                    video.get_service().teardown(game_type, game_id)
                 del games[game_id]
 
     if game_type is not None:
@@ -289,6 +290,16 @@ def sweep_video_rooms(games, game_type):
         video.get_service().sweep({game_type: list(games)})
     except Exception:
         logging.exception("Galene sweep failed for %s games", game_type)
+
+
+def live_video_games():
+    """Game ids per type, used by the periodic Galene sweeper."""
+    return {
+        'whist': list(ohell_routes.games),
+        'belote': list(belote_routes.games),
+        'contree': list(contree_routes.games),
+        'poker': list(poker_routes.games),
+    }
 
 def generate_game_id(max_id, games):
     if len(games) == max_id:

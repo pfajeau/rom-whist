@@ -72,6 +72,8 @@ class GaleneService:
         self.rooms = {}
         self._lock = threading.RLock()
         self._unavailable_until = 0.0
+        self._sweeper = None
+        self._stop_sweeper = threading.Event()
 
     # -- availability --------------------------------------------------------
 
@@ -317,6 +319,42 @@ class GaleneService:
                 logging.info("Removing orphaned Galene group %s", group)
                 self._run("sweep %s" % group, self._purge_group, group)
                 break
+
+    def start_sweeper(self, live_games_provider, interval_seconds=900):
+        """Periodically purge groups whose game no longer exists.
+
+        Live games are only known to the game modules, so the provider callable
+        supplies them. The first sweep happens immediately: after a restart no
+        games exist, so any leftover group is an orphan.
+        """
+        if not self.enabled or self._sweeper is not None:
+            return self._sweeper
+
+        self._stop_sweeper.clear()
+        self._sweeper = threading.Thread(
+            target=self._sweeper_loop,
+            args=(live_games_provider, interval_seconds),
+            name="galene-sweeper",
+            daemon=True)
+        self._sweeper.start()
+        logging.info("Galene sweeper started, interval %s seconds", interval_seconds)
+        return self._sweeper
+
+    def stop_sweeper(self):
+        self._stop_sweeper.set()
+        sweeper = self._sweeper
+        self._sweeper = None
+        if sweeper is not None and sweeper is not threading.current_thread():
+            sweeper.join(timeout=5)
+
+    def _sweeper_loop(self, live_games_provider, interval_seconds):
+        while True:
+            try:
+                self.sweep(live_games_provider())
+            except Exception:
+                logging.exception("Galene sweep failed")
+            if self._stop_sweeper.wait(interval_seconds):
+                return
 
 
 _service = None

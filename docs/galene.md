@@ -101,9 +101,12 @@ Galene's own frontend reads the `token` query parameter, authenticates with it
 and then removes it from the address bar. The username and permissions therefore
 come from the token and cannot be spoofed by the client.
 
-The button uses `<a target="romwhist_video_<game id>">`, not `window.open`, so
-popup blockers are not involved and repeated clicks reuse the same window
-instead of opening new ones.
+The button opens the room in its own **popup window** (via `window.open` with
+window features) rather than a tab. Browsers only allow that from a user
+gesture, so the window is opened from the click handler, never on page load.
+The element is still an `<a>` with `target` and a valid `href`, so when a popup
+is blocked the room simply opens in a tab instead. While the window stays open,
+further clicks focus it rather than opening another one.
 
 Tokens are cached per alias, so refreshing the game page does not create new
 ones. They expire with the room.
@@ -121,7 +124,15 @@ Rooms are removed when:
 * the owner stops the game or presses *Disable video chat*;
 * a game is discarded by `clean_game_data`;
 * `clean_old_games` expires a game older than `GAME_EXPIRATION_HOURS`;
-* a sweep detects a group whose game no longer exists.
+* the periodic sweeper detects a group whose game no longer exists.
+
+The sweeper runs in a daemon thread started by `create_app`, with an immediate
+first pass so groups left behind by a previous process are removed at startup.
+Its interval is `GALENE_SWEEP_INTERVAL_SECONDS` (default 900) and it can be
+turned off with `GALENE_SWEEP_ENABLED`. Live games are supplied by
+`common_routes.live_video_games()`; the sweeper only touches groups belonging to
+the game types it is given, so one game type's sweep never removes another's
+rooms.
 
 Token deletion is always attempted before the group is deleted, because Galene
 leaves a group's tokens behind when the group is deleted.

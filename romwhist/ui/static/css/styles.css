@@ -89,6 +89,17 @@ body .btn-primary, body input[type=submit], body #belote, body #rebelote {
   background: var(--accent);
   color: #fff;
 }
+/* Anchors styled as buttons must override body a and body a:visited, whose
+   colour rules are more specific than a plain .btn-primary selector. */
+body a.btn, body a.btn:link, body a.btn:visited, body a.btn:hover,
+body a.btn:active, body a.btn:focus {
+  color: #3730a3;
+  text-decoration: none;
+}
+body a.btn-primary, body a.btn-primary:link, body a.btn-primary:visited,
+body a.btn-primary:hover, body a.btn-primary:active, body a.btn-primary:focus {
+  color: #fff;
+}
 body .btn-primary:hover, body input[type=submit]:hover { background: #4338ca; border-color: #4338ca; }
 body button:disabled, body input:disabled { opacity: .55; cursor: default; }
 body #footer { margin-top: 36px; padding: 20px 0; border-top: 1px solid #e2e8f0; color: var(--muted); font-size: 13px; }
