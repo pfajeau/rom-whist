@@ -693,6 +693,30 @@ class GaleneTranslationTests(unittest.TestCase):
         for key in self.KEYS:
             self.assertIn(key, exported)
 
+    def test_translations_have_no_doubled_escapes(self):
+        """pybabel update once reflowed entries and doubled their \\uXXXX escapes.
+
+        A doubled escape is not decoded, so the UI shows a literal "\\u2014".
+        """
+        import re
+        for lang in ("en", "fr"):
+            catalog = self._catalog(lang)
+            for msgid, msgstr in catalog.items():
+                self.assertNotIn(
+                    "\\\\u", msgstr,
+                    "%s.po: %r has a doubled unicode escape" % (lang, msgid))
+
+    def test_poker_labels_are_still_translated(self):
+        """Regression: these were emptied by a pybabel update on this branch."""
+        for lang in ("en", "fr"):
+            catalog = self._catalog(lang)
+            for key in ("poker_ai_service_not_running",
+                        "showdown_complete_deal",
+                        "showdown_complete_wait"):
+                self.assertIn(key, catalog, "%s missing from %s.po" % (key, lang))
+                self.assertTrue(catalog[key].strip(),
+                                "%s is empty in %s.po" % (key, lang))
+
     def test_compiled_catalogs_are_newer_than_sources(self):
         """.mo files are what gettext reads; stale ones silently serve English."""
         import pathlib

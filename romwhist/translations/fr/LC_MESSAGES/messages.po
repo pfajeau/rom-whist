@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-27 15:28-0700\n"
+"POT-Creation-Date: 2026-10-27 15:38-0700\n"
 "PO-Revision-Date: 2021-04-25 15:11-0700\n"
 "Last-Translator: \n"
 "Language: fr\n"
@@ -18,472 +18,368 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: card.py:80
+#: card.py:69
 msgid "of"
 msgstr "de"
 
-#: common_routes.py:56 i18n_strings.py:90
-msgid "video_chat_unavailable"
-msgstr "Vidéo non disponible"
-
-#: common_routes.py:156
+#: common_routes.py:78
 msgid "session_has_expired"
 msgstr "La session a expiré"
 
-#: common_routes.py:162 common_routes.py:168
+#: common_routes.py:84 common_routes.py:90
 msgid "game_does_not_exist"
 msgstr "Ce jeu n'existe pas"
 
-#: common_routes.py:176 i18n_strings.py:42
+#: common_routes.py:98 i18n_strings.py:30
 msgid "game_over"
 msgstr "Partie Terminée"
 
-#: common_routes.py:262
+#: common_routes.py:182
 msgid "game_not_created"
 msgstr "Ce jeu n'a pas été crée"
 
-#: common_routes.py:271
+#: common_routes.py:191
 msgid "game_has_user_with_same_name"
 msgstr "Ce jeu a déjà un joueur avec le même nom"
 
-#: common_routes.py:278
+#: common_routes.py:198
 msgid "game_already_started"
 msgstr "Ce jeu a déjà commencé. Il n'est pas possible de joindre unn jeu en cours"
 
-#: common_routes.py:287
+#: common_routes.py:207
 msgid "game_already_has_4_players"
 msgstr "Ce jeu a déjà 4 joueurs!"
 
-#: belote/belote_routes.py:152 belote/belote_routes.py:154 common_routes.py:289
-#: contree/contree_routes.py:157 contree/contree_routes.py:159
-#: ohell/ohell_routes.py:163 ohell/ohell_routes.py:165
-#: poker/poker_routes.py:117 poker/poker_routes.py:119
+#: belote/belote_routes.py:136 belote/belote_routes.py:138 common_routes.py:209
+#: contree/contree_routes.py:139 contree/contree_routes.py:141
+#: ohell/ohell_routes.py:147 ohell/ohell_routes.py:149
 msgid "game_already_has_max_players"
 msgstr "Le jeu a déjà le nombre maximum de joueurs"
 
-#: forms.py:33 i18n_strings.py:82
+msgid "poker_ai_service_not_running"
+msgstr "Le processus IA Poker n'est pas en cours d'exécution. Veuillez d'abord démarrer le service poker_ai."
+
+#: forms.py:27 i18n_strings.py:70
 msgid "game_id"
 msgstr "Identifiant Jeu"
 
-#: forms.py:34 i18n_strings.py:19
+#: forms.py:28 i18n_strings.py:8
 msgid "alias"
 msgstr "Votre Alias"
 
-#: forms.py:35 i18n_strings.py:88
-msgid "enable_video_chat"
-msgstr "Activer la vidéo"
-
-#: forms.py:36 ui/templates/belote_start.html:59
+#: forms.py:29 ui/templates/belote_start.html:59
 #: ui/templates/contree_start.html:57 ui/templates/ohell_start.html:78
-#: ui/templates/poker_start.html:36
 msgid "create_new_game"
 msgstr "Creer un nouveau jeu"
 
-#: forms.py:37 i18n_strings.py:17
+#: forms.py:30 i18n_strings.py:6
 msgid "join_game"
 msgstr "Joindre Jeu"
 
-#: i18n_strings.py:18
+#: i18n_strings.py:7
 msgid "new_game"
 msgstr "Nouveau Jeu"
 
-#: i18n_strings.py:21 ui/templates/poker.html:89
+#: i18n_strings.py:10
 msgid "bet"
 msgstr "Annonce"
 
-#: i18n_strings.py:22 ui/templates/ohell.html:219
+#: i18n_strings.py:11 ui/templates/ohell.html:239
 msgid "bets"
 msgstr "Annonces"
 
-#: i18n_strings.py:23 ui/templates/ohell.html:233
+#: i18n_strings.py:12 ui/templates/ohell.html:253
 msgid "wins"
 msgstr "Plis"
 
-#: i18n_strings.py:24 ui/templates/belote.html:265
-#: ui/templates/contree.html:334
+#: i18n_strings.py:13 ui/templates/belote.html:260
+#: ui/templates/contree.html:329
 msgid "points"
 msgstr "Points"
 
-#: i18n_strings.py:25 ui/templates/belote.html:275
-#: ui/templates/contree.html:344 ui/templates/ohell.html:243
+#: i18n_strings.py:14 ui/templates/belote.html:270
+#: ui/templates/contree.html:339 ui/templates/ohell.html:263
 msgid "score"
 msgstr "Score"
 
-#: i18n_strings.py:26 ui/templates/belote.html:285
-#: ui/templates/contree.html:377 ui/templates/ohell.html:253
-#: ui/templates/ohell.html:299 ui/templates/scoresheet_belote.html:2
+#: i18n_strings.py:15 ui/templates/belote.html:280 ui/templates/belote.html:330
+#: ui/templates/contree.html:372 ui/templates/contree.html:411
+#: ui/templates/ohell.html:273 ui/templates/ohell.html:320
 msgid "scoresheet"
 msgstr "Feuille de Score"
 
-#: i18n_strings.py:28
+#: i18n_strings.py:17
 msgid "remove_player"
 msgstr "Supprimer Joueur"
 
-#: i18n_strings.py:29
+#: i18n_strings.py:18
 msgid "add_ai"
 msgstr "+ Joueur IA"
 
-#: i18n_strings.py:30
+#: i18n_strings.py:19
 msgid "leave_game"
 msgstr "Quitte Jeu"
 
-#: i18n_strings.py:31
+#: i18n_strings.py:20
 msgid "stop_game"
 msgstr "Stop Jeu"
 
-#: i18n_strings.py:32
+#: i18n_strings.py:21
 msgid "start_game"
 msgstr "Commence Jeu"
 
-#: i18n_strings.py:33
+#: i18n_strings.py:22
 msgid "restart_hand"
 msgstr "Rejout Donne"
 
-#: i18n_strings.py:34
+#: i18n_strings.py:23
 msgid "ai_mode"
 msgstr "Mode IA"
 
-#: i18n_strings.py:35
+#: i18n_strings.py:24
 msgid "human_mode"
 msgstr "Mode Humain"
 
-#: i18n_strings.py:37
+#: i18n_strings.py:26
 msgid "ohell"
 msgstr "Ascenseur"
 
-#: i18n_strings.py:38 i18n_strings.py:102
+#: i18n_strings.py:27 i18n_strings.py:82
 msgid "belote"
 msgstr "Belote"
 
-#: i18n_strings.py:39
+#: i18n_strings.py:28
 msgid "contree"
 msgstr "Contree"
 
-#: i18n_strings.py:40
-#, fuzzy
-msgid "poker"
-msgstr "Type de poker"
-
-#: i18n_strings.py:43
+#: i18n_strings.py:31
 msgid "ok"
 msgstr "Continuer"
 
-#: i18n_strings.py:44
+#: i18n_strings.py:32
 msgid "cancel"
 msgstr "Annuler"
 
-#: i18n_strings.py:45
+#: i18n_strings.py:33
 msgid "round_winner"
 msgstr "Gagnant du pli"
 
-#: i18n_strings.py:46
+#: i18n_strings.py:34
 msgid "with_the"
 msgstr "avec le"
 
-#: i18n_strings.py:47
+#: i18n_strings.py:35
 msgid "winner"
 msgstr "Gagnant"
 
-#: i18n_strings.py:48
+#: i18n_strings.py:36
 msgid "winners_hand"
 msgstr "Gagnant(s) de cette manche"
 
-#: i18n_strings.py:50 ui/templates/ohell.html:260
+#: i18n_strings.py:38 ui/templates/ohell.html:280
 msgid "trump"
 msgstr "Atout"
 
-#: i18n_strings.py:51
+#: i18n_strings.py:39
 msgid "user"
 msgstr "Joueur"
 
-#: i18n_strings.py:52
+#: i18n_strings.py:40
 msgid "left_game"
 msgstr "quitté la partie"
 
-#: i18n_strings.py:55 ui/templates/belote.html:248
-#: ui/templates/contree.html:312 ui/templates/contree.html:322
+#: i18n_strings.py:43 ui/templates/belote.html:243
+#: ui/templates/contree.html:307 ui/templates/contree.html:317
 msgid "select"
 msgstr "Choisir"
 
-#: i18n_strings.py:56
+#: i18n_strings.py:44
 msgid "spade"
 msgstr "Pique"
 
-#: i18n_strings.py:57
+#: i18n_strings.py:45
 msgid "heart"
 msgstr "Coeur"
 
-#: i18n_strings.py:58
+#: i18n_strings.py:46
 msgid "diamond"
 msgstr "Carreau"
 
-#: i18n_strings.py:59
+#: i18n_strings.py:47
 msgid "club"
 msgstr "Trèfle"
 
-#: contree/contree.py:52 i18n_strings.py:60
+#: contree/contree.py:39 i18n_strings.py:48
 msgid "pass"
 msgstr "Passe"
 
-#: contree/contree.py:53 i18n_strings.py:61
+#: contree/contree.py:40 i18n_strings.py:49
 msgid "contre"
 msgstr "Contre"
 
-#: contree/contree.py:54 i18n_strings.py:62
+#: contree/contree.py:41 i18n_strings.py:50
 msgid "surcontre"
 msgstr "Surcontre"
 
-#: i18n_strings.py:63 ui/templates/contree.html:365
+#: i18n_strings.py:51 ui/templates/contree.html:360
 msgid "contré"
 msgstr "Contré"
 
-#: i18n_strings.py:64 ui/templates/contree.html:367
+#: i18n_strings.py:52 ui/templates/contree.html:362
 msgid "surcontré"
 msgstr "Surcontré"
 
-#: i18n_strings.py:67
+#: i18n_strings.py:55
 msgid "two"
 msgstr "Deux"
 
-#: i18n_strings.py:68
+#: i18n_strings.py:56
 msgid "three"
 msgstr "Trois"
 
-#: i18n_strings.py:69
+#: i18n_strings.py:57
 msgid "four"
 msgstr "Quatre"
 
-#: i18n_strings.py:70
+#: i18n_strings.py:58
 msgid "five"
 msgstr "Cinq"
 
-#: i18n_strings.py:71
+#: i18n_strings.py:59
 msgid "six"
 msgstr "Six"
 
-#: i18n_strings.py:72
+#: i18n_strings.py:60
 msgid "seven"
 msgstr "Sept"
 
-#: i18n_strings.py:73
+#: i18n_strings.py:61
 msgid "eight"
 msgstr "Huit"
 
-#: i18n_strings.py:74
+#: i18n_strings.py:62
 msgid "nine"
 msgstr "Neuf"
 
-#: i18n_strings.py:75
+#: i18n_strings.py:63
 msgid "ten"
 msgstr "Dix"
 
-#: i18n_strings.py:76
+#: i18n_strings.py:64
 msgid "jack"
 msgstr "Valet"
 
-#: i18n_strings.py:77
+#: i18n_strings.py:65
 msgid "queen"
 msgstr "Dame"
 
-#: i18n_strings.py:78
+#: i18n_strings.py:66
 msgid "king"
 msgstr "Roi"
 
-#: i18n_strings.py:79
+#: i18n_strings.py:67
 msgid "ace"
 msgstr "As"
 
-#: i18n_strings.py:81
+#: i18n_strings.py:69
 msgid "copyright"
 msgstr "Copyright"
 
-#: i18n_strings.py:83
+#: i18n_strings.py:71
 msgid "chat"
 msgstr "Chat"
 
-#: i18n_strings.py:84
+#: i18n_strings.py:72
 msgid "send"
 msgstr "Envoie"
 
-#: i18n_strings.py:87
-msgid "join_video"
-msgstr "Joindre la vidéo"
-
-#: i18n_strings.py:89
-msgid "disable_video_chat"
-msgstr "Désactiver la vidéo"
-
-#: i18n_strings.py:91
-msgid "video_chat_error"
-msgstr "Erreur de la vidéo"
-
-#: i18n_strings.py:92
-msgid "video_owner_only"
-msgstr "Seul le créateur du jeu peut modifier la vidéo"
-
-#: i18n_strings.py:94
+#: i18n_strings.py:74
 msgid "confirm_leave_game"
 msgstr "Confirmez que vous voulez quitter cetter partie"
 
-#: i18n_strings.py:95
+#: i18n_strings.py:75
 msgid "confirm_remove_player"
 msgstr "Confirmez que vous voulez enlever ce joueur de la partie"
 
-#: i18n_strings.py:96
+#: i18n_strings.py:76
 msgid "confirm_stop_game"
 msgstr "Confirmez que vous voulez arrêter  cette partie"
 
-#: i18n_strings.py:97
+#: i18n_strings.py:77
 msgid "confirm_add_ai"
 msgstr "Confirmez que vous voulez ajouter un joueur artificiel"
 
-#: i18n_strings.py:98
+#: i18n_strings.py:78
 msgid "confirm_restart_hand"
 msgstr "Confirmez que voulez voulez rejouer cette main"
 
-#: i18n_strings.py:99
+#: i18n_strings.py:79
 msgid "confirm_switch_player_type"
 msgstr "Confirmez que voulez changet le mode joueur"
 
-#: i18n_strings.py:100
+#: i18n_strings.py:80
 msgid "bet_not_allowed"
 msgstr "Le nombre de plis demandé n'est pas valide"
 
-#: i18n_strings.py:101
+#: i18n_strings.py:81
 msgid "belote_rebelote_lost"
 msgstr "Points de belote/rebelote perdus! Il faut annoncer avant de jouer"
 
-#: i18n_strings.py:103
+#: i18n_strings.py:83
 msgid "rebelote"
 msgstr "Rebelote"
 
-#: i18n_strings.py:106
-msgid "board"
-msgstr "Tableau"
-
-#: i18n_strings.py:107
-msgid "fold"
-msgstr "Se coucher"
-
-#: i18n_strings.py:108
-msgid "check"
-msgstr "Checker"
-
-#: i18n_strings.py:109
-msgid "call"
-msgstr "Suivre"
-
-#: i18n_strings.py:110
-msgid "raise"
-msgstr "Relancer"
-
-#: i18n_strings.py:111
-msgid "deal_next_hand"
-msgstr "Distribuer la main suivante"
-
-#: i18n_strings.py:112
-msgid "showdown_complete_deal"
-msgstr ""
-"Abattage terminé \\u2014 cliquez sur \\u00ab Distribuer la main suivante "
-"\\u00bb pour continuer."
-
-#: i18n_strings.py:113
-msgid "showdown_complete_wait"
-msgstr "Abattage terminé \\u2014 en attente du donneur\\u2026"
-
-#: i18n_strings.py:114
-msgid "hole_cards"
-msgstr "Cartes privées"
-
-#: i18n_strings.py:115
-msgid "best_hand"
-msgstr "Meilleure main"
-
-#: i18n_strings.py:116
-msgid "showdown"
-msgstr "Abattage"
-
-#: i18n_strings.py:117
-msgid "winners"
-msgstr "Gagnants"
-
-#: belote/belote_form.py:22
+#: belote/belote_form.py:11
 msgid "points_limit"
 msgstr "Limite de points"
 
-#: belote/belote_form.py:24
+#: belote/belote_form.py:13
 msgid "number_between_500_and_2000"
 msgstr "Entrez un nombre entre 500 et 2000"
 
-#: contree/contree.py:55
+#: contree/contree.py:42
 msgid "points_bid"
 msgstr "Points demandés"
 
-#: contree/contree.py:56
+#: contree/contree.py:43
 msgid "points_achieved"
 msgstr "Points gagnés"
 
-#: contree/contree.py:57
+#: contree/contree.py:44
 msgid "points_achieved_bid"
 msgstr "Points gagnés + demandés"
 
-#: contree/contree_form.py:25
+#: contree/contree_form.py:14
 msgid "counting"
 msgstr "Comptage"
 
-#: contree/contree_routes.py:516
+#: contree/contree_routes.py:485
 msgid "hand_to_be_replayed"
 msgstr "La main va être rejouée"
 
-#: ohell/ohell_form.py:21
+#: ohell/ohell_form.py:10
 msgid "multiple_one_card_deals"
 msgstr "Plusieur tours d'une carte"
 
-#: ohell/ohell_form.py:23
+#: ohell/ohell_form.py:12
 msgid "multiple_no_trump_deals"
 msgstr "Plusieur tours à sans atout"
 
-#: ohell/ohell_form.py:25
+#: ohell/ohell_form.py:14
 msgid "increment_between_deals"
 msgstr "Increment entre tours"
 
-#: ohell/ohell_form.py:28
+#: ohell/ohell_form.py:17
 msgid "enter_increment_between_1_and_5"
 msgstr "Increment entre tours (entre 1 et 5)"
 
-#: poker/poker_form.py:14 ui/templates/poker.html:58
-msgid "poker_type"
-msgstr "Type de poker"
-
-#: poker/poker_form.py:16
-msgid "Texas Hold'em"
-msgstr ""
-
-#: poker/poker_form.py:17
-msgid "Omaha"
-msgstr ""
-
-#: poker/poker_form.py:23
-msgid "initial_money"
-msgstr "Mise de départ"
-
-#: poker/poker_routes.py:57
-msgid "no_more_games"
-msgstr "Aucune partie disponible. Veuillez réessayer plus tard."
-
-#: poker/poker_routes.py:121
-msgid "poker_ai_service_not_running"
-msgstr ""
-"Le processus IA Poker n'est pas en cours d'exécution. Veuillez d'abord "
-"démarrer le service poker_ai."
-
-#: ui/templates/base.html:50
+#: ui/templates/base.html:48
 msgid "copyright_notice"
 msgstr ""
 "Ce site a été crée pendant COVID19            &copy; Copyright 2020/2021 "
 "Philippe Fajeau"
 
-#: ui/templates/belote.html:244 ui/templates/contree.html:305
+#: ui/templates/belote.html:239 ui/templates/contree.html:300
 msgid "bid"
 msgstr "Annonce"
 
@@ -492,21 +388,21 @@ msgid "welcome_play_belote"
 msgstr "Bienvenue au jeu de belote!"
 
 #: ui/templates/belote_start.html:33 ui/templates/contree_start.html:31
-#: ui/templates/ohell_start.html:52 ui/templates/poker_start.html:14
+#: ui/templates/ohell_start.html:52
 msgid "enter_alias"
 msgstr "Entrez votre alias pour le jeu"
 
 #: ui/templates/belote_start.html:41 ui/templates/contree_start.html:39
-#: ui/templates/ohell_start.html:60 ui/templates/poker_start.html:22
+#: ui/templates/ohell_start.html:60
 msgid "choose_option"
 msgstr "Puis sélectionner une des options suivantes:"
 
 #: ui/templates/belote_start.html:46 ui/templates/contree_start.html:44
-#: ui/templates/ohell_start.html:65 ui/templates/poker_start.html:25
+#: ui/templates/ohell_start.html:65
 msgid "join_a_game"
 msgstr "Joindre un jeu existant"
 
-#: ui/templates/belote_start.html:84 ui/templates/contree_start.html:85
+#: ui/templates/belote_start.html:81 ui/templates/contree_start.html:82
 msgid "rules_of_game"
 msgstr "Règles"
 
@@ -526,34 +422,73 @@ msgstr "Choisissez un jeu"
 msgid "welcome_play_whist"
 msgstr "Bienvenue au jeu de Whist!"
 
-#: ui/templates/ohell_start.html:109
+#: ui/templates/ohell_start.html:106
 msgid "references"
 msgstr "Références"
 
-#: ui/templates/poker.html:60
-msgid "phase"
-msgstr "Phase"
-
-#: ui/templates/poker.html:62
-msgid "pot"
-msgstr "Pot"
-
-#: ui/templates/poker.html:79
-msgid "money"
-msgstr "Argent"
-
 # Poker game strings
-#: ui/templates/poker_start.html:4
 msgid "welcome_play_poker"
 msgstr "Bienvenue au Poker !"
 
-#: ui/templates/poker_start.html:8
+msgid "poker_type"
+msgstr "Type de poker"
+
+msgid "initial_money"
+msgstr "Mise de départ"
+
+msgid "phase"
+msgstr "Phase"
+
+msgid "pot"
+msgstr "Pot"
+
+msgid "money"
+msgstr "Argent"
+
 msgid "error"
 msgstr "Erreur"
 
-#: ui/templates/poker_start.html:33
 msgid "or"
 msgstr "ou"
+
+msgid "no_more_games"
+msgstr "Aucune partie disponible. Veuillez réessayer plus tard."
+
+msgid "board"
+msgstr "Tableau"
+
+msgid "fold"
+msgstr "Se coucher"
+
+msgid "check"
+msgstr "Checker"
+
+msgid "call"
+msgstr "Suivre"
+
+msgid "raise"
+msgstr "Relancer"
+
+msgid "deal_next_hand"
+msgstr "Distribuer la main suivante"
+
+msgid "showdown_complete_deal"
+msgstr "Abattage terminé \u2014 cliquez sur \u00ab Distribuer la main suivante \u00bb pour continuer."
+
+msgid "showdown_complete_wait"
+msgstr "Abattage terminé \u2014 en attente du donneur\u2026"
+
+msgid "hole_cards"
+msgstr "Cartes privées"
+
+msgid "best_hand"
+msgstr "Meilleure main"
+
+msgid "showdown"
+msgstr "Abattage"
+
+msgid "winners"
+msgstr "Gagnants"
 
 #~ msgid "points_achieved"
 #~ msgstr "Points gagnés"
@@ -585,3 +520,27 @@ msgstr "ou"
 #~ msgid "welcome_play_ohell"
 #~ msgstr "Bienvenue au jeu de l'Ascenseur (ou Whist Roumain)!"
 
+
+#: i18n_strings.py:87
+msgid "join_video"
+msgstr "Joindre la vidéo"
+
+#: forms.py:35 i18n_strings.py:88
+msgid "enable_video_chat"
+msgstr "Activer la vidéo"
+
+#: i18n_strings.py:89
+msgid "disable_video_chat"
+msgstr "Désactiver la vidéo"
+
+#: common_routes.py:56 i18n_strings.py:90
+msgid "video_chat_unavailable"
+msgstr "Vidéo non disponible"
+
+#: i18n_strings.py:91
+msgid "video_chat_error"
+msgstr "Erreur de la vidéo"
+
+#: i18n_strings.py:92
+msgid "video_owner_only"
+msgstr "Seul le créateur du jeu peut modifier la vidéo"
