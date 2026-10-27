@@ -34,11 +34,51 @@ from romwhist.ohell import ohell_routes
 from romwhist.player import Player
 from romwhist.belote.belote import BeloteGame
 from romwhist import app
+from romwhist import galene as video
 
 
 def get_locale(the_request):
     print(app.config['LANGUAGES'])
     return the_request.accept_languages.best_match(app.config['LANGUAGES'])
+
+
+# -- Video conferencing (Galene) -------------------------------------------
+# All games share these helpers so the video feature is implemented once.
+
+def create_video_room(game_type, game_id, max_players, requested):
+    """Create the video room for a new game when the creator asked for it."""
+    if not requested:
+        return False
+    service = video.get_service()
+    if service.create_room(game_type, game_id, max_players):
+        return True
+    flash(_("video_chat_unavailable"))
+    return False
+
+
+def video_owner_action(game_type, game_id, max_players):
+    """Handle the owner's enable/disable video request.
+
+    Returns True when the request was a video action, so the caller can stop
+    processing other game actions.
+    """
+    action = request.form.get('action_game')
+    service = video.get_service()
+    if action == "enable_video":
+        if not service.enable_video(game_type, game_id, max_players):
+            flash(_("video_chat_unavailable"))
+        return True
+    if action == "disable_video":
+        service.disable_video(game_type, game_id)
+        return True
+    return False
+
+
+def video_context(game_type, game_id, player_name, owner_name):
+    """Template context for the video button, or disabled placeholders."""
+    service = video.get_service()
+    return service.page_context(
+        game_type, game_id, player_name, player_name == owner_name)
 
 
 # TODO: separate from this file to remove circular dependency between
@@ -79,7 +119,7 @@ def login():
     return render_template('login.html', title='Sign In', form=form)
 
 
-def redirect_game_start(games, clients, action, template_to_render, namespace):
+def redirect_game_start(games, clients, action, template_to_render, namespace, game_type=None):
     player = session.get('username')
     if player is None:
         logging.error("Unknown player in session")
@@ -104,12 +144,16 @@ def redirect_game_start(games, clients, action, template_to_render, namespace):
         # if "stop_game" in request.form:
         if action == "stop_game":
             socketio.emit(_("game_over"), game.get_highest_score_player(), room=game_id, namespace=namespace)
-            clean_game_data(game_id, games, clients)
+            clean_game_data(game_id, games, clients, game_type)
             return redirect(url_for(template_to_render))
 
         # if "leave_game" in request.form:
         if request.form['action_game'] == "leave_game":
             remove_player(game_id, games, clients, session['username'], namespace=namespace)
+            return redirect(url_for(template_to_render))
+
+        if game_type is not None and video_owner_action(
+                game_type, game_id, getattr(game, 'MAX_PLAYERS', 6)):
             return redirect(url_for(template_to_render))
 
     return None
@@ -134,10 +178,12 @@ def remove_player(game_id, games, clients, player, namespace):
     return
 
 
-def clean_game_data(game_id, games, clients):
+def clean_game_data(game_id, games, clients, game_type=None):
     game = games.get(game_id)
     if game is None:
         return
+    if game_type is not None:
+        video.teardown(game_type, game_id)
     del games[game_id]
     del clients[game_id]
 
@@ -221,7 +267,7 @@ def join_game(games, game_id, username, start_page, play_page, namespace, form, 
     add_player_by_name(username, game, namespace)
     return redirect(url_for(play_page))
 
-def clean_old_games(games):
+def clean_old_games(games, game_type=None):
     # Remove old games that are not active anymore
     now = utils.get_timestamp()
     for game_id, game in list(games.items()):
@@ -229,7 +275,20 @@ def clean_old_games(games):
             hours_since_start = (now - game.timestamp) / 3600
             if hours_since_start > app.config['GAME_EXPIRATION_HOURS']:
                 logging.info("Removing old game: %s", game_id)
+                if game_type is not None:
+                    video.teardown(game_type, game_id)
                 del games[game_id]
+
+    if game_type is not None:
+        sweep_video_rooms(games, game_type)
+
+
+def sweep_video_rooms(games, game_type):
+    """Remove Galene groups whose game no longer exists."""
+    try:
+        video.get_service().sweep({game_type: list(games)})
+    except Exception:
+        logging.exception("Galene sweep failed for %s games", game_type)
 
 def generate_game_id(max_id, games):
     if len(games) == max_id:

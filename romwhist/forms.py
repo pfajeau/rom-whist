@@ -32,6 +32,7 @@ class GameForm(FlaskForm):
 class StartForm(FlaskForm):
     game_id = StringField(_l(u"game_id"), validators=[Length(max=6)])
     user_name = StringField(_l(u"alias"), validators=[InputRequired(), Length(max=10), Regexp("^[a-zA-Z0-9]+$", message="Only alphanumeric characters are allowed for alias")])
+    video_chat = BooleanField(_l(u"enable_video_chat"), default=False)
     start_game = SubmitField(_l(u'create_new_game'))
     join_game = SubmitField(_l(u'join_game'))
     #deck_size = SelectField("Deck size: ", choices=[('24','24'),('32','32'),('40','40'),('52','52')], default='32')

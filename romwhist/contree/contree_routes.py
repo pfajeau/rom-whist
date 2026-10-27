@@ -37,6 +37,7 @@ from romwhist import app
 
 NAMESPACE = '/contree'
 NAMESPACE_AI = '/contree_ai'
+GAME_TYPE = 'contree'
 
 # Map of games, key is game id
 games = dict()
@@ -101,8 +102,12 @@ def contree_start():
             session['ownername'] = username
             add_player(username, game_id)
 
+            # Optional video conference room for this game
+            common_routes.create_video_room(
+                GAME_TYPE, game_id, ContreeGame.MAX_PLAYERS, form.video_chat.data)
+
             # Clean old games
-            common_routes.clean_old_games(games)
+            common_routes.clean_old_games(games, GAME_TYPE)
             
 
             return redirect(url_for('contree_play'))
@@ -131,7 +136,8 @@ def contree_play():
         clients,
         request.form.get('action_game'),
         'contree_start',
-        namespace=NAMESPACE)
+        namespace=NAMESPACE,
+        game_type=GAME_TYPE)
 
     if redirect_template is None and request.method == 'POST':
         if request.form['action_game'] == "remove_player":
@@ -198,7 +204,9 @@ def contree_play():
                                taker=game.taker, i18n=json.dumps(i18n_strings.i18n()),
                                player_type = player.player_type.value,
                                messages=json.dumps(messages[game_id]),
-                               embedded_game_state=game.get_state().to_json())
+                               embedded_game_state=game.get_state().to_json(),
+                               **common_routes.video_context(
+                                   GAME_TYPE, game_id, player_name, session.get('ownername')))
     else:
         # Should never happen
         return redirect(url_for('contree_start'))
@@ -528,7 +536,7 @@ def remove_player(game_id, player):
 
 
 def clean_game_data(game_id):
-    common_routes.clean_game_data(game_id, games, clients)
+    common_routes.clean_game_data(game_id, games, clients, GAME_TYPE)
 
 
 # e.g blueprint and routes

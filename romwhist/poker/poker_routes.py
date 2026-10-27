@@ -23,6 +23,7 @@ from romwhist import app
 
 NAMESPACE = '/poker'
 NAMESPACE_AI = '/poker_ai'
+GAME_TYPE = 'poker'
 
 games = dict()
 clients = dict()
@@ -68,7 +69,12 @@ def poker_start():
             session['ownername'] = username
             session['poker_type'] = poker_type
             common_routes.add_player_by_name(username, game, NAMESPACE)
-            common_routes.clean_old_games(games)
+
+            # Optional video conference room for this game
+            common_routes.create_video_room(
+                GAME_TYPE, game_id, PokerGame.MAX_PLAYERS, form.video_chat.data)
+
+            common_routes.clean_old_games(games, GAME_TYPE)
             return redirect(url_for('poker_play'))
 
     return render_template('poker_start.html', form=form, error=form.errors, locale=locale)
@@ -91,7 +97,8 @@ def poker_play():
         games, clients,
         request.form.get('action_game'),
         'poker_start',
-        namespace=NAMESPACE)
+        namespace=NAMESPACE,
+        game_type=GAME_TYPE)
 
     if redirect_template is None and request.method == 'POST':
         action = request.form['action_game']
@@ -150,6 +157,8 @@ def poker_play():
             poker_type=game.poker_type,
             poker_type_label=game.get_poker_type_label(),
             embedded_game_state=game.get_state().to_json(),
+            **common_routes.video_context(
+                GAME_TYPE, game_id, player_name, session.get('ownername')),
             money=game.get_money(),
             pot=game.pot,
             current_bet=game.current_bet,
@@ -304,7 +313,7 @@ def _do_advance_phase(game_id):
             common_routes.emit_to_players(
                 "game over", [winner],
                 game_id=game_id, room=game_id, namespace=NAMESPACE)
-            common_routes.clean_game_data(game_id, games, clients)
+            common_routes.clean_game_data(game_id, games, clients, GAME_TYPE)
         else:
             socketio.emit(
                 "poker_next_hand",

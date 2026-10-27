@@ -123,6 +123,10 @@ def create_app():
         from .commands import romwhist_cli
         app.cli.add_command(romwhist_cli)
 
+        # Video conferencing rooms are created on demand in Galene
+        from .galene import configure as configure_galene
+        configure_galene(app)
+
         # finally create tables as per models
         db.create_all()
     return app

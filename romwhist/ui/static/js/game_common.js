@@ -177,6 +177,43 @@ function populate_header(player, game_id, game_logo_url) {
   $("#topnav").append(html_frag);
 }
 
+// Video conference button. The room lives in a separate browser window so the
+// game page stays untouched; the named target reuses the same window on every
+// click instead of piling up new ones.
+function add_video_button(game_id) {
+  // The template sets these only when video chat is configured at all.
+  if (typeof video_enabled === "undefined" || !video_enabled) {
+    return;
+  }
+
+  if (galene_url) {
+    $("#game_action_buttons").append(
+      '<a id="join_video" class="btn btn-primary" target="romwhist_video_' + game_id + '"' +
+      ' rel="noopener noreferrer" href="' + galene_url + '">' +
+      i18n["join_video"] + '</a>');
+  } else if (video_available) {
+    // The room exists but no token could be obtained, usually because the
+    // Galene server is unreachable right now.
+    $("#game_action_buttons").append(
+      '<button id="join_video" type="button" class="btn btn-secondary" disabled>' +
+      i18n["video_chat_unavailable"] + '</button>');
+  }
+
+  if (video_owner) {
+    $("#game_action_buttons").append(
+      '<button id="toggle_video" type="button" class="btn btn-primary" name="toggle_video">' +
+      i18n[video_enabled ? "disable_video_chat" : "enable_video_chat"] + '</button>');
+    document.getElementById("toggle_video").onclick = function() {
+      submit_form_action(video_enabled ? "disable_video" : "enable_video");
+    }
+  }
+}
+
+function submit_form_action(action) {
+  $("#action_game").val(action);
+  submit_form();
+}
+
 function start_game() {
   socket.emit('cs game started');
   //disable_start_game();
