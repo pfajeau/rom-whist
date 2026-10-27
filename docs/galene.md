@@ -116,6 +116,18 @@ right to send audio and video, `message` the right to chat. Do not use the
 friendly names such as `presenter`; the token API expects the internal values.
 
 
+Enabling and disabling from the game page
+------------------------------------------
+
+The owner sees a button that toggles video chat at any time. It is handled over
+the game's websocket (`video state changed`), never by submitting the page form,
+so the game page is neither reloaded nor navigated away from. Every client in
+the room gets the event and updates its buttons in place; players other than the
+owner see only the *Join video* link appear or disappear.
+
+The server refuses a toggle from anyone but the owner (`not_owner`), and the
+room is only created when the feature is enabled and Galene answers.
+
 Lifecycle and cleanup
 ---------------------
 

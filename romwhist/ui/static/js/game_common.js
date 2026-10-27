@@ -183,12 +183,12 @@ var video_window = null;
 // Video conference button. The room lives in a separate browser window so the
 // game page stays untouched.
 function add_video_button(game_id) {
-  // The template sets these only when video chat is configured at all.
-  if (typeof video_enabled === "undefined" || !video_enabled) {
+  // The template sets video_available to false when Galene is not configured.
+  if (typeof video_available === "undefined" || !video_available) {
     return;
   }
 
-  if (galene_url) {
+  if (video_enabled && galene_url) {
     // A real popup window (rather than a target=_blank tab) is used when the
     // browser allows it. The anchor keeps a working link as a fallback.
     $("#game_action_buttons").append(
@@ -211,7 +211,7 @@ function add_video_button(game_id) {
         event.preventDefault();
       }
     }
-  } else if (video_available) {
+  } else if (video_enabled) {
     // The room exists but no token could be obtained, usually because the
     // Galene server is unreachable right now.
     $("#game_action_buttons").append(
@@ -224,9 +224,19 @@ function add_video_button(game_id) {
       '<button id="toggle_video" type="button" class="btn btn-primary" name="toggle_video">' +
       i18n[video_enabled ? "disable_video_chat" : "enable_video_chat"] + '</button>');
     document.getElementById("toggle_video").onclick = function() {
-      submit_form_action(video_enabled ? "disable_video" : "enable_video");
+      // Goes through the websocket so the game page is not reloaded.
+      socket.emit("toggle video", {enable: !video_enabled});
     }
   }
+}
+
+// Reflect a video chat state change without reloading the game page.
+function video_state_changed(data) {
+  video_enabled = !!data.enabled;
+  galene_url = data.url || null;
+
+  $("#join_video, #toggle_video").remove();
+  add_video_button(data.game_id);
 }
 
 // Open the room in its own window. Returns null when the browser blocks it.
@@ -242,11 +252,6 @@ function open_video_window(url, game_id) {
     console.warn("Could not open the video window: " + error);
   }
   return null;
-}
-
-function submit_form_action(action) {
-  $("#action_game").val(action);
-  submit_form();
 }
 
 function start_game() {

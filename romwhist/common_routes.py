@@ -57,29 +57,54 @@ def create_video_room(game_type, game_id, max_players, requested):
     return False
 
 
-def video_owner_action(game_type, game_id, max_players):
-    """Handle the owner's enable/disable video request.
-
-    Returns True when the request was a video action, so the caller can stop
-    processing other game actions.
-    """
-    action = request.form.get('action_game')
-    service = video.get_service()
-    if action == "enable_video":
-        if not service.enable_video(game_type, game_id, max_players):
-            flash(_("video_chat_unavailable"))
-        return True
-    if action == "disable_video":
-        service.disable_video(game_type, game_id)
-        return True
-    return False
-
-
 def video_context(game_type, game_id, player_name, owner_name):
     """Template context for the video button, or disabled placeholders."""
     service = video.get_service()
     return service.page_context(
         game_type, game_id, player_name, player_name == owner_name)
+
+
+def toggle_video(game_type, games, data, namespace, default_max_players=6):
+    """Enable or disable video chat for the current game without a page reload.
+
+    Only the game owner may do this. The new state is broadcast to everyone so
+    each client updates its buttons in place.
+    """
+    game_id = session.get('game_id')
+    player = session.get('username')
+    if game_id is None or player is None:
+        return {'ok': False, 'error': 'no_game'}
+
+    game = games.get(game_id)
+    if game is None:
+        return {'ok': False, 'error': 'no_game'}
+
+    if session.get('ownername') != player:
+        logging.warning("Video toggle rejected: %s is not the game owner", player)
+        return {'ok': False, 'error': 'not_owner'}
+
+    service = video.get_service()
+    if not service.enabled:
+        return {'ok': False, 'error': 'video_disabled'}
+
+    enable = bool(data.get('enable'))
+    if enable:
+        max_players = getattr(game, 'MAX_PLAYERS', default_max_players)
+        if not service.enable_video(game_type, game_id, max_players):
+            return {'ok': False, 'error': 'unavailable'}
+    else:
+        service.disable_video(game_type, game_id)
+
+    payload = {
+        'game_id': game_id,
+        'enabled': service.video_enabled(game_type, game_id),
+        'url': None,
+    }
+    if payload['enabled']:
+        payload['url'] = service.join_url(game_type, game_id, player)
+
+    socketio.emit('video state changed', payload, room=game_id, namespace=namespace)
+    return {'ok': True}
 
 
 # TODO: separate from this file to remove circular dependency between
@@ -151,10 +176,6 @@ def redirect_game_start(games, clients, action, template_to_render, namespace, g
         # if "leave_game" in request.form:
         if request.form['action_game'] == "leave_game":
             remove_player(game_id, games, clients, session['username'], namespace=namespace)
-            return redirect(url_for(template_to_render))
-
-        if game_type is not None and video_owner_action(
-                game_type, game_id, getattr(game, 'MAX_PLAYERS', 6)):
             return redirect(url_for(template_to_render))
 
     return None

@@ -473,6 +473,110 @@ class GaleneButtonStyleTests(unittest.TestCase):
         self.assertEqual(buttons[0][2], "#fff")
 
 
+class GaleneButtonScriptTests(unittest.TestCase):
+    """Guards the client side rules that are easy to break silently."""
+
+    def setUp(self):
+        import os
+        import pathlib
+        self.js = pathlib.Path(os.path.join(
+            flask_app.root_path, flask_app.static_folder,
+            "js", "game_common.js")).read_text()
+
+    def _add_video_button(self):
+        import re
+        match = re.search(
+            r"function add_video_button\(game_id\) \{(.*?)\n\}\n",
+            self.js, re.S)
+        self.assertIsNotNone(match, "add_video_button not found")
+        return match.group(1)
+
+    def test_owner_toggle_does_not_depend_on_video_enabled(self):
+        """Disabling video must leave the Enable button in place."""
+        body = self._add_video_button()
+
+        # The early return must key on availability, not on the on/off state,
+        # otherwise the owner cannot switch video back on.
+        guard = body.split("if (video_enabled && galene_url)")[0]
+        self.assertIn("video_available", guard)
+        self.assertNotIn("!video_enabled", guard)
+
+        # The owner block is outside the galene_url branch.
+        owner_block = body.split("if (video_owner)")[1]
+        self.assertIn("enable_video_chat", owner_block)
+
+    def test_toggle_uses_socket_not_form_submit(self):
+        body = self._add_video_button()
+        self.assertIn('socket.emit("toggle video"', body)
+        self.assertNotIn("submit_form", body)
+
+
+class GaleneToggleSocketTests(unittest.TestCase):
+    """The owner's toggle must not navigate: it is a websocket event."""
+
+    def setUp(self):
+        self.service = GaleneService(make_config(), client=MagicMock(),
+                                     expiration_hours=8, clock=lambda: NOW)
+        self.game = MagicMock()
+        self.game.MAX_PLAYERS = 6
+
+    def _call(self, data, games=None, owner="alice", player="alice", game_id="42"):
+        from romwhist import common_routes
+        session = {"username": player, "ownername": owner, "game_id": game_id}
+        with patch.object(video, "get_service", return_value=self.service), \
+                patch.object(common_routes, "session", session), \
+                patch.object(common_routes, "socketio") as sio:
+            result = common_routes.toggle_video(
+                "whist", games if games is not None else {"42": self.game},
+                data, "/ohell")
+        return result, sio
+
+    def test_owner_enables_video(self):
+        result, sio = self._call({"enable": True})
+        self.assertEqual(result, {"ok": True})
+        self.assertTrue(self.service.video_enabled("whist", "42"))
+
+        event, payload = sio.emit.call_args.args
+        self.assertEqual(event, "video state changed")
+        self.assertTrue(payload["enabled"])
+        self.assertIn("token=", payload["url"])
+        self.assertEqual(sio.emit.call_args.kwargs["room"], "42")
+
+    def test_owner_disables_video(self):
+        self.service.create_room("whist", "42", 6)
+        result, sio = self._call({"enable": False})
+
+        self.assertEqual(result, {"ok": True})
+        self.assertFalse(self.service.video_enabled("whist", "42"))
+        payload = sio.emit.call_args.args[1]
+        self.assertFalse(payload["enabled"])
+        self.assertIsNone(payload["url"])
+
+    def test_non_owner_cannot_toggle(self):
+        result, sio = self._call({"enable": True}, player="bob", owner="alice")
+        self.assertEqual(result, {"ok": False, "error": "not_owner"})
+        self.assertFalse(self.service.video_enabled("whist", "42"))
+        sio.emit.assert_not_called()
+
+    def test_unknown_game_is_rejected(self):
+        result, sio = self._call({"enable": True}, games={})
+        self.assertEqual(result, {"ok": False, "error": "no_game"})
+        sio.emit.assert_not_called()
+
+    def test_disabled_feature_is_rejected(self):
+        self.service = GaleneService(GaleneConfig())
+        result, sio = self._call({"enable": True})
+        self.assertEqual(result, {"ok": False, "error": "video_disabled"})
+        sio.emit.assert_not_called()
+
+    def test_failure_leaves_video_disabled(self):
+        self.service.client.create_group.side_effect = GaleneUnavailable("down")
+        result, sio = self._call({"enable": True})
+        self.assertEqual(result, {"ok": False, "error": "unavailable"})
+        self.assertFalse(self.service.video_enabled("whist", "42"))
+        sio.emit.assert_not_called()
+
+
 class GaleneSweeperTests(unittest.TestCase):
     def setUp(self):
         self.client = MagicMock()

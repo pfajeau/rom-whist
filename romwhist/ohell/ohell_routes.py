@@ -470,6 +470,11 @@ def generate_hands(game_id, username, nbcards=0, trump=True):
         return
 
 
+@socketio.on('toggle video', namespace=NAMESPACE)
+def toggle_video(data):
+    return common_routes.toggle_video(GAME_TYPE, games, data, NAMESPACE)
+
+
 @socketio.on('join game', namespace=NAMESPACE)
 def on_join(data):
     common_routes.on_join(session.get('game_id'), games, clients, NAMESPACE)

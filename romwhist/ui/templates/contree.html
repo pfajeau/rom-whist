@@ -108,6 +108,7 @@
     console.log("Connecting to io")
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/contree');
     registerSyncStateSocket(socket);
+    socket.on('video state changed', function(data) { video_state_changed(data) });
 
     socket.on('connect', function() {
       console.log("Connected to io")

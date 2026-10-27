@@ -42,6 +42,7 @@
 
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/poker');
     registerSyncStateSocket(socket);
+    socket.on('video state changed', function(data) { video_state_changed(data) });
 
     socket.on('connect', function() {
       socket.emit('join game', {data:''});
