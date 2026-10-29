@@ -1,5 +1,5 @@
 """
-This module implements galene integration tests.
+This module implements the Galene video provider tests.
 
 License: GNU General Public License (GPL) v3.0 or later.
 This program is free software: you can redistribute it and/or modify it
@@ -17,14 +17,14 @@ from unittest.mock import MagicMock, patch
 import requests
 
 from romwhist import app as flask_app
-from romwhist import galene as video
-from romwhist.galene.client import (
+from romwhist import video
+from romwhist.video.galene.client import (
     GaleneClient,
     GaleneConflict,
     GaleneUnavailable,
 )
-from romwhist.galene.config import GaleneConfig
-from romwhist.galene.service import UNAVAILABLE_COOLDOWN_SECONDS, GaleneService
+from romwhist.video.galene.config import GaleneConfig
+from romwhist.video.galene.service import UNAVAILABLE_COOLDOWN_SECONDS, GaleneService
 from romwhist.ohell import ohell_routes
 
 _BOOTSTRAP_READY = False
@@ -242,7 +242,7 @@ class GaleneServiceTests(unittest.TestCase):
 
     def test_create_room_registers_room(self):
         self.assertTrue(self.service.create_room("whist", "42", 6))
-        self.assertTrue(self.service.video_enabled("whist", "42"))
+        self.assertTrue(self.service.room_exists("whist", "42"))
 
         _, kwargs = self.client.create_group.call_args
         self.assertEqual(kwargs["max_clients"], 7)  # players + extra seats
@@ -251,7 +251,7 @@ class GaleneServiceTests(unittest.TestCase):
     def test_create_room_failure_is_not_fatal(self):
         self.client.create_group.side_effect = GaleneUnavailable("down")
         self.assertFalse(self.service.create_room("whist", "42", 6))
-        self.assertFalse(self.service.video_enabled("whist", "42"))
+        self.assertFalse(self.service.room_exists("whist", "42"))
 
     def test_join_url_needs_a_room(self):
         self.assertIsNone(self.service.join_url("whist", "42", "alice"))
@@ -324,25 +324,25 @@ class GaleneServiceTests(unittest.TestCase):
         self.assertTrue(owner["video_enabled"])
         self.assertTrue(owner["video_available"])
         self.assertTrue(owner["video_owner"])
-        self.assertIn("tok-alice", owner["galene_url"])
+        self.assertIn("tok-alice", owner["video_join_url"])
 
         player = self.service.page_context("whist", "42", "bob", False)
         self.assertFalse(player["video_owner"])
-        self.assertIn("tok-bob", player["galene_url"])
+        self.assertIn("tok-bob", player["video_join_url"])
 
     def test_page_context_without_room(self):
         context = self.service.page_context("whist", "42", "alice", False)
         self.assertFalse(context["video_enabled"])
-        self.assertIsNone(context["galene_url"])
+        self.assertIsNone(context["video_join_url"])
 
     def test_enable_video_creates_room_on_demand(self):
         self.assertTrue(self.service.enable_video("whist", "42", 6))
-        self.assertTrue(self.service.video_enabled("whist", "42"))
+        self.assertTrue(self.service.room_exists("whist", "42"))
 
     def test_disable_video_removes_room(self):
         self.service.create_room("whist", "42", 6)
         self.service.disable_video("whist", "42")
-        self.assertFalse(self.service.video_enabled("whist", "42"))
+        self.assertFalse(self.service.room_exists("whist", "42"))
         self.client.delete_group.assert_called_once()
 
     def test_teardown_purges_group_and_tokens(self):
@@ -356,7 +356,7 @@ class GaleneServiceTests(unittest.TestCase):
             "cards-whist-42", "tok-alice")
         self.client.delete_group.assert_called_once_with(
             "cards-whist-42", '"1-2"')
-        self.assertFalse(self.service.video_enabled("whist", "42"))
+        self.assertFalse(self.service.room_exists("whist", "42"))
 
     def test_teardown_never_raises(self):
         self.service.create_room("whist", "42", 6)
@@ -365,7 +365,7 @@ class GaleneServiceTests(unittest.TestCase):
         self.service.teardown("whist", "42", asynchronous=False)
 
     def test_failure_pauses_further_calls(self):
-        with patch("romwhist.galene.service.time.monotonic", return_value=1000.0):
+        with patch("romwhist.video.managed.time.monotonic", return_value=1000.0):
             self.client.create_group.side_effect = GaleneUnavailable("down")
             self.service.create_room("whist", "42", 6)
             self.assertFalse(self.service.available())
@@ -375,7 +375,7 @@ class GaleneServiceTests(unittest.TestCase):
             self.assertEqual(self.client.create_group.call_count, 1)
 
         later = 1000.0 + UNAVAILABLE_COOLDOWN_SECONDS + 1
-        with patch("romwhist.galene.service.time.monotonic", return_value=later):
+        with patch("romwhist.video.managed.time.monotonic", return_value=later):
             self.assertTrue(self.service.available())
 
     def test_sweep_removes_orphaned_groups(self):
@@ -403,14 +403,14 @@ class GaleneServiceTests(unittest.TestCase):
         self.service.sweep({"whist": ["42"]})
 
         self.client.delete_group.assert_not_called()
-        self.assertTrue(self.service.video_enabled("belote", "7"))
-        self.assertTrue(self.service.video_enabled("whist", "42"))
+        self.assertTrue(self.service.room_exists("belote", "7"))
+        self.assertTrue(self.service.room_exists("whist", "42"))
 
     def test_sweep_forgets_rooms_of_vanished_games(self):
         self.service.create_room("whist", "42", 6)
         self.client.list_groups.return_value = []
         self.service.sweep({"whist": []})
-        self.assertFalse(self.service.video_enabled("whist", "42"))
+        self.assertFalse(self.service.room_exists("whist", "42"))
 
     def test_sweep_skips_when_galene_down(self):
         self.client.list_groups.side_effect = GaleneUnavailable("down")
@@ -497,11 +497,11 @@ class GaleneButtonScriptTests(unittest.TestCase):
 
         # The early return must key on availability, not on the on/off state,
         # otherwise the owner cannot switch video back on.
-        guard = body.split("if (video_enabled && galene_url)")[0]
+        guard = body.split("if (video_enabled && video_join_url)")[0]
         self.assertIn("video_available", guard)
         self.assertNotIn("!video_enabled", guard)
 
-        # The owner block is outside the galene_url branch.
+        # The owner block is outside the video_join_url branch.
         owner_block = body.split("if (video_owner)")[1]
         self.assertIn("enable_video_chat", owner_block)
 
@@ -551,7 +551,7 @@ class GaleneToggleSocketTests(unittest.TestCase):
         # open the room immediately after enabling.
         self.assertIn("token=", result["url"])
         self.assertEqual(result["game_id"], "42")
-        self.assertTrue(self.service.video_enabled("whist", "42"))
+        self.assertTrue(self.service.room_exists("whist", "42"))
 
         event, payload = sio.emit.call_args.args
         self.assertEqual(event, "video state changed")
@@ -565,7 +565,7 @@ class GaleneToggleSocketTests(unittest.TestCase):
         self.assertTrue(result["ok"])
         self.assertFalse(result["enabled"])
         self.assertIsNone(result["url"])
-        self.assertFalse(self.service.video_enabled("whist", "42"))
+        self.assertFalse(self.service.room_exists("whist", "42"))
         payload = sio.emit.call_args.args[1]
         self.assertFalse(payload["enabled"])
         self.assertNotIn("url", payload)
@@ -625,7 +625,7 @@ class GaleneToggleSocketTests(unittest.TestCase):
     def test_non_owner_cannot_toggle(self):
         result, sio = self._call({"enable": True}, player="bob", owner="alice")
         self.assertEqual(result, {"ok": False, "error": "not_owner"})
-        self.assertFalse(self.service.video_enabled("whist", "42"))
+        self.assertFalse(self.service.room_exists("whist", "42"))
         sio.emit.assert_not_called()
 
     def test_unknown_game_is_rejected(self):
@@ -643,7 +643,7 @@ class GaleneToggleSocketTests(unittest.TestCase):
         self.service.client.create_group.side_effect = GaleneUnavailable("down")
         result, sio = self._call({"enable": True})
         self.assertEqual(result, {"ok": False, "error": "unavailable"})
-        self.assertFalse(self.service.video_enabled("whist", "42"))
+        self.assertFalse(self.service.room_exists("whist", "42"))
         sio.emit.assert_not_called()
 
 
@@ -838,7 +838,7 @@ class GaleneSweeperTests(unittest.TestCase):
     def test_expired_games_tear_down_their_room(self):
         """clean_old_games must remove the room of a game it expires."""
         from romwhist import common_routes
-        from romwhist import galene as video_module
+        from romwhist import video as video_module
 
         service = MagicMock()
         games = {"42": MagicMock(timestamp=0)}
@@ -908,7 +908,7 @@ class GaleneRouteTests(unittest.TestCase):
         self.service.client.create_group.assert_called_once()
         group = self.service.client.create_group.call_args.args[0]
         self.assertTrue(group.startswith("cards-whist-"))
-        self.assertTrue(self.service.video_enabled(
+        self.assertTrue(self.service.room_exists(
             "whist", group.rsplit("-", 1)[-1]))
 
     def test_game_still_created_when_galene_is_down(self):
@@ -934,14 +934,14 @@ class GaleneRouteTests(unittest.TestCase):
 
     def test_game_page_declares_video_variables_inside_script(self):
         """The include must not close the surrounding <script> block early."""
-        template = flask_app.jinja_env.get_template("galene_button_vars.html")
+        template = flask_app.jinja_env.get_template("video_button_vars.html")
         rendered = template.render(
             video_enabled=True, video_available=True, video_owner=False,
-            galene_url="https://galene.example.org/group/g/?token=t")
+            video_join_url="https://galene.example.org/group/g/?token=t")
         self.assertNotIn("<script", rendered)
         self.assertNotIn("</script>", rendered)
         self.assertIn("var video_enabled = true;", rendered)
-        self.assertIn('var galene_url = "https://galene.example.org/group/g/?token=t";',
+        self.assertIn('var video_join_url = "https://galene.example.org/group/g/?token=t";',
                       rendered)
 
     def test_every_game_template_includes_video_variables(self):
@@ -952,7 +952,7 @@ class GaleneRouteTests(unittest.TestCase):
         games = {"ohell.html", "belote.html", "contree.html", "poker.html"}
         for name in games:
             text = (folder / name).read_text()
-            self.assertIn("galene_button_vars.html", text, name)
+            self.assertIn("video_button_vars.html", text, name)
             self.assertIn("add_video_button(", text, name)
 
 

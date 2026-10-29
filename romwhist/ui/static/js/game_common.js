@@ -183,17 +183,17 @@ var video_window = null;
 // Video conference button. The room lives in a separate browser window so the
 // game page stays untouched.
 function add_video_button(game_id) {
-  // The template sets video_available to false when Galene is not configured.
+  // The template sets video_available to false when no video provider is configured.
   if (typeof video_available === "undefined" || !video_available) {
     return;
   }
 
-  if (video_enabled && galene_url) {
+  if (video_enabled && video_join_url) {
     // A real popup window (rather than a target=_blank tab) is used when the
     // browser allows it. The anchor keeps a working link as a fallback.
     $("#game_action_buttons").append(
       '<a id="join_video" class="btn btn-primary" target="romwhist_video_' + game_id + '"' +
-      ' rel="noopener noreferrer" href="' + galene_url + '">' +
+      ' rel="noopener noreferrer" href="' + video_join_url + '">' +
       i18n["join_video"] + '</a>');
 
     document.getElementById("join_video").onclick = function(event) {
@@ -206,14 +206,14 @@ function add_video_button(game_id) {
       // A real popup window needs a user gesture, hence opening it here rather
       // than when the page loads. When the browser blocks it, the anchor's
       // default behaviour opens the room in a tab instead.
-      video_window = open_video_window(galene_url, game_id);
+      video_window = open_video_window(video_join_url, game_id);
       if (video_window) {
         event.preventDefault();
       }
     }
   } else if (video_enabled) {
     // The room exists but no token could be obtained, usually because the
-    // Galene server is unreachable right now.
+    // The video server is unreachable right now.
     $("#game_action_buttons").append(
       '<button id="join_video" type="button" class="btn btn-secondary" disabled>' +
       i18n["video_chat_unavailable"] + '</button>');
@@ -273,13 +273,13 @@ function video_error_key(ack) {
 function video_state_changed(data) {
   video_enabled = !!data.enabled;
   if (!video_enabled) {
-    galene_url = null;
+    video_join_url = null;
   }
 
-  if (video_enabled && !galene_url) {
+  if (video_enabled && !video_join_url) {
     socket.emit("join video chat", {}, function (ack) {
       if (ack && ack.ok) {
-        galene_url = ack.url || null;
+        video_join_url = ack.url || null;
         $("#join_video, #toggle_video").remove();
         add_video_button(data.game_id);
       }

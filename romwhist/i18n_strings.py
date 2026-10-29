@@ -83,7 +83,7 @@ def i18n():
     __i18n["chat"] = _("chat")
     __i18n["send"] = _("send")
 
-    # Video conference (Galene)
+    # Video conference
     __i18n["join_video"] = _("join_video")
     __i18n["enable_video_chat"] = _("enable_video_chat")
     __i18n["disable_video_chat"] = _("disable_video_chat")

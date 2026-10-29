@@ -27,7 +27,7 @@
   window._poker_big_blind = {{ big_blind }};
   var embeddedGameState = {{ embedded_game_state|tojson }};
 
-{% include "galene_button_vars.html" %}
+{% include "video_button_vars.html" %}
   populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
                    "{{ url_for('static', filename='img/poker.png') }}")
 

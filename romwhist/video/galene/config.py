@@ -50,9 +50,10 @@ class GaleneConfig:
     def from_app(cls, app):
         """Build the configuration from the Flask application config.
 
-        Only an explicit GALENE_ENABLED turns the feature on. Missing required
-        values are reported once and downgrade the configuration to disabled
-        rather than raising during application startup.
+        Galene is only active when it was selected as the video provider and
+        GALENE_ENABLED is on. Missing required values are reported once and
+        downgrade the configuration to disabled rather than raising during
+        application startup.
         """
         if not app.config.get("GALENE_ENABLED", False):
             return cls()

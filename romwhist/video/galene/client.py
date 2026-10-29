@@ -9,30 +9,19 @@ Free Software Foundation, either version 3 of the License, or (at your option) a
 Author: Philippe Fajeau
 """
 
-import logging
-
 import requests
 from requests.auth import HTTPBasicAuth
+
+from romwhist.video.errors import VideoConflict, VideoError, VideoUnavailable
 
 
 # Galene requires an absolute expiry time in RFC 3339 format.
 EXPIRES_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
-
-class GaleneError(Exception):
-    """Base class for Galene client errors."""
-
-
-class GaleneUnavailable(GaleneError):
-    """Galene cannot be reached or answered unexpectedly.
-
-    Callers treat this as "video is not available right now" and never let it
-    break gameplay.
-    """
-
-
-class GaleneConflict(GaleneError):
-    """A precondition failed: the object exists or changed concurrently."""
+# Names kept for code that still refers to the provider specific names.
+GaleneError = VideoError
+GaleneUnavailable = VideoUnavailable
+GaleneConflict = VideoConflict
 
 
 class GaleneClient:

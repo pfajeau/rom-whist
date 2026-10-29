@@ -37,7 +37,7 @@ Add footer / contact info
   var player_type = "{{ player_type }}"
   var embeddedGameState = {{ embedded_game_state|tojson }};
 
-{% include "galene_button_vars.html" %}
+{% include "video_button_vars.html" %}
   populate_header ("{{ session['username'] }}", "{{ session['game_id'] }}",
                    "{{ url_for('static', filename='img/whist.jpg') }}")
 

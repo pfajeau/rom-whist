@@ -1,5 +1,10 @@
-Video conferencing (Galene)
-===========================
+Video provider: Galene
+======================
+
+This is the setup guide for the Galene implementation of the video service. The
+application itself only talks to the provider-neutral `romwhist/video/` API; see
+[video.md](video.md) for the abstraction, the interface and how to add another
+provider.
 
 Each game can optionally have an associated [Galene](https://galene.org) video
 room. The room is created by the game creator when the game is created (there
@@ -11,13 +16,18 @@ The room is named after the game: `<GALENE_GROUP_PREFIX>-<game type>-<game id>`,
 e.g. `cards-whist-42`. The game type is part of the name because game ids are
 allocated independently per game type.
 
-All of the integration lives in `romwhist/galene/`:
+The Galene implementation lives in `romwhist/video/galene/`:
 
 | Module | Responsibility |
 |---|---|
 | `config.py` | Reads the `GALENE_*` settings and derives group/URL names |
 | `client.py` | Thin wrapper over Galene's administrative HTTP API |
-| `service.py` | Room lifecycle, per-player join tokens, cleanup |
+| `service.py` | `GaleneService`, the provider primitives over `ManagedVideoService` |
+
+Everything generic (in-memory room registry, per-player token cache,
+unavailability cooldown, sweeper) is owned by `romwhist/video/managed.py` and
+shared with any future provider. Only the Galene specific parts — groups,
+stateful tokens and their URLs — are in this package.
 
 Game modules only call the helpers in `common_routes`: `create_video_room`,
 `video_context`, and the owner action handled by `redirect_game_start`.
@@ -61,6 +71,11 @@ Application configuration
 Add the setting below to `instance/config.py` (it is not version controlled):
 
 ```python
+# Select the provider (see romwhist/video/factory.py for the registry)
+VIDEO_PROVIDER = "galene"
+VIDEO_ENABLED = True
+
+# Galene provider settings
 GALENE_ENABLED = True
 GALENE_API_URL = "https://meet.example.org"
 # Only needed when Flask reaches Galene on a different address than browsers do
@@ -69,9 +84,16 @@ GALENE_ADMIN_USER = "romwhist"
 GALENE_ADMIN_PASSWORD = "..."
 ```
 
+`VIDEO_PROVIDER` and `VIDEO_ENABLED` are the provider-neutral switches; the
+`GALENE_*` keys below them are read only by the Galene provider.
+
 | Setting | Default | Meaning |
 |---|---|---|
-| `GALENE_ENABLED` | `False` | Master switch. While off, no Galene call is ever made |
+| `VIDEO_PROVIDER` | `none` | Which video provider to use (`none`, `galene`) |
+| `VIDEO_ENABLED` | provider != `none` | Master switch for the chosen provider |
+| `VIDEO_SWEEP_ENABLED` | `True` | Purge rooms whose game no longer exists |
+| `VIDEO_SWEEP_INTERVAL_SECONDS` | `900` | Sweeper period |
+| `GALENE_ENABLED` | `False` | Galene provider switch. While off, no Galene call is ever made |
 | `GALENE_API_URL` | | Base URL used by the server side API calls |
 | `GALENE_PUBLIC_URL` | `GALENE_API_URL` | Base URL used in links for browsers |
 | `GALENE_ADMIN_USER` / `GALENE_ADMIN_PASSWORD` | | Galene administrator credentials |
@@ -83,7 +105,9 @@ GALENE_ADMIN_PASSWORD = "..."
 | `GALENE_TIMEOUT_SECONDS` | `3` | API call timeout |
 
 If `GALENE_ENABLED` is on but a required value is missing, an error is logged at
-startup and the feature stays disabled. Video problems never prevent a game from
+startup and the feature stays disabled. An installation that only sets
+`GALENE_ENABLED` (without `VIDEO_PROVIDER`) keeps working: the deprecated
+combination is upgraded to the Galene provider, with a warning logged. Video problems never prevent a game from
 being created or played.
 
 
@@ -148,8 +172,8 @@ Rooms are removed when:
 
 The sweeper runs in a daemon thread started by `create_app`, with an immediate
 first pass so groups left behind by a previous process are removed at startup.
-Its interval is `GALENE_SWEEP_INTERVAL_SECONDS` (default 900) and it can be
-turned off with `GALENE_SWEEP_ENABLED`. Live games are supplied by
+Its interval is `VIDEO_SWEEP_INTERVAL_SECONDS` (default 900) and it can be
+turned off with `VIDEO_SWEEP_ENABLED`. Live games are supplied by
 `common_routes.live_video_games()`; the sweeper only touches groups belonging to
 the game types it is given, so one game type's sweep never removes another's
 rooms.
@@ -195,7 +219,7 @@ Tests
 -----
 
 ```sh
-venv/bin/python -m pytest tests/test_galene.py -q
+venv/bin/python -m pytest tests/test_video_galene.py -q
 ```
 
 The tests cover configuration handling, the exact HTTP requests sent, token

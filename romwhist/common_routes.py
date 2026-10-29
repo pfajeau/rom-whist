@@ -35,7 +35,7 @@ from romwhist.player import Player
 from romwhist.poker import poker_routes
 from romwhist.belote.belote import BeloteGame
 from romwhist import app
-from romwhist import galene as video
+from romwhist import video
 
 
 def get_locale(the_request):
@@ -43,8 +43,11 @@ def get_locale(the_request):
     return the_request.accept_languages.best_match(app.config['LANGUAGES'])
 
 
-# -- Video conferencing (Galene) -------------------------------------------
+# -- Video conferencing ---------------------------------------------------
 # All games share these helpers so the video feature is implemented once.
+# Everything here goes through romwhist.video, so the actual conferencing
+# provider (if any) is chosen by configuration and stays an implementation
+# detail.
 
 def create_video_room(game_type, game_id, max_players, requested):
     """Create the video room for a new game when the creator asked for it."""
@@ -95,7 +98,7 @@ def toggle_video(game_type, games, data, namespace, default_max_players=6):
     else:
         service.disable_video(game_type, game_id)
 
-    enabled = service.video_enabled(game_type, game_id)
+    enabled = service.room_exists(game_type, game_id)
     url = service.join_url(game_type, game_id, player) if enabled else None
 
     # Only the on/off state is broadcast: a join URL is personal (it carries a
@@ -124,7 +127,7 @@ def join_video_chat(game_type, games, data, namespace):
         return {'ok': False, 'error': 'no_game'}
 
     service = video.get_service()
-    if not service.enabled or not service.video_enabled(game_type, game_id):
+    if not service.enabled or not service.room_exists(game_type, game_id):
         return {'ok': False, 'error': 'video_disabled'}
 
     url = service.join_url(game_type, game_id, player)
@@ -332,15 +335,15 @@ def clean_old_games(games, game_type=None):
 
 
 def sweep_video_rooms(games, game_type):
-    """Remove Galene groups whose game no longer exists."""
+    """Remove video rooms whose game no longer exists."""
     try:
         video.get_service().sweep({game_type: list(games)})
     except Exception:
-        logging.exception("Galene sweep failed for %s games", game_type)
+        logging.exception("Video sweep failed for %s games", game_type)
 
 
 def live_video_games():
-    """Game ids per type, used by the periodic Galene sweeper."""
+    """Game ids per type, used by the periodic video sweeper."""
     return {
         'whist': list(ohell_routes.games),
         'belote': list(belote_routes.games),
