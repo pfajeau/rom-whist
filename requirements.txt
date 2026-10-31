@@ -28,6 +28,7 @@ pyparsing
 python-engineio
 python-socketio[client]
 requests
+setuptools<82
 six
 SQLAlchemy
 terminaltables
